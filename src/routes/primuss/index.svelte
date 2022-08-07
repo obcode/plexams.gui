@@ -3,18 +3,18 @@
 
 	const query = gql`
 		query {
-			zpaExamsByType {
-				type
+			primussExams {
+				program
 				exams {
-					semester
 					anCode
 					module
 					mainExamer
-					mainExamerID
+					program
 					examType
-					duration
-					isRepeaterExam
-					groups
+					presence
+					studentRegs {
+						name
+					}
 				}
 			}
 		}
@@ -35,23 +35,24 @@
 	export let data;
 </script>
 
-<h1>Prüfungsliste aus dem ZPA</h1>
+<h1>Prüfungsliste aus Primuss</h1>
 
 <ul>
-	{#each data.zpaExamsByType as zpaExamsType}
+	{#each data.primussExams as primussExam}
 		<li>
-			{zpaExamsType.type} ({zpaExamsType.exams.length})
+			{primussExam.program} ({primussExam.exams.length})
 			<ul>
-				{#each zpaExamsType.exams as zpaexam}
+				{#each primussExam.exams as exam}
 					<li>
-						{zpaexam.anCode}.
-						{zpaexam.module},
-						<i>{zpaexam.mainExamer}</i>
+						{exam.anCode}.
+						{exam.module},
+						<i>{exam.mainExamer}</i>
+						({exam.studentRegs.length} Anmeldungen)
 					</li>
 				{/each}
 			</ul>
 		</li>
 	{:else}
-		<h3>keine Prüfungen im ZPA gefunden</h3>
+		<h3>keine Prüfungen von Primuss gefunden</h3>
 	{/each}
 </ul>
