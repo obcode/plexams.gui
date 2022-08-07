@@ -10,7 +10,7 @@
 
 <nav>
 	<a href="/setSemester">{currentSemester}</a>
-	<a href="/teacher">Dozenten</a>
-	<a href="/invigilators">Aufsichten</a>
-	<a href="/zpaexams">Prüfungsliste</a>
+	<a href="/zpa/teacher">Dozenten</a>
+	<a href="/zpa/invigilators">Aufsichten</a>
+	<a href="/zpa/exams">Prüfungsliste</a>
 </nav>

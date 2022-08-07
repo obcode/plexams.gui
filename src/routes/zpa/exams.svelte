@@ -40,7 +40,7 @@
 <ul>
 	{#each data.zpaexamsByType as zpaexamsType}
 		<li>
-			{zpaexamsType.type}
+			{zpaexamsType.type} ({zpaexamsType.exams.length})
 			<ul>
 				{#each zpaexamsType.exams as zpaexam}
 					<li>
@@ -51,5 +51,7 @@
 				{/each}
 			</ul>
 		</li>
+	{:else}
+		<h3>keine Prüfungen im ZPA gefunden</h3>
 	{/each}
 </ul>
