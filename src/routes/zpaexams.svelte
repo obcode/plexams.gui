@@ -1,48 +1,55 @@
 <script context="module">
-import { request, gql } from 'graphql-request'
+	import { request, gql } from 'graphql-request';
 
-const query = gql`
-query {
-  zpaexams(fromZPA: false) {
-    semester
-    anCode
-    module
-    mainExamer
-    mainExamerID
-    examType
-    duration
-    isRepeaterExam
-    groups
-  }
-}
-`
+	const query = gql`
+		query {
+			zpaexamsByType {
+				type
+				exams {
+					semester
+					anCode
+					module
+					mainExamer
+					mainExamerID
+					examType
+					duration
+					isRepeaterExam
+					groups
+				}
+			}
+		}
+	`;
 
-export const load = async () => {
-    const data = await request('http://localhost:8080/query', query)
-    
-    return {
-        props: {
-            data
-        }
-    }
-}
+	export const load = async () => {
+		const data = await request('http://localhost:8080/query', query);
 
+		return {
+			props: {
+				data
+			}
+		};
+	};
 </script>
 
 <script>
-    export let data
+	export let data;
 </script>
 
-<h1>
-    Prüfungsliste aus dem ZPA
-</h1>
+<h1>Prüfungsliste aus dem ZPA</h1>
 
 <ul>
-    {#each data.zpaexams as zpaexam}
-    <li>{zpaexam.anCode}.
-        {zpaexam.module},
-        {zpaexam.mainExamer}
-        (<i>{zpaexam.examType}</i>)
-    </li>
-    {/each}
+	{#each data.zpaexamsByType as zpaexamsType}
+		<li>
+			{zpaexamsType.type}
+			<ul>
+				{#each zpaexamsType.exams as zpaexam}
+					<li>
+						{zpaexam.anCode}.
+						{zpaexam.module},
+						<i>{zpaexam.mainExamer}</i>
+					</li>
+				{/each}
+			</ul>
+		</li>
+	{/each}
 </ul>
