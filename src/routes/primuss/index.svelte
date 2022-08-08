@@ -15,6 +15,11 @@
 					studentRegs {
 						name
 					}
+					conflicts {
+						conflicts {
+							anCode
+						}
+					}
 				}
 			}
 		}
@@ -47,7 +52,7 @@
 						{exam.anCode}.
 						{exam.module},
 						<i>{exam.mainExamer}</i>
-						({exam.studentRegs.length} Anmeldungen)
+						({exam.studentRegs.length} Anmeldungen, {exam.conflicts.conflicts.length} Konflikte)
 					</li>
 				{/each}
 			</ul>
