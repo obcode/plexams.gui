@@ -1,49 +1,11 @@
-<script context="module">
-	import { request, gql } from 'graphql-request';
-
-	const query = gql`
-		query {
-			primussExams {
-				program
-				exams {
-					anCode
-					module
-					mainExamer
-					program
-					examType
-					presence
-					studentRegs {
-						name
-					}
-					conflicts {
-						conflicts {
-							anCode
-						}
-					}
-				}
-			}
-		}
-	`;
-
-	export const load = async () => {
-		const data = await request('http://localhost:8080/query', query);
-
-		return {
-			props: {
-				data
-			}
-		};
-	};
-</script>
-
 <script>
-	export let data;
+	import { primussExams } from '../../stores/primuss';
 </script>
 
-<h1>Prüfungsliste aus Primuss</h1>
+<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus Primuss</h1>
 
 <ul>
-	{#each data.primussExams as primussExam}
+	{#each $primussExams as primussExam}
 		<li>
 			{primussExam.program} ({primussExam.exams.length})
 			<ul>

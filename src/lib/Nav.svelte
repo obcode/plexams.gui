@@ -1,17 +1,54 @@
 <script>
-	import { semester } from '$lib/stores.js';
+	import { request, gql } from 'graphql-request';
+	import { semester, allSemesterNames } from '../stores/semester.js';
+	import { fetchZPA } from '../stores/zpa.js';
+	import { isOverlayOpen } from '../stores/overlay';
+	import Overlay from '$lib/Overlay.svelte';
 
-	let currentSemester;
+	function setSemester(sem) {
+		const mutation = gql`
+            mutation {
+                setSemester(input: "${sem}") {
+                    id
+                }
+            }
+        `;
 
-	const unsubscribe = semester.subscribe((value) => {
-		currentSemester = value;
-	});
+		request('http://localhost:8080/query', mutation).then((data) => {
+			console.log(`set semester to ${data}`);
+			semester.set(data.setSemester.id);
+			fetchZPA();
+			isOverlayOpen.set(false);
+		});
+	}
 </script>
 
-<nav>
-	<a href="/setSemester">{currentSemester}</a>
-	<a href="/zpa/teacher">Dozenten</a>
-	<a href="/zpa/invigilators">Aufsichten</a>
-	<a href="/zpa/exams">Prüfungsliste (ZPA)</a>
-	<a href="/primuss">Prüfungsliste (Primuss)</a>
+{#if $isOverlayOpen}
+	<Overlay>
+		<div class="text-center">
+			<h1>Semester auswählen:</h1>
+			{#each $allSemesterNames as semesterName}
+				<button
+					class="bg-green-200 text-black font-bold py-2 px-4 m-4 rounded hover:bg-green-500"
+					on:click={setSemester(semesterName)}
+				>
+					{semesterName}
+				</button>
+			{/each}
+		</div>
+	</Overlay>
+{/if}
+
+<nav class="flex justify-center w-full">
+	<a class="mx-4 text-lg" href="/">Plexams</a>
+	<a class="mx-4 text-lg" href="/zpa/teacher">Dozierende</a>
+	<a class="mx-4 text-lg" href="/zpa/invigilators">Aufsichten</a>
+	<a class="mx-4 text-lg" href="/zpa/exams">Prüfungsliste (ZPA)</a>
+	<a class="mx-4 text-lg" href="/primuss">Prüfungsliste (Primuss)</a>
+	<button
+		class="mr-4 text-lg bg-gray-300 px-4 rounded-lg"
+		on:click={() => {
+			isOverlayOpen.set(true);
+		}}>{$semester}</button
+	>
 </nav>

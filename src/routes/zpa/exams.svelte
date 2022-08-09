@@ -1,57 +1,56 @@
-<script context="module">
-	import { request, gql } from 'graphql-request';
-
-	const query = gql`
-		query {
-			zpaExamsByType {
-				type
-				exams {
-					semester
-					anCode
-					module
-					mainExamer
-					mainExamerID
-					examType
-					duration
-					isRepeaterExam
-					groups
-				}
-			}
-		}
-	`;
-
-	export const load = async () => {
-		const data = await request('http://localhost:8080/query', query);
-
-		return {
-			props: {
-				data
-			}
-		};
-	};
-</script>
-
 <script>
-	export let data;
+	import { fade } from 'svelte/transition';
+	import { zpaExams } from '../../stores/zpa';
+	import ExamCard from '../../lib/ExamCard.svelte';
+
+	let searchTermTeachers = '';
+	let filteredExams = [];
+
+	$: {
+		if (searchTermTeachers) {
+			filteredExams = $zpaExams.map((examsWithType) => {
+				const newEntry = {
+					type: examsWithType.type,
+					exams: examsWithType.exams.filter((exam) =>
+						exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
+					)
+				};
+				return newEntry;
+			});
+		} else {
+			filteredExams = [...$zpaExams];
+		}
+	}
 </script>
 
-<h1>Prüfungsliste aus dem ZPA</h1>
+<div transition:fade>
+	{#if filteredExams.length > 0}
+		<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus dem ZPA</h1>
 
-<ul>
-	{#each data.zpaExamsByType as zpaExamsType}
-		<li>
-			{zpaExamsType.type} ({zpaExamsType.exams.length})
-			<ul>
-				{#each zpaExamsType.exams as zpaexam}
-					<li>
-						{zpaexam.anCode}.
-						{zpaexam.module},
-						<i>{zpaexam.mainExamer}</i>
-					</li>
-				{/each}
-			</ul>
-		</li>
+		<input
+			class="w-full rounded-md text-lg p-4 border-2 border-gray-900"
+			type="text"
+			bind:value={searchTermTeachers}
+			placeholder="Suche Prüfung"
+		/>
+
+		<div class="py-4 grid gap-4 grid-cols-1">
+			{#each filteredExams as zpaExamsType}
+				{#if zpaExamsType.exams.length > 0}
+					<div class="p-2 bg-gray-200 rounded-md">
+						{zpaExamsType.type} ({zpaExamsType.exams.length})
+						<div class="py-4 grid gap-4 md:grid-cols-6 grid-cols-2">
+							{#each zpaExamsType.exams as zpaexam}
+								<ExamCard exam={zpaexam} />
+							{/each}
+						</div>
+					</div>
+				{/if}
+			{/each}
+		</div>
 	{:else}
-		<h3>keine Prüfungen im ZPA gefunden</h3>
-	{/each}
-</ul>
+		<div class="bg-blue-500 text-white rounded-md m-10 px-8 py-10 text-center opacity-95">
+			keine Prüfungen im ZPA gefunden
+		</div>
+	{/if}
+</div>

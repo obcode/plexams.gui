@@ -1,42 +1,28 @@
-<script context="module">
-	import { request, gql } from 'graphql-request';
-
-	const query = gql`
-		query {
-			teachers(fromZPA: false) {
-				fullname
-				shortname
-				isProf
-				isLBA
-				isProfHC
-				isStaff
-				lastSemester
-				fk
-				id
-				email
-			}
-		}
-	`;
-
-	export const load = async () => {
-		const data = await request('http://localhost:8080/query', query);
-
-		return {
-			props: {
-				data
-			}
-		};
-	};
-</script>
-
 <script>
-	export let data;
+	import { teachers } from '../../stores/zpa.js';
+	import Teachers from '$lib/Teachers.svelte';
+
+	let searchTerm = '';
+	let filteredTeacher = [];
+
+	$: {
+		if (searchTerm) {
+			filteredTeacher = $teachers.filter((teacher) =>
+				teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+		} else {
+			filteredTeacher = [...$teachers];
+		}
+	}
 </script>
 
-<h1>Dozenten</h1>
+<h1 class="text-4xl text-center my-8 uppercase">Dozierende</h1>
 
-<ul>
-	{#each data.teachers as teacher}
-		<li>{teacher.id}. {teacher.fullname}</li>
-	{/each}
-</ul>
+<input
+	class="w-full rounded-md text-lg p-4 border-2 border-gray-900"
+	type="text"
+	bind:value={searchTerm}
+	placeholder="Suche Dozierende"
+/>
+
+<Teachers teachers={filteredTeacher} />
