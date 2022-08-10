@@ -4,6 +4,7 @@
 	import ExamCard from '../../lib/ExamCard.svelte';
 
 	let searchTermTeachers = '';
+	let searchTermModule = '';
 	let filteredExams = [];
 
 	$: {
@@ -13,6 +14,16 @@
 					type: examsWithType.type,
 					exams: examsWithType.exams.filter((exam) =>
 						exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
+					)
+				};
+				return newEntry;
+			});
+		} else if (searchTermModule) {
+			filteredExams = $zpaExams.map((examsWithType) => {
+				const newEntry = {
+					type: examsWithType.type,
+					exams: examsWithType.exams.filter((exam) =>
+						exam.module.toLowerCase().includes(searchTermModule.toLowerCase())
 					)
 				};
 				return newEntry;
@@ -27,12 +38,21 @@
 	{#if filteredExams.length > 0}
 		<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus dem ZPA</h1>
 
-		<input
-			class="w-full rounded-md text-lg p-4 border-2 border-gray-900"
-			type="text"
-			bind:value={searchTermTeachers}
-			placeholder="Suche Prüfung"
-		/>
+		<div class="flex ">
+			<input
+				class="w-full mx-2 rounded-md text-lg p-4 border-2 border-gray-900"
+				type="text"
+				bind:value={searchTermTeachers}
+				placeholder="Dozierender"
+			/>
+
+			<input
+				class="w-full mx-2 rounded-md text-lg p-4 border-2 border-gray-900"
+				type="text"
+				bind:value={searchTermModule}
+				placeholder="Modulname"
+			/>
+		</div>
 
 		<div class="py-4 grid gap-4 grid-cols-1">
 			{#each filteredExams as zpaExamsType}
