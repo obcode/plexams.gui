@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
+import { semester } from './semester';
 
 export const teachers = writable([]);
 
@@ -83,4 +84,6 @@ export function fetchZPA() {
 	fetchInvigilators();
 }
 
-fetchZPA();
+semester.subscribe((_) => {
+	fetchZPA();
+});
