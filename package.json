@@ -16,6 +16,7 @@
 		"@playwright/test": "^1.22.2",
 		"@sveltejs/adapter-auto": "next",
 		"@sveltejs/kit": "next",
+		"@tailwindcss/typography": "^0.5.4",
 		"autoprefixer": "^10.4.8",
 		"eslint": "^8.16.0",
 		"eslint-config-prettier": "^8.3.0",
@@ -32,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"daisyui": "^2.22.0",
 		"graphql": "^16.5.0",
 		"graphql-request": "^4.3.0"
 	}

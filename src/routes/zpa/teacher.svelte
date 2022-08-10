@@ -16,13 +16,17 @@
 	}
 </script>
 
-<h1 class="text-4xl text-center my-8 uppercase">Dozierende</h1>
+<div class="text-center m-2">
+	<div class="text-4xl text-center mt-8 uppercase">Dozierende</div>
+</div>
 
-<input
-	class="w-full rounded-md text-lg p-4 border-2 border-gray-900"
-	type="text"
-	bind:value={searchTerm}
-	placeholder="Suche Dozierende"
-/>
+<div class="flex">
+	<input
+		class="input input-bordered w-full max-w-x mr-2"
+		type="text"
+		bind:value={searchTerm}
+		placeholder="Suche Dozierende"
+	/>
+</div>
 
 <Teachers teachers={filteredTeacher} />
