@@ -1,25 +1,23 @@
 <script>
 	export let exam;
 	import { fade } from 'svelte/transition';
-	import Overlay from './Overlay.svelte';
-	let show = false;
 </script>
 
-{#if show}
-	<Overlay closingFun={() => (show = false)}><pre>{JSON.stringify(exam, null, `\t`)}</pre></Overlay>
-{/if}
-
-<div
-	class="p-6 bg-gray-100 text-gray-800 text-center rounded-md
-	 shadow-sm hover:shadow-md hover:bg-green-200 flex flex-col items-center"
-	transition:fade
-	on:click={() => (show = true)}
->
-	<span class="text-red-500">
-		{exam.anCode}.
-	</span>
-	{exam.module}
-	<span class="text-blue-500">
-		{exam.mainExamer}
-	</span>
+<div class="card bg-neutral text-neutral-content" on:click={() => (show = true)} transition:fade>
+	<div class="card-body">
+		<div class="flex justify-between">
+			<span class="text-red-900">
+				{exam.anCode}.
+			</span>
+			{#if exam.groups}
+				<span class="text-green-900">{exam.groups}</span>
+			{:else}
+				<span class="text-green-900">{exam.program}</span>
+			{/if}
+		</div>
+		{exam.module}
+		<span class="text-blue-900">
+			{exam.mainExamer}
+		</span>
+	</div>
 </div>

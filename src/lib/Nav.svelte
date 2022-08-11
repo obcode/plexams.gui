@@ -31,7 +31,7 @@
 			<li><a href="/zpa/teacher">Dozierende</a></li>
 			<li><a href="/zpa/invigilators">Aufsichten</a></li>
 			<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-			<li><a href="/primuss">Prüfungsliste (Primuss)</a></li>
+			<li><a href="/exam/connected">Prüfungsliste (ZPA/Primuss)</a></li>
 			<li tabindex="0">
 				<!-- svelte-ignore a11y-missing-attribute -->
 				<a>
