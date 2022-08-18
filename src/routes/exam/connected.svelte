@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import ExamCard from '$lib/ExamCard.svelte';
+	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
 	import { connectedExams, fetchConnectedExams } from '../../stores/exam';
 
 	let loading = false;
@@ -9,28 +10,71 @@
 		fetchConnectedExams();
 	});
 
-	function differentTitles(exam) {
-		let diff = false;
+	function differentTitlesOrMainExamer(exam) {
+		let diffModule = false;
+		let diffMainExamer = false;
 		exam.primussExams.forEach((primussExam) => {
-			if (primussExam.module != exam.zpaExam.module) {
-				diff = true;
+			if (primussExam.module !== exam.zpaExam.module) {
+				diffModule = true;
+			}
+			if (primussExam.mainExamer !== exam.zpaExam.mainExamer.replace(',', '')) {
+				diffMainExamer = true;
 			}
 		});
-		if (diff) {
+		if (diffModule && diffMainExamer) {
 			return 'bg-red-500';
 		}
 		return 'bg-green-500';
 	}
+
+	let toRemove = [];
+
+	function toggleToRemove(primussExam) {
+		if (toRemove.includes((primussExam.anCode, primussExam.program))) {
+			if (Array.isArray(toRemove)) {
+				toRemove = toRemove.filter(
+					(entry) => !(entry == (primussExam.anCode, primussExam.program))
+				);
+			}
+		} else {
+			toRemove = (primussExam.anCode, primussExam.program) + toRemove;
+		}
+		console.log(toRemove);
+	}
+
+	function removeExam(event) {
+		toRemove = [event.detail, ...toRemove];
+		console.log(toRemove);
+	}
+
+	function doNotRemoveExam(event) {
+		if (Array.isArray(toRemove)) {
+			toRemove = toRemove.filter(
+				(entry) => !(entry.anCode == event.detail.anCode && entry.program == event.detail.program)
+			);
+		}
+		console.log(toRemove);
+	}
 </script>
 
 {#each $connectedExams as exam}
-	<div class="flex justify-items-stretch {differentTitles(exam)}">
+	<div class="flex justify-items-stretch {differentTitlesOrMainExamer(exam)}">
 		<div class="m-2">
 			<ExamCard exam={exam.zpaExam} />
 		</div>
 		{#each exam.primussExams as primussExam}
-			<div class="m-2">
-				<ExamCard exam={primussExam} />
+			<div
+				class="m-2"
+				onClick={() => {
+					console.log('hurra');
+					// toggleToRemove(primussExam);
+				}}
+			>
+				<PrimussExamCard
+					exam={primussExam}
+					on:removeMe={removeExam}
+					on:doNotRemoveMe={doNotRemoveExam}
+				/>
 			</div>
 		{/each}
 	</div>

@@ -1,6 +1,8 @@
-import { writable } from 'svelte/store';
+import { writable, readable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
 import { semester } from './semester';
+
+export const fk07programs = readable(['DC', 'IC', 'IB', 'IF', 'IG', 'IN', 'IS', 'IT']);
 
 export const teachers = writable([]);
 

@@ -1,7 +1,6 @@
 <script>
 	import { request, gql } from 'graphql-request';
 	import { semester, allSemesterNames } from '../stores/semester.js';
-	import { fetchZPA } from '../stores/zpa.js';
 
 	let dropdownOpen = false;
 
@@ -31,7 +30,7 @@
 			<li><a href="/zpa/teacher">Dozierende</a></li>
 			<li><a href="/zpa/invigilators">Aufsichten</a></li>
 			<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-			<li><a href="/exam/connected">Prüfungsliste (ZPA/Primuss)</a></li>
+			<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 			<li tabindex="0">
 				<!-- svelte-ignore a11y-missing-attribute -->
 				<a>
