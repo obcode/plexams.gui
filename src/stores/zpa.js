@@ -61,12 +61,14 @@ const fetchZPAExams = async () => {
 			zpaExamsByType {
 				type
 				exams {
+					zpaID
 					semester
 					anCode
 					module
 					mainExamer
 					mainExamerID
 					examType
+					examTypeFull
 					duration
 					isRepeaterExam
 					groups
