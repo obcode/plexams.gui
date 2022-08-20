@@ -33,6 +33,29 @@
 			<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 			<li tabindex="0">
 				<!-- svelte-ignore a11y-missing-attribute -->
+				<a
+					>NTAs
+					<svg
+						class="fill-current"
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" /></svg
+					>
+				</a>
+				<ul class="p-2 bg-base-100">
+					<li class="block px-4 py-2 hover:bg-green-500 hover:text-green-100">
+						<a href="/nta/all"> Alle NTAs </a>
+					</li>
+					<li class="block px-4 py-2 hover:bg-green-500 hover:text-green-100">
+						<a href="/nta/add"> NTA hinzufügen </a>
+					</li>
+				</ul>
+			</li>
+
+			<li tabindex="0">
+				<!-- svelte-ignore a11y-missing-attribute -->
 				<a>
 					{$semester}
 					<svg
