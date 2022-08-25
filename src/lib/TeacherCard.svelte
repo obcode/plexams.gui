@@ -13,7 +13,7 @@
 	>
 {/if}
 
-<div class="card bg-neutral text-neutral-content" on:click={() => (show = true)} transition:fade>
+<div class="card bg-base-100 shadow-xl" on:click={() => (show = true)} transition:fade>
 	<div class="card-body">
 		{teacher.shortname}
 	</div>

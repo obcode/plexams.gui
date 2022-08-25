@@ -43,7 +43,8 @@
 					<th>Name</th>
 					<th>Mtknr</th>
 					<th>Ausgleich</th>
-					<th>Zeitverlängerung in %</th>
+					<th>gültig bis</th>
+					<th>zuletzt</th>
 				</tr>
 			</thead>
 			<tbody>

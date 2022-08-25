@@ -29,3 +29,5 @@ export const fetchConnectedExams = async () => {
 		connectedExams.set(data.connectedExams);
 	});
 };
+
+export const ancodesToPlan = writable([]);

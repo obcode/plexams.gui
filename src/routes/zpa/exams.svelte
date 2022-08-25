@@ -37,18 +37,20 @@
 
 <div transition:fade>
 	{#if filteredExams.length > 0}
-		<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus dem ZPA</h1>
+		<div class="text-center m-2">
+			<div class="text-4xl text-center mt-8 uppercase">Prüfungsliste aus dem ZPA</div>
+		</div>
 
 		<div class="flex ">
 			<input
-				class="w-full mx-2 rounded-md text-lg p-4 border-2 border-gray-900"
+				class="input input-bordered w-full max-w-x mr-2"
 				type="text"
 				bind:value={searchTermTeachers}
 				placeholder="Dozierender"
 			/>
 
 			<input
-				class="w-full mx-2 rounded-md text-lg p-4 border-2 border-gray-900"
+				class="input input-bordered w-full max-w-x mr-2"
 				type="text"
 				bind:value={searchTermModule}
 				placeholder="Modulname"
@@ -58,12 +60,20 @@
 		<div class="py-4 grid gap-4 grid-cols-1">
 			{#each filteredExams as zpaExamsType}
 				{#if zpaExamsType.exams.length > 0}
-					<div class="p-2 bg-gray-200 rounded-md">
-						{zpaExamsType.type} ({zpaExamsType.exams.length})
-						<div class="py-4 grid gap-4 md:grid-cols-6 grid-cols-2">
-							{#each zpaExamsType.exams as zpaexam}
-								<ExamCard exam={zpaexam} />
-							{/each}
+					<div
+						tabindex="0"
+						class="collapse collapse-plus border border-base-300 bg-base-100 rounded-box"
+					>
+						<div class="collapse-title text-xl font-medium">
+							<input type="checkbox" checked="" class="checkbox mr-2" />
+							{zpaExamsType.type} ({zpaExamsType.exams.length})
+						</div>
+						<div class="collapse-content">
+							<div class="py-4 grid gap-4 md:grid-cols-6 grid-cols-2">
+								{#each zpaExamsType.exams as zpaexam}
+									<ExamCard exam={zpaexam} />
+								{/each}
+							</div>
 						</div>
 					</div>
 				{/if}

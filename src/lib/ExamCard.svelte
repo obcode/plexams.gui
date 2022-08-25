@@ -3,7 +3,7 @@
 	import { fade } from 'svelte/transition';
 </script>
 
-<div class="card bg-neutral text-neutral-content" transition:fade>
+<div class="card bg-base-100 shadow-xl" transition:fade>
 	<div class="card-body">
 		<div class="flex justify-between">
 			<span class="text-red-900">
