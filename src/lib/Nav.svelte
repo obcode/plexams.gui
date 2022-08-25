@@ -45,10 +45,10 @@
 					>
 				</a>
 				<ul class="p-2 bg-base-100">
-					<li class="block px-4 py-2 hover:bg-green-500 hover:text-green-100">
+					<li>
 						<a href="/nta/all"> Alle NTAs </a>
 					</li>
-					<li class="block px-4 py-2 hover:bg-green-500 hover:text-green-100">
+					<li>
 						<a href="/nta/add"> NTA hinzufügen </a>
 					</li>
 				</ul>
@@ -69,10 +69,7 @@
 				</a>
 				<ul class="p-2 bg-base-100">
 					{#each $allSemesterNames as semesterName}
-						<li
-							class="block px-4 py-2 hover:bg-green-500 hover:text-green-100"
-							on:click={setSemester(semesterName)}
-						>
+						<li on:click={setSemester(semesterName)}>
 							<!-- svelte-ignore a11y-missing-attribute -->
 							<a>{semesterName}</a>
 						</li>
