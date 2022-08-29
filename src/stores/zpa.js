@@ -82,6 +82,58 @@ const fetchZPAExams = async () => {
 	});
 };
 
+export const zpaExamsToPlan = writable([]);
+
+export const fetchZPAExamsToPlan = async () => {
+	const query = gql`
+		query {
+			zpaExamsToPlan {
+				zpaID
+				semester
+				anCode
+				module
+				mainExamer
+				mainExamerID
+				examType
+				examTypeFull
+				duration
+				isRepeaterExam
+				groups
+			}
+		}
+	`;
+
+	request('http://localhost:8080/query', query).then((data) => {
+		zpaExamsToPlan.set(data.zpaExamsToPlan);
+	});
+};
+
+export const zpaExamsNotToPlan = writable([]);
+
+export const fetchZPAExamsNotToPlan = async () => {
+	const query = gql`
+		query {
+			zpaExamsNotToPlan {
+				zpaID
+				semester
+				anCode
+				module
+				mainExamer
+				mainExamerID
+				examType
+				examTypeFull
+				duration
+				isRepeaterExam
+				groups
+			}
+		}
+	`;
+
+	request('http://localhost:8080/query', query).then((data) => {
+		zpaExamsNotToPlan.set(data.zpaExamsNotToPlan);
+	});
+};
+
 export function fetchZPA() {
 	fetchTeacher();
 	fetchZPAExams();

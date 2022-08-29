@@ -19,7 +19,7 @@
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">
 		Aufsichten
-		<span class="badge badge-sm">{$invigilators.length}</span>
+		<span class="badge badge-lg indicator-item">{$invigilators.length}</span>
 	</div>
 </div>
 

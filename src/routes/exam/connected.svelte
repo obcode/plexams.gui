@@ -39,12 +39,10 @@
 		} else {
 			toRemove = (primussExam.anCode, primussExam.program) + toRemove;
 		}
-		console.log(toRemove);
 	}
 
 	function removeExam(event) {
 		toRemove = [event.detail, ...toRemove];
-		console.log(toRemove);
 	}
 
 	function doNotRemoveExam(event) {
@@ -53,7 +51,6 @@
 				(entry) => !(entry.anCode == event.detail.anCode && entry.program == event.detail.program)
 			);
 		}
-		console.log(toRemove);
 	}
 </script>
 
@@ -66,7 +63,7 @@
 			<div
 				class="m-2"
 				onClick={() => {
-					console.log('hurra');
+					console.log('FIXME');
 					// toggleToRemove(primussExam);
 				}}
 			>

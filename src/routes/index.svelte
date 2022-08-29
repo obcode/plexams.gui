@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { workflow, fetchWorkflow, initWorkflow } from '../stores/workflow';
+	import { semester } from '../stores/semester.js';
 	import Step from '$lib/Step.svelte';
 
 	onMount(() => {
@@ -14,10 +15,10 @@
 </script>
 
 <div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">Workflow</div>
+	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplanung im {$semester}</div>
 </div>
 
-<div class="flex justify-center">
+<div class="flex justify-center mt-20">
 	{#if $workflow && $workflow.length > 0}
 		<ul class="steps steps-vertical">
 			{#each $workflow as step}

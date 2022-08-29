@@ -1,5 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
+	import { semester } from '../../stores/semester.js';
 	import { ntas, fetchNTAs } from '../../stores/nta';
 	import NtaTr from '$lib/NtaTR.svelte';
 
@@ -10,11 +11,18 @@
 	let searchTerm = '';
 	let filteredNTAs = [];
 
+	let roomAlone = false;
+	let currentSemester = false;
+
 	$: {
 		if (searchTerm) {
 			filteredNTAs = $ntas.filter((nta) =>
 				nta.name.toLowerCase().includes(searchTerm.toLowerCase())
 			);
+		} else if (roomAlone) {
+			filteredNTAs = $ntas.filter((nta) => nta.needsRoomAlone);
+		} else if (currentSemester) {
+			filteredNTAs = $ntas.filter((nta) => nta.lastSemester == $semester);
 		} else {
 			filteredNTAs = [...$ntas];
 		}
@@ -32,6 +40,18 @@
 		bind:value={searchTerm}
 		placeholder="Suche Studierenden"
 	/>
+	<div class="form-control">
+		<label class="label cursor-pointer">
+			<span class="label-text">Anmeldungen im aktuellen Semester</span>
+			<input type="checkbox" bind:checked={currentSemester} class="checkbox" />
+		</label>
+	</div>
+	<div class="form-control">
+		<label class="label cursor-pointer">
+			<span class="label-text">Alle mit eigenem Raum</span>
+			<input type="checkbox" bind:checked={roomAlone} class="checkbox" />
+		</label>
+	</div>
 </div>
 
 <div class="m-2">

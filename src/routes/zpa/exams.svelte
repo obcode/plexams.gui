@@ -1,8 +1,45 @@
 <script>
 	import { fade } from 'svelte/transition';
+	import { request, gql } from 'graphql-request';
+	import { goto } from '$app/navigation';
+
 	import { semester } from '../../stores/semester';
 	import { zpaExams } from '../../stores/zpa';
-	import ExamCard from '../../lib/ExamCard.svelte';
+	import ExamTypeCard from '../../lib/ExamTypeCard.svelte';
+
+	const selectedAncodes = new Set([]);
+	let size = selectedAncodes.size;
+
+	function handleSelect(event) {
+		selectedAncodes.add(event.detail.anCode);
+		size = selectedAncodes.size;
+	}
+	function handleUnselect(event) {
+		selectedAncodes.delete(event.detail.anCode);
+		size = selectedAncodes.size;
+	}
+
+	function setSelectedZpaExams() {
+		const mutation = gql`
+			mutation ($input: [Int!]!) {
+				zpaExamsToPlan(input: $input) {
+					anCode
+					module
+					mainExamer
+					examType
+					groups
+				}
+			}
+		`;
+
+		const variables = {
+			input: Array.from(selectedAncodes)
+		};
+
+		request('http://localhost:8080/query', mutation, variables).then((data) => {
+			goto('/exam/examsToPlan');
+		});
+	}
 
 	let searchTermTeachers = '';
 	let searchTermModule = '';
@@ -37,8 +74,11 @@
 
 <div transition:fade>
 	{#if filteredExams.length > 0}
-		<div class="text-center m-2">
-			<div class="text-4xl text-center mt-8 uppercase">Prüfungsliste aus dem ZPA</div>
+		<div class="text-center m-2 text-4xl">
+			<span class="uppercase">Prüfungsliste aus dem ZPA</span>
+			{#if size > 0}
+				<span class="badge badge-success badge-lg">{size} ausgewählt</span>
+			{/if}
 		</div>
 
 		<div class="flex ">
@@ -60,24 +100,14 @@
 		<div class="py-4 grid gap-4 grid-cols-1">
 			{#each filteredExams as zpaExamsType}
 				{#if zpaExamsType.exams.length > 0}
-					<div
-						tabindex="0"
-						class="collapse collapse-plus border border-base-300 bg-base-100 rounded-box"
-					>
-						<div class="collapse-title text-xl font-medium">
-							<input type="checkbox" checked="" class="checkbox mr-2" />
-							{zpaExamsType.type} ({zpaExamsType.exams.length})
-						</div>
-						<div class="collapse-content">
-							<div class="py-4 grid gap-4 md:grid-cols-6 grid-cols-2">
-								{#each zpaExamsType.exams as zpaexam}
-									<ExamCard exam={zpaexam} />
-								{/each}
-							</div>
-						</div>
-					</div>
+					<ExamTypeCard {zpaExamsType} on:selected={handleSelect} on:unselected={handleUnselect} />
 				{/if}
 			{/each}
+		</div>
+		<div class="text-center m-2 text-4xl">
+			<button class="btn btn-lg" on:click={setSelectedZpaExams}
+				>{size} ausgewählte ZPA-Prüfungen für die Planung übernehmen</button
+			>
 		</div>
 	{:else}
 		<div class="alert alert-info shadow-lg">
