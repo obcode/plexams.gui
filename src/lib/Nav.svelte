@@ -43,8 +43,8 @@
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-				<li><a href="/exam/examsToPlan">Zu plandende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsNotToPlan">Nicht zu plandende ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 			</ul>
