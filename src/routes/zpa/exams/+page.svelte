@@ -3,10 +3,10 @@
 	import { request, gql } from 'graphql-request';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { zpaExamsToPlan, fetchZPAExamsToPlan } from '../../stores/zpa';
-	import { semester } from '../../stores/semester';
-	import { zpaExams } from '../../stores/zpa';
-	import ExamTypeCard from '../../lib/ExamTypeCard.svelte';
+	import { zpaExamsToPlan, fetchZPAExamsToPlan } from '../../../stores/zpa';
+	import { semester } from '../../../stores/semester';
+	import { zpaExams } from '../../../stores/zpa';
+	import ExamTypeCard from '../../../lib/ExamTypeCard.svelte';
 
 	onMount(() => {
 		fetchZPAExamsToPlan();

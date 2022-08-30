@@ -1,5 +1,5 @@
 <script>
-	import { invigilators } from '../../stores/zpa.js';
+	import { invigilators } from '../../../stores/zpa.js';
 	import Teachers from '$lib/Teachers.svelte';
 
 	let searchTerm = '';

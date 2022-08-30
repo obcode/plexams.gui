@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import { semester } from '../../stores/semester.js';
-	import { ntas, fetchNTAs } from '../../stores/nta';
+	import { semester } from '../../../stores/semester.js';
+	import { ntas, fetchNTAs } from '../../../stores/nta';
 	import NtaTr from '$lib/NtaTR.svelte';
 
 	onMount(() => {

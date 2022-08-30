@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import ExamCard from '$lib/ExamCard.svelte';
 	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
-	import { connectedExams, fetchConnectedExams } from '../../stores/exam';
+	import { connectedExams, fetchConnectedExams } from '../../../stores/exam';
 
 	let loading = false;
 

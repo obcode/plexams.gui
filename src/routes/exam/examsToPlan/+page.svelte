@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
-	import ExamsZpaTable from '../../lib/ExamsZpaTable.svelte';
-	import { zpaExamsToPlan, fetchZPAExamsToPlan } from '../../stores/zpa';
+	import ExamsZpaTable from '../../../lib/ExamsZpaTable.svelte';
+	import { zpaExamsToPlan, fetchZPAExamsToPlan } from '../../../stores/zpa';
 
 	onMount(() => {
 		fetchZPAExamsToPlan();
