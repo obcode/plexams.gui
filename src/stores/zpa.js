@@ -143,3 +143,39 @@ export function fetchZPA() {
 semester.subscribe((_) => {
 	fetchZPA();
 });
+
+export async function addZpaExamToPlan(anCode) {
+	const mutation = gql`
+		mutation ($anCode: Int!) {
+			addZpaExamToPlan(anCode: $anCode)
+		}
+	`;
+
+	const variables = {
+		anCode
+	};
+
+	request('http://localhost:8080/query', mutation, variables).then((data) => {
+		fetchZPAExamsNotToPlan();
+		fetchZPAExamsToPlan();
+	});
+}
+
+export async function rmZpaExamToPlan(anCode) {
+	const mutation = gql`
+		mutation ($anCode: Int!) {
+			rmZpaExamFromPlan(anCode: $anCode)
+		}
+	`;
+
+	const variables = {
+		anCode
+	};
+
+	console.log(variables);
+
+	request('http://localhost:8080/query', mutation, variables).then((data) => {
+		fetchZPAExamsToPlan();
+		fetchZPAExamsNotToPlan();
+	});
+}

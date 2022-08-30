@@ -12,4 +12,4 @@
 	<span class="uppercase">{$zpaExamsToPlan.length} Prüfungen aus dem ZPA sind zu planen</span>
 </div>
 
-<ExamsZpaTable exams={$zpaExamsToPlan} />
+<ExamsZpaTable exams={$zpaExamsToPlan} inPlan={true} />

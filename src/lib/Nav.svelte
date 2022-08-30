@@ -2,8 +2,6 @@
 	import { request, gql } from 'graphql-request';
 	import { semester, allSemesterNames } from '../stores/semester.js';
 
-	let dropdownOpen = false;
-
 	function setSemester(sem) {
 		const mutation = gql`
             mutation {
@@ -13,10 +11,9 @@
             }
         `;
 
-		request('http://localhost:8080/query', mutation).then((data) => {
-			semester.set(data.setSemester.id);
-			dropdownOpen = false;
-		});
+		request('http://localhost:8080/query', mutation)
+			.then((data) => semester.set(data.setSemester.id))
+			.then((_) => location.reload());
 	}
 </script>
 
@@ -33,8 +30,6 @@
 				tabindex="0"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/exam/examsToPlan">Zu plandende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsNotToPlan">Nicht zu plandende ZPA-Prüfungen</a></li>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
 				<li><a href="/zpa/invigilators">Aufsichten</a></li>
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
@@ -48,6 +43,8 @@
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
+				<li><a href="/exam/examsToPlan">Zu plandende ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examsNotToPlan">Nicht zu plandende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 			</ul>

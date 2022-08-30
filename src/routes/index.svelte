@@ -9,8 +9,7 @@
 	});
 
 	function init() {
-		initWorkflow();
-		location.reload();
+		initWorkflow().then((_) => location.reload());
 	}
 </script>
 

@@ -14,4 +14,4 @@
 	>
 </div>
 
-<ExamsZpaTable exams={$zpaExamsNotToPlan} />
+<ExamsZpaTable exams={$zpaExamsNotToPlan} inPlan={false} />

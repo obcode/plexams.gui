@@ -1,5 +1,8 @@
 <script>
 	export let exams;
+	export let inPlan;
+
+	import { addZpaExamToPlan, rmZpaExamToPlan } from '../stores/zpa';
 
 	let searchTermAncode = '';
 	let searchTermTeachers = '';
@@ -35,6 +38,15 @@
 		} else {
 			filteredExams = [...exams];
 		}
+	}
+
+	function addExam(anCode) {
+		console.log(`${anCode} wird hinzugefügt.`);
+		addZpaExamToPlan(anCode).then((_) => location.reload());
+	}
+	function rmExam(anCode) {
+		console.log(`${anCode} wird entfernt.`);
+		rmZpaExamToPlan(anCode).then((_) => location.reload());
 	}
 </script>
 
@@ -75,6 +87,7 @@
 	<table class="table table-compact w-full">
 		<thead>
 			<tr>
+				<th />
 				<th>AnCode</th>
 				<th>Module</th>
 				<th>Prüfer:in</th>
@@ -85,6 +98,13 @@
 		<tbody>
 			{#each filteredExams as exam}
 				<tr>
+					<td>
+						{#if inPlan}
+							<input type="checkbox" class="toggle" checked on:click={() => rmExam(exam.anCode)} />
+						{:else}
+							<input type="checkbox" class="toggle" on:click={() => addExam(exam.anCode)} />
+						{/if}
+					</td>
 					<td>{exam.anCode}</td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
