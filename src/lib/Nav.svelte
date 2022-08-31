@@ -32,6 +32,7 @@
 			>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
 				<li><a href="/zpa/invigilators">Aufsichten</a></li>
+				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
 		</div>
