@@ -20,19 +20,3 @@ export const fetchWorkflow = async () => {
 		})
 		.catch((error) => console.log(error.response.errors[0].message));
 };
-
-export const initWorkflow = async () => {
-	const mutation = gql`
-		mutation {
-			initWorkflow {
-				number
-				name
-				done
-			}
-		}
-	`;
-
-	request('http://localhost:8080/query', mutation).then((data) => {
-		workflow.set(data.workflow);
-	});
-};

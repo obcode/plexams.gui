@@ -1,16 +1,12 @@
 <script>
 	import { onMount } from 'svelte';
-	import { workflow, fetchWorkflow, initWorkflow } from '../stores/workflow';
+	import { workflow, fetchWorkflow } from '../stores/workflow';
 	import { semester } from '../stores/semester.js';
 	import Step from '$lib/Step.svelte';
 
 	onMount(() => {
 		fetchWorkflow();
 	});
-
-	function init() {
-		initWorkflow().then((_) => location.reload());
-	}
 </script>
 
 <div class="text-center m-2">
@@ -24,9 +20,13 @@
 				<Step {step} />
 			{/each}
 		</ul>
-	{:else}
-		<div class="p-8">
-			<button class="btn" on:click={init}>Initialisiere Standard-Workflow</button>
-		</div>
 	{/if}
+</div>
+
+<div class="toast">
+  <div class="alert">
+    <div>
+      <span>Der Workflow wird in der Konfigurationsdatei <code>plexams.yaml</code> bearbeitet.</span>
+    </div>
+  </div>
 </div>

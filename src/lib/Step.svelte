@@ -8,6 +8,6 @@
 	}
 </script>
 
-<li data-content={step.number} class="step {status}" on:click={() => (step.done = !step.done)}>
+<li data-content={step.number} class="step {status}">
 	{step.name}
 </li>
