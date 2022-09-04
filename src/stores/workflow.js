@@ -38,7 +38,6 @@ export const fetchNextDeadline = async () => {
 
 	request('http://localhost:8080/query', query)
 		.then((data) => {
-			console.log(data.nextDeadline);
 			nextDeadline.set(data.nextDeadline);
 		})
 		.catch((error) => console.log(error.response.errors[0].message));
