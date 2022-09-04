@@ -1,6 +1,8 @@
 <script>
 	import { request, gql } from 'graphql-request';
-	import { semester, allSemesterNames } from '../stores/semester.js';
+	import { onMount } from 'svelte';
+	import { semester, allSemesterNames } from '../stores/semester';
+	import { nextDeadline, fetchNextDeadline, mkDate } from '../stores/workflow';
 
 	function setSemester(sem) {
 		const mutation = gql`
@@ -15,11 +17,22 @@
 			.then((data) => semester.set(data.setSemester.id))
 			.then((_) => location.reload());
 	}
+
+	let date;
+
+	onMount(() => {
+		fetchNextDeadline();
+	});
 </script>
 
 <div class="navbar bg-base-100">
 	<div class="flex-1">
-		<a class="btn btn-ghost normal-case text-xl" href="/">Plexams</a>
+		<a class="btn btn-ghost normal-case text-xl" href="/"
+			>Plexams
+			{#if $nextDeadline}
+				(nächste Deadline: {mkDate($nextDeadline.deadline)})
+			{/if}
+		</a>
 	</div>
 
 	<div class="flex-none">
