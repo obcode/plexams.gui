@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { request, gql } from 'graphql-request';
 
 export const load = async () => {
@@ -21,7 +22,7 @@ export const load = async () => {
 	`;
 
 	let studentRegsImportErrors;
-	await request('http://localhost:8080/query', query).then((res) => {
+	await request(env.PUBLIC_PLEXAMS_SERVER, query).then((res) => {
 		studentRegsImportErrors = res.studentRegsImportErrors;
 	});
 

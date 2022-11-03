@@ -1,10 +1,7 @@
-import { env } from '$env/dynamic/public';
-import { writable } from 'svelte/store';
+import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 
-export const ntas = writable([]);
-
-export const fetchNTAs = async () => {
+export async function load({ params }) {
 	const query = gql`
 		query {
 			ntas {
@@ -25,7 +22,9 @@ export const fetchNTAs = async () => {
 		}
 	`;
 
-	request(env.PLEXAMS_SERVER, query).then((data) => {
-		ntas.set(data.ntas);
-	});
-};
+	let data = await request(env.PLEXAMS_SERVER, query);
+
+	return {
+		ntas: data.ntas
+	};
+}

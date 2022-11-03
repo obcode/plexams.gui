@@ -1,4 +1,6 @@
 <script>
+	export let data;
+
 	import { onMount } from 'svelte';
 	import { workflow, fetchWorkflow } from '../stores/workflow';
 	import { semester } from '../stores/semester.js';
@@ -10,7 +12,7 @@
 </script>
 
 <div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplanung im {$semester}</div>
+	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplanung im {data.semester}</div>
 </div>
 
 <div class="flex justify-center mt-20">
@@ -24,9 +26,10 @@
 </div>
 
 <div class="toast">
-  <div class="alert">
-    <div>
-      <span>Der Workflow wird in der Konfigurationsdatei <code>plexams.yaml</code> bearbeitet.</span>
-    </div>
-  </div>
+	<div class="alert">
+		<div>
+			<span>Der Workflow wird in der Konfigurationsdatei <code>plexams.yaml</code> bearbeitet.</span
+			>
+		</div>
+	</div>
 </div>

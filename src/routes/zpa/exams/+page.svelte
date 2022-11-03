@@ -1,4 +1,5 @@
 <script>
+	import { env } from '$env/dynamic/public';
 	import { fade } from 'svelte/transition';
 	import { request, gql } from 'graphql-request';
 	import { goto } from '$app/navigation';
@@ -41,7 +42,7 @@
 			input: Array.from(selectedAncodes)
 		};
 
-		request('http://localhost:8080/query', mutation, variables).then((data) => {
+		request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
 			goto('/exam/examsToPlan');
 		});
 	}

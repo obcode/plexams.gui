@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { writable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
 
@@ -25,7 +26,7 @@ export const fetchConnectedExams = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		connectedExams.set(data.connectedExams);
 	});
 };

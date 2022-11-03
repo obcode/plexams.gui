@@ -1,12 +1,14 @@
 <script>
-	import { onMount } from 'svelte';
+	export let data;
+
+	// import { onMount } from 'svelte';
 	import { semester } from '../../../stores/semester.js';
-	import { ntas, fetchNTAs } from '../../../stores/nta';
+	// import { ntas, fetchNTAs } from '../../../stores/nta';
 	import NtaTr from '$lib/NtaTR.svelte';
 
-	onMount(() => {
-		fetchNTAs();
-	});
+	// onMount(() => {
+	// 	fetchNTAs();
+	// });
 
 	let searchTerm = '';
 	let filteredNTAs = [];
@@ -16,15 +18,15 @@
 
 	$: {
 		if (searchTerm) {
-			filteredNTAs = $ntas.filter((nta) =>
+			filteredNTAs = data.ntas.filter((nta) =>
 				nta.name.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		} else if (roomAlone) {
-			filteredNTAs = $ntas.filter((nta) => nta.needsRoomAlone);
+			filteredNTAs = data.ntas.filter((nta) => nta.needsRoomAlone);
 		} else if (currentSemester) {
-			filteredNTAs = $ntas.filter((nta) => nta.lastSemester == $semester);
+			filteredNTAs = data.ntas.filter((nta) => nta.lastSemester == $semester);
 		} else {
-			filteredNTAs = [...$ntas];
+			filteredNTAs = [...data.ntas];
 		}
 	}
 </script>

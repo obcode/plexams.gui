@@ -15,6 +15,7 @@
 	"devDependencies": {
 		"@playwright/test": "^1.25.1",
 		"@sveltejs/adapter-auto": "next",
+		"@sveltejs/adapter-node": "^1.0.0-next.100",
 		"@sveltejs/kit": "1.0.0-next.454",
 		"@tailwindcss/typography": "^0.5.4",
 		"autoprefixer": "^10.4.8",

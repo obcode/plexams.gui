@@ -1,7 +1,8 @@
 <script>
+	import { env } from '$env/dynamic/public';
 	import { request, gql } from 'graphql-request';
 	import { onMount } from 'svelte';
-	import { semester, allSemesterNames } from '../stores/semester';
+	import { semester, fetchSemester, allSemesterNames } from '../stores/semester';
 	import { nextDeadline, fetchNextDeadline, mkDate } from '../stores/workflow';
 
 	function setSemester(sem) {
@@ -13,7 +14,7 @@
             }
         `;
 
-		request('http://localhost:8080/query', mutation)
+		request(env.PUBLIC_PLEXAMS_SERVER, mutation)
 			.then((data) => semester.set(data.setSemester.id))
 			.then((_) => location.reload());
 	}
@@ -21,6 +22,7 @@
 	let date;
 
 	onMount(() => {
+		fetchSemester();
 		fetchNextDeadline();
 	});
 </script>

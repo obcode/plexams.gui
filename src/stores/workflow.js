@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { writable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
 

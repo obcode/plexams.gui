@@ -1,4 +1,5 @@
 <script>
+	import { env } from '$env/dynamic/public';
 	import { request, gql } from 'graphql-request';
 
 	let ntaInput = {
@@ -41,7 +42,7 @@
 			ntaInput
 		};
 
-		request('http://localhost:8080/query', mutation, variables).then((data) => {
+		request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
 			ntaInput = {
 				name: '',
 				mtknr: '',

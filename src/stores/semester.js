@@ -1,9 +1,10 @@
+import { env } from '$env/dynamic/public';
 import { writable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
 
 export const semester = writable('...');
 
-const fetchSemester = async () => {
+export const fetchSemester = async () => {
 	const query = gql`
 		query {
 			semester {
@@ -17,7 +18,7 @@ const fetchSemester = async () => {
 	});
 };
 
-fetchSemester();
+// fetchSemester();
 
 export const allSemesterNames = writable([]);
 
@@ -35,4 +36,4 @@ const fetchAllSemester = async () => {
 	});
 };
 
-fetchAllSemester();
+// fetchAllSemester();

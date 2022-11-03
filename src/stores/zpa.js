@@ -1,3 +1,4 @@
+import { env } from '$env/dynamic/public';
 import { writable, readable } from 'svelte/store';
 import { request, gql } from 'graphql-request';
 import { semester } from './semester';
@@ -24,7 +25,7 @@ const fetchTeacher = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		teachers.set(data.teachers);
 	});
 };
@@ -48,7 +49,7 @@ const fetchInvigilators = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		invigilators.set(data.invigilators);
 	});
 };
@@ -77,7 +78,7 @@ const fetchZPAExams = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		zpaExams.set(data.zpaExamsByType);
 	});
 };
@@ -103,7 +104,7 @@ export const fetchZPAExamsToPlan = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		zpaExamsToPlan.set(data.zpaExamsToPlan);
 	});
 };
@@ -129,7 +130,7 @@ export const fetchZPAExamsNotToPlan = async () => {
 		}
 	`;
 
-	request('http://localhost:8080/query', query).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
 		zpaExamsNotToPlan.set(data.zpaExamsNotToPlan);
 	});
 };
@@ -155,7 +156,7 @@ export async function addZpaExamToPlan(anCode) {
 		anCode
 	};
 
-	request('http://localhost:8080/query', mutation, variables).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
 		fetchZPAExamsNotToPlan();
 		fetchZPAExamsToPlan();
 	});
@@ -174,7 +175,7 @@ export async function rmZpaExamToPlan(anCode) {
 
 	console.log(variables);
 
-	request('http://localhost:8080/query', mutation, variables).then((data) => {
+	request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
 		fetchZPAExamsToPlan();
 		fetchZPAExamsNotToPlan();
 	});
