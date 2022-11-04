@@ -1,5 +1,6 @@
 <script>
-	import { invigilators } from '../../../stores/zpa.js';
+	export let data;
+	let invigilators = data.invigilators;
 	import Teachers from '$lib/Teachers.svelte';
 
 	let searchTerm = '';
@@ -7,11 +8,11 @@
 
 	$: {
 		if (searchTerm) {
-			filteredTeacher = $invigilators.filter((teacher) =>
+			filteredTeacher = invigilators.filter((teacher) =>
 				teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		} else {
-			filteredTeacher = [...$invigilators];
+			filteredTeacher = [...invigilators];
 		}
 	}
 </script>
@@ -19,7 +20,7 @@
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">
 		Aufsichten
-		<span class="badge badge-lg indicator-item">{$invigilators.length}</span>
+		<span class="badge badge-lg indicator-item">{invigilators.length}</span>
 	</div>
 </div>
 

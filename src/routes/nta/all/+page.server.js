@@ -24,7 +24,18 @@ export async function load({ params }) {
 
 	let data = await request(env.PLEXAMS_SERVER, query);
 
+	const semesterQuery = gql`
+		query {
+			semester {
+				id
+			}
+		}
+	`;
+
+	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+
 	return {
+		semester: semesterData.semester.id,
 		ntas: data.ntas
 	};
 }

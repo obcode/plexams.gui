@@ -1,6 +1,6 @@
 <script>
 	export let step;
-	import { mkDate } from '../stores/workflow';
+	import { mkDate } from '$lib/jshelper/misc';
 	var status;
 	$: if (step.done) {
 		status = 'step-success';

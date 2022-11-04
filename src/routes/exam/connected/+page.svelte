@@ -4,9 +4,17 @@
 	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
 	import { connectedExams, fetchConnectedExams } from '../../../stores/exam';
 
-	let loading = false;
+	let fk07programs = 'unknown';
+	async function getFk07programs() {
+		const response = await fetch('/api/fk07programs', {
+			method: 'GET'
+		});
+
+		fk07programs = await response.json();
+	}
 
 	onMount(() => {
+		getFk07programs();
 		fetchConnectedExams();
 	});
 
@@ -69,6 +77,7 @@
 			>
 				<PrimussExamCard
 					exam={primussExam}
+					fk07programs
 					on:removeMe={removeExam}
 					on:doNotRemoveMe={doNotRemoveExam}
 				/>

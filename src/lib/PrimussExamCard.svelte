@@ -1,7 +1,7 @@
 <script>
 	export let exam;
+	export let fk07programs;
 	import { fade } from 'svelte/transition';
-	import { fk07programs } from '../stores/zpa';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
@@ -16,7 +16,7 @@
 		dispatch('removeMe', exam);
 	} else {
 		background = '';
-		if (exam.program && !$fk07programs.includes(exam.program)) {
+		if (exam.program && !fk07programs.includes(exam.program)) {
 			nonFK07program = 'bg-orange-500';
 		}
 		dispatch('doNotRemoveMe', exam);

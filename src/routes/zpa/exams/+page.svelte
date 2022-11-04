@@ -1,17 +1,27 @@
 <script>
+	export let data;
+	import { onMount } from 'svelte';
+
+	let zpaExams = data.zpaExamsByType;
+
+	let zpaExamsToPlan = [];
+	async function getZpaExamsToPlan() {
+		const response = await fetch('/api/zpaexams/toplan', {
+			method: 'GET'
+		});
+
+		zpaExamsToPlan = await response.json();
+	}
+
+	onMount(() => {
+		getZpaExamsToPlan();
+	});
+
 	import { env } from '$env/dynamic/public';
 	import { fade } from 'svelte/transition';
 	import { request, gql } from 'graphql-request';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { zpaExamsToPlan, fetchZPAExamsToPlan } from '../../../stores/zpa';
-	import { semester } from '../../../stores/semester';
-	import { zpaExams } from '../../../stores/zpa';
 	import ExamTypeCard from '../../../lib/ExamTypeCard.svelte';
-
-	onMount(() => {
-		fetchZPAExamsToPlan();
-	});
 
 	const selectedAncodes = new Set([]);
 	let size = selectedAncodes.size;
@@ -53,7 +63,7 @@
 
 	$: {
 		if (searchTermTeachers) {
-			filteredExams = $zpaExams.map((examsWithType) => {
+			filteredExams = zpaExams.map((examsWithType) => {
 				const newEntry = {
 					type: examsWithType.type,
 					exams: examsWithType.exams.filter((exam) =>
@@ -63,7 +73,7 @@
 				return newEntry;
 			});
 		} else if (searchTermModule) {
-			filteredExams = $zpaExams.map((examsWithType) => {
+			filteredExams = zpaExams.map((examsWithType) => {
 				const newEntry = {
 					type: examsWithType.type,
 					exams: examsWithType.exams.filter((exam) =>
@@ -73,13 +83,13 @@
 				return newEntry;
 			});
 		} else {
-			filteredExams = [...$zpaExams];
+			filteredExams = [...zpaExams];
 		}
 	}
 </script>
 
 <div transition:fade>
-	{#if $zpaExamsToPlan.length > 0}
+	{#if zpaExamsToPlan.length > 0}
 		<a href="/exam/examsToPlan">
 			<div class="alert alert-warning shadow-lg m-2">
 				<div>
@@ -96,7 +106,7 @@
 						/></svg
 					>
 					<span
-						>Es wurden bereits {$zpaExamsToPlan.length} Prüfungen für die Planung ausgewählt. Sie können
+						>Es wurden bereits {zpaExamsToPlan.length} Prüfungen für die Planung ausgewählt. Sie können
 						nur noch einzelne Prüfungen hinzufügen und entfernen. Durch Löschen der Collections in der
 						DB können Sie zur Einteilung hier zurück gehen.</span
 					>
@@ -134,7 +144,7 @@
 				{/if}
 			{/each}
 		</div>
-		{#if $zpaExamsToPlan.length == 0}
+		{#if zpaExamsToPlan.length == 0}
 			<div class="text-center m-2 text-4xl">
 				<button class="btn btn-lg" on:click={setSelectedZpaExams}
 					>{size} ausgewählte ZPA-Prüfungen für die Planung übernehmen</button
@@ -156,7 +166,7 @@
 						d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 					/></svg
 				>
-				<span>Keine Prüfungen im ZPA für {$semester} gefunden.</span>
+				<span>Keine Prüfungen im ZPA für das ausgewählte Semester gefunden.</span>
 			</div>
 		</div>
 	{/if}

@@ -10,9 +10,23 @@ export async function load({ params }) {
 		}
 	`;
 
-	let semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+
+	const workflowQuery = gql`
+		query {
+			workflow {
+				number
+				name
+				done
+				deadline
+			}
+		}
+	`;
+
+	const workflowData = await request('http://localhost:8080/query', workflowQuery);
 
 	return {
-		semester: semesterData.semester.id
+		semester: semesterData.semester.id,
+		workflow: workflowData.workflow
 	};
 }

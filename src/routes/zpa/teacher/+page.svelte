@@ -1,5 +1,7 @@
 <script>
-	import { teachers } from '../../../stores/zpa.js';
+	export let data;
+	let teachers = data.teachers;
+
 	import Teachers from '$lib/Teachers.svelte';
 
 	let searchTerm = '';
@@ -7,11 +9,11 @@
 
 	$: {
 		if (searchTerm) {
-			filteredTeacher = $teachers.filter((teacher) =>
+			filteredTeacher = teachers.filter((teacher) =>
 				teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		} else {
-			filteredTeacher = [...$teachers];
+			filteredTeacher = [...teachers];
 		}
 	}
 </script>

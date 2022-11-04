@@ -1,29 +1,28 @@
 <script>
-	import { env } from '$env/dynamic/public';
-	import { request, gql } from 'graphql-request';
 	import { onMount } from 'svelte';
-	import { semester, fetchSemester, allSemesterNames } from '../stores/semester';
-	import { nextDeadline, fetchNextDeadline, mkDate } from '../stores/workflow';
+	import { mkDate } from '$lib/jshelper/misc';
 
-	function setSemester(sem) {
-		const mutation = gql`
-            mutation {
-                setSemester(input: "${sem}") {
-                    id
-                }
-            }
-        `;
+	let nextDeadline = 'unknown';
+	async function getNextDeadline() {
+		const response = await fetch('/api/nextDeadline', {
+			method: 'GET'
+		});
 
-		request(env.PUBLIC_PLEXAMS_SERVER, mutation)
-			.then((data) => semester.set(data.setSemester.id))
-			.then((_) => location.reload());
+		nextDeadline = await response.json();
 	}
 
-	let date;
+	let semester = 'unknown';
+	async function getSemester() {
+		const response = await fetch('/api/semester', {
+			method: 'GET'
+		});
+
+		semester = await response.json();
+	}
 
 	onMount(() => {
-		fetchSemester();
-		fetchNextDeadline();
+		getNextDeadline();
+		getSemester();
 	});
 </script>
 
@@ -31,8 +30,8 @@
 	<div class="flex-1">
 		<a class="btn btn-ghost normal-case text-xl" href="/"
 			>Plexams
-			{#if $nextDeadline}
-				(nächste Deadline: {mkDate($nextDeadline.deadline)})
+			{#if nextDeadline}
+				(nächste Deadline: {mkDate(nextDeadline.deadline)})
 			{/if}
 		</a>
 	</div>
@@ -67,18 +66,7 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="0" class="badge mx-4"> {$semester} </label>
-			<ul
-				tabindex="0"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				{#each $allSemesterNames as semesterName}
-					<li on:click={setSemester(semesterName)}>
-						<!-- svelte-ignore a11y-missing-attribute -->
-						<a>{semesterName}</a>
-					</li>
-				{/each}
-			</ul>
+			<label tabindex="0" class="badge mx-4"> {semester} </label>
 		</div>
 	</div>
 </div>

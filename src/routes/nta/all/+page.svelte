@@ -1,14 +1,8 @@
 <script>
 	export let data;
 
-	// import { onMount } from 'svelte';
-	import { semester } from '../../../stores/semester.js';
-	// import { ntas, fetchNTAs } from '../../../stores/nta';
+	// import { semester } from '../../../stores/semester.js';
 	import NtaTr from '$lib/NtaTR.svelte';
-
-	// onMount(() => {
-	// 	fetchNTAs();
-	// });
 
 	let searchTerm = '';
 	let filteredNTAs = [];
@@ -24,7 +18,7 @@
 		} else if (roomAlone) {
 			filteredNTAs = data.ntas.filter((nta) => nta.needsRoomAlone);
 		} else if (currentSemester) {
-			filteredNTAs = data.ntas.filter((nta) => nta.lastSemester == $semester);
+			filteredNTAs = data.ntas.filter((nta) => nta.lastSemester == data.semester);
 		} else {
 			filteredNTAs = [...data.ntas];
 		}
