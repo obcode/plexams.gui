@@ -2,8 +2,6 @@
 	export let exams;
 	export let inPlan;
 
-	import { addZpaExamToPlan, rmZpaExamToPlan } from '../stores/zpa';
-
 	let searchTermAncode = '';
 	let searchTermTeachers = '';
 	let searchTermModule = '';
@@ -40,13 +38,27 @@
 		}
 	}
 
-	function addExam(anCode) {
+	async function addExam(anCode) {
 		console.log(`${anCode} wird hinzugefügt.`);
-		addZpaExamToPlan(anCode).then((_) => location.reload());
+		await fetch('/api/zpaexams/addToPlan', {
+			method: 'POST',
+			body: JSON.stringify({ anCode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		location.reload();
 	}
-	function rmExam(anCode) {
+	async function rmExam(anCode) {
 		console.log(`${anCode} wird entfernt.`);
-		rmZpaExamToPlan(anCode).then((_) => location.reload());
+		await fetch('/api/zpaexams/rmFromPlan', {
+			method: 'POST',
+			body: JSON.stringify({ anCode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		location.reload();
 	}
 </script>
 

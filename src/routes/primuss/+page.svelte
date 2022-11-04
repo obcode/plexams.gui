@@ -1,11 +1,11 @@
 <script>
-	import { primussExams } from '../../stores/primuss';
+	export let data;
 </script>
 
 <h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus Primuss</h1>
 
 <ul>
-	{#each $primussExams as primussExam}
+	{#each data.primussExams as primussExam}
 		<li>
 			{primussExam.program} ({primussExam.exams.length})
 			<ul>

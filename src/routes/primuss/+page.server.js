@@ -1,10 +1,7 @@
-import { env } from '$env/dynamic/public';
-import { writable } from 'svelte/store';
+import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 
-export const primussExams = writable([]);
-
-const fetchPrimussExams = async () => {
+export async function load({ params }) {
 	const query = gql`
 		query {
 			primussExams {
@@ -29,9 +26,9 @@ const fetchPrimussExams = async () => {
 		}
 	`;
 
-	request(env.PUBLIC_PLEXAMS_SERVER, query).then((data) => {
-		primussExams.set(data.primussExams);
-	});
-};
+	const data = await request(env.PLEXAMS_SERVER, query);
 
-// fetchPrimussExams();
+	return {
+		primussExams: data.primussExams
+	};
+}

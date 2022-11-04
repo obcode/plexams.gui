@@ -1,8 +1,8 @@
 <script>
+	export let data;
 	import { onMount } from 'svelte';
 	import ExamCard from '$lib/ExamCard.svelte';
 	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
-	import { connectedExams, fetchConnectedExams } from '../../../stores/exam';
 
 	let fk07programs = 'unknown';
 	async function getFk07programs() {
@@ -15,7 +15,6 @@
 
 	onMount(() => {
 		getFk07programs();
-		fetchConnectedExams();
 	});
 
 	function differentTitlesOrMainExamer(exam) {
@@ -62,7 +61,7 @@
 	}
 </script>
 
-{#each $connectedExams as exam}
+{#each data.connectedExams as exam}
 	<div class="flex justify-items-stretch {differentTitlesOrMainExamer(exam)}">
 		<div class="m-2">
 			<ExamCard exam={exam.zpaExam} />
