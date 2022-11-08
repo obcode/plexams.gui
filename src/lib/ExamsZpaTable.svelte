@@ -42,7 +42,7 @@
 		console.log(`${anCode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode }),
+			body: JSON.stringify({ anCode, unknown: false }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -53,7 +53,7 @@
 		console.log(`${anCode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode }),
+			body: JSON.stringify({ anCode, unknown: false }),
 			headers: {
 				'content-type': 'application/json'
 			}
