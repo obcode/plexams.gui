@@ -1,6 +1,6 @@
 <script>
 	export let exam;
-	export let selected;
+	export let selected = false;
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';

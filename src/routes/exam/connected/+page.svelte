@@ -63,11 +63,6 @@
 
 {#each data.connectedExams as exam}
 	<div class="flex justify-items-stretch {differentTitlesOrMainExamer(exam)}">
-		{#if exam.errors && exam.errors.length > 0}
-			<div class="m-2">
-				{exam.errors}
-			</div>
-		{/if}
 		<div class="m-2">
 			<ExamCard exam={exam.zpaExam} />
 		</div>
@@ -87,6 +82,15 @@
 				/>
 			</div>
 		{/each}
+		{#if exam.errors && exam.errors.length > 0}
+			<div class="m-2 p-10 bg-yellow-500">
+				<ul class="list-disc">
+					{#each exam.errors as error}
+						<li>{error}</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
 	</div>
 {:else}
 	<div class="flex items-center justify-center h-screen">
