@@ -19,6 +19,7 @@ export async function load({ params }) {
 					program
 					examType
 				}
+				errors
 			}
 		}
 	`;

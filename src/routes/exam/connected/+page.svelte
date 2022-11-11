@@ -11,7 +11,6 @@
 		});
 
 		fk07programs = await response.json();
-		console.log(fk07programs);
 	}
 
 	onMount(() => {
@@ -29,7 +28,7 @@
 				diffMainExamer = true;
 			}
 		});
-		if (diffModule && diffMainExamer) {
+		if ((diffModule && diffMainExamer) || (exam.errors && exam.errors.length > 0)) {
 			return 'bg-red-500';
 		}
 		return 'bg-green-500';
@@ -64,6 +63,11 @@
 
 {#each data.connectedExams as exam}
 	<div class="flex justify-items-stretch {differentTitlesOrMainExamer(exam)}">
+		{#if exam.errors && exam.errors.length > 0}
+			<div class="m-2">
+				{exam.errors}
+			</div>
+		{/if}
 		<div class="m-2">
 			<ExamCard exam={exam.zpaExam} />
 		</div>
