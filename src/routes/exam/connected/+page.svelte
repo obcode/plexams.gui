@@ -4,13 +4,14 @@
 	import ExamCard from '$lib/ExamCard.svelte';
 	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
 
-	let fk07programs = 'unknown';
+	let fk07programs = [];
 	async function getFk07programs() {
 		const response = await fetch('/api/fk07programs', {
 			method: 'GET'
 		});
 
 		fk07programs = await response.json();
+		console.log(fk07programs);
 	}
 
 	onMount(() => {
@@ -76,7 +77,7 @@
 			>
 				<PrimussExamCard
 					exam={primussExam}
-					fk07programs
+					{fk07programs}
 					on:removeMe={removeExam}
 					on:doNotRemoveMe={doNotRemoveExam}
 				/>

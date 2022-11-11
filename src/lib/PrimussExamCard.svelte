@@ -1,6 +1,6 @@
 <script>
 	export let exam;
-	export let fk07programs;
+	export let fk07programs = [];
 	import { fade } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 
