@@ -14,17 +14,17 @@
 	let size = selectedAncodes.size;
 
 	function handleSelect(event) {
-		selectedAncodes.add(event.detail.anCode);
+		selectedAncodes.add(event.detail.ancode);
 		size = selectedAncodes.size;
 		dispatch('selected', {
-			anCode: event.detail.anCode
+			ancode: event.detail.ancode
 		});
 	}
 	function handleUnselect(event) {
-		selectedAncodes.delete(event.detail.anCode);
+		selectedAncodes.delete(event.detail.ancode);
 		size = selectedAncodes.size;
 		dispatch('unselected', {
-			anCode: event.detail.anCode
+			ancode: event.detail.ancode
 		});
 	}
 	let color;

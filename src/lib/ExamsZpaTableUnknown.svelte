@@ -1,22 +1,22 @@
 <script>
 	export let exams;
 
-	async function addExam(anCode) {
-		console.log(`${anCode} wird hinzugefügt.`);
+	async function addExam(ancode) {
+		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode, unknown: true }),
+			body: JSON.stringify({ ancode, unknown: true }),
 			headers: {
 				'content-type': 'application/json'
 			}
 		});
 		location.reload();
 	}
-	async function rmExam(anCode) {
-		console.log(`${anCode} wird entfernt.`);
+	async function rmExam(ancode) {
+		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode, unknown: true }),
+			body: JSON.stringify({ ancode, unknown: true }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -42,17 +42,17 @@
 			{#each exams as exam}
 				<tr>
 					<td>
-						<button class="btn btn-success  btn-sm" on:click={() => addExam(exam.anCode)}
+						<button class="btn btn-success  btn-sm" on:click={() => addExam(exam.ancode)}
 							>Planen</button
 						>
 					</td>
-					<td>{exam.anCode}</td>
+					<td>{exam.ancode}</td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
 					<td>{exam.examTypeFull}</td>
 					<td>{exam.groups}</td>
 					<td>
-						<button class="btn btn-error  btn-sm" on:click={() => rmExam(exam.anCode)}
+						<button class="btn btn-error  btn-sm" on:click={() => rmExam(exam.ancode)}
 							>Nicht planen</button
 						>
 					</td>

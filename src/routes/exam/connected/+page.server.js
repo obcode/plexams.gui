@@ -6,14 +6,14 @@ export async function load({ params }) {
 		query {
 			connectedExams {
 				zpaExam {
-					anCode
+					ancode
 					module
 					mainExamer
 					examType
 					groups
 				}
 				primussExams {
-					anCode
+					ancode
 					module
 					mainExamer
 					program

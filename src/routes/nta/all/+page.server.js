@@ -15,7 +15,7 @@ export async function load({ params }) {
 				until
 				lastSemester
 				exams {
-					anCode
+					ancode
 					module
 				}
 			}

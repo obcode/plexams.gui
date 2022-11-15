@@ -5,15 +5,15 @@ import { request as gqlrequest, gql } from 'graphql-request';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const mutation = gql`
-		mutation ($anCode: Int!, $unknown: Boolean!) {
-			addZpaExamToPlan(anCode: $anCode, unknown: $unknown)
+		mutation ($ancode: Int!, $unknown: Boolean!) {
+			addZpaExamToPlan(ancode: $ancode, unknown: $unknown)
 		}
 	`;
 
-	const { anCode, unknown } = await request.json();
+	const { ancode, unknown } = await request.json();
 
 	const variables = {
-		anCode,
+		ancode,
 		unknown
 	};
 

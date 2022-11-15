@@ -37,14 +37,14 @@
 	let toRemove = [];
 
 	function toggleToRemove(primussExam) {
-		if (toRemove.includes((primussExam.anCode, primussExam.program))) {
+		if (toRemove.includes((primussExam.ancode, primussExam.program))) {
 			if (Array.isArray(toRemove)) {
 				toRemove = toRemove.filter(
-					(entry) => !(entry == (primussExam.anCode, primussExam.program))
+					(entry) => !(entry == (primussExam.ancode, primussExam.program))
 				);
 			}
 		} else {
-			toRemove = (primussExam.anCode, primussExam.program) + toRemove;
+			toRemove = (primussExam.ancode, primussExam.program) + toRemove;
 		}
 	}
 
@@ -55,7 +55,7 @@
 	function doNotRemoveExam(event) {
 		if (Array.isArray(toRemove)) {
 			toRemove = toRemove.filter(
-				(entry) => !(entry.anCode == event.detail.anCode && entry.program == event.detail.program)
+				(entry) => !(entry.ancode == event.detail.ancode && entry.program == event.detail.program)
 			);
 		}
 	}

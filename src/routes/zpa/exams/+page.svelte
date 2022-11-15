@@ -27,11 +27,11 @@
 	let size = selectedAncodes.size;
 
 	function handleSelect(event) {
-		selectedAncodes.add(event.detail.anCode);
+		selectedAncodes.add(event.detail.ancode);
 		size = selectedAncodes.size;
 	}
 	function handleUnselect(event) {
-		selectedAncodes.delete(event.detail.anCode);
+		selectedAncodes.delete(event.detail.ancode);
 		size = selectedAncodes.size;
 	}
 
@@ -39,7 +39,7 @@
 		const mutation = gql`
 			mutation ($input: [Int!]!) {
 				zpaExamsToPlan(input: $input) {
-					anCode
+					ancode
 					module
 					mainExamer
 					examType

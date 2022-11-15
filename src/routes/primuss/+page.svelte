@@ -11,7 +11,7 @@
 			<ul>
 				{#each primussExam.exams as exam}
 					<li>
-						{exam.anCode}.
+						{exam.ancode}.
 						{exam.module},
 						<i>{exam.mainExamer}</i>
 						({exam.studentRegs.length} Anmeldungen, {exam.conflicts.conflicts.length} Konflikte)

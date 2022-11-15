@@ -11,7 +11,7 @@
 
 	$: {
 		if (searchTermAncode) {
-			filteredExams = exams.filter((exam) => exam.anCode.toString().startsWith(searchTermAncode));
+			filteredExams = exams.filter((exam) => exam.ancode.toString().startsWith(searchTermAncode));
 		} else if (searchTermTeachers) {
 			filteredExams = exams.filter((exam) =>
 				exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
@@ -38,22 +38,22 @@
 		}
 	}
 
-	async function addExam(anCode) {
-		console.log(`${anCode} wird hinzugefügt.`);
+	async function addExam(ancode) {
+		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode, unknown: false }),
+			body: JSON.stringify({ ancode, unknown: false }),
 			headers: {
 				'content-type': 'application/json'
 			}
 		});
 		location.reload();
 	}
-	async function rmExam(anCode) {
-		console.log(`${anCode} wird entfernt.`);
+	async function rmExam(ancode) {
+		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
-			body: JSON.stringify({ anCode, unknown: false }),
+			body: JSON.stringify({ ancode, unknown: false }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -112,12 +112,12 @@
 				<tr>
 					<td>
 						{#if inPlan}
-							<input type="checkbox" class="toggle" checked on:click={() => rmExam(exam.anCode)} />
+							<input type="checkbox" class="toggle" checked on:click={() => rmExam(exam.ancode)} />
 						{:else}
-							<input type="checkbox" class="toggle" on:click={() => addExam(exam.anCode)} />
+							<input type="checkbox" class="toggle" on:click={() => addExam(exam.ancode)} />
 						{/if}
 					</td>
-					<td>{exam.anCode}</td>
+					<td>{exam.ancode}</td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
 					<td>{exam.examTypeFull}</td>

@@ -31,7 +31,7 @@
 					until
 					lastSemester
 					exams {
-						anCode
+						ancode
 						module
 					}
 				}

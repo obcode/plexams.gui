@@ -10,18 +10,18 @@
 	onMount(() => {
 		if (selected) {
 			dispatch('selected', {
-				anCode: exam.anCode
+				ancode: exam.ancode
 			});
 		}
 	});
 
 	$: if (selected) {
 		dispatch('selected', {
-			anCode: exam.anCode
+			ancode: exam.ancode
 		});
 	} else {
 		dispatch('unselected', {
-			anCode: exam.anCode
+			ancode: exam.ancode
 		});
 	}
 </script>
@@ -31,7 +31,7 @@
 		<div class="flex justify-between">
 			<input type="checkbox" bind:checked={selected} class="checkbox mr-2" />
 			<span class="text-red-900">
-				{exam.anCode}.
+				{exam.ancode}.
 			</span>
 			<span class="text-green-900">{exam.groups}</span>
 		</div>

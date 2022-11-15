@@ -9,7 +9,7 @@ export async function load({ params }) {
 				exams {
 					zpaID
 					semester
-					anCode
+					ancode
 					module
 					mainExamer
 					mainExamerID

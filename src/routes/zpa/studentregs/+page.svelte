@@ -22,12 +22,12 @@
 			<tbody>
 				{#each data.studentRegsImportErrors as err}
 					<tr>
-						<td>{err.registration.anCode}</td>
+						<td>{err.registration.ancode}</td>
 						<td>{err.registration.mtknr}</td>
 						<td>{err.registration.program}</td>
 						<td
 							>{err.error.semester}
-							{err.error.anCode}
+							{err.error.ancode}
 							{err.error.mtknr}
 							{err.error.program}
 							{err.error.exam}</td

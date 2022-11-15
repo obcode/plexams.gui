@@ -7,7 +7,7 @@ export async function load({ params }) {
 			primussExams {
 				program
 				exams {
-					anCode
+					ancode
 					module
 					mainExamer
 					program
@@ -18,7 +18,7 @@ export async function load({ params }) {
 					}
 					conflicts {
 						conflicts {
-							anCode
+							ancode
 						}
 					}
 				}

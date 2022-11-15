@@ -31,7 +31,7 @@
 	<div class="card-body" on:click={(_) => (clicked = !clicked)}>
 		<div class="flex justify-between">
 			<span class="text-red-900">
-				{exam.anCode}.
+				{exam.ancode}.
 			</span>
 			{#if exam.groups}
 				<span class="text-green-900">{exam.groups}</span>

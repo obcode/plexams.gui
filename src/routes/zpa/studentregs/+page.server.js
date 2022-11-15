@@ -6,13 +6,13 @@ export const load = async () => {
 		query {
 			studentRegsImportErrors {
 				registration {
-					anCode
+					ancode
 					mtknr
 					program
 				}
 				error {
 					semester
-					anCode
+					ancode
 					exam
 					mtknr
 					program

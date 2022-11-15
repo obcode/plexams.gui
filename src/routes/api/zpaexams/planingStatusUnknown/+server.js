@@ -9,7 +9,7 @@ export async function GET({ url }) {
 			zpaExamsPlaningStatusUnknown {
 				zpaID
 				semester
-				anCode
+				ancode
 				module
 				mainExamer
 				mainExamerID
