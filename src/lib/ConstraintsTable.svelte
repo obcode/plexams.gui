@@ -134,7 +134,7 @@
 	<table class="table table-compact w-full">
 		<thead>
 			<tr>
-				<th />
+				<th>zu planen</th>
 				<th>Gleichzeitig mit</th>
 				<th>Nicht am</th>
 				<th>Raum-Constraints</th>
@@ -190,10 +190,13 @@
 					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.roomConstraints}
 							{#if exam.constraints.roomConstraints.placesWithSocket}
-								Plätze mit Steckdosen
+								Plätze mit Steckdosen,
+							{/if}
+							{#if exam.constraints.roomConstraints.lab}
+								Labor,
 							{/if}
 							{#if exam.constraints.roomConstraints.exahmRooms}
-								EXaHM-Räume
+								EXaHM-Räume,
 							{/if}
 						{/if}</td
 					>

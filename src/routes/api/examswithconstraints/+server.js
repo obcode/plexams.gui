@@ -28,6 +28,7 @@ export async function GET({ url }) {
 					sameSlot
 					roomConstraints {
 						placesWithSocket
+						lab
 						exahmRooms
 					}
 				}
