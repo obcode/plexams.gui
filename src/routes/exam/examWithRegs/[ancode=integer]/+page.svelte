@@ -5,13 +5,10 @@
 	let studentCount;
 	let gridparams;
 
-	console.log(data);
-
 	if (data.examWithRegs) {
 		exam = data.examWithRegs;
 		programs = exam.studentRegs.length;
 		gridparams = `grid-cols-${programs} gap-${programs}`;
-		console.log(gridparams);
 		studentCount = exam.studentRegs.reduce((sum, reg) => sum + reg.studentRegs.length, 0);
 	}
 </script>
