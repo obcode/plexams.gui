@@ -1,5 +1,6 @@
 <script>
 	export let data;
+	console.log(data);
 </script>
 
 <div class="text-center m-2">
@@ -8,7 +9,7 @@
 	</div>
 </div>
 
-{#if data.studenRegsImportErrors && data.studenRegsImportErrors.length > 0}
+{#if data.studentRegsImportErrors && data.studentRegsImportErrors.length > 0}
 	<div class="overflow-x-auto my-2">
 		<table class="table table-compact w-full">
 			<thead>
@@ -26,11 +27,11 @@
 						<td>{err.registration.mtknr}</td>
 						<td>{err.registration.program}</td>
 						<td
-							>{err.error.semester}
-							{err.error.ancode}
-							{err.error.mtknr}
-							{err.error.program}
-							{err.error.exam}</td
+							>semester: {err.error.semester}
+							ancode: {err.error.ancode}
+							mtknr: {err.error.mtknr}
+							program: {err.error.program}
+							exam: {err.error.exam}</td
 						>
 					</tr>
 				{/each}
