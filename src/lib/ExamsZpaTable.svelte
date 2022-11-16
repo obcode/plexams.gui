@@ -2,6 +2,8 @@
 	export let exams;
 	export let inPlan;
 
+	import { goto } from '$app/navigation';
+
 	let searchTermAncode = '';
 	let searchTermTeachers = '';
 	let searchTermModule = '';
@@ -60,6 +62,10 @@
 		});
 		location.reload();
 	}
+
+	function gotoo(ancode) {
+		goto(`/exam/examWithRegs/${ancode}`);
+	}
 </script>
 
 <div class="flex ">
@@ -109,7 +115,7 @@
 		</thead>
 		<tbody>
 			{#each filteredExams as exam}
-				<tr>
+				<tr on:click={gotoo(exam.ancode)}>
 					<td>
 						{#if inPlan}
 							<input type="checkbox" class="toggle" checked on:click={() => rmExam(exam.ancode)} />
