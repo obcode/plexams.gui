@@ -70,9 +70,12 @@
 		// location.reload();
 	}
 
-	function bgNotPlannedByMe(constraints) {
+	function bgConstraints(constraints) {
 		if (constraints && constraints.notPlannedByMe) {
 			return 'bg-red-400';
+		}
+		if (constraints) {
+			return 'bg-yellow-200';
 		}
 		return ' ';
 	}
@@ -145,7 +148,7 @@
 		<tbody>
 			{#each filteredExams as exam}
 				<tr>
-					<td class={bgNotPlannedByMe(exam.constraints)}>
+					<td class={bgConstraints(exam.constraints)}>
 						{#if exam.constraints && exam.constraints.notPlannedByMe}
 							<input
 								type="checkbox"
@@ -161,14 +164,14 @@
 							/>
 						{/if}
 					</td>
-					<td class={bgNotPlannedByMe(exam.constraints)}
+					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.sameSlot}
 							{#each exam.constraints.sameSlot as ancode, i}
 								{ancode}{#if i < exam.constraints.sameSlot.length - 1}, {/if}
 							{/each}
 						{/if}</td
 					>
-					<td class={bgNotPlannedByMe(exam.constraints)}
+					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.excludeDays}
 							<ul>
 								{#each exam.constraints.excludeDays as day}
@@ -184,7 +187,7 @@
 							</ul>
 						{/if}</td
 					>
-					<td class={bgNotPlannedByMe(exam.constraints)}
+					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.roomConstraints}
 							{#if exam.constraints.roomConstraints.placesWithSocket}
 								Plätze mit Steckdosen
@@ -194,11 +197,11 @@
 							{/if}
 						{/if}</td
 					>
-					<td class={bgNotPlannedByMe(exam.constraints)}>{exam.zpaExam.ancode}</td>
-					<td class={bgNotPlannedByMe(exam.constraints)}>{exam.zpaExam.module}</td>
-					<td class={bgNotPlannedByMe(exam.constraints)}>{exam.zpaExam.mainExamer}</td>
-					<td class={bgNotPlannedByMe(exam.constraints)}>{exam.zpaExam.examType}</td>
-					<td class={bgNotPlannedByMe(exam.constraints)}>{exam.zpaExam.groups}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.ancode}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.module}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.mainExamer}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.examType}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.groups}</td>
 				</tr>
 			{/each}
 		</tbody>

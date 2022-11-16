@@ -23,6 +23,7 @@ export async function GET({ url }) {
 				constraints {
 					ancode
 					notPlannedByMe
+					online
 					excludeDays
 					sameSlot
 					roomConstraints {
