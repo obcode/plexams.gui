@@ -103,8 +103,7 @@
 				<th>Prüfer:in</th>
 				<th>Art</th>
 				<th>Gruppen</th>
-				<th class="text-right">#</th>
-				<th />
+				<th>Anmeldungen</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -115,14 +114,12 @@
 					<td>{exam.zpaExam.mainExamer}</td>
 					<td>{exam.zpaExam.examTypeFull}</td>
 					<td>{exam.zpaExam.groups}</td>
-					<td class="text-right">
+					<td>
 						{#if regs(exam) == 0}
 							<div class="badge badge-error gap-2">{regs(exam)}</div>
 						{:else}
 							<div class="badge badge-success gap-2">{regs(exam)}</div>
 						{/if}
-					</td>
-					<td>
 						{#each exam.studentRegs as reg}
 							<button class="btn btn-xs p-1 mx-1">
 								{reg.program}
