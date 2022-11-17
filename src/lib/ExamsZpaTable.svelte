@@ -115,7 +115,7 @@
 		</thead>
 		<tbody>
 			{#each filteredExams as exam}
-				<tr on:click={gotoo(exam.ancode)}>
+				<tr>
 					<td>
 						{#if inPlan}
 							<input type="checkbox" class="toggle" checked on:click={() => rmExam(exam.ancode)} />
@@ -123,7 +123,7 @@
 							<input type="checkbox" class="toggle" on:click={() => addExam(exam.ancode)} />
 						{/if}
 					</td>
-					<td>{exam.ancode}</td>
+					<td on:click={gotoo(exam.ancode)}>{exam.ancode}</td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
 					<td>{exam.examTypeFull}</td>
