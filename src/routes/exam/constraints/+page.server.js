@@ -1,9 +1,7 @@
 import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
 import { request, gql } from 'graphql-request';
 
-/** @type {import('./$types').RequestHandler} */
-export async function GET({ url }) {
+export async function load({ params }) {
 	const query = gql`
 		query {
 			zpaExamsToPlanWithConstraints {
@@ -25,6 +23,7 @@ export async function GET({ url }) {
 					notPlannedByMe
 					online
 					excludeDays
+					possibleDays
 					sameSlot
 					roomConstraints {
 						placesWithSocket
@@ -38,5 +37,7 @@ export async function GET({ url }) {
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
-	return json(data.zpaExamsToPlanWithConstraints);
+	return {
+		zpaExamsToPlanWithConstraints: data.zpaExamsToPlanWithConstraints
+	};
 }

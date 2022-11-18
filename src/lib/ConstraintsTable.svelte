@@ -137,6 +137,7 @@
 				<th>zu planen</th>
 				<th>Gleichzeitig mit</th>
 				<th>Nicht am</th>
+				<th>Nur am</th>
 				<th>Raum-Constraints</th>
 				<th>AnCode</th>
 				<th>Module</th>
@@ -175,6 +176,22 @@
 						>{#if exam.constraints && exam.constraints.excludeDays}
 							<ul>
 								{#each exam.constraints.excludeDays as day}
+									<li>
+										{new Date(day).toLocaleDateString('de-DE', {
+											weekday: 'long',
+											year: 'numeric',
+											month: 'long',
+											day: 'numeric'
+										})}
+									</li>
+								{/each}
+							</ul>
+						{/if}</td
+					>
+					<td class={bgConstraints(exam.constraints)}
+						>{#if exam.constraints && exam.constraints.possibleDays}
+							<ul>
+								{#each exam.constraints.possibleDays as day}
 									<li>
 										{new Date(day).toLocaleDateString('de-DE', {
 											weekday: 'long',
