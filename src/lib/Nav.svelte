@@ -49,6 +49,7 @@
 				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
 				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
+				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
 		</div>

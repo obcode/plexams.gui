@@ -6,10 +6,10 @@
 	}
 </script>
 
-<tr class={maybeColor}>
+<tr>
 	<td>{nta.name}</td>
-	<td><span class="font-mono">{nta.mtknr}</span></td>
-	<td>{nta.compensation}</td>
+	<td><a href="/nta/{nta.mtknr}"><span class="font-mono">{nta.mtknr}</span></a></td>
+	<td class={maybeColor}>{nta.compensation}</td>
 	<td>{nta.until}</td>
 	<td>
 		{#if nta.lastSemester}
