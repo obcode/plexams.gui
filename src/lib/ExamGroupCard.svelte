@@ -7,6 +7,15 @@
 		}
 		return '';
 	}
+
+	function regs(exam) {
+		let sum = 0;
+		for (const reg of exam.studentRegs) {
+			sum += reg.studentRegs.length;
+		}
+
+		return sum;
+	}
 </script>
 
 <div class="card lg:card-side bg-base-100 shadow-xl m-3 {bg(group.examGroupInfo.notPlannedByMe)} ">
@@ -19,8 +28,13 @@
 			{#each group.exams as exam}
 				<li>
 					{exam.exam.ancode}. {exam.exam.zpaExam.mainExamer}: {exam.exam.zpaExam.module}
+					<div class="badge badge-success gap-2">{regs(exam.exam)}</div>
 				</li>
 			{/each}
 		</ul>
+		<div class="card-actions justify-end">
+			Anmeldungen:
+			<button class="btn btn-primary">&sum; {group.examGroupInfo.studentRegs}</button>
+		</div>
 	</div>
 </div>

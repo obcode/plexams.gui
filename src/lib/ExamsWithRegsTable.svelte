@@ -15,19 +15,19 @@
 			filteredExams = exams.filter((exam) => exam.ancode.toString().startsWith(searchTermAncode));
 		} else if (searchTermTeachers) {
 			filteredExams = exams.filter((exam) =>
-				exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
+				exam.zpaExam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
 			);
 		} else if (searchTermModule) {
 			filteredExams = exams.filter((exam) =>
-				exam.module.toLowerCase().includes(searchTermModule.toLowerCase())
+				exam.zpaExam.module.toLowerCase().includes(searchTermModule.toLowerCase())
 			);
 		} else if (searchTermType) {
 			filteredExams = exams.filter((exam) =>
-				exam.examTypeFull.toLowerCase().includes(searchTermType.toLowerCase())
+				exam.zpaExam.examTypeFull.toLowerCase().includes(searchTermType.toLowerCase())
 			);
 		} else if (searchTermGroups) {
 			filteredExams = exams.filter((exam) => {
-				for (let group of exam.groups) {
+				for (let group of exam.zpaExam.groups) {
 					if (group.toLowerCase().startsWith(searchTermGroups.toLowerCase())) {
 						return true;
 					}
@@ -118,7 +118,7 @@
 						{#if regs(exam) == 0}
 							<div class="badge badge-error gap-2">{regs(exam)}</div>
 						{:else}
-							<div class="badge badge-success gap-2">{regs(exam)}</div>
+							<div class="badge badge-success gap-2">&sum; {regs(exam)}</div>
 						{/if}
 						{#each exam.studentRegs as reg}
 							<button class="btn btn-xs p-1 mx-1">
