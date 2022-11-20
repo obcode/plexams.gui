@@ -50,6 +50,7 @@
 				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
+				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
 		</div>
