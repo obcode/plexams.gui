@@ -1,9 +1,8 @@
 {
 	"name": "plexams.gui",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"author": "Oliver Braun <oliver.braun@hm.edu>",
-	"li"
-  	"license" : "BSD-3-Clause",
+	"license": "BSD-3-Clause",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -40,6 +39,5 @@
 		"daisyui": "^2.24.0",
 		"graphql": "^16.6.0",
 		"graphql-request": "^5.0.0"
-	},
-	"license": "BSD-3-Clause"
+	}
 }
