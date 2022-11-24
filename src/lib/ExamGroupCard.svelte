@@ -1,5 +1,8 @@
 <script>
 	export let group;
+	import SlotsMiniMap from '$lib/SlotsMiniMap.svelte';
+
+	let collapsed = group.examGroupInfo.notPlannedByMe;
 
 	function bg(notPlannedByMe) {
 		if (notPlannedByMe) {
@@ -20,7 +23,12 @@
 
 <div class="card lg:card-side bg-base-100 shadow-xl m-3 {bg(group.examGroupInfo.notPlannedByMe)} ">
 	<div class="card-body">
-		<h2 class="card-title">
+		<h2
+			class="card-title"
+			on:click={() => {
+				collapsed = !collapsed;
+			}}
+		>
 			Gruppe {group.examGroupCode} mit {group.examGroupInfo.studentRegs} Anmeldungen aus {group
 				.examGroupInfo.programs} und maximaler Dauer von {group.examGroupInfo.maxDuration}
 		</h2>
@@ -32,6 +40,26 @@
 				</li>
 			{/each}
 		</ul>
+		{#if !collapsed}
+			<h3 class="text-xl">Konflikte:</h3>
+			<div>
+				{#each group.examGroupInfo.conflicts as conflict}
+					<button class="btn btn-xs p-1 mx-1">
+						{conflict.examGroupCode}
+						<div class="badge  badge-secondary  badge-xs">{conflict.count}</div>
+					</button>
+				{/each}
+			</div>
+			<div><SlotsMiniMap slots={group.examGroupInfo.possibleSlots} /></div>
+		{:else}
+			<span
+				on:click={() => {
+					collapsed = !collapsed;
+				}}
+			>
+				...more
+			</span>
+		{/if}
 		<div class="card-actions justify-end">
 			Anmeldungen:
 			<button class="btn btn-primary">&sum; {group.examGroupInfo.studentRegs}</button>
