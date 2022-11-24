@@ -2,3 +2,7 @@ export function mkDate(datestring) {
 	const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 	return new Date(datestring).toLocaleDateString('de-DE', options);
 }
+export function mkDateShort(datestring) {
+	const options = { weekday: 'short', month: 'numeric', day: 'numeric' };
+	return new Date(datestring).toLocaleDateString('de-DE', options);
+}

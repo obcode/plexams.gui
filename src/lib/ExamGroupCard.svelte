@@ -23,15 +23,12 @@
 
 <div class="card lg:card-side bg-base-100 shadow-xl m-3 {bg(group.examGroupInfo.notPlannedByMe)} ">
 	<div class="card-body">
-		<h2
-			class="card-title"
-			on:click={() => {
-				collapsed = !collapsed;
-			}}
+		<a href="/exam/examGroups/{group.examGroupCode}">
+			<h2 class="card-title">
+				Gruppe {group.examGroupCode} mit {group.examGroupInfo.studentRegs} Anmeldungen aus {group
+					.examGroupInfo.programs} und maximaler Dauer von {group.examGroupInfo.maxDuration}
+			</h2></a
 		>
-			Gruppe {group.examGroupCode} mit {group.examGroupInfo.studentRegs} Anmeldungen aus {group
-				.examGroupInfo.programs} und maximaler Dauer von {group.examGroupInfo.maxDuration}
-		</h2>
 		<ul>
 			{#each group.exams as exam}
 				<li>
@@ -41,13 +38,22 @@
 			{/each}
 		</ul>
 		{#if !collapsed}
-			<h3 class="text-xl">Konflikte:</h3>
+			<h3
+				class="text-xl"
+				on:click={() => {
+					collapsed = !collapsed;
+				}}
+			>
+				Konflikte:
+			</h3>
 			<div>
 				{#each group.examGroupInfo.conflicts as conflict}
-					<button class="btn btn-xs p-1 mx-1">
-						{conflict.examGroupCode}
-						<div class="badge  badge-secondary  badge-xs">{conflict.count}</div>
-					</button>
+					<a href="/exam/examGroups/{conflict.examGroupCode}">
+						<button class="btn btn-xs p-1 mx-1">
+							{conflict.examGroupCode}
+							<div class="badge  badge-secondary  badge-xs">{conflict.count}</div>
+						</button>
+					</a>
 				{/each}
 			</div>
 			<div><SlotsMiniMap slots={group.examGroupInfo.possibleSlots} /></div>

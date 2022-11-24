@@ -12,6 +12,8 @@
 	<span class="uppercase">{data.examGroups.length} Prüfungsgruppen</span>
 </div>
 
-{#each groups as group}
-	<ExamGroupCard {group} />
-{/each}
+<div class="grid md:grid-cols-1 lg:grid-cols-2  2xl:grid-cols-3 gap-1">
+	{#each groups as group}
+		<ExamGroupCard {group} />
+	{/each}
+</div>
