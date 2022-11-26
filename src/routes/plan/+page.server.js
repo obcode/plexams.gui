@@ -19,20 +19,90 @@ export async function load({ params }) {
 
 	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
 
-	const workflowQuery = gql`
+	const examGroupsWithoutSlotQuery = gql`
 		query {
-			workflow {
-				number
-				name
-				done
-				deadline
+			examGroupsWithoutSlot {
+				examGroupCode
+				exams {
+					exam {
+						ancode
+						zpaExam {
+							ancode
+							module
+							mainExamer
+							mainExamerID
+							examType
+							groups
+							isRepeaterExam
+						}
+						primussExams {
+							ancode
+							module
+							mainExamer
+							program
+							examType
+						}
+						studentRegs {
+							program
+							studentRegs {
+								mtknr
+								ancode
+								program
+								presence
+								group
+								name
+							}
+						}
+						conflicts {
+							program
+							conflics {
+								ancode
+								numberOfStuds
+							}
+						}
+						connectErrors
+					}
+					constraints {
+						ancode
+						notPlannedByMe
+						excludeDays
+						roomConstraints {
+							placesWithSocket
+						}
+					}
+				}
+				examGroupInfo {
+					notPlannedByMe
+					excludeDays
+					possibleDays
+					fixedDay
+					fixedSlot {
+						dayNumber
+						slotNumber
+						starttime
+					}
+					possibleSlots {
+						dayNumber
+						slotNumber
+						starttime
+					}
+					conflicts {
+						examGroupCode
+						count
+					}
+					studentRegs
+					programs
+					maxDuration
+					maxDurationNTA
+				}
 			}
 		}
 	`;
 
-	const workflowData = await request('http://localhost:8080/query', workflowQuery);
+	const data = await request('http://localhost:8080/query', examGroupsWithoutSlotQuery);
 
 	return {
-		semesterConfig: semesterData.semesterConfig
+		semesterConfig: semesterData.semesterConfig,
+		examGroupsWithoutSlot: data.examGroupsWithoutSlot
 	};
 }

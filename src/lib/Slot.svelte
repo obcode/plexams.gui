@@ -1,8 +1,18 @@
 <script>
 	export let day;
 	export let time;
+	export let maxSlots;
+	export let selectedGroup;
+	export let details;
+	export let moveable;
+	export let showGroup;
+	export let showAncode;
+	export let showExamerID;
+	export let conflictingGroupCodes;
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
-	import { each, group_outros } from 'svelte/internal';
+	import SlotExamGroup from '$lib/SlotExamGroup.svelte';
 
 	let examGroups = [];
 
@@ -16,21 +26,60 @@
 		});
 		let data = await response.json();
 		examGroups = data.examGroupsInSlot;
+		countIt();
 	}
 
-	onMount(() => fetchExamGroups());
+	let count = 0;
+
+	function countIt() {
+		let counted = 0;
+		for (const group of examGroups) {
+			counted += group.examGroupInfo.studentRegs;
+		}
+		count = counted;
+	}
+
+	function badgeColor(count) {
+		if (count < 50) {
+			return 'badge-success';
+		}
+		if (count < 100) {
+			return 'badge-warning';
+		}
+		return 'badge-error';
+	}
+
+	onMount(() => {
+		fetchExamGroups();
+	});
+
+	function forwardSelected(event) {
+		dispatch('selected', event.detail);
+	}
+	function forwardUnselected(event) {
+		dispatch('unselected', event.detail);
+	}
 </script>
 
-{#each examGroups as group}
-	<div class="shadow-lg m-1 p-1 bg-yellow-200 0 border border-red-10">
-		<ul>
-			{#each group.exams as exam}
-				<li>
-					{exam.exam.zpaExam.ancode}.
-					{exam.exam.zpaExam.mainExamer}
-					{exam.exam.zpaExam.module}
-				</li>
-			{/each}
-		</ul>
+{#if examGroups.length > 0}
+	<div class="flex justify-end">
+		<div class="badge {badgeColor(count)} gap-2">{count}</div>
 	</div>
+{/if}
+
+{#each examGroups as group}
+	<SlotExamGroup
+		{group}
+		{maxSlots}
+		{showGroup}
+		{showAncode}
+		{showExamerID}
+		selected={selectedGroup == group.examGroupCode}
+		{details}
+		{moveable}
+		inSlot={true}
+		{conflictingGroupCodes}
+		on:selected={forwardSelected}
+		on:unselected={forwardUnselected}
+	/>
 {/each}

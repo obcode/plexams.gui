@@ -44,6 +44,8 @@
 				tabindex="0"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
+				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
+				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/plan">Prüfungen planen</a></li>
 			</ul>
 		</div>
@@ -56,8 +58,6 @@
 			>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
 				<li><a href="/zpa/invigilators">Aufsichten</a></li>
-				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
-				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
 				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>

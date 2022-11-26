@@ -15,8 +15,10 @@ export async function POST({ request }) {
 							ancode
 							module
 							mainExamer
+							mainExamerID
 							examType
 							groups
+							isRepeaterExam
 						}
 						primussExams {
 							ancode
