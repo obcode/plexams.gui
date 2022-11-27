@@ -10,6 +10,7 @@
 	export let inSlot;
 	export let conflictingGroupCodes;
 	import { createEventDispatcher } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
 	const dispatch = createEventDispatcher();
 
@@ -111,10 +112,29 @@
 	if (conflicts < conflictsMax / 4) {
 		conflictsColor = ' progress-success ';
 	}
+
+	function enabledButton(slot) {
+		return slot == 'none';
+	}
+
+	function addToSlot() {
+		dispatch('addToSlot', {
+			examGroupCode: group.examGroupCode,
+			slot: slotToMove
+		});
+	}
+
+	function rmFromSlot() {
+		dispatch('addToSlot', {
+			examGroupCode: group.examGroupCode,
+			slot: 'none'
+		});
+	}
 </script>
 
 {#if show}
 	<div
+		transition:fade
 		class="shadow-lg m-1 p-1 {bgcolor}  border-2 border-slate-900 rounded-lg shadow-xl shadow-slate-300"
 	>
 		<div class="flex justify-between">
@@ -172,13 +192,19 @@
 					{/each}
 				</select>
 				<div class="flex mx-2">
+					<button
+						class="btn btn-xs btn-outline"
+						disabled={enabledButton(slotToMove)}
+						on:click={addToSlot}
+					>
+						{#if inSlot}
+							verschieben
+						{:else}
+							In Slot einplanen
+						{/if}
+					</button>
 					{#if inSlot}
-						<button class="btn btn-xs btn-outline">verschieben</button>
-					{:else}
-						<button class="btn btn-xs btn-outline">In Slot einplanen</button>
-					{/if}
-					{#if inSlot}
-						<button class="btn-xs btn btn-outline mx-2">entfernen</button>
+						<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
 					{/if}
 				</div>
 			</div>

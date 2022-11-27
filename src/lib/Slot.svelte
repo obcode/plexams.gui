@@ -9,9 +9,11 @@
 	export let showAncode;
 	export let showExamerID;
 	export let conflictingGroupCodes;
+	export let refresh;
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
+
 	import SlotExamGroup from '$lib/SlotExamGroup.svelte';
 
 	let examGroups = [];
@@ -59,6 +61,18 @@
 	function forwardUnselected(event) {
 		dispatch('unselected', event.detail);
 	}
+	function forwardAddToSlot(event) {
+		dispatch('addToSlot', {
+			examGroupCode: event.detail.examGroupCode,
+			slot: event.detail.slot,
+			oldslot: { dayNumber: day, slotNumber: time }
+		});
+	}
+
+	$: if (refresh) {
+		fetchExamGroups();
+		refresh = false;
+	}
 </script>
 
 {#if examGroups.length > 0}
@@ -81,5 +95,6 @@
 		{conflictingGroupCodes}
 		on:selected={forwardSelected}
 		on:unselected={forwardUnselected}
+		on:addToSlot={forwardAddToSlot}
 	/>
 {/each}

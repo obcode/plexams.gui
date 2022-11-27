@@ -1,12 +1,12 @@
 <script>
 	export let data;
 	import Slot from '$lib/Slot.svelte';
-	import SlotExamGroup from '$lib/SlotExamGroup.svelte';
+	import ExamGroupsWithoutSlot from '$lib/examGroups/ExamGroupsWithoutSlot.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
-	let details = false;
-	let moveable = false;
+	let details = true;
+	let moveable = true;
 
 	let maxSlots = data.semesterConfig.days.length * data.semesterConfig.starttimes.length;
 
@@ -55,6 +55,16 @@
 		}
 	}
 
+	let refresh = new Map();
+
+	function initRefresh() {
+		for (let day of data.semesterConfig.days) {
+			for (let time of data.semesterConfig.starttimes) {
+				refresh[[day.number, time.number]] = false;
+			}
+		}
+	}
+
 	function statusColor(status) {
 		if (status == 'unknown' || status == '') {
 			return '';
@@ -69,6 +79,7 @@
 
 	onMount(() => {
 		initSlotsStatus('unknown');
+		initRefresh();
 		getPrograms();
 		getAncodes();
 		getExamer();
@@ -76,6 +87,7 @@
 
 	let selectedGroup = -1;
 	let conflictingGroupCodes = [];
+	let examGroupsWithoutSlot = data.examGroupsWithoutSlot;
 
 	async function handleSelect(event) {
 		initSlotsStatus('forbidden');
@@ -91,10 +103,40 @@
 		let res = await fetchconflictingGroupCodes(event.detail.examGroupCode);
 		conflictingGroupCodes = res.map((conflict) => conflict.examGroupCode);
 	}
+
 	async function handleUnselect(event) {
 		initSlotsStatus('unknown');
 		selectedGroup = -1;
 		conflictingGroupCodes = [];
+	}
+
+	async function handleAddToSlot(event) {
+		console.log(event.detail);
+		if (event.detail.slot == 'none') {
+			// TODO: remove from slot
+		} else {
+			let success = await addToSlot(event.detail);
+			if (success) {
+				refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
+				if (event.detail.oldslot) {
+					refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
+				} else {
+					// TODO: examGroupsWithoutSlot.filter()
+				}
+			}
+		}
+	}
+
+	async function addToSlot(args) {
+		const response = await fetch('/api/slot/addToSlot', {
+			method: 'POST',
+			body: JSON.stringify(args),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		return data.addExamGroupToSlot;
 	}
 
 	async function fetchAllowedSlots(examGroupCode) {
@@ -132,12 +174,6 @@
 		let data = await response.json();
 		return data.conflictingGroupCodes;
 	}
-
-	let examGroupsWithoutSlot = data.examGroupsWithoutSlot;
-
-	examGroupsWithoutSlot.sort(
-		(g1, g2) => g2.examGroupInfo.studentRegs - g1.examGroupInfo.studentRegs
-	);
 </script>
 
 <div class="text-center m-2">
@@ -152,6 +188,7 @@
 				<input
 					type="checkbox"
 					class="toggle mx-3"
+					checked
 					on:click={() => {
 						details = !details;
 					}}
@@ -166,6 +203,7 @@
 				<input
 					type="checkbox"
 					class="toggle mx-3"
+					checked
 					on:click={() => {
 						moveable = !moveable;
 					}}
@@ -241,8 +279,10 @@
 								{showAncode}
 								{showExamerID}
 								{conflictingGroupCodes}
+								refresh={refresh[[day.number, time.number]]}
 								on:selected={handleSelect}
 								on:unselected={handleUnselect}
+								on:addToSlot={handleAddToSlot}
 							/>
 						</td>
 					{/each}
@@ -252,31 +292,18 @@
 	</table>
 </div>
 
-{#if examGroupsWithoutSlot.length > 0}
-	<div class="text-center m-2">
-		<div class="text-4xl text-center mt-8 uppercase">Noch einzuplanen</div>
-	</div>
-
-	<div class="grid  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
-		{#each examGroupsWithoutSlot as group}
-			<SlotExamGroup
-				{group}
-				{maxSlots}
-				{showGroup}
-				{showAncode}
-				{showExamerID}
-				selected={selectedGroup == group.examGroupCode}
-				{details}
-				{moveable}
-				inSlot={false}
-				{conflictingGroupCodes}
-				on:selected={handleSelect}
-				on:unselected={handleUnselect}
-			/>
-		{/each}
-	</div>
-{:else}
-	<div class="text-center m-2">
-		<div class="text-4xl text-center mt-8 uppercase">💪 Alles geplant</div>
-	</div>
-{/if}
+<ExamGroupsWithoutSlot
+	{examGroupsWithoutSlot}
+	{maxSlots}
+	{showGroup}
+	{showAncode}
+	{showExamerID}
+	{selectedGroup}
+	{details}
+	{moveable}
+	inSlot={false}
+	{conflictingGroupCodes}
+	on:selected={handleSelect}
+	on:unselected={handleUnselect}
+	on:addToSlot={handleAddToSlot}
+/>
