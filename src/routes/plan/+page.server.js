@@ -69,6 +69,8 @@ export async function load({ params }) {
 						online
 						roomConstraints {
 							placesWithSocket
+							lab
+							exahmRooms
 						}
 					}
 				}

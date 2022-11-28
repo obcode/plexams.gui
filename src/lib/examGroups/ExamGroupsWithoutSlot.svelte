@@ -5,6 +5,7 @@
 	export let showAncode;
 	export let showExamerID;
 	export let showOnlyOnline;
+	export let showOnlyExahm;
 	export let selectedGroup;
 	export let details;
 	export let moveable;
@@ -44,6 +45,7 @@
 				{showAncode}
 				{showExamerID}
 				{showOnlyOnline}
+				{showOnlyExahm}
 				selected={selectedGroup == group.examGroupCode}
 				{details}
 				{moveable}

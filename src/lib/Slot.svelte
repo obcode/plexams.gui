@@ -9,6 +9,7 @@
 	export let showAncode;
 	export let showExamerID;
 	export let showOnlyOnline;
+	export let showOnlyExahm;
 	export let conflictingGroupCodes;
 	export let refresh;
 	import { createEventDispatcher } from 'svelte';
@@ -90,6 +91,7 @@
 		{showAncode}
 		{showExamerID}
 		{showOnlyOnline}
+		{showOnlyExahm}
 		selected={selectedGroup == group.examGroupCode}
 		{details}
 		{moveable}

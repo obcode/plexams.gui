@@ -54,6 +54,8 @@ export async function POST({ request }) {
 						online
 						roomConstraints {
 							placesWithSocket
+							lab
+							exahmRooms
 						}
 					}
 				}

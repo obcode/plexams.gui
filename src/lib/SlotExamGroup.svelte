@@ -5,6 +5,7 @@
 	export let showAncode;
 	export let showExamerID;
 	export let showOnlyOnline;
+	export let showOnlyExahm;
 	export let selected;
 	export let details;
 	export let moveable;
@@ -22,6 +23,15 @@
 	let online = false;
 	for (const exam of group.exams) {
 		online = online || (exam.constraints && exam.constraints.online);
+	}
+
+	let exahm = false;
+	for (const exam of group.exams) {
+		exahm =
+			exahm ||
+			(exam.constraints &&
+				exam.constraints.roomConstraints &&
+				exam.constraints.roomConstraints.exahmRooms);
 	}
 
 	$: {
@@ -46,6 +56,9 @@
 		}
 		if (showOnlyOnline) {
 			show = online;
+		}
+		if (showOnlyExahm) {
+			show = exahm;
 		}
 	}
 
@@ -155,6 +168,9 @@
 			{#if online}
 				<div class="badge badge-error">online</div>
 			{/if}
+			{#if exahm}
+				<div class="badge badge-error">EXaHM</div>
+			{/if}
 			<div class="badge m-1 badge-outline mx-2">
 				{group.examGroupInfo.programs} /
 				{group.examGroupInfo.studentRegs}
@@ -214,6 +230,9 @@
 					</a>
 					{#if exam.constraints && exam.constraints.online}
 						<div class="badge badge-error">online</div>
+					{/if}
+					{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahmRooms}
+						<div class="badge badge-error">EXaHM</div>
 					{/if}
 				</li>
 			{/each}
