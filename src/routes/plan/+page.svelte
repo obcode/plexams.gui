@@ -19,6 +19,7 @@
 	let showGroup = 'all';
 	let showAncode = '0';
 	let showExamerID = 'all';
+	let showOnlyOnline = false;
 
 	let allProgramsInPlan = [];
 	async function getPrograms() {
@@ -212,6 +213,20 @@
 		</div>
 	</div>
 	<div>
+		<div class="form-control my-3">
+			<label class="label cursor-pointer">
+				<span class="label-text">online</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					on:click={() => {
+						showOnlyOnline = !showOnlyOnline;
+					}}
+				/>
+			</label>
+		</div>
+	</div>
+	<div>
 		<select class="select select-primary w-full max-w-xs my-2" bind:value={showGroup}>
 			<option selected value="all">Alle Gruppen</option>
 			{#each allProgramsInPlan as program}
@@ -278,6 +293,7 @@
 								{showGroup}
 								{showAncode}
 								{showExamerID}
+								{showOnlyOnline}
 								{conflictingGroupCodes}
 								refresh={refresh[[day.number, time.number]]}
 								on:selected={handleSelect}
@@ -298,6 +314,7 @@
 	{showGroup}
 	{showAncode}
 	{showExamerID}
+	{showOnlyOnline}
 	{selectedGroup}
 	{details}
 	{moveable}

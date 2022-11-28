@@ -4,6 +4,7 @@
 	export let showGroup;
 	export let showAncode;
 	export let showExamerID;
+	export let showOnlyOnline;
 	export let selected;
 	export let details;
 	export let moveable;
@@ -17,6 +18,11 @@
 	let slotToMove = 'none';
 
 	let show = true;
+
+	let online = false;
+	for (const exam of group.exams) {
+		online = online || (exam.constraints && exam.constraints.online);
+	}
 
 	$: {
 		if (showGroup == 'all') {
@@ -37,6 +43,9 @@
 				showA = showA || exam.exam.ancode == showAncode;
 			}
 			show = show && showA;
+		}
+		if (showOnlyOnline) {
+			show = online;
 		}
 	}
 
@@ -143,11 +152,33 @@
 					<div>#{group.examGroupCode}</div>
 				</div>
 			</a>
+			{#if online}
+				<div class="badge badge-error">online</div>
+			{/if}
 			<div class="badge m-1 badge-outline mx-2">
 				{group.examGroupInfo.programs} /
 				{group.examGroupInfo.studentRegs}
 			</div>
 		</div>
+		{#if group.examGroupInfo.notPlannedByMe}
+			<div class="alert alert-warning shadow-lg p-1">
+				<div>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						class="stroke-current flex-shrink-0 h-6 w-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						><path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+						/></svg
+					>
+					<span>Nicht von mir geplant</span>
+				</div>
+			</div>
+		{/if}
 		{#if details}
 			<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
 				<div>{slots} Slots</div>
@@ -170,13 +201,20 @@
 		{/if}
 		<ul class="m-1">
 			{#each group.exams as exam}
-				<li class="border border-gray-400 {bgColorExam(exam.exam.zpaExam.isRepeaterExam)}  m-1 p-1">
+				<li
+					class="border border-gray-400 {bgColorExam(
+						exam.exam.zpaExam.isRepeaterExam
+					)} rounded m-1 p-1"
+				>
 					{exam.exam.zpaExam.ancode}.
 					{exam.exam.zpaExam.mainExamer}
 					{exam.exam.zpaExam.module}
 					<a href="/exam/examWithRegs/{exam.exam.zpaExam.ancode}">
 						<div class="badge gap-2">{studentRegsExam(exam.exam.studentRegs)}</div>
 					</a>
+					{#if exam.constraints && exam.constraints.online}
+						<div class="badge badge-error">online</div>
+					{/if}
 				</li>
 			{/each}
 		</ul>

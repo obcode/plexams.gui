@@ -8,6 +8,7 @@
 	export let showGroup;
 	export let showAncode;
 	export let showExamerID;
+	export let showOnlyOnline;
 	export let conflictingGroupCodes;
 	export let refresh;
 	import { createEventDispatcher } from 'svelte';
@@ -77,7 +78,7 @@
 
 {#if examGroups.length > 0}
 	<div class="flex justify-end">
-		<div class="badge {badgeColor(count)} gap-2">{count}</div>
+		<div class="badge {badgeColor(count)} gap-2 m-1">{count}</div>
 	</div>
 {/if}
 
@@ -88,6 +89,7 @@
 		{showGroup}
 		{showAncode}
 		{showExamerID}
+		{showOnlyOnline}
 		selected={selectedGroup == group.examGroupCode}
 		{details}
 		{moveable}

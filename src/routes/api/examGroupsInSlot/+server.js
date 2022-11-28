@@ -51,6 +51,7 @@ export async function POST({ request }) {
 						ancode
 						notPlannedByMe
 						excludeDays
+						online
 						roomConstraints {
 							placesWithSocket
 						}

@@ -66,6 +66,7 @@ export async function load({ params }) {
 						ancode
 						notPlannedByMe
 						excludeDays
+						online
 						roomConstraints {
 							placesWithSocket
 						}
