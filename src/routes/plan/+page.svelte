@@ -79,17 +79,32 @@
 		}
 	}
 
+	let examGroupsWithoutSlot = [];
+	async function fetchExamGroupsWithoutSlot() {
+		const response = await fetch('/api/examGroupsWithoutSlot', {
+			method: 'GET',
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		examGroupsWithoutSlot = data.examGroupsWithoutSlot;
+		examGroupsWithoutSlot.sort(
+			(g1, g2) => g2.examGroupInfo.studentRegs - g1.examGroupInfo.studentRegs
+		);
+	}
+
 	onMount(() => {
 		initSlotsStatus('unknown');
 		initRefresh();
 		getPrograms();
 		getAncodes();
 		getExamer();
+		fetchExamGroupsWithoutSlot();
 	});
 
 	let selectedGroup = -1;
 	let conflictingGroupCodes = [];
-	let examGroupsWithoutSlot = data.examGroupsWithoutSlot;
 
 	async function handleSelect(event) {
 		initSlotsStatus('forbidden');
@@ -113,19 +128,22 @@
 	}
 
 	async function handleAddToSlot(event) {
-		console.log(event.detail);
-		if (event.detail.slot == 'none') {
-			// TODO: remove from slot
-		} else {
-			let success = await addToSlot(event.detail);
-			if (success) {
-				refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
-				if (event.detail.oldslot) {
-					refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
-				} else {
-					// TODO: examGroupsWithoutSlot.filter()
-				}
+		let success = await addToSlot(event.detail);
+		if (success) {
+			refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
+			if (event.detail.oldslot) {
+				refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
+			} else {
+				fetchExamGroupsWithoutSlot();
 			}
+		}
+	}
+
+	async function handleRmFromSlot(event) {
+		let success = await rmFromSlot(event.detail);
+		if (success) {
+			refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
+			fetchExamGroupsWithoutSlot();
 		}
 	}
 
@@ -139,6 +157,18 @@
 		});
 		let data = await response.json();
 		return data.addExamGroupToSlot;
+	}
+
+	async function rmFromSlot(args) {
+		const response = await fetch('/api/slot/rmFromSlot', {
+			method: 'POST',
+			body: JSON.stringify(args),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		return data.rmExamGroupFromSlot;
 	}
 
 	async function fetchAllowedSlots(examGroupCode) {
@@ -315,6 +345,7 @@
 								on:selected={handleSelect}
 								on:unselected={handleUnselect}
 								on:addToSlot={handleAddToSlot}
+								on:rmFromSlot={handleRmFromSlot}
 							/>
 						</td>
 					{/each}

@@ -16,10 +16,6 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	examGroupsWithoutSlot.sort(
-		(g1, g2) => g2.examGroupInfo.studentRegs - g1.examGroupInfo.studentRegs
-	);
-
 	function forwardSelected(event) {
 		dispatch('selected', event.detail);
 	}
@@ -28,6 +24,9 @@
 	}
 	function forwardAddToSlot(event) {
 		dispatch('addToSlot', event.detail);
+	}
+	function forwardRmFromSlot(event) {
+		dispatch('rmFromSlot', event.detail);
 	}
 </script>
 
@@ -54,6 +53,7 @@
 				on:selected={forwardSelected}
 				on:unselected={forwardUnselected}
 				on:addToSlot={forwardAddToSlot}
+				on:rmFromSlot={forwardRmFromSlot}
 			/>
 		{/each}
 	</div>

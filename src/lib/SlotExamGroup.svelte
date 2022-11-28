@@ -147,9 +147,8 @@
 	}
 
 	function rmFromSlot() {
-		dispatch('addToSlot', {
-			examGroupCode: group.examGroupCode,
-			slot: 'none'
+		dispatch('rmFromSlot', {
+			examGroupCode: group.examGroupCode
 		});
 	}
 </script>

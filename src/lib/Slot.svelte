@@ -70,6 +70,12 @@
 			oldslot: { dayNumber: day, slotNumber: time }
 		});
 	}
+	function forwardRmFromSlot(event) {
+		dispatch('rmFromSlot', {
+			examGroupCode: event.detail.examGroupCode,
+			slot: { dayNumber: day, slotNumber: time }
+		});
+	}
 
 	$: if (refresh) {
 		fetchExamGroups();
@@ -100,5 +106,6 @@
 		on:selected={forwardSelected}
 		on:unselected={forwardUnselected}
 		on:addToSlot={forwardAddToSlot}
+		on:rmFromSlot={forwardRmFromSlot}
 	/>
 {/each}
