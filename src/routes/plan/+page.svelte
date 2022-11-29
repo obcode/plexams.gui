@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import Slot from '$lib/Slot.svelte';
+	import Slot from '$lib/slot/Slot.svelte';
 	import ExamGroupsWithoutSlot from '$lib/examGroups/ExamGroupsWithoutSlot.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';

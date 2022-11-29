@@ -1,6 +1,6 @@
 <script>
 	export let group;
-	import SlotsMiniMap from '$lib/SlotsMiniMap.svelte';
+	import SlotsMiniMap from '$lib/slot/SlotsMiniMap.svelte';
 
 	let collapsed = group.examGroupInfo.notPlannedByMe;
 

@@ -1,7 +1,7 @@
 <script>
 	export let data;
-	import ExamGroupCard from '$lib/ExamGroupCard.svelte';
-	import ExamGroupConflictCard from '$lib/ExamGroupConflictCard.svelte';
+	import ExamGroupCard from '$lib/examGroups/ExamGroupCard.svelte';
+	import ExamGroupConflictCard from '$lib/examGroups/ExamGroupConflictCard.svelte';
 </script>
 
 <div class="grid grid-cols-2 gap-1">

@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import ExamGroupCard from '$lib/ExamGroupCard.svelte';
+	import ExamGroupCard from '$lib/examGroups/ExamGroupCard.svelte';
 
 	// let groups = data.examGroups;
 	let groups = data.examGroups.sort((a, b) => {

@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import ExamsZpaTable from '../../../lib/ExamsZpaTable.svelte';
+	import ExamsZpaTable from '$lib/zpa/ExamsZpaTable.svelte';
 
 	let zpaExamsNotToPlan = [];
 	async function getZpaExamsNotToPlan() {

@@ -16,7 +16,7 @@
 	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
 
-	import SlotExamGroup from '$lib/SlotExamGroup.svelte';
+	import SlotExamGroup from '$lib/examGroups/SlotExamGroup.svelte';
 
 	let examGroups = [];
 

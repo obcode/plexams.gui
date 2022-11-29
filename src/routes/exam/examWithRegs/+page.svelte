@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import ExamsWithRegsTable from '$lib/ExamsWithRegsTable.svelte';
+	import ExamsWithRegsTable from '$lib/exam/ExamsWithRegsTable.svelte';
 </script>
 
 <div class="text-center m-2 text-4xl">

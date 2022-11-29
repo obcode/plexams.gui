@@ -1,8 +1,4 @@
 <script>
-	import ExamCard from '../../../lib/ExamCard.svelte';
-	import ExamGroupCard from '../../../lib/ExamGroupCard.svelte';
-	import ExamTypeCard from '../../../lib/ExamTypeCard.svelte';
-
 	export let data;
 	console.log(data);
 	const nta = data.nta;

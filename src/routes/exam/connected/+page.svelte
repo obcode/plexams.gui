@@ -1,7 +1,7 @@
 <script>
 	export let data;
 	import { onMount } from 'svelte';
-	import ExamCard from '$lib/ExamCard.svelte';
+	import ExamCard from '$lib/exam/ExamCard.svelte';
 	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
 
 	let fk07programs = [];

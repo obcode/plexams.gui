@@ -1,7 +1,7 @@
 <script>
 	export let data;
 	let invigilators = data.invigilators;
-	import Teachers from '$lib/Teachers.svelte';
+	import Teachers from '$lib/zpa/Teachers.svelte';
 
 	let searchTerm = '';
 	let filteredTeacher = [];

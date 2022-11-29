@@ -1,7 +1,7 @@
 <script>
 	export let teacher;
 	import { fade } from 'svelte/transition';
-	import Overlay from './Overlay.svelte';
+	import Overlay from '../Overlay.svelte';
 	let show = false;
 </script>
 

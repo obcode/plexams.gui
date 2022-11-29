@@ -2,7 +2,7 @@
 	export let data;
 	let teachers = data.teachers;
 
-	import Teachers from '$lib/Teachers.svelte';
+	import Teachers from '$lib/zpa/Teachers.svelte';
 
 	let searchTerm = '';
 	let filteredTeacher = [];

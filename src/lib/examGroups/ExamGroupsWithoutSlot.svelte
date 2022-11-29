@@ -11,7 +11,7 @@
 	export let moveable;
 	export let conflictingGroupCodes;
 
-	import SlotExamGroup from '$lib/SlotExamGroup.svelte';
+	import SlotExamGroup from '$lib/examGroups/SlotExamGroup.svelte';
 
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();

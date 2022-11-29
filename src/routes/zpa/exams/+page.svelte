@@ -21,7 +21,7 @@
 	import { fade } from 'svelte/transition';
 	import { request, gql } from 'graphql-request';
 	import { goto } from '$app/navigation';
-	import ExamTypeCard from '../../../lib/ExamTypeCard.svelte';
+	import ExamTypeCard from '$lib/exam/ExamTypeCard.svelte';
 
 	const selectedAncodes = new Set([]);
 	let size = selectedAncodes.size;
