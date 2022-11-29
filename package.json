@@ -15,28 +15,28 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
-		"@playwright/test": "^1.25.1",
+		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "next",
-		"@sveltejs/adapter-node": "^1.0.0-next.100",
-		"@sveltejs/kit": "1.0.0-next.454",
-		"@tailwindcss/typography": "^0.5.4",
-		"autoprefixer": "^10.4.8",
-		"eslint": "^8.23.0",
+		"@sveltejs/adapter-node": "1.0.0-next.101",
+		"@sveltejs/kit": "1.0.0-next.567",
+		"@tailwindcss/typography": "^0.5.8",
+		"autoprefixer": "^10.4.13",
+		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",
-		"postcss": "^8.4.16",
-		"prettier": "^2.7.1",
-		"prettier-plugin-svelte": "^2.7.0",
-		"svelte": "^3.49.0",
-		"svelte-check": "^2.9.0",
+		"postcss": "^8.4.19",
+		"prettier": "^2.8.0",
+		"prettier-plugin-svelte": "^2.8.1",
+		"svelte": "^3.53.1",
+		"svelte-check": "^2.9.2",
 		"svelte-preprocess": "^4.10.7",
-		"tailwindcss": "^3.1.8",
-		"typescript": "^4.8.2",
-		"vite": "3.1.0-beta.1"
+		"tailwindcss": "^3.2.4",
+		"typescript": "^4.9.3",
+		"vite": "3.2.4"
 	},
 	"type": "module",
 	"dependencies": {
-		"daisyui": "^2.24.0",
+		"daisyui": "^2.42.1",
 		"graphql": "^16.6.0",
 		"graphql-request": "^5.0.0"
 	}
