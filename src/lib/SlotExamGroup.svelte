@@ -156,114 +156,126 @@
 {#if show}
 	<div
 		transition:fade
-		class="shadow-lg m-1 p-1 {bgcolor}  border-2 border-slate-900 rounded-lg shadow-xl shadow-slate-300"
+		class="flex flex-col justify-between shadow-lg m-1 p-1 {bgcolor}  border-2 border-slate-900 rounded-lg shadow-xl shadow-slate-300"
 	>
-		<div class="flex justify-between">
-			<a href="/exam/examGroups/{group.examGroupCode}">
+		<div>
+			<div class="flex justify-between">
+				<a href="/exam/examGroups/{group.examGroupCode}">
+					<div class="badge m-1 badge-outline mx-2">
+						<div>#{group.examGroupCode}</div>
+					</div>
+				</a>
+				{#if online}
+					<div class="badge badge-error">online</div>
+				{/if}
+				{#if exahm}
+					<div class="badge badge-error">EXaHM</div>
+				{/if}
 				<div class="badge m-1 badge-outline mx-2">
-					<div>#{group.examGroupCode}</div>
+					{group.examGroupInfo.programs} /
+					{group.examGroupInfo.studentRegs}
 				</div>
-			</a>
-			{#if online}
-				<div class="badge badge-error">online</div>
+			</div>
+			{#if details}
+				<div class="flex justify-between m-2">
+					<div>{regs} Regs</div>
+					<div class="w-1/2">
+						<progress class="progress {regsColor} w-full" value={regs} max={regsMax} />
+					</div>
+				</div>
+				<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
+					<div>{slots} Slots</div>
+					<div class="w-1/2">
+						<progress class="progress {slotsColor} w-full" value={slots} max={slotsmax} />
+					</div>
+				</div>
+				<div class="flex justify-between m-2">
+					<div>{conflicts} Konflikte</div>
+					<div class="w-1/2">
+						<progress
+							class="progress {conflictsColor} w-full"
+							value={conflicts}
+							max={conflictsMax}
+						/>
+					</div>
+				</div>
 			{/if}
-			{#if exahm}
-				<div class="badge badge-error">EXaHM</div>
-			{/if}
-			<div class="badge m-1 badge-outline mx-2">
-				{group.examGroupInfo.programs} /
-				{group.examGroupInfo.studentRegs}
-			</div>
-		</div>
-		{#if group.examGroupInfo.notPlannedByMe}
-			<div class="alert alert-warning shadow-lg p-1">
-				<div>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						class="stroke-current flex-shrink-0 h-6 w-6"
-						fill="none"
-						viewBox="0 0 24 24"
-						><path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-						/></svg
+			<ul class="m-1">
+				{#each group.exams as exam}
+					<li
+						class="border border-gray-400 {bgColorExam(
+							exam.exam.zpaExam.isRepeaterExam
+						)} rounded m-1 p-1"
 					>
-					<span>Nicht von mir geplant</span>
-				</div>
-			</div>
-		{/if}
-		{#if details}
-			<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
-				<div>{slots} Slots</div>
-				<div class="w-1/2">
-					<progress class="progress {slotsColor} w-full" value={slots} max={slotsmax} />
-				</div>
-			</div>
-			<div class="flex justify-between m-2">
-				<div>{regs} Regs</div>
-				<div class="w-1/2">
-					<progress class="progress {regsColor} w-full" value={regs} max={regsMax} />
-				</div>
-			</div>
-			<div class="flex justify-between m-2">
-				<div>{conflicts} Konflikte</div>
-				<div class="w-1/2">
-					<progress class="progress {conflictsColor} w-full" value={conflicts} max={conflictsMax} />
-				</div>
-			</div>
-		{/if}
-		<ul class="m-1">
-			{#each group.exams as exam}
-				<li
-					class="border border-gray-400 {bgColorExam(
-						exam.exam.zpaExam.isRepeaterExam
-					)} rounded m-1 p-1"
-				>
-					{exam.exam.zpaExam.ancode}.
-					{exam.exam.zpaExam.mainExamer}
-					{exam.exam.zpaExam.module}
-					<a href="/exam/examWithRegs/{exam.exam.zpaExam.ancode}">
-						<div class="badge gap-2">{studentRegsExam(exam.exam.studentRegs)}</div>
-					</a>
-					{#if exam.constraints && exam.constraints.online}
-						<div class="badge badge-error">online</div>
-					{/if}
-					{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahmRooms}
-						<div class="badge badge-error">EXaHM</div>
-					{/if}
-				</li>
-			{/each}
-		</ul>
-		{#if !group.examGroupInfo.notPlannedByMe && moveable}
-			<div class="border-slate-400 p-1 m-2 border-2 rounded-lg">
-				<select class="select select-sm select-bordered  select-ghost m-2" bind:value={slotToMove}>
-					<option selected value="none">Slot auswählen</option>
-					{#each group.examGroupInfo.possibleSlots as slot}
-						<option value={slot}
-							>({slot.dayNumber}, {slot.slotNumber})
-							<span class="font-mono"> {mkDateTimeShort(slot.starttime)}</span></option
-						>
-					{/each}
-				</select>
-				<div class="flex mx-2">
-					<button
-						class="btn btn-xs btn-outline"
-						disabled={enabledButton(slotToMove)}
-						on:click={addToSlot}
-					>
-						{#if inSlot}
-							verschieben
-						{:else}
-							In Slot einplanen
+						{exam.exam.zpaExam.ancode}.
+						{exam.exam.zpaExam.mainExamer}
+						{exam.exam.zpaExam.module}
+						<a href="/exam/examWithRegs/{exam.exam.zpaExam.ancode}">
+							<div class="badge badge-outline gap-2">{studentRegsExam(exam.exam.studentRegs)}</div>
+						</a>
+						{#if exam.constraints && exam.constraints.online}
+							<div class="badge badge-error">online</div>
 						{/if}
-					</button>
-					{#if inSlot}
-						<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
-					{/if}
-				</div>
-			</div>
-		{/if}
+						{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahmRooms}
+							<div class="badge badge-error">EXaHM</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+		</div>
+		<div>
+			{#if moveable}
+				{#if group.examGroupInfo.notPlannedByMe}
+					<div class="alert shadow-lg p-1 w-full">
+						<div>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="stroke-current flex-shrink-0 h-6 w-6"
+								fill="none"
+								viewBox="0 0 24 24"
+								><path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+								/></svg
+							>
+							<span>Nicht von mir geplant</span>
+						</div>
+					</div>
+				{:else}
+					<div class="border-slate-400 p-1 m-2 border-2 rounded-lg">
+						<select
+							class="select select-sm select-bordered  select-ghost m-2"
+							bind:value={slotToMove}
+						>
+							<option selected value="none">Slot auswählen</option>
+							{#each group.examGroupInfo.possibleSlots as slot}
+								<option value={slot}
+									>({slot.dayNumber}, {slot.slotNumber})
+									<span class="font-mono"> {mkDateTimeShort(slot.starttime)}</span></option
+								>
+							{/each}
+						</select>
+						<div class="flex mx-2">
+							<button
+								class="btn btn-xs btn-outline"
+								disabled={enabledButton(slotToMove)}
+								on:click={addToSlot}
+							>
+								{#if inSlot}
+									verschieben
+								{:else}
+									In Slot einplanen
+								{/if}
+							</button>
+							{#if inSlot}
+								<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
+							{/if}
+						</div>
+					</div>
+				{/if}
+			{/if}
+		</div>
 	</div>
 {/if}

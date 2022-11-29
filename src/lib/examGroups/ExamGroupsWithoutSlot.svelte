@@ -32,7 +32,9 @@
 
 {#if examGroupsWithoutSlot.length > 0}
 	<div class="text-center m-2">
-		<div class="text-4xl text-center mt-8 uppercase">Noch einzuplanen</div>
+		<div class="text-4xl text-center mt-8 uppercase">
+			{examGroupsWithoutSlot.length} noch einzuplanen
+		</div>
 	</div>
 
 	<div class="grid  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
