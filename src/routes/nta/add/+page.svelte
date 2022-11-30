@@ -98,7 +98,7 @@
 				<span>Name</span>
 				<input
 					type="text"
-					placeholder="Name"
+					placeholder="Name, Vorname"
 					class="input input-bordered w-full"
 					bind:value={ntaInput.name}
 				/>
@@ -124,7 +124,7 @@
 					min="0"
 					max="100"
 					class="range"
-					step="10"
+					step="5"
 					bind:value={ntaInput.deltaDurationPercent}
 				/>
 

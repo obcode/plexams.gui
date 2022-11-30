@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import NtaCard from '$lib/NTACard.svelte';
+	import NtaCard from '$lib/nta/NTACard.svelte';
 </script>
 
 <div class="text-center m-2">

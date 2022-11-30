@@ -2,7 +2,7 @@
 	export let data;
 
 	// import { semester } from '../../../stores/semester.js';
-	import NtaTr from '$lib/NtaTR.svelte';
+	import NtaTr from '$lib/nta/NtaTR.svelte';
 
 	let searchTerm = '';
 	let filteredNTAs = [];

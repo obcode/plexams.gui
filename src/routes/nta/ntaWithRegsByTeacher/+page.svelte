@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	console.log(data);
+	import TeacherWithNTACard from '$lib/nta/TeacherWithNTACard.svelte';
 </script>
 
 <div class="text-center m-2">
@@ -9,45 +9,8 @@
 	</div>
 </div>
 
-<div class="overflow-x-auto my-2">
-	<table class="table w-full">
-		<tbody>
-			{#each data.ntasWithRegsByTeacher as entry}
-				<tr>
-					<td>
-						{entry.teacher.shortname}
-					</td>
-
-					<td>
-						<table>
-							{#each entry.exams as exam}
-								<tr>
-									<td>
-										<a href="/exam/examWithRegs/{exam.exam.ancode}"
-											>{exam.exam.ancode}. {exam.exam.module}</a
-										>
-									</td>
-									<td>
-										<table>
-											{#each exam.ntas as nta}
-												<tr>
-													<td>
-														{nta.nta.name}, {nta.nta.compensation}
-													</td>
-												</tr>
-											{/each}
-										</table>
-									</td>
-								</tr>
-							{/each}
-						</table>
-					</td>
-					<!-- <td>{exam.module}</td>
-					<td>{exam.mainExamer}</td>
-					<td>{exam.examTypeFull}</td>
-					<td>{exam.groups}</td> -->
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+<div class="grid grid-cols-3 gap-3">
+	{#each data.ntasWithRegsByTeacher as teacherWithNTA}
+		<TeacherWithNTACard {teacherWithNTA} />
+	{/each}
 </div>
