@@ -162,7 +162,7 @@
 			<div class="flex justify-between">
 				<a href="/exam/examGroups/{group.examGroupCode}">
 					<div class="badge m-1 badge-outline mx-2">
-						<div>#{group.examGroupCode}</div>
+						<div>#{group.examGroupCode} / {group.examGroupInfo.maxDuration} Min.</div>
 					</div>
 				</a>
 				{#if online}
