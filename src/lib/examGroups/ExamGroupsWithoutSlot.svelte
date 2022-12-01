@@ -99,7 +99,7 @@
 				{showExamerID}
 				{showOnlyOnline}
 				{showOnlyExahm}
-				selected={selectedGroup == group.examGroupCode}
+				{selectedGroup}
 				{details}
 				{moveable}
 				inSlot={false}

@@ -14,7 +14,36 @@
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
+	import { onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
+
+	let allowedSlots = [];
+
+	async function fetchAllowedSlots() {
+		const response = await fetch('/api/allowedSlots', {
+			method: 'POST',
+			body: JSON.stringify({ examGroupCode: group.examGroupCode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		allowedSlots = data.allowedSlots;
+	}
+
+	let awkwardSlots = [];
+
+	async function fetchAwkwardSlots() {
+		const response = await fetch('/api/awkwardSlots', {
+			method: 'POST',
+			body: JSON.stringify({ examGroupCode: group.examGroupCode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		awkwardSlots = data.awkwardSlots;
+	}
 
 	$: selected = selectedGroup == group.examGroupCode;
 
@@ -62,6 +91,9 @@
 		if (showOnlyExahm) {
 			show = exahm;
 		}
+
+		fetchAllowedSlots();
+		fetchAwkwardSlots();
 	}
 
 	let showConflictCount = false;
@@ -120,14 +152,20 @@
 		}
 	}
 
-	let slots = group.examGroupInfo.possibleSlots.length;
+	let slots = allowedSlots.length;
 	let slotsmax = maxSlots;
 	let slotsColor = ' progress-success ';
-	if (slots < slotsmax / 2) {
-		slotsColor = ' progress-warning ';
-	}
-	if (slots < slotsmax / 4) {
-		slotsColor = ' progress-error ';
+
+	$: {
+		slots = allowedSlots.length;
+		slotsmax = maxSlots;
+		slotsColor = ' progress-success ';
+		if (slots < slotsmax / 2) {
+			slotsColor = ' progress-warning ';
+		}
+		if (slots < slotsmax / 4) {
+			slotsColor = ' progress-error ';
+		}
 	}
 
 	let regs = group.examGroupInfo.studentRegs;
@@ -166,6 +204,11 @@
 			examGroupCode: group.examGroupCode
 		});
 	}
+
+	onMount(() => {
+		fetchAllowedSlots();
+		fetchAwkwardSlots();
+	});
 </script>
 
 {#if show}
@@ -286,7 +329,7 @@
 							bind:value={slotToMove}
 						>
 							<option selected value="none">Slot auswählen</option>
-							{#each group.examGroupInfo.possibleSlots as slot}
+							{#each allowedSlots as slot}
 								<option value={slot}
 									>({slot.dayNumber}, {slot.slotNumber})
 									<span class="font-mono"> {mkDateTimeShort(slot.starttime)}</span></option
