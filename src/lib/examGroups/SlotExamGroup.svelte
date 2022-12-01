@@ -248,7 +248,8 @@
 				{#if exahm}
 					<div class="badge badge-error">EXaHM</div>
 				{/if}
-				<div class="badge m-1 badge-outline mx-2">
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<div class="badge m-1 badge-outline mx-2" on:click={select(group.examGroupCode)}>
 					{group.examGroupInfo.programs} /
 					{group.examGroupInfo.studentRegs}
 				</div>
@@ -303,7 +304,7 @@
 			</ul>
 		</div>
 		<div>
-			{#if moveable}
+			{#if moveable || selected}
 				{#if group.examGroupInfo.notPlannedByMe}
 					<div class="alert shadow-lg p-1 w-full">
 						<div>

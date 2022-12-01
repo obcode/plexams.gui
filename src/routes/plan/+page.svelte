@@ -5,8 +5,8 @@
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
-	let details = true;
-	let moveable = true;
+	let details = false;
+	let moveable = false;
 
 	let maxSlots = data.semesterConfig.days.length * data.semesterConfig.starttimes.length;
 
@@ -220,7 +220,6 @@
 				<input
 					type="checkbox"
 					class="toggle mx-3"
-					checked
 					on:click={() => {
 						details = !details;
 					}}
@@ -235,7 +234,6 @@
 				<input
 					type="checkbox"
 					class="toggle mx-3"
-					checked
 					on:click={() => {
 						moveable = !moveable;
 					}}
