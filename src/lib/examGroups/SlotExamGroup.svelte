@@ -6,7 +6,7 @@
 	export let showExamerID;
 	export let showOnlyOnline;
 	export let showOnlyExahm;
-	export let selected;
+	export let selectedGroup;
 	export let details;
 	export let moveable;
 	export let inSlot;
@@ -15,6 +15,8 @@
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
 	const dispatch = createEventDispatcher();
+
+	$: selected = selectedGroup == group.examGroupCode;
 
 	let slotToMove = 'none';
 
@@ -62,18 +64,31 @@
 		}
 	}
 
+	let showConflictCount = false;
+	function conflictCount(groupCode) {
+		for (const conflict of group.examGroupInfo.conflicts) {
+			if (conflict.examGroupCode == groupCode) {
+				return conflict.count;
+			}
+		}
+		return 0;
+	}
+
 	let bgcolor;
 	$: if (selected) {
 		bgcolor = 'bg-cyan-500';
+		showConflictCount = false;
 	} else {
 		if (conflictingGroupCodes.includes(group.examGroupCode)) {
 			bgcolor = 'bg-red-500';
+			showConflictCount = true;
 		} else {
 			if (group.examGroupInfo.notPlannedByMe) {
 				bgcolor = 'bg-red-200';
 			} else {
 				bgcolor = 'bg-yellow-200';
 			}
+			showConflictCount = false;
 		}
 	}
 
@@ -159,6 +174,25 @@
 		class="flex flex-col justify-between shadow-lg m-1 p-1 {bgcolor}  border-2 border-slate-900 rounded-lg shadow-xl shadow-slate-300"
 	>
 		<div>
+			{#if showConflictCount}
+				<div class="alert shadow-lg p-1 w-full">
+					<div>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="stroke-current flex-shrink-0 h-6 w-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+							/></svg
+						>
+						<span>{conflictCount(selectedGroup)} Konflikte</span>
+					</div>
+				</div>
+			{/if}
 			<div class="flex justify-between">
 				<a href="/exam/examGroups/{group.examGroupCode}">
 					<div class="badge m-1 badge-outline mx-2">
@@ -183,13 +217,15 @@
 						<progress class="progress {regsColor} w-full" value={regs} max={regsMax} />
 					</div>
 				</div>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
 					<div>{slots} Slots</div>
 					<div class="w-1/2">
 						<progress class="progress {slotsColor} w-full" value={slots} max={slotsmax} />
 					</div>
 				</div>
-				<div class="flex justify-between m-2">
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
 					<div>{conflicts} Konflikte</div>
 					<div class="w-1/2">
 						<progress

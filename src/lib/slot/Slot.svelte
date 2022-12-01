@@ -38,7 +38,9 @@
 	function countIt() {
 		let counted = 0;
 		for (const group of examGroups) {
-			counted += group.examGroupInfo.studentRegs;
+			if (!group.examGroupInfo.notPlannedByMe) {
+				counted += group.examGroupInfo.studentRegs;
+			}
 		}
 		count = counted;
 	}
@@ -98,7 +100,7 @@
 		{showExamerID}
 		{showOnlyOnline}
 		{showOnlyExahm}
-		selected={selectedGroup == group.examGroupCode}
+		{selectedGroup}
 		{details}
 		{moveable}
 		inSlot={true}

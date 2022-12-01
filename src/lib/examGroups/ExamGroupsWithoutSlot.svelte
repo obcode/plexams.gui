@@ -44,6 +44,7 @@
 
 {#if examGroupsPlannedByMe.length > 0}
 	<div class="text-center m-2">
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div
 			class="text-4xl text-center mt-8 uppercase"
 			on:click={() => (showExamGroupsPlannedByMe = !showExamGroupsPlannedByMe)}
@@ -62,7 +63,7 @@
 					{showExamerID}
 					{showOnlyOnline}
 					{showOnlyExahm}
-					selected={selectedGroup == group.examGroupCode}
+					{selectedGroup}
 					{details}
 					{moveable}
 					inSlot={false}

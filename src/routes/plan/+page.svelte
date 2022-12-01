@@ -306,7 +306,7 @@
 				{#each data.semesterConfig.days as day}
 					<th class="border-dashed border-2 border-sky-500 object-center">
 						<div class="">
-							<div>{day.number}</div>
+							<div>#{day.number}</div>
 							<div>{mkDateShort(day.date)}</div>
 						</div>
 					</th>
@@ -318,7 +318,7 @@
 				<tr>
 					<td class="border-dashed border-2 border-sky-500 content-center">
 						<div>
-							<div>{time.number}</div>
+							<div>#{time.number}</div>
 							<div>{time.start}</div>
 						</div>
 					</td>
