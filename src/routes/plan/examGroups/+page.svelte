@@ -298,7 +298,7 @@
 	<table
 		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
 	>
-		<thead class="border-dashed border-2 border-sky-500">
+		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 			<tr>
 				<th />
 				{#each data.semesterConfig.days as day}
@@ -314,7 +314,7 @@
 		<tbody>
 			{#each data.semesterConfig.starttimes as time}
 				<tr>
-					<td class="border-dashed border-2 border-sky-500 content-center">
+					<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
 						<div>
 							<div>#{time.number}</div>
 							<div>{time.start}</div>
@@ -324,7 +324,7 @@
 						<td
 							class="border-dashed border-2 border-sky-500 {statusColor(
 								slotsStatus[[day.number, time.number]]
-							)}"
+							)} "
 						>
 							<Slot
 								day={day.number}

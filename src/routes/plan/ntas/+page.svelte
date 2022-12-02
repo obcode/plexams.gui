@@ -5,6 +5,14 @@
 	import { onMount } from 'svelte';
 
 	let showOnlyExamsWithNTAs = false;
+	let details = false;
+
+	function bg(time) {
+		if (time % 2 == 1) {
+			return 'bg-slate-200';
+		}
+		return 'bg-slate-300';
+	}
 
 	onMount(() => {});
 </script>
@@ -28,12 +36,26 @@
 			</label>
 		</div>
 	</div>
+	<div>
+		<div class="form-control my-3">
+			<label class="label cursor-pointer">
+				<span class="label-text">Details</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					on:click={() => {
+						details = !details;
+					}}
+				/>
+			</label>
+		</div>
+	</div>
 </div>
 <div>
 	<table
 		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
 	>
-		<thead class="border-dashed border-2 border-sky-500">
+		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 			<tr>
 				<th />
 				{#each data.semesterConfig.days as day}
@@ -49,15 +71,20 @@
 		<tbody>
 			{#each data.semesterConfig.starttimes as time}
 				<tr>
-					<td class="border-dashed border-2 border-sky-500 content-center">
+					<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
 						<div>
 							<div>#{time.number}</div>
 							<div>{time.start}</div>
 						</div>
 					</td>
 					{#each data.semesterConfig.days as day}
-						<td class="border-dashed border-2 border-sky-500">
-							<ExamsWithNTAs day={day.number} time={time.number} {showOnlyExamsWithNTAs} />
+						<td class="border-dashed border-2 border-sky-500 {bg(time.number)}">
+							<ExamsWithNTAs
+								day={day.number}
+								time={time.number}
+								{showOnlyExamsWithNTAs}
+								{details}
+							/>
 						</td>
 					{/each}
 				</tr>

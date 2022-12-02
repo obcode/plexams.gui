@@ -1,6 +1,7 @@
 <script>
 	export let plannedExam;
 	export let showOnlyExamsWithNTAs;
+	export let details;
 
 	let exam = plannedExam.exam;
 	let ntas = plannedExam.nta;
@@ -25,12 +26,20 @@
 					<ul>
 						{#each ntas as nta}
 							<li class="border border-gray-400 rounded m-1 p-1">
-								{nta.nta.name}, {nta.nta.compensation}
+								{nta.nta.name}
+								{#if nta.nta.needsRoomAlone}
+									<div class="badge badge-error">Raum</div>
+								{/if}
+								{#if details}
+									<div>
+										{nta.nta.compensation}
+									</div>
+								{/if}
 								<div class="flex justify-between m-2">
-									<div>{nta.nta.deltaDurationPercent}% Verlängerung</div>
-									<div class="w-1/2">
+									<div>{nta.nta.deltaDurationPercent}%</div>
+									<div class="w-3/4">
 										<progress
-											class="progress w-full"
+											class="progress progress-error w-full"
 											value={nta.nta.deltaDurationPercent}
 											max={100}
 										/>

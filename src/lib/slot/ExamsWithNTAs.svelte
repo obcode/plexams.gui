@@ -2,6 +2,7 @@
 	export let day;
 	export let time;
 	export let showOnlyExamsWithNTAs;
+	export let details;
 	import ExamWithNTAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
 	import { onMount } from 'svelte';
 
@@ -26,5 +27,5 @@
 </script>
 
 {#each examsWithNTAs as plannedExam}
-	<ExamWithNTAsCard {plannedExam} {showOnlyExamsWithNTAs} />
+	<ExamWithNTAsCard {plannedExam} {showOnlyExamsWithNTAs} {details} />
 {/each}
