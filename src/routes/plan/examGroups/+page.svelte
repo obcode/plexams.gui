@@ -209,7 +209,7 @@
 </script>
 
 <div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplan</div>
+	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplan (Prüfungsgruppen)</div>
 </div>
 
 <div class="flex">

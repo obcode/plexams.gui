@@ -47,6 +47,7 @@
 				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
 				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/plan/examGroups">Prüfungen planen</a></li>
+				<li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li>
 			</ul>
 		</div>
 		<div class="dropdown dropdown-end">
