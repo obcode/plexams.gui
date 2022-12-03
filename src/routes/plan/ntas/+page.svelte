@@ -78,7 +78,7 @@
 						</div>
 					</td>
 					{#each data.semesterConfig.days as day}
-						<td class="border-dashed border-2 border-sky-500 {bg(time.number)}">
+						<td class="align-top border-dashed border-2 border-sky-500 {bg(time.number)}">
 							<ExamsWithNTAs
 								day={day.number}
 								time={time.number}

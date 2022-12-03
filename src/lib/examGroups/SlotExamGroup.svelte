@@ -238,8 +238,8 @@
 			{/if}
 			<div class="flex justify-between">
 				<a href="/exam/examGroups/{group.examGroupCode}">
-					<div class="badge m-1 badge-outline mx-2">
-						<div>#{group.examGroupCode} / {group.examGroupInfo.maxDuration} Min.</div>
+					<div class="border border-gray-400 rounded-lg p-1 mx-2">
+						<div>#{group.examGroupCode} / {group.examGroupInfo.maxDuration}Min.</div>
 					</div>
 				</a>
 				{#if online}
@@ -249,7 +249,10 @@
 					<div class="badge badge-error">EXaHM</div>
 				{/if}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<div class="badge m-1 badge-outline mx-2" on:click={select(group.examGroupCode)}>
+				<div
+					class="border border-gray-400 rounded-lg p-1 mx-2"
+					on:click={select(group.examGroupCode)}
+				>
 					{group.examGroupInfo.programs} /
 					{group.examGroupInfo.studentRegs}
 				</div>
