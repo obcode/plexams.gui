@@ -7,13 +7,6 @@
 	let showOnlyExamsWithNTAs = false;
 	let details = false;
 
-	function bg(time) {
-		if (time % 2 == 1) {
-			return 'bg-slate-200';
-		}
-		return 'bg-slate-300';
-	}
-
 	onMount(() => {});
 </script>
 
@@ -78,7 +71,7 @@
 						</div>
 					</td>
 					{#each data.semesterConfig.days as day}
-						<td class="align-top border-dashed border-2 border-sky-500 {bg(time.number)}">
+						<td class="align-top border-dashed border-2 border-sky-500 ">
 							<ExamsWithNTAs
 								day={day.number}
 								time={time.number}

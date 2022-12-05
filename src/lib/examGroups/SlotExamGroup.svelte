@@ -18,6 +18,9 @@
 	const dispatch = createEventDispatcher();
 
 	let allowedSlots = [];
+	let locked = false;
+
+	$: locked = allowedSlots.length == 0;
 
 	async function fetchAllowedSlots() {
 		const response = await fetch('/api/allowedSlots', {
@@ -118,7 +121,11 @@
 			if (group.examGroupInfo.notPlannedByMe) {
 				bgcolor = 'bg-red-200';
 			} else {
-				bgcolor = 'bg-yellow-200';
+				if (locked) {
+					bgcolor = 'bg-grey-100';
+				} else {
+					bgcolor = 'bg-yellow-200';
+				}
 			}
 			showConflictCount = false;
 		}

@@ -12,10 +12,16 @@
 	} else {
 		show = true;
 	}
+
+	function bg() {
+		if (ntas && ntas.length > 0) return 'bg-yellow-200';
+
+		return 'bg-base-100';
+	}
 </script>
 
 {#if show}
-	<div class="card lg:card-side bg-base-100 shadow-xl m-3">
+	<div class="card lg:card-side {bg()} shadow-xl m-3 border border-black rounded-lg">
 		<div class="card-body">
 			<a href="/exam/examGroups/{exam.ancode}">
 				<div>{exam.ancode}. {exam.zpaExam.mainExamer}</div>
