@@ -236,6 +236,20 @@
 					</div>
 				</div>
 			{/if}
+			{#if allowedSlots.length == 0}
+				<div class="p-1 m-2">
+					<svg
+						viewBox="0 0 100 100"
+						class="stroke-current flex-shrink-0 h-6 w-6"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
+							fill-rule="evenodd"
+						/>
+					</svg>
+				</div>
+			{/if}
 			<div class="flex justify-between">
 				<a href="/exam/examGroups/{group.examGroupCode}">
 					<div class="border border-gray-400 rounded-lg p-1 mx-2">
@@ -245,6 +259,7 @@
 				{#if online}
 					<div class="badge badge-error">online</div>
 				{/if}
+
 				{#if exahm}
 					<div class="badge badge-error">EXaHM</div>
 				{/if}

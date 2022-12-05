@@ -39,9 +39,9 @@
 	<div class="flex-none">
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="0" class="btn btn-ghost"> Plan </label>
+			<label tabindex="-1" class="btn btn-ghost"> Plan </label>
 			<ul
-				tabindex="0"
+				tabindex="-1"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
@@ -52,9 +52,9 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="0" class="btn btn-ghost"> Infos </label>
+			<label tabindex="-1" class="btn btn-ghost"> Infos </label>
 			<ul
-				tabindex="0"
+				tabindex="-1"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
@@ -67,9 +67,9 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="0" class="btn btn-ghost"> Vorbereitung </label>
+			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
 			<ul
-				tabindex="0"
+				tabindex="-1"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
@@ -83,7 +83,7 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="0" class="badge mx-4"> {semester} </label>
+			<label tabindex="-1" class="badge mx-4"> {semester} </label>
 		</div>
 	</div>
 </div>
