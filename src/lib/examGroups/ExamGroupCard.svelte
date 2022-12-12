@@ -38,6 +38,7 @@
 			{/each}
 		</ul>
 		{#if !collapsed}
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<h3
 				class="text-xl"
 				on:click={() => {
@@ -58,6 +59,7 @@
 			</div>
 			<div><SlotsMiniMap slots={group.examGroupInfo.possibleSlots} /></div>
 		{:else}
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<span
 				on:click={() => {
 					collapsed = !collapsed;

@@ -13,7 +13,8 @@
 	>
 {/if}
 
-<div class="card bg-base-100 shadow-xl" on:click={() => (show = true)} transition:fade>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="card bg-base-100 shadow-xl" on:click={() => (show = !show)} transition:fade>
 	<div class="card-body">
 		{teacher.shortname}
 	</div>

@@ -35,7 +35,7 @@
 	}
 </script>
 
-<div tabindex="0" class="collapse border border-base-300 bg-base-100 rounded-box">
+<div tabindex="-1" class="collapse border border-base-300 bg-base-100 rounded-box">
 	<input type="checkbox" />
 	<div class="collapse-title text-xl font-medium {color}">
 		{zpaExamsType.type} ({size}/{zpaExamsType.exams.length})
