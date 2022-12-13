@@ -67,6 +67,21 @@
 	}
 
 	let roomToUse = 'none';
+	let roomToUseNTA = [];
+
+	if (ntas) {
+		for (let nta of ntas) {
+			roomToUseNTA.push('none');
+		}
+	}
+
+	function addRoom(nta) {
+		if (nta) {
+			console.log(`für NTA ${nta} einplanen`);
+		} else {
+			console.log('als normalen Prüfungsraum einplanen');
+		}
+	}
 
 	onMount(() => {
 		fetchRoomsForSlot();
@@ -77,21 +92,34 @@
 	<div class="card lg:card-side {bg()} shadow-xl m-3 border border-black rounded-lg">
 		<div class="card-body">
 			<div>
-				{#if exahm}
-					<div class="badge badge-error">EXaHM</div>
-				{/if}
-				{#if placesWithSocket}
-					<div class="badge badge-error">Steckdosen</div>
-				{/if}
-				{#if lab}
-					<div class="badge badge-error">Labor</div>
-				{/if}
+				<div class="flex justify-between">
+					{#if exahm}
+						<div class="badge badge-error">EXaHM</div>
+					{/if}
+					{#if placesWithSocket}
+						<div class="badge badge-error">Steckdosen</div>
+					{/if}
+					{#if lab}
+						<div class="badge badge-error">Labor</div>
+					{/if}
+				</div>
 			</div>
-			<a href="/exam/examGroups/{exam.ancode}">
-				<div>{exam.ancode}. {exam.zpaExam.mainExamer}</div>
-				<div>{exam.zpaExam.module}</div>
+			<div class="border-2 border-black bg-orange-300 rounded-lg p-1">
+				<div class="badge badge-success">{exam.zpaExam.duration}</div>
+				Min.<br />
+				<div class="badge badge-success">{studentRegs}</div>
+				Anmeldungen
+			</div>
+
+			<div>
+				{exam.ancode}. {exam.zpaExam.mainExamer}:
+				{exam.zpaExam.module}
+			</div>
+
+			<div>
+				<div />
 				<div class="badge badge-success">{studentRegs} Anmeldungen</div>
-			</a>
+			</div>
 			<div class="p-1 m-2">
 				<select class="select select-sm select-bordered  select-ghost m-2" bind:value={roomToUse}>
 					<option selected value="none">Raum auswählen</option>
@@ -99,27 +127,14 @@
 						<option value={room.name}>{room.name} ({room.seats} Plätze)</option>
 					{/each}
 				</select>
-				<!-- <div class="flex mx-2">
-					<button
-						class="btn btn-xs btn-outline"
-						disabled={enabledButton(slotToMove)}
-						on:click={addToSlot}
-					>
-						{#if inSlot}
-							verschieben
-						{:else}
-							In Slot einplanen
-						{/if}
-					</button>
-					{#if inSlot}
-						<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
-					{/if}
-				</div> -->
+				<div class="flex mx-2">
+					<button class="btn btn-xs btn-outline" on:click={() => addRoom()}> einplanen </button>
+				</div>
 			</div>
 			{#if ntas && ntas.length > 0}
 				<div>
 					<ul>
-						{#each ntas as nta}
+						{#each ntas as nta, index}
 							<li class="border border-gray-400 rounded m-1 p-1">
 								{nta.nta.name}
 								{#if nta.nta.needsRoomAlone}
@@ -143,29 +158,18 @@
 								<div class="p-1 m-2">
 									<select
 										class="select select-sm select-bordered  select-ghost m-2"
-										bind:value={roomToUse}
+										bind:value={roomToUseNTA[index]}
 									>
 										<option selected value="none">Raum auswählen</option>
 										{#each allowedRooms as room}
 											<option value={room.name}>{room.name}</option>
 										{/each}
 									</select>
-									<!-- <div class="flex mx-2">
-					<button
-						class="btn btn-xs btn-outline"
-						disabled={enabledButton(slotToMove)}
-						on:click={addToSlot}
-					>
-						{#if inSlot}
-							verschieben
-						{:else}
-							In Slot einplanen
-						{/if}
-					</button>
-					{#if inSlot}
-						<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
-					{/if}
-				</div> -->
+									<div class="flex mx-2">
+										<button class="btn btn-xs btn-outline" on:click={() => addRoom(nta.nta.mtknr)}>
+											einplanen
+										</button>
+									</div>
 								</div>
 							</li>
 						{/each}

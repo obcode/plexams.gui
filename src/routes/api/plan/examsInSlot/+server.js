@@ -15,6 +15,7 @@ export async function POST({ request }) {
 						mainExamer
 						examType
 						groups
+						duration
 					}
 					primussExams {
 						ancode
