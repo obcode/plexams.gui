@@ -16,3 +16,13 @@ export function mkDateTimeShort(datestring) {
 	};
 	return new Date(datestring).toLocaleDateString('de-DE', options);
 }
+export function mkStarttime(datestring) {
+	const options = {
+		month: '2-digit',
+		day: '2-digit',
+		year: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit'
+	};
+	return new Date(datestring).toLocaleDateString('de-DE', options);
+}
