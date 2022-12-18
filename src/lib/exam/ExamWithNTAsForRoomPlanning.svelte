@@ -75,11 +75,32 @@
 		}
 	}
 
-	function addRoom(nta) {
+	async function addRoom(nta) {
 		if (nta) {
 			console.log(`für NTA ${nta} einplanen`);
 		} else {
 			console.log('als normalen Prüfungsraum einplanen');
+
+			const response = await fetch('/api/rooms/addRoomToExam', {
+				method: 'POST',
+				body: JSON.stringify({
+					input: {
+						ancode: exam.ancode,
+						day: slot.dayNumber,
+						time: slot.slotNumber,
+						roomName: roomToUse,
+						seatsPlanned: 0,
+						duration: exam.duration,
+						handicap: false,
+						mktnrs: []
+					}
+				}),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+			let data = await response.json();
+			return data.addExamGroupToSlot;
 		}
 	}
 
@@ -105,10 +126,11 @@
 				</div>
 			</div>
 			<div class="border-2 border-black bg-orange-300 rounded-lg p-1">
-				<div class="badge badge-success">{exam.zpaExam.duration}</div>
-				Min.<br />
 				<div class="badge badge-success">{studentRegs}</div>
 				Anmeldungen
+				<br />
+				<div class="badge badge-warning">{exam.zpaExam.duration}</div>
+				Min.
 			</div>
 
 			<div>
