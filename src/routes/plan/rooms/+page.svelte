@@ -1,7 +1,7 @@
 <script>
 	export let data;
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
+	import { mkDateShort, mkDate } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
 	let showOnlyExamsWithNTAs = false;
@@ -14,74 +14,31 @@
 	<div class="text-4xl text-center mt-8 uppercase">Raumplanung</div>
 </div>
 
-<div class="flex">
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Nur Prüfungen mit NTAs</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyExamsWithNTAs = !showOnlyExamsWithNTAs;
-					}}
-				/>
-			</label>
-		</div>
+{#each data.semesterConfig.days as day}
+	<div class="border-2 border-black rounded-lg shadow-xl bg-green-400 m-2 p-2 text-center">
+		Tag {day.number}: {mkDate(day.date)}
 	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Details</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						details = !details;
-					}}
-				/>
-			</label>
+	{#each data.semesterConfig.starttimes as time}
+		<div class="grid grid-cols-12 gap-4">
+			<div class="col-span-1">
+				<div
+					class="border-solid border-2 border-black bg-yellow-400 m-2 p-2 rounded-lg shadow-xl text-center"
+				>
+					Slot {time.number}: {time.start}
+				</div>
+			</div>
+			<div
+				class="col-span-11 m-2 border-solid border-black  border-2 bg-green-100 rounded-lg shadow-xl"
+			>
+				<div class="flex justify-start">
+					<ExamsForRoomPlanning
+						day={day.number}
+						time={time.number}
+						{showOnlyExamsWithNTAs}
+						{details}
+					/>
+				</div>
+			</div>
 		</div>
-	</div>
-</div>
-<div>
-	<table
-		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
-	>
-		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
-			<tr>
-				<th />
-				{#each data.semesterConfig.days as day}
-					<th class="border-dashed border-2 border-sky-500 object-center">
-						<div class="">
-							<div>#{day.number}</div>
-							<div>{mkDateShort(day.date)}</div>
-						</div>
-					</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data.semesterConfig.starttimes as time}
-				<tr>
-					<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
-						<div>
-							<div>#{time.number}</div>
-							<div>{time.start}</div>
-						</div>
-					</td>
-					{#each data.semesterConfig.days as day}
-						<td class="align-top border-dashed border-2 border-sky-500 ">
-							<ExamsForRoomPlanning
-								day={day.number}
-								time={time.number}
-								{showOnlyExamsWithNTAs}
-								{details}
-							/>
-						</td>
-					{/each}
-				</tr>
-			{/each}
-		</tbody>
-	</table>
-</div>
+	{/each}
+{/each}

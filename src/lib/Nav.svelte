@@ -49,6 +49,7 @@
 				<li><a href="/plan/examGroups">Prüfungen planen</a></li>
 				<li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li>
 				<li><a href="/plan/rooms">Raumplanung</a></li>
+				<li><a href="/plan/roomsTable">Raumplanung (Tabelle)</a></li>
 				<li><a href="/plan/examsInPlanZPA">Prüfungsliste für ZPA</a></li>
 			</ul>
 		</div>

@@ -4,10 +4,10 @@
 	export let details;
 	import { onMount } from 'svelte';
 
-	let exam = plannedExam.exam;
-	let constraints = plannedExam.constraints;
-	let ntas = plannedExam.nta;
-	let slot = plannedExam.slot;
+	let exam = plannedExam.exam.exam;
+	let constraints = plannedExam.exam.constraints;
+	let ntas = plannedExam.exam.nta;
+	let slot = plannedExam.exam.slot;
 
 	let show = true;
 	$: if (showOnlyExamsWithNTAs) {
@@ -25,6 +25,13 @@
 	for (const studReg of exam.studentRegs) {
 		studentRegs += studReg.studentRegs.length;
 	}
+
+	let studentsInRoom = 0;
+	for (const room of plannedExam.rooms) {
+		if (room.room.name != 'No Room') studentsInRoom += room.seatsPlanned;
+	}
+
+	let studentRegsWithoutRoom = studentRegs - studentsInRoom;
 
 	const exahm =
 		constraints != null &&
@@ -105,12 +112,37 @@
 	}
 
 	onMount(() => {
-		fetchRoomsForSlot();
+		// fetchRoomsForSlot();
 	});
+
+	function bgRoom(room) {
+		if (room.name == 'No Room') {
+			return 'bg-red-600';
+		}
+		if (room.name == 'ONLINE') {
+			return 'bg-green-600';
+		}
+		if (room.name == 'R1.046') {
+			return 'bg-red-400';
+		}
+		if (room.name == 'R1.049') {
+			return 'bg-blue-300';
+		}
+		if (room.exahm) {
+			return 'bg-cyan-300';
+		}
+		if (room.lab) {
+			return 'bg-yellow-300';
+		}
+		if (room.handicap) {
+			return 'bg-red-200';
+		}
+		return 'bg-green-300';
+	}
 </script>
 
 {#if show}
-	<div class="card lg:card-side {bg()} shadow-xl m-3 border border-black rounded-lg">
+	<div class="card lg:card-side {bg()} shadow-xl m-3 border-2 border-black rounded-lg">
 		<div class="card-body">
 			<div>
 				<div class="flex justify-between">
@@ -127,8 +159,13 @@
 			</div>
 			<div class="border-2 border-black bg-orange-300 rounded-lg p-1">
 				<div class="badge badge-success">{studentRegs}</div>
-				Anmeldungen
+				Studierende
 				<br />
+				{#if studentRegsWithoutRoom > 0}
+					<div class="badge badge-error">{studentRegsWithoutRoom}</div>
+					ohne Raum
+					<br />
+				{/if}
 				<div class="badge badge-warning">{exam.zpaExam.duration}</div>
 				Min.
 			</div>
@@ -138,12 +175,27 @@
 				{exam.zpaExam.module}
 			</div>
 
-			<div>
-				<div />
-				<div class="badge badge-success">{studentRegs} Anmeldungen</div>
-			</div>
-			<div class="p-1 m-2">
-				<select class="select select-sm select-bordered  select-ghost m-2" bind:value={roomToUse}>
+			<div class="">
+				{#each plannedExam.rooms as room}
+					{#if room.handicap}
+						<div class="border-dashed border-2 border-black {bgRoom(room.room)} rounded-lg m-1 p-1">
+							{room.room.name} ({room.students[0].name},
+							<div class="badge badge-warning">{room.duration}</div>
+							 Minuten)
+						</div>
+					{:else}
+						<div class="border-2 border-black {bgRoom(room.room)}  rounded-lg m-1 p-1">
+							{room.room.name}
+							{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}
+								({room.seatsPlanned}/{room.room.seats})
+								{#if room.reserve}
+									<div class="badge badge-info gap-2">Reserve</div>
+								{/if}
+							{/if}
+						</div>
+					{/if}
+				{/each}
+				<!-- <select class="select select-sm select-bordered  select-ghost m-2" bind:value={roomToUse}>
 					<option selected value="none">Raum auswählen</option>
 					{#each allowedRooms as room}
 						<option value={room.name}>{room.name} ({room.seats} Plätze)</option>
@@ -151,7 +203,7 @@
 				</select>
 				<div class="flex mx-2">
 					<button class="btn btn-xs btn-outline" on:click={() => addRoom()}> einplanen </button>
-				</div>
+				</div> -->
 			</div>
 			{#if ntas && ntas.length > 0}
 				<div>
@@ -177,7 +229,7 @@
 										/>
 									</div>
 								</div>
-								<div class="p-1 m-2">
+								<!-- <div class="p-1 m-2">
 									<select
 										class="select select-sm select-bordered  select-ghost m-2"
 										bind:value={roomToUseNTA[index]}
@@ -192,7 +244,7 @@
 											einplanen
 										</button>
 									</div>
-								</div>
+								</div> -->
 							</li>
 						{/each}
 					</ul>
