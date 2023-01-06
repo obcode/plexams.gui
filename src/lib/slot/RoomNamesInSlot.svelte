@@ -14,7 +14,7 @@
 			}
 		});
 		let data = await response.json();
-		roomNames = data.plannedRoomNamesInSlot;
+		roomNames = data.plannedRoomNamesInSlot.filter((name) => name != 'ONLINE' && name != 'No Room');
 	}
 
 	onMount(() => {
@@ -24,7 +24,14 @@
 
 {#if roomNames.length > 0}
 	<div class="border-solid border-2 border-black m-2 p-2 rounded-lg shadow-xl text-center">
-		<div class="badge badge-primary">{roomNames.length} Räume</div>
+		<div class="badge badge-primary">
+			{roomNames.length}
+			{#if roomNames.length == 1}
+				Raum
+			{:else}
+				Räume
+			{/if}
+		</div>
 		<ul>
 			{#each roomNames as roomName}
 				<li>{roomName}</li>
