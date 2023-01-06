@@ -1,6 +1,7 @@
 <script>
 	export let data;
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
+	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import { mkDate } from '$lib/jshelper/misc';
 
 	let showOnlyExamsWithNTAs = false;
@@ -34,6 +35,9 @@
 				>
 					Slot {time.number}: {time.start}
 				</div>
+				{#if showRooms == 'all'}
+					<RoomNamesInSlot day={day.number} time={time.number} />
+				{/if}
 			</div>
 			<div
 				class="col-span-11 m-2 border-solid border-black  border-2 bg-green-100 rounded-lg shadow-xl"
