@@ -2,12 +2,23 @@
 	export let plannedExam;
 	export let showOnlyExamsWithNTAs;
 	export let details;
+	export let showRooms;
 	import { onMount } from 'svelte';
 
 	let exam = plannedExam.exam.exam;
 	let constraints = plannedExam.exam.constraints;
 	let ntas = plannedExam.exam.nta;
 	let slot = plannedExam.exam.slot;
+
+	let showRoom = true;
+	$: if (showRooms != 'all') {
+		showRoom = false;
+		for (const room of plannedExam.rooms) {
+			if (showRooms == room.room.name) showRoom = true;
+		}
+	} else {
+		showRoom = true;
+	}
 
 	let show = true;
 	$: if (showOnlyExamsWithNTAs) {
@@ -141,7 +152,7 @@
 	}
 </script>
 
-{#if show}
+{#if show && showRoom}
 	<div class="card lg:card-side {bg()} shadow-xl m-3 border-2 border-black rounded-lg">
 		<div class="card-body">
 			<div>
@@ -181,7 +192,7 @@
 						<div class="border-dashed border-2 border-black {bgRoom(room.room)} rounded-lg m-1 p-1">
 							{room.room.name} ({room.students[0].name},
 							<div class="badge badge-warning">{room.duration}</div>
-							 Minuten)
+							Minuten)
 						</div>
 					{:else}
 						<div class="border-2 border-black {bgRoom(room.room)}  rounded-lg m-1 p-1">

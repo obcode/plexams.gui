@@ -1,17 +1,25 @@
 <script>
 	export let data;
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
-	import { mkDateShort, mkDate } from '$lib/jshelper/misc';
-	import { onMount } from 'svelte';
+	import { mkDate } from '$lib/jshelper/misc';
 
 	let showOnlyExamsWithNTAs = false;
 	let details = false;
 
-	onMount(() => {});
+	let showRooms = 'all';
 </script>
 
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">Raumplanung</div>
+</div>
+
+<div>
+	<select class="select select-primary w-full max-w-xs my-2" bind:value={showRooms}>
+		<option selected value="all">Alle Räume</option>
+		{#each data.plannedRoomNames as plannedRoomName}
+			<option>{plannedRoomName}</option>
+		{/each}
+	</select>
 </div>
 
 {#each data.semesterConfig.days as day}
@@ -36,6 +44,7 @@
 						time={time.number}
 						{showOnlyExamsWithNTAs}
 						{details}
+						{showRooms}
 					/>
 				</div>
 			</div>

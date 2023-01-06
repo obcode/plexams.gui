@@ -3,6 +3,7 @@
 	export let time;
 	export let showOnlyExamsWithNTAs;
 	export let details;
+	export let showRooms;
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
 
@@ -27,5 +28,5 @@
 </script>
 
 {#each examsInSlotWithRooms as plannedExam}
-	<ExamWithNTAsForRoomPlanning {plannedExam} {showOnlyExamsWithNTAs} {details} />
+	<ExamWithNTAsForRoomPlanning {plannedExam} {showOnlyExamsWithNTAs} {details} {showRooms} />
 {/each}
