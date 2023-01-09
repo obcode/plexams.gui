@@ -62,6 +62,7 @@
 			>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
 				<li><a href="/zpa/invigilators">Aufsichten</a></li>
+				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
 				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
 				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>
