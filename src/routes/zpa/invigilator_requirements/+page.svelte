@@ -3,6 +3,7 @@
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 
 	let invigilators = data.invigilatorsWithReq;
+	const todos = data.todos;
 
 	let searchTerm = '';
 	let filteredInvigilators = [];
@@ -18,10 +19,34 @@
 	}
 </script>
 
-<div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">
-		Aufsichten mit Anforderungen
-		<span class="badge badge-lg indicator-item">{invigilators.length}</span>
+<div class="flex flex-col m-2">
+	<div>
+		<div class="text-4xl text-center mt-8 uppercase">
+			Aufsichten mit Anforderungen
+			<span class="badge badge-lg indicator-item">{invigilators.length}</span>
+		</div>
+	</div>
+
+	<div class="text-center stats shadow justify-center">
+		<div class="stat place-items-center">
+			<div class="stat-title">Aufsichten in Räumen</div>
+			<div class="stat-value">{todos.sumExamRooms} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">Reserve-Aufsichten</div>
+			<div class="stat-value">{todos.sumReserve} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">anrechenbare Zeiten</div>
+			<div class="stat-value">{todos.sumOtherContributions} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">zu leisten pro Aufsicht</div>
+			<div class="stat-value">{todos.todoPerInvigilator} Min.</div>
+		</div>
 	</div>
 </div>
 

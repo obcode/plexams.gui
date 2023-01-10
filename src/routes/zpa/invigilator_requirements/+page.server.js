@@ -36,7 +36,22 @@ export async function load({ params }) {
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
+	const queryTodos = gql`
+		query {
+			invigilatorTodos {
+				sumExamRooms
+				sumReserve
+				sumOtherContributions
+				invigilatorCount
+				todoPerInvigilator
+			}
+		}
+	`;
+
+	const dataTodos = await request(env.PLEXAMS_SERVER, queryTodos);
+
 	return {
-		invigilatorsWithReq: data.invigilatorsWithReq
+		invigilatorsWithReq: data.invigilatorsWithReq,
+		todos: dataTodos.invigilatorTodos
 	};
 }

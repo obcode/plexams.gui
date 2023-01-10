@@ -4,8 +4,6 @@
 
 	import InvigilatorDays from './InvigilatorDays.svelte';
 
-	console.log(invigilator);
-
 	function bg(invigilator) {
 		if (!invigilator.requirements) {
 			return 'bg-red-400';
