@@ -190,7 +190,10 @@
 				{#each plannedExam.rooms as room}
 					{#if room.handicap}
 						<div class="border-dashed border-2 border-black {bgRoom(room.room)} rounded-lg m-1 p-1">
-							{room.room.name} ({room.students[0].name},
+							{room.room.name} (
+							{#each room.students as student}
+								{student.name};
+							{/each}
 							<div class="badge badge-warning">{room.duration}</div>
 							Minuten)
 						</div>

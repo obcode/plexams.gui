@@ -19,6 +19,9 @@ export async function load({ params }) {
 				}
 				requirements {
 					excludedDates
+					excludedDays
+					examDateTimes
+					examDays
 					partTime
 					oralExamsContribution
 					liveCodingContribution

@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import InvigilatorTR from '$lib/InvigilatorTR.svelte';
+	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 
 	let invigilators = data.invigilatorsWithReq;
 
@@ -35,12 +35,14 @@
 </div>
 
 <div class="overflow-x-auto">
-	<table class="table table-compact w-full">
+	<table class="table table-zebra table-compact w-full">
 		<thead>
 			<tr>
 				<th />
 				<th>Name</th>
+				<th>Faktor</th>
 				<th>anrechenbar</th>
+				<th>Prüfungstage</th>
 			</tr>
 		</thead>
 		<tbody>
