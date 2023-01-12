@@ -42,8 +42,10 @@ export async function load({ params }) {
 				sumExamRooms
 				sumReserve
 				sumOtherContributions
+				sumOtherContributionsOvertimeCutted
 				invigilatorCount
 				todoPerInvigilator
+				todoPerInvigilatorOvertimeCutted
 			}
 		}
 	`;

@@ -44,8 +44,18 @@
 		</div>
 
 		<div class="stat place-items-center">
+			<div class="stat-title">anrechenbare Zeiten (bereinigt)</div>
+			<div class="stat-value">{todos.sumOtherContributionsOvertimeCutted} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
 			<div class="stat-title">zu leisten pro Aufsicht</div>
 			<div class="stat-value">{todos.todoPerInvigilator} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">zu leisten pro Aufsicht (bereinigt)</div>
+			<div class="stat-value">{todos.todoPerInvigilatorOvertimeCutted} Min.</div>
 		</div>
 	</div>
 </div>
