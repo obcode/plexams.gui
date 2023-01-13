@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	import InvigilatorsDay from '$lib/invigilator/InvigilatorsDay.svelte';
+	import InvigilatorsForDay from '$lib/invigilator/InvigilatorsForDay.svelte';
 	import InvigilationDayPlanning from '$lib/invigilator/InvigilationDayPlanning.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
 </script>
@@ -14,21 +14,21 @@
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		{#if day.number == data.day}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a data-sveltekit-reload class="tab  tab-active" href="./{day.number}"
-				>Tag {day.number}: {mkDate(day.date)}</a
-			>
+			<a data-sveltekit-reload class="tab  tab-active" href="./{day.number}">
+				Tag {day.number}: {mkDate(day.date)}
+			</a>
 		{:else}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a data-sveltekit-reload class="tab" href="./{day.number}"
-				>Tag {day.number}: {mkDateShort(day.date)}</a
-			>
+			<a data-sveltekit-reload class="tab" href="./{day.number}">
+				Tag {day.number}: {mkDateShort(day.date)}
+			</a>
 		{/if}
 	{/each}
 </div>
 
 <div class="grid grid-cols-12 gap-4">
 	<div class="col-span-2">
-		<InvigilatorsDay semesterConfig={data.semesterConfig} day={data.day} />
+		<InvigilatorsForDay day={data.day} />
 	</div>
 	<div class="col-span-10">
 		<InvigilationDayPlanning semesterConfig={data.semesterConfig} day={data.day} />

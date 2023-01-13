@@ -6,5 +6,5 @@
 </script>
 
 {#each semesterConfig.starttimes as time}
-	<InvigilationSlotPlanning {semesterConfig} {day} {time} />
+	<InvigilationSlotPlanning {day} {time} />
 {/each}

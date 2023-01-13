@@ -2,7 +2,7 @@
 	export let data;
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 
-	let invigilators = data.invigilatorsWithReq;
+	let invigilators = data.todos.invigilators;
 	const todos = data.todos;
 
 	let searchTerm = '';
@@ -70,14 +70,15 @@
 </div>
 
 <div class="overflow-x-auto">
-	<table class="table table-zebra table-compact w-full">
+	<table class="table table-compact w-full">
 		<thead>
 			<tr>
 				<th />
 				<th>Name</th>
+				<th>Tage</th>
 				<th>Faktor</th>
 				<th>anrechenbar</th>
-				<th>Prüfungstage</th>
+				<th>zu leisten</th>
 			</tr>
 		</thead>
 		<tbody>

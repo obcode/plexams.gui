@@ -1,5 +1,6 @@
 <script>
-	export let requirements;
+	export let invigilator;
+	const requirements = invigilator.requirements;
 
 	function bg(day) {
 		if (requirements.examDays.includes(day) && requirements.excludedDays.includes(day)) {

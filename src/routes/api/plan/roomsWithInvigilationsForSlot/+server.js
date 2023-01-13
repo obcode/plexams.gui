@@ -12,12 +12,21 @@ export async function POST({ request }) {
 				}
 				roomsWithInvigilators {
 					name
-					rooms {
+					maxDuration
+					studentCount
+					roomAndExams {
 						room {
-							name
+							room {
+								name
+							}
+							duration
+							seatsPlanned
 						}
-						duration
-						seatsPlanned
+						exam {
+							ancode
+							module
+							mainExamer
+						}
 					}
 					invigilator {
 						shortname

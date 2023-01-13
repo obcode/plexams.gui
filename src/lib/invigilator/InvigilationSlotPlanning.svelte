@@ -1,5 +1,4 @@
 <script>
-	export let semesterConfig;
 	export let day;
 	export let time;
 	import Room from './Room.svelte';
