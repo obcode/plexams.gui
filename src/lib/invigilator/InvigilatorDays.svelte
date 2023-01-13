@@ -13,6 +13,11 @@
 			return 'bg-green-500';
 		}
 	}
+	function bgInvigilation(day) {
+		if (invigilator.todos.invigilationDays.includes(day)) {
+			return 'bg-cyan-500';
+		}
+	}
 </script>
 
 <div class="flex">
@@ -22,3 +27,12 @@
 		</div>
 	{/each}
 </div>
+{#if invigilator.todos.invigilationDays.length > 0}
+	<div class="flex">
+		{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
+			<div class="border border-black p-1 {bgInvigilation(day)}">
+				{day}
+			</div>
+		{/each}
+	</div>
+{/if}

@@ -45,6 +45,9 @@ export async function load({ params }) {
 						doingMinutes
 						enough
 						invigilationDays
+						invigilations {
+							roomName
+						}
 					}
 				}
 			}

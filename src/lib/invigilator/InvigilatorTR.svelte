@@ -47,4 +47,10 @@
 	<td class={bgEnough()}>
 		{#if invigilator.todos} {invigilator.todos.totalMinutes} {/if}
 	</td>
+	<td>
+		{#if invigilator.todos.doingMinutes > 0}
+			{invigilator.todos.doingMinutes}
+		{/if}
+	</td>
+	<td>{invigilator.todos.totalMinutes - invigilator.todos.doingMinutes}</td>
 </tr>

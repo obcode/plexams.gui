@@ -15,7 +15,7 @@
 			}
 		});
 		let data = await response.json();
-		console.log(data);
+		// console.log(data);
 		want = data.invigilatorsForDay.want;
 		can = data.invigilatorsForDay.can;
 	}

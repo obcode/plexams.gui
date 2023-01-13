@@ -79,6 +79,8 @@
 				<th>Faktor</th>
 				<th>anrechenbar</th>
 				<th>zu leisten</th>
+				<th>geleistet</th>
+				<th>noch offen</th>
 			</tr>
 		</thead>
 		<tbody>

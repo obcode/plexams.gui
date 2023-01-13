@@ -20,15 +20,12 @@
 			}
 		});
 		let data = await response.json();
-		// console.log(data.plannedExamsInSlot);
+		// console.log(data.roomsWithInvigilationsForSlot);
 		slot = data.roomsWithInvigilationsForSlot;
 		noRooms = slot.roomsWithInvigilators.length == 0;
 		loading = false;
 	}
 
-	// $: if (refresh) {
-	// 	fetchSlot(day, time);
-	// }
 	onMount(() => {
 		fetchSlot(day, time.number);
 	});
@@ -41,9 +38,15 @@
 				Slot {time.number}: {time.start} Uhr
 			</div>
 			{#if !noRooms}
-				<div class="border-2 border-black rounded-lg shadow-xl bg-red-400 m-2 p-2 text-center">
-					Reserveaufsicht
-				</div>
+				{#if slot.reserve}
+					<div class="border-2 border-black rounded-lg shadow-xl bg-yellow-300 m-2 p-2 text-center">
+						Reserve: {slot.reserve.shortname}
+					</div>
+				{:else}
+					<div class="border-2 border-black rounded-lg shadow-xl bg-red-400 m-2 p-2 text-center">
+						Reserveaufsicht
+					</div>
+				{/if}
 			{/if}
 		</div>
 		{#if !noRooms}
