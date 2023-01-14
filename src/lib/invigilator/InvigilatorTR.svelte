@@ -22,6 +22,16 @@
 	if (invigilator.requirements) {
 		contribution = invigilator.requirements.allContributions;
 	}
+
+	let openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+	function bgOpenMinutes() {
+		if (openMinutes <= 0) {
+			return 'bg-red-400';
+		}
+		if (openMinutes < 60) {
+			return 'bg-yellow-400';
+		}
+	}
 </script>
 
 <tr>
@@ -52,5 +62,5 @@
 			{invigilator.todos.doingMinutes}
 		{/if}
 	</td>
-	<td>{invigilator.todos.totalMinutes - invigilator.todos.doingMinutes}</td>
+	<td class={bgOpenMinutes()}>{openMinutes}</td>
 </tr>

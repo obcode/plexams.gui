@@ -17,7 +17,13 @@
 		let data = await response.json();
 		// console.log(data);
 		want = data.invigilatorsForDay.want;
-		can = data.invigilatorsForDay.can;
+		can = data.invigilatorsForDay.can.sort(function (invig1, invig2) {
+			return (
+				invig2.todos.totalMinutes -
+				invig2.todos.doingMinutes -
+				(invig1.todos.totalMinutes - invig1.todos.doingMinutes)
+			);
+		});
 	}
 
 	onMount(() => {

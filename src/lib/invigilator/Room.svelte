@@ -3,6 +3,7 @@
 
 	function bg() {
 		if (roomsWithInvigilators.invigilator) return 'bg-green-300';
+		if (roomsWithInvigilators.name == 'No Room') return 'bg-cyan-100';
 		return 'bg-red-400';
 	}
 </script>
