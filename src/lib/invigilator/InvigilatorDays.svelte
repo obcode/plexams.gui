@@ -1,6 +1,19 @@
 <script>
+	export let semesterConfig;
 	export let invigilator;
+	import { mkDateShort } from '$lib/jshelper/misc';
+	import Invigilation from './Invigilation.svelte';
 	const requirements = invigilator.requirements;
+
+	let small = true;
+
+	const invigilations = invigilator.todos.invigilations.sort(function (i1, i2) {
+		const day = i1.slot.dayNumber - i2.slot.dayNumber;
+		if (day != 0) {
+			return day;
+		}
+		return i1.slot.slotNumber - i2.slot.slotNumber;
+	});
 
 	function bg(day) {
 		if (requirements.examDays.includes(day) && requirements.excludedDays.includes(day)) {
@@ -20,19 +33,62 @@
 	}
 </script>
 
-<div class="flex">
-	{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-		<div class="border border-black p-1 {bg(day)}">
-			{day}
-		</div>
-	{/each}
-</div>
-{#if invigilator.todos.invigilationDays.length > 0}
-	<div class="flex">
-		{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-			<div class="border border-black p-1 {bgInvigilation(day)}">
-				{day}
+<div class="flex" on:click={() => (small = !small)} on:keypress={() => small}>
+	{#if small}
+		<div class="text-center">
+			<div class="flex">
+				{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
+					<div class="border border-black p-1 {bg(day)}">
+						{day}
+					</div>
+				{/each}
 			</div>
-		{/each}
-	</div>
-{/if}
+			{#if invigilator.todos.invigilationDays.length > 0}
+				<div class="flex">
+					{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
+						<div class="border border-black p-1 {bgInvigilation(day)}">
+							{day}
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<div class="text-center">
+			<div class="flex">
+				{#each semesterConfig.days as day}
+					<div class="w-20 border border-black p-1">
+						{mkDateShort(day.date)}
+					</div>
+				{/each}
+			</div>
+			<div class="flex">
+				{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
+					<div class="w-20 border border-black p-1 {bg(day)}">
+						{day}
+					</div>
+				{/each}
+			</div>
+			{#if invigilator.todos.invigilationDays.length > 0}
+				<div class="flex">
+					{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
+						<div class="w-20 border border-black p-1 {bgInvigilation(day)}">
+							{day}
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{/if}
+	{#if invigilator.todos.invigilations.length > 0}
+		<div class="ml-7">
+			<ol class="list-decimal">
+				{#each invigilations as invigilation}
+					<li>
+						<Invigilation {invigilation} />
+					</li>
+				{/each}
+			</ol>
+		</div>
+	{/if}
+</div>

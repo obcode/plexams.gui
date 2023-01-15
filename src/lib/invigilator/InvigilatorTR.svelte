@@ -1,4 +1,5 @@
 <script>
+	export let semesterConfig;
 	export let index;
 	export let invigilator;
 
@@ -37,7 +38,7 @@
 <tr>
 	<td>{index + 1}</td>
 	<td class={bg(invigilator)}>{invigilator.teacher.shortname} ({invigilator.teacher.id})</td>
-	<td><InvigilatorDays {invigilator} /></td>
+	<td><InvigilatorDays {semesterConfig} {invigilator} /></td>
 	<td
 		>{#if invigilator.requirements.factor != 1}
 			{invigilator.requirements.factor}

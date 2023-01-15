@@ -9,6 +9,7 @@ export async function POST({ request }) {
 			roomsWithInvigilationsForSlot(day: $day, time: $time) {
 				reserve {
 					shortname
+					id
 				}
 				roomsWithInvigilators {
 					name
@@ -30,6 +31,7 @@ export async function POST({ request }) {
 					}
 					invigilator {
 						shortname
+						id
 					}
 				}
 			}

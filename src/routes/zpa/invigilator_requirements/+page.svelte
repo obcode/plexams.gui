@@ -1,5 +1,7 @@
 <script>
 	export let data;
+	import { mkDateShort } from '$lib/jshelper/misc';
+
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 
 	let invigilators = data.todos.invigilators;
@@ -60,6 +62,17 @@
 	</div>
 </div>
 
+<div class="flex justify-center">
+	{#each data.semesterConfig.days as day}
+		<div class="btn-group ">
+			<button class="btn btn-outline gap-2 m-1">
+				Tag {day.number}
+				<div class="badge badge-warning">{mkDateShort(day.date)}</div>
+			</button>
+		</div>
+	{/each}
+</div>
+
 <div class="flex my-2">
 	<input
 		class="input input-bordered w-full max-w-x mr-2"
@@ -85,7 +98,7 @@
 		</thead>
 		<tbody>
 			{#each filteredInvigilators as invigilator, index}
-				<InvigilatorTR {index} {invigilator} />
+				<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} />
 			{/each}
 		</tbody>
 	</table>

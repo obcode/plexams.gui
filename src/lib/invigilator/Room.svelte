@@ -18,13 +18,14 @@
 			Minuten
 		</h2>
 		{#if roomsWithInvigilators.invigilator}
-			<div class="border border-black bg-yellow-300 rounded-lg m-1 p-1">
+			<div class="border-2 border-black bg-yellow-300 rounded-lg m-1 p-1">
+				{roomsWithInvigilators.invigilator.id}.
 				{roomsWithInvigilators.invigilator.shortname}
 			</div>
 		{/if}
 		<ul>
 			{#each roomsWithInvigilators.roomAndExams as roomAndExam}
-				<li class="border border-black rounded-lg m-1 p-1">
+				<li class="border-2 border-black rounded-lg m-1 p-1">
 					{roomAndExam.exam.ancode}. {roomAndExam.exam.mainExamer}: {roomAndExam.exam.module}
 					<div class="badge badge-error">{roomAndExam.room.seatsPlanned}</div>
 					Studs,

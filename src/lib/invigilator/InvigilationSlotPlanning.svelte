@@ -40,7 +40,7 @@
 			{#if !noRooms}
 				{#if slot.reserve}
 					<div class="border-2 border-black rounded-lg shadow-xl bg-yellow-300 m-2 p-2 text-center">
-						Reserve: {slot.reserve.shortname}
+						{slot.reserve.id}. {slot.reserve.shortname} (Reserve)
 					</div>
 				{:else}
 					<div class="border-2 border-black rounded-lg shadow-xl bg-red-400 m-2 p-2 text-center">

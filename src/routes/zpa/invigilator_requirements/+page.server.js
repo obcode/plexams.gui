@@ -47,6 +47,12 @@ export async function load({ params }) {
 						invigilationDays
 						invigilations {
 							roomName
+							slot {
+								dayNumber
+								slotNumber
+							}
+							isReserve
+							isSelfInvigilation
 						}
 					}
 				}
@@ -56,7 +62,25 @@ export async function load({ params }) {
 
 	const dataTodos = await request(env.PLEXAMS_SERVER, queryTodos);
 
+	const semesterQuery = gql`
+		query {
+			semesterConfig {
+				days {
+					number
+					date
+				}
+				starttimes {
+					number
+					start
+				}
+			}
+		}
+	`;
+
+	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+
 	return {
+		semesterConfig: semesterData.semesterConfig,
 		todos: dataTodos.invigilatorTodos
 	};
 }
