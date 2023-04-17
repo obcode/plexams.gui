@@ -72,7 +72,7 @@
 	}
 </script>
 
-<div class="flex">
+<div class="flex place-content-center">
 	{#each showCfg as showOption}
 		<label class="label cursor-pointer">
 			<span class="label-text m-2">{showOption}</span>
