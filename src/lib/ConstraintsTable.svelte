@@ -74,9 +74,15 @@
 
 <div class="flex place-content-center">
 	{#each showCfg as showOption}
-		<label class="label cursor-pointer">
+		<label class="label cursor-pointer m-1 border border-black rounded-xl">
+			<input
+				type="radio"
+				name="radiogrp"
+				class="radio radio-success"
+				bind:group={toShow}
+				value={showOption}
+			/>
 			<span class="label-text m-2">{showOption}</span>
-			<input type="radio" name="radiogrp" class="radio" bind:group={toShow} value={showOption} />
 		</label>
 	{/each}
 </div>
