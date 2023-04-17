@@ -1,64 +1,55 @@
 <script>
 	export let examsWithConstraints;
-	// export let inPlan;
 
-	let searchTermAncode = '';
-	let searchTermTeachers = '';
-	let searchTermModule = '';
-	let searchTermType = '';
-	let searchTermGroups = '';
-	let filteredExams = [];
-	filteredExams = [...examsWithConstraints];
-	let onlyConstraints = true;
+	let filteredExams = [...examsWithConstraints];
+
+	let toShow = 'Alle Constraints';
+
+	let showCfg = [
+		'Alle Prüfungen',
+		'Alle Constraints',
+		'EXaHM-Räume',
+		'SafeExamBrowser',
+		'Labor',
+		'Steckdosen'
+	];
 
 	$: {
-		if (onlyConstraints) {
+		if (toShow == 'Alle Constraints') {
 			filteredExams = examsWithConstraints.filter((exam) => exam.constraints);
+		} else if (toShow == 'EXaHM-Räume') {
+			filteredExams = examsWithConstraints.filter(
+				(exam) =>
+					exam.constraints &&
+					exam.constraints.roomConstraints &&
+					exam.constraints.roomConstraints.exahmRooms
+			);
+		} else if (toShow == 'SafeExamBrowser') {
+			filteredExams = examsWithConstraints.filter(
+				(exam) =>
+					exam.constraints &&
+					exam.constraints.roomConstraints &&
+					exam.constraints.roomConstraints.seb
+			);
+		} else if (toShow == 'Labor') {
+			filteredExams = examsWithConstraints.filter(
+				(exam) =>
+					exam.constraints &&
+					exam.constraints.roomConstraints &&
+					exam.constraints.roomConstraints.lab
+			);
+		} else if (toShow == 'Steckdosen') {
+			filteredExams = examsWithConstraints.filter(
+				(exam) =>
+					exam.constraints &&
+					exam.constraints.roomConstraints &&
+					exam.constraints.roomConstraints.placesWithSocket
+			);
 		} else {
 			filteredExams = [...examsWithConstraints];
 		}
 	}
 
-	// $: {
-	// 	if (searchTermAncode) {
-	// 		filteredExams = exams.filter((exam) => exam.ancode.toString().startsWith(searchTermAncode));
-	// 	} else if (searchTermTeachers) {
-	// 		filteredExams = exams.filter((exam) =>
-	// 			exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
-	// 		);
-	// 	} else if (searchTermModule) {
-	// 		filteredExams = exams.filter((exam) =>
-	// 			exam.module.toLowerCase().includes(searchTermModule.toLowerCase())
-	// 		);
-	// 	} else if (searchTermType) {
-	// 		filteredExams = exams.filter((exam) =>
-	// 			exam.examTypeFull.toLowerCase().includes(searchTermType.toLowerCase())
-	// 		);
-	// 	} else if (searchTermGroups) {
-	// 		filteredExams = exams.filter((exam) => {
-	// 			for (let group of exam.groups) {
-	// 				if (group.toLowerCase().startsWith(searchTermGroups.toLowerCase())) {
-	// 					return true;
-	// 				}
-	// 			}
-	// 			return false;
-	// 		});
-	// 	} else {
-	// 		filteredExams = [...exams];
-	// 	}
-	// }
-
-	// async function addExam(ancode) {
-	// 	console.log(`${ancode} wird hinzugefügt.`);
-	// 	await fetch('/api/zpaexams/addToPlan', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ ancode, unknown: false }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	location.reload();
-	// }
 	async function notPlannedByMe(ancode) {
 		await fetch('/api/notPlannedByMe', {
 			method: 'POST',
@@ -72,7 +63,7 @@
 
 	function bgConstraints(constraints) {
 		if (constraints && constraints.notPlannedByMe) {
-			return 'bg-red-400';
+			return 'bg-gray-500';
 		}
 		if (constraints) {
 			return 'bg-yellow-200';
@@ -81,59 +72,19 @@
 	}
 </script>
 
-<!-- <div class="flex ">
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermAncode}
-		placeholder="AnCode"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermModule}
-		placeholder="Modulname"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermTeachers}
-		placeholder="Dozierender"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermType}
-		placeholder="Art"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermGroups}
-		placeholder="Gruppe"
-	/>
-</div> -->
-<div class="flex flex-col">
-	<div class="form-control w-52">
-		<div class="form-control">
-			<label class="label cursor-pointer">
-				<span class="label-text">Nur Constraints</span>
-				<input
-					type="checkbox"
-					class="toggle"
-					checked
-					on:click={() => {
-						onlyConstraints = !onlyConstraints;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
+<div class="flex">
+	{#each showCfg as showOption}
+		<label class="label cursor-pointer">
+			<span class="label-text m-2">{showOption}</span>
+			<input type="radio" name="radiogrp" class="radio" bind:group={toShow} value={showOption} />
+		</label>
+	{/each}
 </div>
 <div class="overflow-x-auto my-2">
 	<table class="table table-compact w-full">
 		<thead>
 			<tr>
+				<th />
 				<th>zu planen</th>
 				<th>Gleichzeitig mit</th>
 				<th>Nicht am</th>
@@ -147,8 +98,9 @@
 			</tr>
 		</thead>
 		<tbody>
-			{#each filteredExams as exam}
+			{#each filteredExams as exam, idx}
 				<tr>
+					<th class=" ">{idx + 1}.</th>
 					<td class={bgConstraints(exam.constraints)}>
 						{#if exam.constraints && exam.constraints.notPlannedByMe}
 							<input
