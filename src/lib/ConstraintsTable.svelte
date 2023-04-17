@@ -213,7 +213,10 @@
 								Labor,
 							{/if}
 							{#if exam.constraints.roomConstraints.exahmRooms}
-								EXaHM-Räume,
+								EXaHM,
+							{/if}
+							{#if exam.constraints.roomConstraints.seb}
+								SafeExamBrowser,
 							{/if}
 						{/if}</td
 					>
