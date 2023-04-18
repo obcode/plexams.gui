@@ -11,12 +11,15 @@
 		'EXaHM-Räume',
 		'SafeExamBrowser',
 		'Labor',
-		'Steckdosen'
+		'Steckdosen',
+		'Nicht von mir geplant'
 	];
 
 	$: {
 		if (toShow == 'Alle Constraints') {
-			filteredExams = examsWithConstraints.filter((exam) => exam.constraints);
+			filteredExams = examsWithConstraints.filter(
+				(exam) => exam.constraints && !exam.constraints.notPlannedByMe
+			);
 		} else if (toShow == 'EXaHM-Räume') {
 			filteredExams = examsWithConstraints.filter(
 				(exam) =>
@@ -44,6 +47,10 @@
 					exam.constraints &&
 					exam.constraints.roomConstraints &&
 					exam.constraints.roomConstraints.placesWithSocket
+			);
+		} else if (toShow == 'Nicht von mir geplant') {
+			filteredExams = examsWithConstraints.filter(
+				(exam) => exam.constraints && exam.constraints.notPlannedByMe
 			);
 		} else {
 			filteredExams = [...examsWithConstraints];
@@ -91,38 +98,26 @@
 		<thead>
 			<tr>
 				<th />
-				<th>zu planen</th>
-				<th>Gleichzeitig mit</th>
-				<th>Nicht am</th>
-				<th>Nur am</th>
-				<th>Raum-Constraints</th>
 				<th>AnCode</th>
 				<th>Module</th>
 				<th>Prüfer:in</th>
 				<th>Art</th>
 				<th>Gruppen</th>
+				<th>Gleichzeitig mit</th>
+				<th>Nicht am</th>
+				<th>Nur am</th>
+				<th>Raum-Constraints</th>
 			</tr>
 		</thead>
 		<tbody>
 			{#each filteredExams as exam, idx}
 				<tr>
 					<th class=" ">{idx + 1}.</th>
-					<td class={bgConstraints(exam.constraints)}>
-						{#if exam.constraints && exam.constraints.notPlannedByMe}
-							<input
-								type="checkbox"
-								class="toggle"
-								on:click={() => console.log('selbst aus DB löschen!')}
-							/>
-						{:else}
-							<input
-								type="checkbox"
-								class="toggle"
-								checked
-								on:click={() => notPlannedByMe(exam.zpaExam.ancode)}
-							/>
-						{/if}
-					</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.ancode}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.module}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.mainExamer}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.examType}</td>
+					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.groups}</td>
 					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.sameSlot}
 							{#each exam.constraints.sameSlot as ancode, i}
@@ -178,11 +173,6 @@
 							{/if}
 						{/if}</td
 					>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.ancode}</td>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.module}</td>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.mainExamer}</td>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.examType}</td>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.groups}</td>
 				</tr>
 			{/each}
 		</tbody>
