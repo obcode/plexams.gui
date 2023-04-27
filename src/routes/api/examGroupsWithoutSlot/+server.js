@@ -40,7 +40,7 @@ export async function GET({ url }) {
 						}
 						conflicts {
 							program
-							conflics {
+							conflicts {
 								ancode
 								numberOfStuds
 							}

@@ -38,7 +38,7 @@ export async function POST({ request }) {
 						}
 						conflicts {
 							program
-							conflics {
+							conflicts {
 								ancode
 								numberOfStuds
 							}

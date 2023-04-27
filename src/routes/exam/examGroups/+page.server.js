@@ -36,7 +36,7 @@ export async function load({ params }) {
 						}
 						conflicts {
 							program
-							conflics {
+							conflicts {
 								ancode
 								numberOfStuds
 							}
