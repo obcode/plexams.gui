@@ -56,15 +56,26 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Infos </label>
+			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
 			<ul
 				tabindex="-1"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/zpa/teacher">Dozierende</a></li>
-				<li><a href="/zpa/invigilators">Aufsichten</a></li>
-				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
-				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
+				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
+				<li><a href="/exam/constraints">Constraints</a></li>
+				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
+			</ul>
+		</div>
+		<div class="dropdown dropdown-end">
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label tabindex="-1" class="btn btn-ghost"> NTA </label>
+			<ul
+				tabindex="-1"
+				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+			>
+				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
 				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
@@ -72,18 +83,26 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
+			<label tabindex="-1" class="btn btn-ghost"> ZPA </label>
 			<ul
 				tabindex="-1"
 				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
-				<li><a href="/exam/constraints">Constraints</a></li>
-				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
-				<li><a href="/nta/add"> NTA hinzufügen </a></li>
+				<li><a href="/zpa/teacher">Dozierende</a></li>
+				<li><a href="/zpa/invigilators">Aufsichten</a></li>
+				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
+				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
+			</ul>
+		</div>
+		<div class="dropdown dropdown-end">
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label tabindex="-1" class="btn btn-ghost"> Primuss </label>
+			<ul
+				tabindex="-1"
+				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+			>
+				<li><a href="/primuss/exams">Prüfungslisten</a></li>
 			</ul>
 		</div>
 		<div class="dropdown dropdown-end">
