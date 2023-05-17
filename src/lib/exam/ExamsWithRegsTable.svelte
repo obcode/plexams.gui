@@ -27,8 +27,8 @@
 			);
 		} else if (searchTermGroups) {
 			filteredExams = exams.filter((exam) => {
-				for (let group of exam.zpaExam.groups) {
-					if (group.toLowerCase().startsWith(searchTermGroups.toLowerCase())) {
+				for (let reg of exam.studentRegs) {
+					if (reg.program.toLowerCase().startsWith(searchTermGroups.toLowerCase())) {
 						return true;
 					}
 				}
@@ -61,7 +61,7 @@
 	}
 </script>
 
-<div class="flex ">
+<div class="flex">
 	<input
 		class="input input-bordered w-full max-w-x mr-2"
 		type="text"
@@ -123,7 +123,7 @@
 						{#each exam.studentRegs as reg}
 							<button class="btn btn-xs p-1 mx-1">
 								{reg.program}
-								<div class="badge  badge-secondary  badge-xs">{reg.studentRegs.length}</div>
+								<div class="badge badge-secondary badge-xs">{reg.studentRegs.length}</div>
 							</button>{/each}
 					</td>
 				</tr>
