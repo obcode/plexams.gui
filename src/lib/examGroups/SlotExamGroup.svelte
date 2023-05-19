@@ -6,6 +6,7 @@
 	export let showExamerID;
 	export let showOnlyOnline;
 	export let showOnlyExahm;
+	export let showOnlySEB;
 	export let selectedGroup;
 	export let details;
 	export let moveable;
@@ -15,6 +16,7 @@
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
 	import { onMount } from 'svelte';
+
 	const dispatch = createEventDispatcher();
 
 	let allowedSlots = [];
@@ -68,6 +70,16 @@
 				exam.constraints.roomConstraints.exahmRooms);
 	}
 
+	let seb = false;
+	for (const exam of group.exams) {
+		seb =
+			seb ||
+			(exam.constraints &&
+				exam.constraints.roomConstraints &&
+				exam.constraints.roomConstraints.seb);
+		console.log(exam.constraints);
+	}
+
 	$: {
 		if (showGroup == 'all') {
 			show = true;
@@ -93,6 +105,9 @@
 		}
 		if (showOnlyExahm) {
 			show = exahm;
+		}
+		if (showOnlySEB) {
+			show = seb;
 		}
 
 		fetchAllowedSlots();
@@ -247,7 +262,7 @@
 				<div class="p-1 m-2">
 					<svg
 						viewBox="0 0 100 100"
-						class="stroke-current flex-shrink-0 h-6 w-6"
+						class="stroke-current flex-shrink-0 h-3 w-3"
 						xmlns="http://www.w3.org/2000/svg"
 					>
 						<path
@@ -266,9 +281,11 @@
 				{#if online}
 					<div class="badge badge-error">online</div>
 				{/if}
-
 				{#if exahm}
 					<div class="badge badge-error">EXaHM</div>
+				{/if}
+				{#if seb}
+					<div class="badge badge-error">S.E.B.</div>
 				{/if}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div
@@ -324,6 +341,9 @@
 						{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahmRooms}
 							<div class="badge badge-error">EXaHM</div>
 						{/if}
+						{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
+							<div class="badge badge-error">S.E.B.</div>
+						{/if}
 					</li>
 				{/each}
 			</ul>
@@ -369,7 +389,7 @@
 				{:else}
 					<div class="border-slate-400 p-1 m-2 border-2 rounded-lg">
 						<select
-							class="select select-sm select-bordered  select-ghost m-2"
+							class="select select-sm select-bordered select-ghost m-2"
 							bind:value={slotToMove}
 						>
 							<option selected value="none">Slot auswählen</option>

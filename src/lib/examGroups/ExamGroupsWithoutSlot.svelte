@@ -6,6 +6,7 @@
 	export let showExamerID;
 	export let showOnlyOnline;
 	export let showOnlyExahm;
+	export let showOnlySEB;
 	export let selectedGroup;
 	export let details;
 	export let moveable;
@@ -53,7 +54,7 @@
 		</div>
 	</div>
 	{#if showExamGroupsPlannedByMe}
-		<div class="grid  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+		<div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
 			{#each examGroupsPlannedByMe as group}
 				<SlotExamGroup
 					{group}
@@ -63,6 +64,7 @@
 					{showExamerID}
 					{showOnlyOnline}
 					{showOnlyExahm}
+					{showOnlySEB}
 					{selectedGroup}
 					{details}
 					{moveable}
@@ -89,7 +91,7 @@
 		</div>
 	</div>
 
-	<div class="grid  md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+	<div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
 		{#each examGroupsNotPlannedByMe as group}
 			<SlotExamGroup
 				{group}
@@ -99,6 +101,7 @@
 				{showExamerID}
 				{showOnlyOnline}
 				{showOnlyExahm}
+				{showOnlySEB}
 				{selectedGroup}
 				{details}
 				{moveable}

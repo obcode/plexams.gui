@@ -71,6 +71,7 @@ export async function load({ params }) {
 							placesWithSocket
 							lab
 							exahmRooms
+							seb
 						}
 					}
 				}

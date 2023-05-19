@@ -56,6 +56,7 @@ export async function POST({ request }) {
 							placesWithSocket
 							lab
 							exahmRooms
+							seb
 						}
 					}
 				}
