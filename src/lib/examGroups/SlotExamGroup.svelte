@@ -158,7 +158,7 @@
 		}
 	}
 
-	function studentRegsExam(studentRegs) {
+	function allStudentRegsExam(studentRegs) {
 		let count = 0;
 		for (const studReg of studentRegs) {
 			count += studReg.studentRegs.length;
@@ -333,7 +333,17 @@
 						{exam.exam.zpaExam.mainExamer}
 						{exam.exam.zpaExam.module}
 						<a href="/exam/examWithRegs/{exam.exam.zpaExam.ancode}">
-							<div class="badge badge-outline gap-2">{studentRegsExam(exam.exam.studentRegs)}</div>
+							{#each exam.exam.studentRegs as reg}
+								<div class="badge badge-outline gap-2 mx-1">
+									{reg.program}
+									{reg.studentRegs.length}
+								</div>
+							{/each}
+							{#if exam.exam.studentRegs.length > 1}
+								<div class="badge badge-outline gap-2">
+									&sum; {allStudentRegsExam(exam.exam.studentRegs)}
+								</div>
+							{/if}
 						</a>
 						{#if exam.constraints && exam.constraints.online}
 							<div class="badge badge-error">online</div>

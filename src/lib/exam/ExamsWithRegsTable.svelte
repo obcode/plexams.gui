@@ -109,6 +109,7 @@
 		<tbody>
 			{#each filteredExams as exam}
 				<tr>
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<td on:click={gotoo(exam.ancode)}>{exam.ancode}</td>
 					<td>{exam.zpaExam.module}</td>
 					<td>{exam.zpaExam.mainExamer}</td>
