@@ -77,7 +77,7 @@
 			(exam.constraints &&
 				exam.constraints.roomConstraints &&
 				exam.constraints.roomConstraints.seb);
-		console.log(exam.constraints);
+		// console.log(exam.constraints);
 	}
 
 	$: {

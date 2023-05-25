@@ -73,10 +73,10 @@
 			return '';
 		} else if (status == 'allowed') {
 			return 'bg-green-500';
-		} else if (status == 'forbidden') {
-			return 'bg-red-500';
 		} else if (status == 'awkward') {
 			return 'bg-yellow-500';
+		} else if (status == 'forbidden') {
+			return 'bg-red-500';
 		}
 	}
 
@@ -116,7 +116,9 @@
 		}
 		let akwardSlots = await fetchAwkwardSlots(event.detail.examGroupCode);
 		for (let slot of akwardSlots) {
-			slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'awkward';
+			if (slotsStatus[[slot.dayNumber, slot.slotNumber]] == 'allowed') {
+				slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'awkward';
+			}
 		}
 		let res = await fetchconflictingGroupCodes(event.detail.examGroupCode);
 		conflictingGroupCodes = res.map((conflict) => conflict.examGroupCode);
