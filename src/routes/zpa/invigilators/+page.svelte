@@ -1,15 +1,17 @@
 <script>
 	export let data;
 	let invigilators = data.invigilators;
-	import Teachers from '$lib/zpa/Teachers.svelte';
+	import Invigilators from '$lib/zpa/Invigilators.svelte';
 
 	let searchTerm = '';
 	let filteredTeacher = [];
 
+	let invigsWithoutReqs = invigilators.filter((invig) => invig.hasSubmittedRequirements);
+
 	$: {
 		if (searchTerm) {
-			filteredTeacher = invigilators.filter((teacher) =>
-				teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+			filteredTeacher = invigilators.filter((invig) =>
+				invig.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		} else {
 			filteredTeacher = [...invigilators];
@@ -21,6 +23,9 @@
 	<div class="text-4xl text-center mt-8 uppercase">
 		Aufsichten
 		<span class="badge badge-lg indicator-item">{invigilators.length}</span>
+		{#if 0 < invigsWithoutReqs.length}
+			--- es fehlen noch {invigsWithoutReqs.length} Anforderungen
+		{/if}
 	</div>
 </div>
 
@@ -33,4 +38,4 @@
 	/>
 </div>
 
-<Teachers teachers={filteredTeacher} />
+<Invigilators invigilators={filteredTeacher} />

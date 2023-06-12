@@ -5,16 +5,19 @@ export async function load({ params }) {
 	const query = gql`
 		query {
 			invigilators {
-				fullname
-				shortname
-				isProf
-				isLBA
-				isProfHC
-				isStaff
-				lastSemester
-				fk
-				id
-				email
+				teacher {
+					fullname
+					shortname
+					isProf
+					isLBA
+					isProfHC
+					isStaff
+					lastSemester
+					fk
+					id
+					email
+				}
+				hasSubmittedRequirements
 			}
 		}
 	`;
