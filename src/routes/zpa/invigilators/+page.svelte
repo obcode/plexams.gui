@@ -6,7 +6,7 @@
 	let searchTerm = '';
 	let filteredTeacher = [];
 
-	let invigsWithoutReqs = invigilators.filter((invig) => invig.hasSubmittedRequirements);
+	let invigsWithoutReqs = invigilators.filter((invig) => !invig.hasSubmittedRequirements);
 
 	$: {
 		if (searchTerm) {
