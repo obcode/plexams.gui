@@ -16,6 +16,9 @@
 	});
 
 	function bg(day) {
+		if (!requirements) {
+			return 'bg-gray-100';
+		}
 		if (requirements.examDays.includes(day) && requirements.excludedDays.includes(day)) {
 			return 'bg-yellow-500';
 		}
