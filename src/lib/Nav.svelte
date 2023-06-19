@@ -42,7 +42,7 @@
 			<label tabindex="-1" class="btn btn-ghost"> Plan </label>
 			<ul
 				tabindex="-1"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
 				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
@@ -59,7 +59,7 @@
 			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
 			<ul
 				tabindex="-1"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
@@ -73,7 +73,7 @@
 			<label tabindex="-1" class="btn btn-ghost"> NTA </label>
 			<ul
 				tabindex="-1"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
@@ -86,7 +86,7 @@
 			<label tabindex="-1" class="btn btn-ghost"> ZPA </label>
 			<ul
 				tabindex="-1"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
 				<li><a href="/zpa/teacher">Dozierende</a></li>
@@ -100,7 +100,7 @@
 			<label tabindex="-1" class="btn btn-ghost"> Primuss </label>
 			<ul
 				tabindex="-1"
-				class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/primuss/exams">Prüfungslisten</a></li>
 			</ul>
