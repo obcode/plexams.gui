@@ -48,6 +48,8 @@
 		constraints != null &&
 		constraints.roomConstraints != null &&
 		constraints.roomConstraints.exahmRooms;
+	const seb =
+		constraints != null && constraints.roomConstraints != null && constraints.roomConstraints.seb;
 	const placesWithSocket =
 		constraints != null &&
 		constraints.roomConstraints != null &&
@@ -159,6 +161,9 @@
 				<div class="flex justify-between">
 					{#if exahm}
 						<div class="badge badge-error">EXaHM</div>
+					{/if}
+					{#if seb}
+						<div class="badge badge-error">SEB</div>
 					{/if}
 					{#if placesWithSocket}
 						<div class="badge badge-error">Steckdosen</div>

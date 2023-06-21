@@ -56,6 +56,7 @@ export async function GET({ url }) {
 							placesWithSocket
 							lab
 							exahmRooms
+							seb
 						}
 					}
 				}
