@@ -24,7 +24,9 @@
 		contribution = invigilator.requirements.allContributions;
 	}
 
-	let openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+	let openMinutes = 0;
+	$: openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+
 	function bgOpenMinutes() {
 		if (openMinutes <= 0) {
 			return 'bg-green-400';

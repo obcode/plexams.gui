@@ -1,5 +1,6 @@
 <script>
 	export let data;
+	import { fade } from 'svelte/transition';
 
 	// import { semester } from '../../../stores/semester.js';
 	import NtaTr from '$lib/nta/NtaTR.svelte';
@@ -52,24 +53,26 @@
 	</div>
 </div>
 
-<div class="m-2">
-	<div class="overflow-x-auto">
-		<table class="table table-zebra w-full">
-			<!-- head -->
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>Mtknr</th>
-					<th>Ausgleich</th>
-					<th>gültig bis</th>
-					<th>zuletzt</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each filteredNTAs as nta}
-					<NtaTr {nta} />
-				{/each}
-			</tbody>
-		</table>
+{#key filteredNTAs}
+	<div class="m-2" transition:fade>
+		<div class="overflow-x-auto">
+			<table class="table table-zebra w-full">
+				<!-- head -->
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Mtknr</th>
+						<th>Ausgleich</th>
+						<th>gültig bis</th>
+						<th>zuletzt</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each filteredNTAs as nta}
+						<NtaTr {nta} />
+					{/each}
+				</tbody>
+			</table>
+		</div>
 	</div>
-</div>
+{/key}

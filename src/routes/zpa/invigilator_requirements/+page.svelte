@@ -1,6 +1,7 @@
 <script>
 	export let data;
 	import { mkDateShort } from '$lib/jshelper/misc';
+	import { fade } from 'svelte/transition';
 
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 
@@ -10,14 +11,39 @@
 	let searchTerm = '';
 	let filteredInvigilators = [];
 
+	let sortOpen = true;
+
+	let stillOpen = 0;
+	for (const invig of data.todos.invigilators) {
+		stillOpen += invig.todos.totalMinutes - invig.todos.doingMinutes;
+	}
+
+	const stillOpenPerInvig = Math.round(stillOpen / data.todos.invigilators.length);
+
 	$: {
+		let filteredInvigilatorsTmp = [];
+		filteredInvigilators = filteredInvigilatorsTmp;
 		if (searchTerm) {
-			filteredInvigilators = invigilators.filter((invig) =>
+			filteredInvigilatorsTmp = invigilators.filter((invig) =>
 				invig.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		} else {
-			filteredInvigilators = [...invigilators];
+			filteredInvigilatorsTmp = [...invigilators];
 		}
+		if (sortOpen) {
+			filteredInvigilatorsTmp.sort((a, b) => {
+				const x = a.todos.totalMinutes - a.todos.doingMinutes;
+				const y = b.todos.totalMinutes - b.todos.doingMinutes;
+				if (x < y) {
+					return 1;
+				}
+				if (x > y) {
+					return -1;
+				}
+				return 0;
+			});
+		}
+		filteredInvigilators = filteredInvigilatorsTmp;
 	}
 </script>
 
@@ -59,6 +85,16 @@
 			<div class="stat-title">zu leisten pro Aufsicht (bereinigt)</div>
 			<div class="stat-value">{todos.todoPerInvigilatorOvertimeCutted} Min.</div>
 		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">Summe noch offen</div>
+			<div class="stat-value">{stillOpen} Min.</div>
+		</div>
+
+		<div class="stat place-items-center">
+			<div class="stat-title">Summe noch offen pro Aufsicht</div>
+			<div class="stat-value">{stillOpenPerInvig} Min.</div>
+		</div>
 	</div>
 </div>
 
@@ -80,26 +116,40 @@
 		bind:value={searchTerm}
 		placeholder="Suche Aufsichten"
 	/>
+	<div class="form-control m-3">
+		<label class="label cursor-pointer">
+			<span class="label-text">Alphabetisch</span>
+			<input
+				type="checkbox"
+				class="toggle mx-3"
+				on:click={() => {
+					sortOpen = !sortOpen;
+				}}
+			/>
+		</label>
+	</div>
 </div>
 
-<div class="overflow-x-auto">
-	<table class="table table-compact w-full">
-		<thead>
-			<tr>
-				<th />
-				<th>Name</th>
-				<th>Tage</th>
-				<th>Faktor</th>
-				<th>anrechenbar</th>
-				<th>zu leisten</th>
-				<th>geleistet</th>
-				<th>noch offen</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each filteredInvigilators as invigilator, index}
-				<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} />
-			{/each}
-		</tbody>
-	</table>
-</div>
+{#key filteredInvigilators}
+	<div class="overflow-x-auto" transition:fade>
+		<table class="table table-compact w-full">
+			<thead>
+				<tr>
+					<th />
+					<th>Name</th>
+					<th>Tage</th>
+					<th>Faktor</th>
+					<th>anrechenbar</th>
+					<th>zu leisten</th>
+					<th>geleistet</th>
+					<th>noch offen</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each filteredInvigilators as invigilator, index}
+					<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} />
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{/key}

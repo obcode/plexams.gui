@@ -1,5 +1,6 @@
 <script>
 	export let roomsWithInvigilators;
+	export let details;
 
 	function bg() {
 		if (roomsWithInvigilators.invigilator) return 'bg-green-300';
@@ -23,16 +24,18 @@
 				{roomsWithInvigilators.invigilator.shortname}
 			</div>
 		{/if}
-		<ul>
-			{#each roomsWithInvigilators.roomAndExams as roomAndExam}
-				<li class="border-2 border-black rounded-lg m-1 p-1">
-					{roomAndExam.exam.ancode}. {roomAndExam.exam.mainExamer}: {roomAndExam.exam.module}
-					<div class="badge badge-error">{roomAndExam.room.seatsPlanned}</div>
-					Studs,
-					<div class="badge badge-accent">{roomAndExam.room.duration}</div>
-					Min.
-				</li>
-			{/each}
-		</ul>
+		{#if details}
+			<ul>
+				{#each roomsWithInvigilators.roomAndExams as roomAndExam}
+					<li class="border-2 border-black rounded-lg m-1 p-1">
+						{roomAndExam.exam.ancode}. {roomAndExam.exam.mainExamer}: {roomAndExam.exam.module}
+						<div class="badge badge-error">{roomAndExam.room.seatsPlanned}</div>
+						Studs,
+						<div class="badge badge-accent">{roomAndExam.room.duration}</div>
+						Min.
+					</li>
+				{/each}
+			</ul>
+		{/if}
 	</div>
 </div>

@@ -1,6 +1,7 @@
 <script>
 	export let day;
 	export let time;
+	export let details;
 	import Room from './Room.svelte';
 	import { onMount } from 'svelte';
 
@@ -50,9 +51,11 @@
 			{/if}
 		</div>
 		{#if !noRooms}
-			<div class="flex m-2 border-solid border-black  border-2 bg-green-100 rounded-lg shadow-xl">
+			<div
+				class="grid grid-cols-5 m-2 border-solid border-black border-2 bg-green-100 rounded-lg shadow-xl"
+			>
 				{#each slot.roomsWithInvigilators as roomsWithInvigilators}
-					<Room {roomsWithInvigilators} />
+					<Room {roomsWithInvigilators} {details} />
 				{/each}
 			</div>
 		{/if}
