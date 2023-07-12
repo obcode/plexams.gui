@@ -5,16 +5,15 @@ import { request as gqlrequest, gql } from 'graphql-request';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const mutation = gql`
-		mutation ($ancode: Int!, $unknown: Boolean!) {
-			rmZpaExamFromPlan(ancode: $ancode, unknown: $unknown)
+		mutation ($ancode: Int!) {
+			rmZpaExamFromPlan(ancode: $ancode)
 		}
 	`;
 
-	const { ancode, unknown } = await request.json();
+	const { ancode } = await request.json();
 
 	const variables = {
-		ancode,
-		unknown
+		ancode
 	};
 
 	const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, variables);

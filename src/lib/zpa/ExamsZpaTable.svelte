@@ -42,7 +42,7 @@
 		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
-			body: JSON.stringify({ ancode, unknown: false }),
+			body: JSON.stringify({ ancode }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -53,7 +53,7 @@
 		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
-			body: JSON.stringify({ ancode, unknown: false }),
+			body: JSON.stringify({ ancode }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -62,7 +62,7 @@
 	}
 </script>
 
-<div class="flex ">
+<div class="flex">
 	<input
 		class="input input-bordered w-full max-w-x mr-2"
 		type="text"
