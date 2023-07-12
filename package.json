@@ -15,6 +15,8 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
+		"@event-calendar/core": "^1.5.0",
+		"@event-calendar/time-grid": "^1.5.0",
 		"@playwright/test": "^1.35.1",
 		"@sveltejs/adapter-auto": "2.1.0",
 		"@sveltejs/adapter-node": "1.3.1",
