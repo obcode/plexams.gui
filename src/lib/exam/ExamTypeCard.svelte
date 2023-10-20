@@ -6,7 +6,7 @@
 	const dispatch = createEventDispatcher();
 	let selected = false;
 
-	if (zpaExamsType.type.includes('schriftlich')) {
+	if (zpaExamsType.type.includes('schriftlich') || zpaExamsType.type.includes('praktisch')) {
 		selected = true;
 	}
 
