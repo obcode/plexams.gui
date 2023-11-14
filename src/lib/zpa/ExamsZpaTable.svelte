@@ -105,6 +105,7 @@
 				<th>Prüfer:in</th>
 				<th>Art</th>
 				<th>Gruppen</th>
+				<th>Primuss-Codes</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -122,6 +123,15 @@
 					<td>{exam.mainExamer}</td>
 					<td>{exam.examTypeFull}</td>
 					<td>{exam.groups}</td>
+					<td>
+						{#each exam.primussAncodes as ancode}
+							{#if ancode.ancode == exam.ancode}
+								<div class="badge m-1">{ancode.program}/{ancode.ancode}</div>
+							{:else}
+								<div class="badge badge-primary m-1">{ancode.program}/{ancode.ancode}</div>
+							{/if}
+						{/each}
+					</td>
 				</tr>
 			{/each}
 		</tbody>
