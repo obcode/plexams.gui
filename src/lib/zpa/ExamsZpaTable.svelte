@@ -125,10 +125,12 @@
 					<td>{exam.groups}</td>
 					<td>
 						{#each exam.primussAncodes as ancode}
-							{#if ancode.ancode == exam.ancode}
+							{#if ancode.ancode == -1 || ancode.ancode == 0}
+								<div class="badge badge-error m-1">{ancode.program}/{ancode.ancode}</div>
+							{:else if ancode.ancode == exam.ancode}
 								<div class="badge m-1">{ancode.program}/{ancode.ancode}</div>
 							{:else}
-								<div class="badge badge-primary m-1">{ancode.program}/{ancode.ancode}</div>
+								<div class="badge badge-warning m-1">{ancode.program}/{ancode.ancode}</div>
 							{/if}
 						{/each}
 					</td>

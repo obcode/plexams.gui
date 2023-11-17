@@ -1,7 +1,7 @@
 <script>
 	export let data;
 
-	let program = data.primussExams[0].program;
+	let program = data.primussExams.length > 0 ? data.primussExams[0].program : '';
 
 	let exams = [];
 
@@ -14,7 +14,7 @@
 	}
 </script>
 
-<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus Primuss</h1>
+<h1 class="text-4xl text-center my-8 uppercase">Prüfungslisten aus Primuss</h1>
 
 <div class="grid grid-cols-1 justify-items-center">
 	<div class="btn-group">
@@ -43,16 +43,20 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each exams[0].exams as exam}
-					<tr>
-						<td class={bg(exam.studentRegs.length)}>{exam.ancode}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.module}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.mainExamer}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.examType}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.studentRegs.length} Anmeldungen</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.conflicts.conflicts.length} Konflikte</td>
-					</tr>
-				{/each}
+				{#if exams.length > 0}
+					{#each exams[0].exams as exam}
+						<tr>
+							<td class={bg(exam.studentRegs.length)}>{exam.ancode}</td>
+							<td class={bg(exam.studentRegs.length)}>{exam.module}</td>
+							<td class={bg(exam.studentRegs.length)}>{exam.mainExamer}</td>
+							<td class={bg(exam.studentRegs.length)}>{exam.examType}</td>
+							<td class={bg(exam.studentRegs.length)}>{exam.studentRegs.length} Anmeldungen</td>
+							<td class={bg(exam.studentRegs.length)}
+								>{exam.conflicts.conflicts.length} Konflikte</td
+							>
+						</tr>
+					{/each}
+				{/if}
 			</tbody>
 		</table>
 	</div>
