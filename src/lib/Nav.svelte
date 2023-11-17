@@ -65,6 +65,7 @@
 				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
 				<li><a href="/exam/constraints">Constraints</a></li>
+				<li><a href="/exam/externalExams">Zusätzliche Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 			</ul>
 		</div>
