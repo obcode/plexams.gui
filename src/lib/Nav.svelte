@@ -44,7 +44,7 @@
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
+				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
 				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
 				<li><a href="/plan/examGroups">Prüfungen planen</a></li>
 				<li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li>

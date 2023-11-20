@@ -70,7 +70,7 @@
 
 	function bgConstraints(constraints) {
 		if (constraints && constraints.notPlannedByMe) {
-			return 'bg-gray-500';
+			return 'bg-gray-300';
 		}
 		if (constraints) {
 			return 'bg-yellow-200';
