@@ -37,7 +37,7 @@
 	}
 
 	function gotoo(ancode) {
-		goto(`/exam/examWithRegs/${ancode}`);
+		goto(`/exam/generatedExams/${ancode}`);
 	}
 
 	function regs(exam) {
