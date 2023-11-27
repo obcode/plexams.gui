@@ -16,13 +16,14 @@
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
 	import { onMount } from 'svelte';
+	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	let allowedSlots = [];
 	let locked = false;
 
-	$: locked = allowedSlots.length == 0;
+	// $: locked = allowedSlots.length == 0;
 
 	// async function fetchAllowedSlots() {
 	// 	const response = await fetch('/api/allowedSlots', {
@@ -50,69 +51,57 @@
 	// 	awkwardSlots = data.awkwardSlots;
 	// }
 
-	// $: selected = selectedExam == exam.ancode;
+	$: selected = selectedExam == exam.ancode;
 
 	let slotToMove = 'none';
 
 	let show = true;
 
-	// let online = false;
-	// for (const exam of exams) {
-	// 	online = online || (exam.constraints && exam.constraints.online);
-	// }
+	let online = false;
+	online = online || (exam.constraints && exam.constraints.online);
 
-	// let exahm = false;
-	// for (const exam of exams) {
-	// 	exahm =
-	// 		exahm ||
-	// 		(exam.constraints &&
-	// 			exam.constraints.roomConstraints &&
-	// 			exam.constraints.roomConstraints.exahmRooms);
-	// }
+	let exahm = false;
+	exahm =
+		exahm ||
+		(exam.constraints &&
+			exam.constraints.roomConstraints &&
+			exam.constraints.roomConstraints.exahmRooms);
 
-	// let seb = false;
-	// for (const exam of exams) {
-	// 	seb =
-	// 		seb ||
-	// 		(exam.constraints &&
-	// 			exam.constraints.roomConstraints &&
-	// 			exam.constraints.roomConstraints.seb);
-	// 	// console.log(exam.constraints);
-	// }
+	let seb = false;
+	seb =
+		seb ||
+		(exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb);
 
-	// $: {
-	// 	if (showExam == 'all') {
-	// 		show = true;
-	// 	} else {
-	// 		show = examGroupInfo.programs.includes(showExam);
-	// 	}
-	// 	if (showExamerID != 'all') {
-	// 		let showE = false;
-	// 		for (const exam of exams) {
-	// 			showE = showE || exam.zpaExam.mainExamerID == showExamerID;
-	// 		}
-	// 		show = show && showE;
-	// 	}
-	// 	if (showAncode != '0') {
-	// 		let showA = false;
-	// 		for (const exam of exams) {
-	// 			showA = showA || exam.ancode == showAncode;
-	// 		}
-	// 		show = show && showA;
-	// 	}
-	// 	if (showOnlyOnline) {
-	// 		show = online;
-	// 	}
-	// 	if (showOnlyExahm) {
-	// 		show = exahm;
-	// 	}
-	// 	if (showOnlySEB) {
-	// 		show = seb;
-	// 	}
+	let programs = [];
+	for (const primussExam of exam.primussExams) {
+		if (primussExam.studentRegs.length > 0) programs.push(primussExam.exam.program);
+	}
 
-	// 	fetchAllowedSlots();
-	// 	fetchAwkwardSlots();
-	// }
+	$: {
+		if (showExam == 'all') {
+			show = true;
+		} else {
+			show = programs.includes(showExam);
+		}
+		if (showExamerID != 'all') {
+			show = show && exam.zpaExam.mainExamerID == showExamerID;
+		}
+		if (showAncode != '0') {
+			show = show && exam.ancode == showAncode;
+		}
+		if (showOnlyOnline) {
+			show = online;
+		}
+		if (showOnlyExahm) {
+			show = exahm;
+		}
+		if (showOnlySEB) {
+			show = seb;
+		}
+
+		// 	fetchAllowedSlots();
+		// 	fetchAwkwardSlots();
+	}
 
 	let showConflictCount = false;
 	// function conflictCount(examCode) {
@@ -124,45 +113,49 @@
 	// 	return 0;
 	// }
 
-	let bgcolor;
-	// $: if (selected) {
-	// 	bgcolor = 'bg-cyan-500';
-	// 	showConflictCount = false;
-	// } else {
-	// 	if (conflictingAncodes.includes(examGroupCode)) {
-	// 		bgcolor = 'bg-red-500';
-	// 		showConflictCount = true;
-	// 	} else {
-	// 		if (examGroupInfo.notPlannedByMe) {
-	// 			bgcolor = 'bg-red-200';
-	// 		} else {
-	// 			if (locked) {
-	// 				bgcolor = 'bg-grey-100';
-	// 			} else {
-	// 				bgcolor = 'bg-yellow-200';
-	// 			}
-	// 		}
-	// 		showConflictCount = false;
-	// 	}
-	// }
+	let colors;
+	$: if (selected) {
+		colors = 'bg-cyan-700 border-cyan-900 text-white';
+		showConflictCount = false;
+	} else {
+		if (conflictingAncodes.includes(exam.ancode)) {
+			colors = 'bg-red-700 border-red-900 text-white';
+			showConflictCount = true;
+		} else {
+			if (exam.constraints && exam.constraints.notPlannedByMe) {
+				colors = 'bg-red-200 border-red-300';
+			} else {
+				if (locked) {
+					colors = 'bg-grey-100';
+				} else {
+					if (exam.zpaExam.isRepeaterExam) {
+						colors = ' bg-orange-200 border-orange-500';
+					} else {
+						colors = ' bg-green-200 border-green-500';
+					}
+				}
+			}
+			showConflictCount = false;
+		}
+	}
 
-	// function select(code) {
-	// 	if (!selected) {
-	// 		dispatch('selected', {
-	// 			examGroupCode: code
-	// 		});
-	// 	} else {
-	// 		dispatch('unselected', {
-	// 			examGroupCode: code
-	// 		});
-	// 	}
-	// }
+	function select(code) {
+		if (!selected) {
+			dispatch('selected', {
+				ancode: code
+			});
+		} else {
+			dispatch('unselected', {
+				ancode: code
+			});
+		}
+	}
 
 	function bgColorExam(isRepeaterExam) {
 		if (exam.studentRegsCount == 0) {
 			return ' bg-slate-100';
 		}
-		if (isRepeaterExam) {
+		if (exam.zpaExam.isRepeaterExam) {
 			return ' bg-yellow-100  ';
 		} else {
 			return '   ';
@@ -223,18 +216,19 @@
 	// }
 
 	onMount(() => {
-		allStudentRegs = allStudentRegsExam(exam.primussExams);
+		// allStudentRegs = allStudentRegsExam(exam.primussExams);
 		// 	fetchAllowedSlots();
 		// 	fetchAwkwardSlots();
 	});
 </script>
 
 {#if show}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		transition:fade
-		class="shadow-lg m-1 p-2 {bgcolor} {bgColorExam(
-			exam.zpaExam.isRepeaterExam
-		)} border-2 border-slate-900 rounded-lg shadow-xl shadow-slate-300"
+		class="shadow-lg m-1 p-2 border-2 rounded-lg {colors} shadow-slate-300"
+		on:click={select(exam.ancode)}
 	>
 		<!-- <div> -->
 		<!-- {#if showConflictCount}

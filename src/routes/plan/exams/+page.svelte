@@ -3,7 +3,7 @@
 	// import Slot from '$lib/slot/Slot.svelte';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
-	// import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 
 	let examsWithoutSlot = data.examsWithoutSlot;
 
@@ -25,30 +25,30 @@
 	let showOnlyExahm = false;
 	let showOnlySEB = false;
 
-	// let allProgramsInPlan = [];
-	// async function getPrograms() {
-	// 	const response = await fetch('/api/allProgramsInPlan', {
-	// 		method: 'GET'
-	// 	});
+	let allProgramsInPlan = [];
+	async function getPrograms() {
+		const response = await fetch('/api/allProgramsInPlan', {
+			method: 'GET'
+		});
 
-	// 	allProgramsInPlan = await response.json();
-	// }
-	// let allAncodes = [];
-	// async function getAncodes() {
-	// 	const response = await fetch('/api/ancodesInPlan', {
-	// 		method: 'GET'
-	// 	});
+		allProgramsInPlan = await response.json();
+	}
+	let allAncodes = [];
+	async function getAncodes() {
+		const response = await fetch('/api/ancodesInPlan', {
+			method: 'GET'
+		});
 
-	// 	allAncodes = await response.json();
-	// }
-	// let allExamer = [];
-	// async function getExamer() {
-	// 	const response = await fetch('/api/examerInPlan', {
-	// 		method: 'GET'
-	// 	});
+		allAncodes = await response.json();
+	}
+	let allExamer = [];
+	async function getExamer() {
+		const response = await fetch('/api/examerInPlan', {
+			method: 'GET'
+		});
 
-	// 	allExamer = await response.json();
-	// }
+		allExamer = await response.json();
+	}
 
 	// let slotsStatus = new Map();
 
@@ -97,127 +97,127 @@
 	// 	);
 	// }
 
-	// onMount(() => {
-	// 	initSlotsStatus('unknown');
-	// 	initRefresh();
-	// 	getPrograms();
-	// 	getAncodes();
-	// 	getExamer();
-	// 	fetchExamGroupsWithoutSlot();
-	// });
+	onMount(() => {
+		// 	initSlotsStatus('unknown');
+		// 	initRefresh();
+		getPrograms();
+		getAncodes();
+		getExamer();
+		// 	fetchExamGroupsWithoutSlot();
+	});
 
 	let selectedExam = -1;
 	let conflictingAncodes = [];
 
-	// async function handleSelect(event) {
-	// 	initSlotsStatus('forbidden');
-	// 	selectedExam = event.detail.examGroupCode;
-	// 	let allowedSlots = await fetchAllowedSlots(event.detail.examGroupCode);
-	// 	for (let slot of allowedSlots) {
-	// 		slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'allowed';
-	// 	}
-	// 	let akwardSlots = await fetchAwkwardSlots(event.detail.examGroupCode);
-	// 	for (let slot of akwardSlots) {
-	// 		if (slotsStatus[[slot.dayNumber, slot.slotNumber]] == 'allowed') {
-	// 			slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'awkward';
-	// 		}
-	// 	}
-	// 	let res = await fetchconflictingAncodes(event.detail.examGroupCode);
-	// 	conflictingAncodes = res.map((conflict) => conflict.examGroupCode);
-	// }
+	async function handleSelect(event) {
+		// 	initSlotsStatus('forbidden');
+		selectedExam = event.detail.ancode;
+		// 	let allowedSlots = await fetchAllowedSlots(event.detail.examGroupCode);
+		// 	for (let slot of allowedSlots) {
+		// 		slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'allowed';
+		// 	}
+		// 	let akwardSlots = await fetchAwkwardSlots(event.detail.examGroupCode);
+		// 	for (let slot of akwardSlots) {
+		// 		if (slotsStatus[[slot.dayNumber, slot.slotNumber]] == 'allowed') {
+		// 			slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'awkward';
+		// 		}
+		// 	}
+		let res = await fetchconflictingAncodes(event.detail.ancode);
+		conflictingAncodes = res.map((conflict) => conflict.ancode);
+	}
 
-	// async function handleUnselect(event) {
-	// 	initSlotsStatus('unknown');
-	// 	selectedExam = -1;
-	// 	conflictingAncodes = [];
-	// }
+	async function handleUnselect(event) {
+		// 	initSlotsStatus('unknown');
+		selectedExam = -1;
+		conflictingAncodes = [];
+	}
 
-	// async function handleAddToSlot(event) {
-	// 	let success = await addToSlot(event.detail);
-	// 	if (success) {
-	// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
-	// 		if (event.detail.oldslot) {
-	// 			refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
-	// 		} else {
-	// 			fetchExamGroupsWithoutSlot();
-	// 		}
-	// 	}
-	// }
+	async function handleAddToSlot(event) {
+		// 	let success = await addToSlot(event.detail);
+		// 	if (success) {
+		// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
+		// 		if (event.detail.oldslot) {
+		// 			refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
+		// 		} else {
+		// 			fetchExamGroupsWithoutSlot();
+		// 		}
+		// 	}
+	}
 
-	// async function handleRmFromSlot(event) {
-	// 	let success = await rmFromSlot(event.detail);
-	// 	if (success) {
-	// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
-	// 		fetchExamGroupsWithoutSlot();
-	// 	}
-	// }
+	async function handleRmFromSlot(event) {
+		// 	let success = await rmFromSlot(event.detail);
+		// 	if (success) {
+		// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
+		// 		fetchExamGroupsWithoutSlot();
+		// 	}
+	}
 
-	// async function addToSlot(args) {
-	// 	const response = await fetch('/api/slot/addToSlot', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify(args),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	return data.addExamGroupToSlot;
-	// }
+	async function addToSlot(args) {
+		// 	const response = await fetch('/api/slot/addToSlot', {
+		// 		method: 'POST',
+		// 		body: JSON.stringify(args),
+		// 		headers: {
+		// 			'content-type': 'application/json'
+		// 		}
+		// 	});
+		// 	let data = await response.json();
+		// 	return data.addExamGroupToSlot;
+	}
 
-	// async function rmFromSlot(args) {
-	// 	const response = await fetch('/api/slot/rmFromSlot', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify(args),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	return data.rmExamGroupFromSlot;
-	// }
+	async function rmFromSlot(args) {
+		// 	const response = await fetch('/api/slot/rmFromSlot', {
+		// 		method: 'POST',
+		// 		body: JSON.stringify(args),
+		// 		headers: {
+		// 			'content-type': 'application/json'
+		// 		}
+		// 	});
+		// 	let data = await response.json();
+		// 	return data.rmExamGroupFromSlot;
+	}
 
-	// async function fetchAllowedSlots(examGroupCode) {
-	// 	const response = await fetch('/api/allowedSlots', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ examGroupCode }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	return data.allowedSlots;
-	// }
+	async function fetchAllowedSlots(examGroupCode) {
+		// 	const response = await fetch('/api/allowedSlots', {
+		// 		method: 'POST',
+		// 		body: JSON.stringify({ examGroupCode }),
+		// 		headers: {
+		// 			'content-type': 'application/json'
+		// 		}
+		// 	});
+		// 	let data = await response.json();
+		// 	return data.allowedSlots;
+	}
 
-	// async function fetchAwkwardSlots(examGroupCode) {
-	// 	const response = await fetch('/api/awkwardSlots', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ examGroupCode }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	return data.awkwardSlots;
-	// }
+	async function fetchAwkwardSlots(examGroupCode) {
+		// 	const response = await fetch('/api/awkwardSlots', {
+		// 		method: 'POST',
+		// 		body: JSON.stringify({ examGroupCode }),
+		// 		headers: {
+		// 			'content-type': 'application/json'
+		// 		}
+		// 	});
+		// 	let data = await response.json();
+		// 	return data.awkwardSlots;
+	}
 
-	// async function fetchconflictingAncodes(examGroupCode) {
-	// 	const response = await fetch('/api/conflictingAncodes', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ examGroupCode }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	return data.conflictingAncodes;
-	// }
+	async function fetchconflictingAncodes(ancode) {
+		const response = await fetch('/api/conflictingAncodes', {
+			method: 'POST',
+			body: JSON.stringify({ ancode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		return data.conflictingAncodes;
+	}
 </script>
 
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplan</div>
 </div>
 
-<!-- <div class="flex">
+<div class="flex">
 	<div>
 		<div class="form-control my-3">
 			<label class="label cursor-pointer">
@@ -312,7 +312,7 @@
 			{/each}
 		</select>
 	</div>
-</div> -->
+</div>
 <div>
 	<table
 		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
@@ -340,7 +340,7 @@
 						</div>
 					</td>
 					{#each data.semesterConfig.days as day}
-						<td>
+						<td class="align-top border-dashed border-2 border-sky-500">
 							<!-- 
 							class="align-top border-dashed border-2 border-sky-500 {statusColor(
 								slotsStatus[[day.number, time.number]]
