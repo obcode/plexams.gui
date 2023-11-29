@@ -25,17 +25,17 @@
 
 	// $: locked = allowedSlots.length == 0;
 
-	// async function fetchAllowedSlots() {
-	// 	const response = await fetch('/api/allowedSlots', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ examGroupCode: examGroupCode }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	allowedSlots = data.allowedSlots;
-	// }
+	async function fetchAllowedSlots() {
+		const response = await fetch('/api/allowedSlots', {
+			method: 'POST',
+			body: JSON.stringify({ ancode: ancode }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		allowedSlots = data.allowedSlots;
+	}
 
 	// let awkwardSlots = [];
 
@@ -51,7 +51,16 @@
 	// 	awkwardSlots = data.awkwardSlots;
 	// }
 
-	$: selected = selectedExam == exam.ancode;
+	let selected = false;
+	let sameSlot = false;
+
+	$: {
+		selected = selectedExam == exam.ancode;
+		sameSlot =
+			exam.constraints != null &&
+			exam.constraints.sameSlot != null &&
+			exam.constraints.sameSlot.includes(selectedExam);
+	}
 
 	let slotToMove = 'none';
 
@@ -104,38 +113,40 @@
 	}
 
 	let showConflictCount = false;
-	// function conflictCount(examCode) {
-	// 	for (const conflict of examGroupInfo.conflicts) {
-	// 		if (conflict.examGroupCode == examCode) {
-	// 			return conflict.count;
-	// 		}
-	// 	}
-	// 	return 0;
-	// }
+	let conflictCount = 0;
+	function calcConflictCount(ancode) {
+		for (const conflict of exam.conflicts) {
+			if (conflict.ancode == ancode) {
+				return conflict.numberOfStuds;
+			}
+		}
+		return 0;
+	}
+
+	$: if (showConflictCount) {
+		conflictCount = calcConflictCount(selectedExam);
+	} else {
+		conflictCount = 0;
+	}
 
 	let colors;
-	$: if (selected) {
-		colors = 'bg-cyan-700 border-cyan-900 text-white';
+	$: {
 		showConflictCount = false;
-	} else {
-		if (conflictingAncodes.includes(exam.ancode)) {
+		if (selected) {
+			colors = 'bg-cyan-700 border-cyan-900 text-white';
+		} else if (sameSlot) {
+			colors = 'bg-cyan-500 border-cyan-900 text-white';
+		} else if (conflictingAncodes.includes(exam.ancode)) {
 			colors = 'bg-red-700 border-red-900 text-white';
 			showConflictCount = true;
+		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
+			colors = 'bg-red-200 border-red-300';
+		} else if (locked) {
+			colors = 'bg-grey-100';
+		} else if (exam.zpaExam.isRepeaterExam) {
+			colors = ' bg-orange-200 border-orange-500';
 		} else {
-			if (exam.constraints && exam.constraints.notPlannedByMe) {
-				colors = 'bg-red-200 border-red-300';
-			} else {
-				if (locked) {
-					colors = 'bg-grey-100';
-				} else {
-					if (exam.zpaExam.isRepeaterExam) {
-						colors = ' bg-orange-200 border-orange-500';
-					} else {
-						colors = ' bg-green-200 border-green-500';
-					}
-				}
-			}
-			showConflictCount = false;
+			colors = ' bg-green-200 border-green-500';
 		}
 	}
 
@@ -151,16 +162,16 @@
 		}
 	}
 
-	function bgColorExam(isRepeaterExam) {
-		if (exam.studentRegsCount == 0) {
-			return ' bg-slate-100';
-		}
-		if (exam.zpaExam.isRepeaterExam) {
-			return ' bg-yellow-100  ';
-		} else {
-			return '   ';
-		}
-	}
+	// function bgColorExam(isRepeaterExam) {
+	// 	if (exam.studentRegsCount == 0) {
+	// 		return ' bg-slate-100';
+	// 	}
+	// 	if (exam.zpaExam.isRepeaterExam) {
+	// 		return ' bg-yellow-100  ';
+	// 	} else {
+	// 		return '   ';
+	// 	}
+	// }
 
 	// let slots = allowedSlots.length;
 	// let slotsmax = maxSlots;
@@ -215,6 +226,12 @@
 	// 	});
 	// }
 
+	function alertstyle(count) {
+		if (count < 5) return '';
+		else if (count < 15) return 'alert-success';
+		else return 'alert-info';
+	}
+
 	onMount(() => {
 		// allStudentRegs = allStudentRegsExam(exam.primussExams);
 		// 	fetchAllowedSlots();
@@ -231,39 +248,42 @@
 		on:click={select(exam.ancode)}
 	>
 		<!-- <div> -->
-		<!-- {#if showConflictCount}
-				<div class="alert shadow-lg p-1 w-full">
-					<div>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="stroke-current flex-shrink-0 h-6 w-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-							/></svg
-						>
-						<span>{conflictCount(selectedExam)} Konflikte</span>
-					</div>
-				</div>
-			{/if}
-			{#if allowedSlots.length == 0}
-				<div class="p-1 m-2">
+		{#if showConflictCount}
+			<div class="alert {alertstyle(conflictCount)} shadow-lg p-1 mb-1 w-full">
+				<div class="flex">
 					<svg
-						viewBox="0 0 100 100"
-						class="stroke-current flex-shrink-0 h-3 w-3"
 						xmlns="http://www.w3.org/2000/svg"
+						class="stroke-current flex-shrink-0 h-6 w-6"
+						fill="none"
+						viewBox="0 0 24 24"
+						><path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+						/></svg
 					>
-						<path
-							d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
-							fill-rule="evenodd"
-						/>
-					</svg>
+					<span
+						>{conflictCount}
+						{#if conflictCount == 1}Konflikt{:else}Konflikte{/if}</span
+					>
 				</div>
-			{/if} -->
+			</div>
+		{/if}
+		<!-- {#if allowedSlots.length == 0}
+			<div class="p-1 m-2">
+				<svg
+					viewBox="0 0 100 100"
+					class="stroke-current flex-shrink-0 h-3 w-3"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
+						fill-rule="evenodd"
+					/>
+				</svg>
+			</div>
+		{/if} -->
 		<!-- <div class="flex justify-between">
 				<a href="/examGroups/{examGroupCode}">
 					<div class="border border-gray-400 rounded-lg p-1 mx-2">
@@ -311,17 +331,19 @@
 					</div>
 				</div>
 			{/if} -->
-		<div class="grid grid-cols-6">
+		<div class="grid grid-cols-7">
 			<div class="col-span-5">
 				{exam.zpaExam.ancode}.
 				{exam.zpaExam.mainExamer}
 				{exam.zpaExam.module}
 				<br />
 			</div>
-			<div class="col-span-1">
+			<div class="col-span-2">
 				{#if exam.primussExams.length > 0}
-					<div class="badge badge-outline gap-2">
-						&sum; {exam.studentRegsCount}
+					<div class="grid justify-items-end">
+						<div class="badge badge-outline">
+							&sum; {exam.studentRegsCount}
+						</div>
 					</div>
 				{/if}
 			</div>
@@ -345,6 +367,9 @@
 		{/if}
 		{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
 			<div class="badge badge-error">S.E.B.</div>
+		{/if}
+		{#if exam.constraints != null && exam.constraints.sameSlot != null && exam.constraints.sameSlot.length > 0}
+			<div class="badge badge-warning">sameSlot</div>
 		{/if}
 	</div>
 	<!-- <div>

@@ -2,27 +2,27 @@
 	export let day;
 	export let time;
 	export let maxSlots;
-	export let selectedGroup;
+	export let selectedExam;
 	export let details;
 	export let moveable;
-	export let showGroup;
+	export let showExam;
 	export let showAncode;
 	export let showExamerID;
 	export let showOnlyOnline;
 	export let showOnlyExahm;
 	export let showOnlySEB;
-	export let conflictingGroupCodes;
+	export let conflictingAncodes;
 	export let refresh;
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
 
-	import SlotExamGroup from '$lib/examGroups/SlotExamGroup.svelte';
+	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 
-	let examGroups = [];
+	let exams = [];
 
-	async function fetchExamGroups() {
-		const response = await fetch('/api/examGroupsInSlot', {
+	async function fetchExams() {
+		const response = await fetch('/api/examsInSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
 			headers: {
@@ -30,35 +30,35 @@
 			}
 		});
 		let data = await response.json();
-		examGroups = data.examGroupsInSlot;
+		exams = data.examsInSlot;
 		countIt();
-		calculateConflicts();
+		// calculateConflicts();
 	}
 
 	let conflicts = 0;
 
-	function calculateConflicts(groupCode, examGroups) {
-		conflicts = 0;
-		if (examGroups) {
-			for (const group of examGroups) {
-				for (const conflict of group.examGroupInfo.conflicts) {
-					if (conflict.examGroupCode == groupCode) {
-						conflicts += conflict.count;
-					}
-				}
-			}
-		}
-	}
+	// function calculateConflicts(groupCode, examGroups) {
+	// 	conflicts = 0;
+	// 	if (examGroups) {
+	// 		for (const group of examGroups) {
+	// 			for (const conflict of group.examGroupInfo.conflicts) {
+	// 				if (conflict.examGroupCode == groupCode) {
+	// 					conflicts += conflict.count;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	$: calculateConflicts(selectedGroup, examGroups);
+	// $: calculateConflicts(selectedExam, exams);
 
 	let count = 0;
 
 	function countIt() {
 		let counted = 0;
-		for (const group of examGroups) {
-			if (!group.examGroupInfo.notPlannedByMe) {
-				counted += group.examGroupInfo.studentRegs;
+		for (const exam of exams) {
+			if (!exam.constraints || (exam.constraints && !exam.constraints.notPlannedByMe)) {
+				counted += exam.studentRegsCount;
 			}
 		}
 		count = counted;
@@ -75,7 +75,7 @@
 	}
 
 	onMount(() => {
-		fetchExamGroups();
+		fetchExams();
 	});
 
 	function forwardSelected(event) {
@@ -99,12 +99,12 @@
 	}
 
 	$: if (refresh) {
-		fetchExamGroups();
+		fetchExams();
 		refresh = false;
 	}
 </script>
 
-{#if examGroups.length > 0}
+{#if exams.length > 0}
 	{#if conflicts > 0}
 		<div class="alert shadow-lg p-1 w-full">
 			<div>
@@ -129,21 +129,21 @@
 	</div>
 {/if}
 
-{#each examGroups as group}
-	<SlotExamGroup
-		{group}
+{#each exams as exam}
+	<SlotExam
+		{exam}
 		{maxSlots}
-		{showGroup}
+		{showExam}
 		{showAncode}
 		{showExamerID}
 		{showOnlyOnline}
 		{showOnlyExahm}
 		{showOnlySEB}
-		{selectedGroup}
+		{selectedExam}
 		{details}
 		{moveable}
 		inSlot={true}
-		{conflictingGroupCodes}
+		{conflictingAncodes}
 		on:selected={forwardSelected}
 		on:unselected={forwardUnselected}
 		on:addToSlot={forwardAddToSlot}

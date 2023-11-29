@@ -21,7 +21,15 @@
 			<span class="text-black-900">
 				<ul>
 					{#each nta.exams as exam}
-						<li>{exam.ancode}. {exam.mainExamer}: {exam.module}, {exam.examType}</li>
+						{#if exam.constraints && exam.constraints.notPlannedByMe}
+							<li class="text-slate-400">
+								{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
+							</li>
+						{:else}
+							<li>
+								{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
+							</li>
+						{/if}
 					{/each}
 				</ul>
 			</span>
