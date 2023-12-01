@@ -4,7 +4,7 @@
 </script>
 
 <div class="text-center m-2 text-4xl">
-	<span class="uppercase">{data.generatedExams.length} Prüfungen mit Anmeldungen</span>
+	<span class="uppercase">{data.plannedExams.length} Prüfungen mit Anmeldungen</span>
 </div>
 
-<GeneratedExamsTable exams={data.generatedExams} />
+<GeneratedExamsTable exams={data.plannedExams} />

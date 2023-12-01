@@ -4,7 +4,7 @@ import { request, gql } from 'graphql-request';
 export async function load({ params }) {
 	const query = gql`
 		query {
-			generatedExams {
+			plannedExams {
 				ancode
 				zpaExam {
 					zpaID
@@ -88,6 +88,14 @@ export async function load({ params }) {
 						numberOfStuds
 					}
 				}
+				studentRegsCount
+				planEntry {
+					dayNumber
+					slotNumber
+					starttime
+					ancode
+					locked
+				}
 			}
 		}
 	`;
@@ -95,6 +103,6 @@ export async function load({ params }) {
 	const data = await request(env.PLEXAMS_SERVER, query);
 
 	return {
-		generatedExams: data.generatedExams
+		plannedExams: data.plannedExams
 	};
 }

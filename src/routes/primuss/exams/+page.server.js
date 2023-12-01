@@ -13,14 +13,7 @@ export async function load({ params }) {
 					program
 					examType
 					presence
-					studentRegs {
-						name
-					}
-					conflicts {
-						conflicts {
-							ancode
-						}
-					}
+					studentRegsCount
 				}
 			}
 		}

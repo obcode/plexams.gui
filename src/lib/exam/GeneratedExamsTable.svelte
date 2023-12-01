@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import ConstraintsTable from '$lib/ConstraintsTable.svelte';
 	import { bgEvent } from '@event-calendar/core';
+	import { mkStarttime } from '$lib/jshelper/misc.js';
 
 	let searchTermAncode = '';
 	let searchTermTeachers = '';
@@ -100,6 +101,7 @@
 	<table class="table table-compact w-full">
 		<thead>
 			<tr>
+				<th>Termin</th>
 				<th>AnCode</th>
 				<th>Modul</th>
 				<th>Prüfer:in</th>
@@ -112,7 +114,38 @@
 			{#each filteredExams as exam}
 				<tr class={bg(exam)}>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<td on:click={gotoo(exam.ancode)}>{exam.ancode}</td>
+					<td>
+						{#if exam.planEntry != null}
+							<div class=" flex">
+								{#if exam.planEntry.locked}
+									<div class="mt-1 mr-2">
+										<svg
+											viewBox="0 0 100 100"
+											class="stroke-current flex-shrink-0 h-3 w-3"
+											xmlns="http://www.w3.org/2000/svg"
+										>
+											<path
+												d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
+												fill-rule="evenodd"
+											/>
+										</svg>
+									</div>
+								{/if}
+
+								<span>
+									{mkStarttime(exam.planEntry.starttime)}
+								</span>
+							</div>
+						{/if}
+					</td>
+					<td on:click={gotoo(exam.ancode)}
+						>{exam.ancode}
+						{#each exam.primussExams as primussExam}
+							{#if primussExam.exam.ancode != exam.ancode}
+								<div class="badge">{primussExam.exam.program}/{primussExam.exam.ancode}</div>
+							{/if}
+						{/each}
+					</td>
 					<td>{exam.zpaExam.module}</td>
 					<td>{exam.zpaExam.mainExamer}</td>
 					<td>

@@ -39,21 +39,17 @@
 					<th>Prüfer:in</th>
 					<th>Art</th>
 					<th>Anmeldungen</th>
-					<th>Konflikte</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#if exams.length > 0}
 					{#each exams[0].exams as exam}
 						<tr>
-							<td class={bg(exam.studentRegs.length)}>{exam.ancode}</td>
-							<td class={bg(exam.studentRegs.length)}>{exam.module}</td>
-							<td class={bg(exam.studentRegs.length)}>{exam.mainExamer}</td>
-							<td class={bg(exam.studentRegs.length)}>{exam.examType}</td>
-							<td class={bg(exam.studentRegs.length)}>{exam.studentRegs.length} Anmeldungen</td>
-							<td class={bg(exam.studentRegs.length)}
-								>{exam.conflicts.conflicts.length} Konflikte</td
-							>
+							<td class={bg(exam.studentRegsCount)}>{exam.ancode}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.module}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.mainExamer}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.examType}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.studentRegsCount} Anmeldungen</td>
 						</tr>
 					{/each}
 				{/if}

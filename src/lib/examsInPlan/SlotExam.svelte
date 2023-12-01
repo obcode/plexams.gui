@@ -15,6 +15,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
+	import { mkStarttime } from '$lib/jshelper/misc.js';
 	import { onMount } from 'svelte';
 	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
 
@@ -270,20 +271,6 @@
 				</div>
 			</div>
 		{/if}
-		<!-- {#if allowedSlots.length == 0}
-			<div class="p-1 m-2">
-				<svg
-					viewBox="0 0 100 100"
-					class="stroke-current flex-shrink-0 h-3 w-3"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
-						fill-rule="evenodd"
-					/>
-				</svg>
-			</div>
-		{/if} -->
 		<!-- <div class="flex justify-between">
 				<a href="/examGroups/{examGroupCode}">
 					<div class="border border-gray-400 rounded-lg p-1 mx-2">
@@ -333,9 +320,25 @@
 			{/if} -->
 		<div class="grid grid-cols-7">
 			<div class="col-span-5">
-				{exam.zpaExam.ancode}.
-				{exam.zpaExam.mainExamer}
-				{exam.zpaExam.module}
+				<div class="flex">
+					{#if exam.planEntry != null && exam.planEntry.locked}
+						<span class="mt-2 mr-3">
+							<svg
+								viewBox="0 0 100 100"
+								class="stroke-current flex-shrink-0 h-3 w-3"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
+									fill-rule="evenodd"
+								/>
+							</svg>
+						</span>
+					{/if}
+					{exam.zpaExam.ancode}.
+					{exam.zpaExam.module}
+					({exam.zpaExam.mainExamer})
+				</div>
 				<br />
 			</div>
 			<div class="col-span-2">
@@ -349,6 +352,14 @@
 			</div>
 		</div>
 
+		<div>
+			{#each exam.primussExams as primussExam}
+				{#if primussExam.exam.ancode != exam.ancode}
+					<div class="badge">{primussExam.exam.program}/{primussExam.exam.ancode}</div>
+				{/if}
+			{/each}
+		</div>
+
 		<a href="/examWithRegs/{exam.zpaExam.ancode}">
 			{#each exam.primussExams as primussExam}
 				{#if primussExam.studentRegs.length > 0}
@@ -359,6 +370,7 @@
 				{/if}
 			{/each}
 		</a>
+
 		{#if exam.constraints && exam.constraints.online}
 			<div class="badge badge-error">online</div>
 		{/if}

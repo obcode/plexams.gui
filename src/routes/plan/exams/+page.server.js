@@ -106,6 +106,13 @@ export async function load({ params }) {
 					}
 				}
 				studentRegsCount
+				planEntry {
+					dayNumber
+					slotNumber
+					starttime
+					ancode
+					locked
+				}
 			}
 		}
 	`;

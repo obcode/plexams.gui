@@ -91,6 +91,13 @@ export async function POST({ request }) {
 					}
 				}
 				studentRegsCount
+				planEntry {
+					dayNumber
+					slotNumber
+					starttime
+					ancode
+					locked
+				}
 			}
 		}
 	`;
