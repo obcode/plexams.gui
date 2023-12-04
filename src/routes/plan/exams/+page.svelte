@@ -263,26 +263,12 @@
 	<div>
 		<div class="form-control my-3">
 			<label class="label cursor-pointer">
-				<span class="label-text">EXaHM</span>
+				<span class="label-text">EXaHM/SEB</span>
 				<input
 					type="checkbox"
 					class="toggle mx-3"
 					on:click={() => {
 						showOnlyExahm = !showOnlyExahm;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">SafeExamBrowser</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlySEB = !showOnlySEB;
 					}}
 				/>
 			</label>
@@ -315,7 +301,7 @@
 </div>
 <div>
 	<table
-		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
+		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-none"
 	>
 		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 			<tr>

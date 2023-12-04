@@ -91,6 +91,24 @@ export async function POST({ request }) {
 					}
 				}
 				studentRegsCount
+				ntas {
+					name
+					mtknr
+					compensation
+					deltaDurationPercent
+					needsRoomAlone
+					program
+					from
+					until
+					lastSemester
+					exams {
+						semester
+						ancode
+						module
+						mainExamer
+					}
+				}
+				maxDuration
 				planEntry {
 					dayNumber
 					slotNumber

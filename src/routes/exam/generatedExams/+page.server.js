@@ -89,6 +89,24 @@ export async function load({ params }) {
 					}
 				}
 				studentRegsCount
+				ntas {
+					name
+					mtknr
+					compensation
+					deltaDurationPercent
+					needsRoomAlone
+					program
+					from
+					until
+					lastSemester
+					exams {
+						semester
+						ancode
+						module
+						mainExamer
+					}
+				}
+				maxDuration
 				planEntry {
 					dayNumber
 					slotNumber

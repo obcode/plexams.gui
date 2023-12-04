@@ -68,19 +68,13 @@
 	let show = true;
 
 	let online = false;
-	online = online || (exam.constraints && exam.constraints.online);
+	online = exam.constraints && exam.constraints.online;
 
 	let exahm = false;
 	exahm =
-		exahm ||
-		(exam.constraints &&
-			exam.constraints.roomConstraints &&
-			exam.constraints.roomConstraints.exahmRooms);
-
-	let seb = false;
-	seb =
-		seb ||
-		(exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb);
+		exam.constraints &&
+		exam.constraints.roomConstraints &&
+		(exam.constraints.roomConstraints.exahmRooms || exam.constraints.roomConstraints.seb);
 
 	let programs = [];
 	for (const primussExam of exam.primussExams) {
@@ -104,9 +98,6 @@
 		}
 		if (showOnlyExahm) {
 			show = exahm;
-		}
-		if (showOnlySEB) {
-			show = seb;
 		}
 
 		// 	fetchAllowedSlots();
@@ -245,13 +236,13 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		transition:fade
-		class="shadow-lg m-1 p-2 border-2 rounded-lg {colors} shadow-slate-300"
+		class="shadow-lg m-1 p-2 border-2 rounded-lg {colors} shadow-slate-300 w-96"
 		on:click={select(exam.ancode)}
 	>
 		<!-- <div> -->
 		{#if showConflictCount}
 			<div class="alert {alertstyle(conflictCount)} shadow-lg p-1 mb-1 w-full">
-				<div class="flex">
+				<div class="flex justify-between">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						class="stroke-current flex-shrink-0 h-6 w-6"
@@ -318,8 +309,8 @@
 					</div>
 				</div>
 			{/if} -->
-		<div class="grid grid-cols-7">
-			<div class="col-span-5">
+		<div class="flex">
+			<div class="flex-none">
 				<div class="flex">
 					<div>
 						{#if exam.planEntry != null && exam.planEntry.locked}
@@ -358,21 +349,59 @@
 							</div>
 						{/if}
 					</div>
-					<div>
-						{exam.zpaExam.ancode}.
-						{exam.zpaExam.module}
-						({exam.zpaExam.mainExamer})
-					</div>
 				</div>
 				<br />
 			</div>
-			<div class="col-span-2">
+			<div class="grow">
+				{exam.zpaExam.ancode}.
+				{exam.zpaExam.module}
+				({exam.zpaExam.mainExamer})
+			</div>
+			<div class="min-w-fit flex flex-col place-items-end">
 				{#if exam.primussExams.length > 0}
-					<div class="grid justify-items-end">
-						<div class="badge badge-outline">
-							&sum; {exam.studentRegsCount}
-						</div>
+					<div class="badge badge-outline min-w-fit">
+						&sum; {exam.studentRegsCount}
 					</div>
+					<div class="badge badge-outline min-w-fit my-1">
+						<svg
+							width="14pt"
+							height="14pt"
+							version="1.1"
+							viewBox="0 0 100 100"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<g>
+								<path
+									d="m50 18.41c-1.6211 0-2.9414 1.3203-2.9414 2.9414v27.43l-9.0234 9.0234c-0.55469 0.55469-0.85938 1.293-0.85938 2.0781 0 0.78125 0.30469 1.5234 0.86328 2.082 0.53906 0.53516 1.293 0.83984 2.0781 0.83984 0.78516 0 1.5391-0.30859 2.0781-0.84375l9.8867-9.8828c0.55469-0.55469 0.86328-1.2969 0.86328-2.082v-28.645c-0.003906-1.6211-1.3242-2.9414-2.9453-2.9414zm0.28516 31.59c0 0.082031-0.027344 0.14844-0.082031 0.20312l-9.8828 9.8828c-0.046874 0.046874-0.35547 0.050781-0.41016-0.003907-0.054687-0.054687-0.082031-0.12109-0.082031-0.19922 0-0.078124 0.027344-0.14844 0.085937-0.20312l9.4141-9.4141c0.25-0.25391 0.38672-0.58594 0.38672-0.9375v-27.977c0-0.15625 0.12891-0.28516 0.28516-0.28516s0.28516 0.12891 0.28516 0.28516z"
+								/>
+								<path
+									d="m50 11.289c-21.348 0-38.711 17.367-38.711 38.711 0 21.348 17.363 38.711 38.711 38.711s38.711-17.363 38.711-38.711-17.363-38.711-38.711-38.711zm0 74.766c-19.883 0-36.059-16.176-36.059-36.055 0-19.883 16.176-36.059 36.059-36.059s36.055 16.176 36.055 36.059-16.172 36.055-36.055 36.055z"
+								/>
+							</g>
+						</svg>
+						{exam.zpaExam.duration}
+					</div>
+					{#if exam.maxDuration > exam.zpaExam.duration}
+						<div class="badge badge-outline min-w-fit">
+							<svg
+								width="14pt"
+								height="14pt"
+								version="1.1"
+								viewBox="0 0 100 100"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<g>
+									<path
+										d="m50 20.547c-0.44531 0-0.80859 0.36328-0.80859 0.80859v27.977c0 0.21484-0.085937 0.41797-0.23828 0.57031l-9.4141 9.4102c-0.15234 0.15625-0.23828 0.35547-0.23828 0.57031 0 0.21484 0.082031 0.41797 0.23828 0.57031 0.27734 0.27734 0.85938 0.28125 1.1406 0l9.8828-9.8828c0.15234-0.15625 0.23828-0.35156 0.23828-0.57031l0.003907-28.648c0-0.44531-0.35938-0.80469-0.80469-0.80469z"
+									/>
+									<path
+										d="m50 11.809c-21.059 0-38.191 17.133-38.191 38.191s17.133 38.191 38.191 38.191 38.191-17.133 38.191-38.191-17.133-38.191-38.191-38.191zm2.4219 38.191c0 0.64844-0.25391 1.2539-0.71094 1.7109l-9.8867 9.8828c-0.44141 0.44141-1.0664 0.69141-1.7109 0.69141-0.64844 0-1.2695-0.25-1.7109-0.69141-0.45703-0.46094-0.71094-1.0703-0.71094-1.7148 0-0.64453 0.25391-1.2539 0.70703-1.7109l9.1758-9.1758 0.003906-27.641c0-1.3359 1.0859-2.4219 2.4219-2.4219s2.4219 1.0859 2.4219 2.4219z"
+									/>
+								</g>
+							</svg>
+							{exam.maxDuration}
+						</div>
+					{/if}
 				{/if}
 			</div>
 		</div>
