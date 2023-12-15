@@ -7,6 +7,7 @@
 
 	let examsWithoutSlot = data.examsWithoutSlot;
 
+	let onlyPlannedByMe = false;
 	let details = false;
 	let moveable = false;
 
@@ -221,6 +222,20 @@
 	<div>
 		<div class="form-control my-3">
 			<label class="label cursor-pointer">
+				<span class="label-text">Nur eigene Planung</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					on:click={() => {
+						onlyPlannedByMe = !onlyPlannedByMe;
+					}}
+				/>
+			</label>
+		</div>
+	</div>
+	<div>
+		<div class="form-control my-3">
+			<label class="label cursor-pointer">
 				<span class="label-text">Details</span>
 				<input
 					type="checkbox"
@@ -332,10 +347,11 @@
 							)} "
 						>
 							<Slot
-								day={day.number}
-								time={time.number}
+								{day}
+								{time}
 								{maxSlots}
 								{selectedExam}
+								{onlyPlannedByMe}
 								{details}
 								{moveable}
 								{showExam}
@@ -369,6 +385,7 @@
 	{showOnlyExahm}
 	{showOnlySEB}
 	{selectedExam}
+	{onlyPlannedByMe}
 	{details}
 	{moveable}
 	{conflictingAncodes}

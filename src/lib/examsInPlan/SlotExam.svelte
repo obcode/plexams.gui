@@ -8,6 +8,7 @@
 	export let showOnlyExahm;
 	export let showOnlySEB;
 	export let selectedExam;
+	export let onlyPlannedByMe;
 	export let details;
 	export let moveable;
 	export let inSlot;
@@ -82,22 +83,26 @@
 	}
 
 	$: {
-		if (showExam == 'all') {
-			show = true;
+		if (onlyPlannedByMe && exam.constraints != null && exam.constraints.notPlannedByMe) {
+			show = false;
 		} else {
-			show = programs.includes(showExam);
-		}
-		if (showExamerID != 'all') {
-			show = show && exam.zpaExam.mainExamerID == showExamerID;
-		}
-		if (showAncode != '0') {
-			show = show && exam.ancode == showAncode;
-		}
-		if (showOnlyOnline) {
-			show = online;
-		}
-		if (showOnlyExahm) {
-			show = exahm;
+			if (showExam == 'all') {
+				show = true;
+			} else {
+				show = programs.includes(showExam);
+			}
+			if (showExamerID != 'all') {
+				show = show && exam.zpaExam.mainExamerID == showExamerID;
+			}
+			if (showAncode != '0') {
+				show = show && exam.ancode == showAncode;
+			}
+			if (showOnlyOnline) {
+				show = online;
+			}
+			if (showOnlyExahm) {
+				show = exahm;
+			}
 		}
 
 		// 	fetchAllowedSlots();

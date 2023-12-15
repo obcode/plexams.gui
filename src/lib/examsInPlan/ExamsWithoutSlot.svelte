@@ -8,6 +8,7 @@
 	export let showOnlyExahm;
 	export let showOnlySEB;
 	export let selectedExam;
+	export let onlyPlannedByMe;
 	export let details;
 	export let moveable;
 	export let conflictingAncodes;
@@ -85,7 +86,7 @@
 	</div>
 {/if}
 
-{#if examsNotPlannedByMe.length > 0}
+{#if !onlyPlannedByMe && examsNotPlannedByMe.length > 0}
 	<div class="text-center m-2">
 		<div class="text-4xl text-center mt-8 uppercase">
 			{examsNotPlannedByMe.length} Prüfungen nicht durch mich einzuplanen
