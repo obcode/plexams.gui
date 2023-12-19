@@ -19,6 +19,8 @@
 	// // forbidden
 	// // awkward
 
+	let onlyConflicts = true;
+
 	let showExam = 'all';
 	let showAncode = '0';
 	let showExamerID = 'all';
@@ -236,6 +238,21 @@
 	<div>
 		<div class="form-control my-3">
 			<label class="label cursor-pointer">
+				<span class="label-text">Nur Konflikte</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					checked
+					on:click={() => {
+						onlyConflicts = !onlyConflicts;
+					}}
+				/>
+			</label>
+		</div>
+	</div>
+	<div>
+		<div class="form-control my-3">
+			<label class="label cursor-pointer">
 				<span class="label-text">Details</span>
 				<input
 					type="checkbox"
@@ -352,6 +369,7 @@
 								{maxSlots}
 								{selectedExam}
 								{onlyPlannedByMe}
+								{onlyConflicts}
 								{details}
 								{moveable}
 								{showExam}
@@ -386,6 +404,7 @@
 	{showOnlySEB}
 	{selectedExam}
 	{onlyPlannedByMe}
+	{onlyConflicts}
 	{details}
 	{moveable}
 	{conflictingAncodes}

@@ -68,6 +68,7 @@
 					{showOnlyExahm}
 					{showOnlySEB}
 					{selectedExam}
+					{onlyPlannedByMe}
 					{details}
 					{moveable}
 					inSlot={false}
@@ -105,6 +106,7 @@
 				{showOnlyExahm}
 				{showOnlySEB}
 				{selectedExam}
+				{onlyPlannedByMe}
 				{details}
 				{moveable}
 				inSlot={false}

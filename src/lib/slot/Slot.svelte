@@ -4,6 +4,7 @@
 	export let maxSlots;
 	export let selectedExam;
 	export let onlyPlannedByMe;
+	export let onlyConflicts;
 	export let details;
 	export let moveable;
 	export let showExam;
@@ -146,6 +147,7 @@
 		{showOnlySEB}
 		{selectedExam}
 		{onlyPlannedByMe}
+		{onlyConflicts}
 		{details}
 		{moveable}
 		inSlot={true}

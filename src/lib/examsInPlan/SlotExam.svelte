@@ -9,6 +9,7 @@
 	export let showOnlySEB;
 	export let selectedExam;
 	export let onlyPlannedByMe;
+	export let onlyConflicts;
 	export let details;
 	export let moveable;
 	export let inSlot;
@@ -85,6 +86,13 @@
 	$: {
 		if (onlyPlannedByMe && exam.constraints != null && exam.constraints.notPlannedByMe) {
 			show = false;
+		} else if (
+			!selected &&
+			conflictingAncodes.length > 0 &&
+			!conflictingAncodes.includes(exam.ancode) &&
+			onlyConflicts
+		) {
+			show = false;
 		} else {
 			if (showExam == 'all') {
 				show = true;
@@ -128,14 +136,17 @@
 
 	let colors;
 	$: {
-		showConflictCount = false;
+		if (conflictingAncodes.includes(exam.ancode)) {
+			showConflictCount = true;
+		} else {
+			showConflictCount = false;
+		}
 		if (selected) {
 			colors = 'bg-cyan-700 border-cyan-900 text-white';
 		} else if (sameSlot) {
 			colors = 'bg-cyan-500 border-cyan-900 text-white';
-		} else if (conflictingAncodes.includes(exam.ancode)) {
+		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
 			colors = 'bg-red-700 border-red-900 text-white';
-			showConflictCount = true;
 		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
 			colors = 'bg-red-200 border-red-300';
 		} else if (locked) {
