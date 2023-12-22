@@ -61,6 +61,7 @@
 				<thead>
 					<tr>
 						<th>Name</th>
+						<th>E-Mail</th>
 						<th>Mtknr</th>
 						<th>Ausgleich</th>
 						<th>gültig bis</th>

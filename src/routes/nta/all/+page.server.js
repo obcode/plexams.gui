@@ -6,6 +6,7 @@ export async function load({ params }) {
 		query {
 			ntas {
 				name
+				email
 				mtknr
 				compensation
 				deltaDurationPercent

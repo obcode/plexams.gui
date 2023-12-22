@@ -46,7 +46,7 @@
 			>
 				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
 				<li><a href="/plan/exams">Prüfungen planen</a></li>
-				<li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li>
+				<!-- <li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li> -->
 				<li><a href="/plan/rooms">Raumplanung</a></li>
 				<li><a href="/plan/roomsTable">Raumplanung (Tabelle)</a></li>
 				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
@@ -77,7 +77,7 @@
 			>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
-				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>
+				<!-- <li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li> -->
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
 		</div>

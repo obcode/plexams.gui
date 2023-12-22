@@ -8,6 +8,13 @@
 
 <tr>
 	<td>{nta.name}</td>
+	<td>
+		{#if nta.email}
+			{nta.email}
+		{:else}
+			<i class="text-slate-400">fehlt</i>
+		{/if}
+	</td>
 	<td><a href="/nta/{nta.mtknr}"><span class="font-mono">{nta.mtknr}</span></a></td>
 	<td class={maybeColor}>{nta.compensation}</td>
 	<td>{nta.until}</td>
