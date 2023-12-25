@@ -116,6 +116,24 @@ export async function POST({ request }) {
 					ancode
 					locked
 				}
+				plannedRooms {
+					room {
+						name
+						seats
+						handicap
+						lab
+						placesWithSocket
+						needsRequest
+						exahm
+						seb
+					}
+					duration
+					handicap
+					handicapRoomAlone
+					reserve
+					studentsInRoom
+					ntaMtknr
+				}
 			}
 		}
 	`;
