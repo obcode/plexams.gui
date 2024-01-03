@@ -36,21 +36,22 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex" on:click={() => (small = !small)} on:keypress={() => small}>
 	{#if small}
 		<div class="text-center">
 			<div class="flex">
-				{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-					<div class="border border-black p-1 {bg(day)}">
-						{day}
+				{#each semesterConfig.days as day, i}
+					<div class="border border-black p-1 {bg(i + 1)}">
+						{i + 1}
 					</div>
 				{/each}
 			</div>
 			{#if invigilator.todos.invigilationDays.length > 0}
 				<div class="flex">
-					{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-						<div class="border border-black p-1 {bgInvigilation(day)}">
-							{day}
+					{#each semesterConfig.days as day, i}
+						<div class="border border-black p-1 {bgInvigilation(i)}">
+							{i + 1}
 						</div>
 					{/each}
 				</div>
@@ -66,17 +67,17 @@
 				{/each}
 			</div>
 			<div class="flex">
-				{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-					<div class="w-20 border border-black p-1 {bg(day)}">
-						{day}
+				{#each semesterConfig.days as day, i}
+					<div class="w-20 border border-black p-1 {bg(i + 1)}">
+						{i + 1}
 					</div>
 				{/each}
 			</div>
 			{#if invigilator.todos.invigilationDays.length > 0}
 				<div class="flex">
-					{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as day}
-						<div class="w-20 border border-black p-1 {bgInvigilation(day)}">
-							{day}
+					{#each semesterConfig.days as day, i}
+						<div class="w-20 border border-black p-1 {bgInvigilation(i + 1)}">
+							{i + 1}
 						</div>
 					{/each}
 				</div>
