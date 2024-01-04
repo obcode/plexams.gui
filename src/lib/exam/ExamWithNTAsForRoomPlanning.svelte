@@ -13,7 +13,7 @@
 	let showRoom = true;
 	$: if (showRooms != 'all') {
 		showRoom = false;
-		for (const room of plannedExam.rooms) {
+		for (const room of plannedExam.plannedRooms) {
 			if (showRooms == room.room.name) showRoom = true;
 		}
 	} else {
