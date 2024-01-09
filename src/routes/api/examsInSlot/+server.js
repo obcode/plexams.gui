@@ -112,7 +112,6 @@ export async function POST({ request }) {
 				planEntry {
 					dayNumber
 					slotNumber
-					starttime
 					ancode
 					locked
 				}

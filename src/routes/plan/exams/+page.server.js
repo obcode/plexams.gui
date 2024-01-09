@@ -109,7 +109,6 @@ export async function load({ params }) {
 				planEntry {
 					dayNumber
 					slotNumber
-					starttime
 					ancode
 					locked
 				}
