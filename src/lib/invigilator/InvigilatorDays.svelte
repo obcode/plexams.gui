@@ -50,7 +50,7 @@
 			{#if invigilator.todos.invigilationDays.length > 0}
 				<div class="flex">
 					{#each semesterConfig.days as day, i}
-						<div class="border border-black p-1 {bgInvigilation(i)}">
+						<div class="border border-black p-1 {bgInvigilation(i + 1)}">
 							{i + 1}
 						</div>
 					{/each}

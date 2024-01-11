@@ -21,12 +21,13 @@ export async function POST({ request }) {
 								name
 							}
 							duration
-							seatsPlanned
+							studentsInRoom
 						}
 						exam {
 							ancode
 							module
 							mainExamer
+							mainExamerID
 						}
 					}
 					invigilator {
