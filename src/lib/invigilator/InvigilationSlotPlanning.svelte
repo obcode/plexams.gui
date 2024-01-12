@@ -30,10 +30,18 @@
 
 	let bgSlot = '';
 	$: {
-		if (slot && slot.reserve && slot.reserve.id == selectedInvigilator) {
-			bgSlot = 'bg-blue-400';
+		if (slot && slot.reserve) {
+			if (slot.reserve.id == selectedInvigilator) {
+				bgSlot = 'bg-blue-400';
+			} else {
+				bgSlot = 'bg-green-300';
+			}
 		} else {
-			bgSlot = '';
+			if (slot) {
+				bgSlot = 'bg-red-300';
+			} else {
+				bgSlot = '';
+			}
 		}
 	}
 
@@ -43,7 +51,7 @@
 </script>
 
 {#if !loading}
-	<div class="border-2 border-black {bgSlot} rounded-lg shadow-xl m-2 p-2 text-center">
+	<div class="border-2 border-black {bgSlot} rounded-lg shadow-xl m-4 p-2 text-center">
 		<div class="flex justify-between">
 			<div class="border-2 border-black rounded-lg shadow-xl bg-green-400 m-2 p-2 text-center">
 				Slot {time.number}: {time.start} Uhr

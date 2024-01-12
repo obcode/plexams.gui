@@ -50,10 +50,24 @@
 	class="w-full border-solid border-2 border-black {bg} mb-2 p-2 rounded-lg shadow-xl text-center"
 	on:click={select(invigilator.teacher.id)}
 >
-	{invigilator.teacher.id}. {invigilator.teacher.shortname}: offen {stillTodo}
-	{#if invigilator.todos.invigilationDays.length > 0}
-		{#each invigilator.todos.invigilationDays as day}
-			<div class="badge m-1">{day}</div>
-		{/each}
-	{/if}
+	<div class="flex justify-between">
+		{invigilator.teacher.id}. {invigilator.teacher.shortname}: offen
+		<div class="badge badge-primary m-1">{stillTodo}</div>
+	</div>
+	<div class="flex justify-between">
+		<div>
+			{#if invigilator.requirements.examDays && invigilator.requirements.examDays.length > 0}
+				{#each invigilator.requirements.examDays as day}
+					<div class="badge badge-success m-1">{day}</div>
+				{/each}
+			{/if}
+		</div>
+		<div>
+			{#if invigilator.todos.invigilationDays.length > 0}
+				{#each invigilator.todos.invigilationDays as day}
+					<div class="badge badge-info m-1">{day}</div>
+				{/each}
+			{/if}
+		</div>
+	</div>
 </div>
