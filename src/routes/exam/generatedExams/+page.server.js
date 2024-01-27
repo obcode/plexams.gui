@@ -24,6 +24,18 @@ export async function load({ params }) {
 						ancode
 					}
 				}
+				mainExamer {
+					fullname
+					shortname
+					isProf
+					isLBA
+					isProfHC
+					isStaff
+					lastSemester
+					fk
+					id
+					email
+				}
 				primussExams {
 					exam {
 						ancode
@@ -112,6 +124,7 @@ export async function load({ params }) {
 					slotNumber
 					ancode
 					locked
+					starttime
 				}
 			}
 		}

@@ -105,6 +105,7 @@
 				<th>AnCode</th>
 				<th>Modul</th>
 				<th>Prüfer:in</th>
+				<th>Wiederholungsprüfung</th>
 				<th>Constraints</th>
 				<th>Anmeldungen</th>
 				<th>NTA</th>
@@ -147,7 +148,34 @@
 						{/each}
 					</td>
 					<td>{exam.zpaExam.module}</td>
-					<td>{exam.zpaExam.mainExamer}</td>
+					<td
+						>{exam.mainExamer.shortname}
+						{#if exam.mainExamer.isLBA}<div class="badge badge-secondary">LBA</div>{/if}
+						{#if exam.mainExamer.fk != 'FK07'}<div class="badge badge-secondary">
+								{exam.mainExamer.fk}
+							</div>{/if}
+					</td>
+					<td>
+						{#if exam.zpaExam.isRepeaterExam}
+							<div class="mt-2 mr-3">
+								<svg
+									version="1.1"
+									viewBox="0 0 100 100"
+									class="stroke-current flex-shrink-0 h-3 w-3"
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<g>
+										<path
+											d="m83.602 16.398c-9-9-20.898-13.898-33.602-13.898-12.699 0-24.602 4.8984-33.602 13.898s-13.898 20.898-13.898 33.602c0 12.699 4.8984 24.602 13.898 33.602s20.898 13.898 33.602 13.898c12.699 0 24.602-4.8984 33.602-13.898l1.8008-1.8008 0.10156 7.6992c0 2.1016 1.8008 3.8984 3.8984 3.8984h0.10156c2.1992 0 3.8984-1.8008 3.8984-4l-0.30078-17c0-2.1016-1.6992-3.8008-3.8984-3.8984l-17-0.30078c-2.1992 0-3.8984 1.6992-4 3.8984 0 2.1992 1.6992 3.8984 3.8984 4l7.6992 0.10156-1.8008 1.8008c-7.5 7.5-17.398 11.602-28 11.602s-20.602-4.1016-28-11.602-11.699-17.398-11.699-28 4.1992-20.602 11.699-28 17.5-11.602 28-11.602 20.5 4.1016 28 11.602c8.5 8.5 12.602 20.199 11.398 32.199-0.19922 2.1992 1.3008 4.1016 3.5 4.3008 2.1992 0.19922 4.1016-1.3008 4.3008-3.5 1.5-14.398-3.3984-28.398-13.598-38.602z"
+										/>
+										<path
+											d="m38.102 35.602v28.898c0 2.8984 3.1992 4.6992 5.6016 3.1992l23.5-14.398c2.3984-1.3984 2.3984-4.8984 0-6.3008l-23.504-14.602c-2.5-1.5-5.5977 0.30078-5.5977 3.2031z"
+										/>
+									</g>
+								</svg>
+							</div>
+						{/if}
+					</td>
 					<td>
 						{#if exam.constraints && exam.constraints.online}
 							<div class="badge badge-warning">Online</div>
