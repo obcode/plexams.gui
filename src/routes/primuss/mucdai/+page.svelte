@@ -22,15 +22,15 @@
 <h1 class="text-4xl text-center my-8 uppercase">Prüfungslisten aus Primuss</h1>
 
 <div class="grid grid-cols-1 justify-items-center">
-	<div class="btn-group">
+	<div class="join">
 		{#each programs as p}
 			<input
 				type="radio"
 				name="options"
-				data-title={p}
+				aria-label={p}
 				bind:group={program}
 				value={p}
-				class="btn"
+				class="btn join-item"
 			/>
 		{/each}
 	</div>
