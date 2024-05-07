@@ -103,9 +103,10 @@
 				<th>AnCode</th>
 				<th>Module</th>
 				<th>Prüfer:in</th>
+				<th>Primuss-Codes</th>
+				<th>Rep.</th>
 				<th>Art</th>
 				<th>Gruppen</th>
-				<th>Primuss-Codes</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -121,8 +122,6 @@
 					<td><a href="/exam/examWithRegs/{exam.ancode}">{exam.ancode}</a></td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
-					<td>{exam.examTypeFull}</td>
-					<td>{exam.groups}</td>
 					<td>
 						{#each exam.primussAncodes as ancode}
 							{#if ancode.ancode == -1 || ancode.ancode == 0}
@@ -134,6 +133,11 @@
 							{/if}
 						{/each}
 					</td>
+					<td>
+						{#if exam.isRepeaterExam}X{/if}
+					</td>
+					<td>{exam.examTypeFull}</td>
+					<td>{exam.groups}</td>
 				</tr>
 			{/each}
 		</tbody>

@@ -42,7 +42,7 @@
 					<th>Prüfender</th>
 					<th>Art</th>
 					<th>Dauer</th>
-					<th>Wiederholungsprüfung</th>
+					<th>Rep.</th>
 					<th>Planung durch</th>
 				</tr>
 			</thead>
