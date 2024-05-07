@@ -102,6 +102,7 @@
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
+				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen</a></li>
 				<li><a href="/primuss/exams">Prüfungslisten</a></li>
 			</ul>
 		</div>
