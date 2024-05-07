@@ -17,7 +17,7 @@
 	}
 </script>
 
-<h1 class="text-4xl text-center my-8 uppercase">Prüfungslisten aus Primuss</h1>
+<h1 class="text-4xl text-center my-8 uppercase">MUC.DAI-Prüfungen</h1>
 
 <div class="grid grid-cols-1 justify-items-center">
 	<div class="join">
