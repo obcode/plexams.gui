@@ -4,8 +4,6 @@
 	let programs = data.mucdaiExams.map((exam) => exam.program);
 	programs = programs.filter((value, index) => programs.indexOf(value) === index);
 
-	console.log(programs);
-
 	let program = programs.length > 0 ? programs[0] : '';
 
 	let exams = [];
