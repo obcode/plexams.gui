@@ -113,7 +113,11 @@
 			{#each filteredExams as exam, idx}
 				<tr>
 					<th class=" ">{idx + 1}.</th>
-					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.ancode}</td>
+					<td class={bgConstraints(exam.constraints)}>
+						<a href="/exam/constraints/{exam.zpaExam.ancode}">
+							{exam.zpaExam.ancode}
+						</a>
+					</td>
 					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.module}</td>
 					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.mainExamer}</td>
 					<td class={bgConstraints(exam.constraints)}>{exam.zpaExam.examType}</td>
@@ -121,7 +125,8 @@
 					<td class={bgConstraints(exam.constraints)}
 						>{#if exam.constraints && exam.constraints.sameSlot}
 							{#each exam.constraints.sameSlot as ancode, i}
-								{ancode}{#if i < exam.constraints.sameSlot.length - 1}, {/if}
+								{ancode}{#if i < exam.constraints.sameSlot.length - 1},
+								{/if}
 							{/each}
 						{/if}</td
 					>
