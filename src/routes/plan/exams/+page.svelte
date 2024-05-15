@@ -27,6 +27,8 @@
 	let showOnlyOnline = false;
 	let showOnlyExahm = false;
 	let showOnlySEB = false;
+	let showOnlyEXaHMRooms = false;
+	let showMucdaiSlots = false;
 
 	let allProgramsInPlan = [];
 	async function getPrograms() {
@@ -82,6 +84,23 @@
 			return 'bg-yellow-500';
 		} else if (status == 'forbidden') {
 			return 'bg-red-500';
+		}
+	}
+
+	let mucdaiSlot = new Map();
+
+	for (const slot of data.semesterConfig.slots) {
+		if (slot.dayNumber % slot.slotNumber == 0)
+			mucdaiSlot[[slot.dayNumber, slot.slotNumber]] = 'border border-red-500 border-8 ';
+	}
+
+	let mucdaiSlotToShow = new Map();
+
+	function handleMucdaiSlots() {
+		if (showMucdaiSlots) {
+			mucdaiSlotToShow = mucdaiSlot;
+		} else {
+			mucdaiSlotToShow = new Map();
 		}
 	}
 
@@ -306,6 +325,7 @@
 			</label>
 		</div>
 	</div>
+
 	<div>
 		<select class="select select-primary w-full max-w-xs my-2" bind:value={showExam}>
 			<option selected value="all">Alle Gruppen</option>
@@ -329,6 +349,35 @@
 				<option>{ancode}</option>
 			{/each}
 		</select>
+	</div>
+	<div>
+		<div class="form-control my-3 ml-10">
+			<label class="label cursor-pointer">
+				<span class="label-text">EXaHM-Räume</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					on:click={() => {
+						showOnlyEXaHMRooms = !showOnlyEXaHMRooms;
+					}}
+				/>
+			</label>
+		</div>
+	</div>
+	<div>
+		<div class="form-control my-3">
+			<label class="label cursor-pointer">
+				<span class="label-text">MUC.DAI-Slots</span>
+				<input
+					type="checkbox"
+					class="toggle mx-3"
+					on:click={() => {
+						showMucdaiSlots = !showMucdaiSlots;
+						handleMucdaiSlots();
+					}}
+				/>
+			</label>
+		</div>
 	</div>
 </div>
 <div>
@@ -359,32 +408,35 @@
 					</td>
 					{#each data.semesterConfig.days as day}
 						<td
-							class="align-top border-dashed border-2 border-sky-500 {statusColor(
-								slotsStatus[[day.number, time.number]]
-							)} "
+							class="align-top border-dashed border-2 border-sky-500
+							{statusColor(slotsStatus[[day.number, time.number]])}
+							 "
 						>
-							<Slot
-								{day}
-								{time}
-								{maxSlots}
-								{selectedExam}
-								{onlyPlannedByMe}
-								{onlyConflicts}
-								{details}
-								{moveable}
-								{showExam}
-								{showAncode}
-								{showExamerID}
-								{showOnlyOnline}
-								{showOnlyExahm}
-								{showOnlySEB}
-								{conflictingAncodes}
-								refresh={refresh[[day.number, time.number]]}
-								on:selected={handleSelect}
-								on:unselected={handleUnselect}
-								on:addToSlot={handleAddToSlot}
-								on:rmFromSlot={handleRmFromSlot}
-							/>
+							<div class="{mucdaiSlotToShow[[day.number, time.number]]} ">
+								<Slot
+									{day}
+									{time}
+									{maxSlots}
+									{selectedExam}
+									{onlyPlannedByMe}
+									{onlyConflicts}
+									{details}
+									{moveable}
+									{showExam}
+									{showAncode}
+									{showExamerID}
+									{showOnlyOnline}
+									{showOnlyExahm}
+									{showOnlySEB}
+									{showOnlyEXaHMRooms}
+									{conflictingAncodes}
+									refresh={refresh[[day.number, time.number]]}
+									on:selected={handleSelect}
+									on:unselected={handleUnselect}
+									on:addToSlot={handleAddToSlot}
+									on:rmFromSlot={handleRmFromSlot}
+								/>
+							</div>
 						</td>
 					{/each}
 				</tr>

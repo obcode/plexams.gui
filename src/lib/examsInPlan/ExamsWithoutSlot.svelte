@@ -56,7 +56,7 @@
 		</div>
 	</div>
 	{#if showExamsPlannedByMe}
-		<div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+		<div class="flex flex-wrap gap-4">
 			{#each examsPlannedByMe as exam}
 				<SlotExam
 					{exam}
@@ -94,7 +94,7 @@
 		</div>
 	</div>
 
-	<div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+	<div class="flex flex-wrap gap-4">
 		{#each examsNotPlannedByMe as exam}
 			<SlotExam
 				{exam}

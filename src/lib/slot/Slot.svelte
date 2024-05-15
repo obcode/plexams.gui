@@ -13,6 +13,7 @@
 	export let showOnlyOnline;
 	export let showOnlyExahm;
 	export let showOnlySEB;
+	export let showOnlyEXaHMRooms;
 	export let conflictingAncodes;
 	export let refresh;
 	import { createEventDispatcher } from 'svelte';
@@ -36,6 +37,20 @@
 		exams = data.examsInSlot;
 		countIt();
 		// calculateConflicts();
+	}
+
+	let exahmRooms = [];
+
+	async function fetchEXaHMRooms() {
+		const response = await fetch('/api/plan/roomsForSlot', {
+			method: 'POST',
+			body: JSON.stringify({ day: day.number, time: time.number }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+		let data = await response.json();
+		exahmRooms = data.roomsForSlot.exahmRooms;
 	}
 
 	let conflicts = 0;
@@ -79,6 +94,7 @@
 
 	onMount(() => {
 		fetchExams();
+		fetchEXaHMRooms();
 	});
 
 	function forwardSelected(event) {
@@ -134,6 +150,13 @@
 		</div>
 	{/if}
 </div>
+{#if showOnlyEXaHMRooms}
+	<div>
+		{#each exahmRooms as room}
+			<div class="badge badge-warning">{room.name}</div>
+		{/each}
+	</div>
+{/if}
 
 {#each exams as exam}
 	<SlotExam

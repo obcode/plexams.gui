@@ -6,7 +6,7 @@
 	<div class="card-body">
 		<div class="flex justify-between">
 			<span class="text-xl text-green-900">
-				{nta.nta.name}
+				{nta.nta.name} ({nta.nta.program})
 			</span>
 			{#if nta.nta.needsRoomAlone}
 				<span class="text-red-900 font-extrabold">eigener Raum</span>

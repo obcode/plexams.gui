@@ -37,16 +37,16 @@
 					<div>
 						{#each exam.primussExams as primussExam}
 							<div>
+								<span class="badge m-1">{primussExam.program}</span>
 								{primussExam.ancode}. {primussExam.module}
 								({primussExam.mainExamer}),
-								<span class="badge m-1">{primussExam.program}</span>
 							</div>
 						{/each}
 						{#if exam.errors && exam.errors.length > 0}
-							<div class="bg-yellow-500">
+							<div>
 								<ul>
 									{#each exam.errors as error}
-										<li>{error}</li>
+										<li class="bg-yellow-500 p-1 m-1 rounded-xl">{error}</li>
 									{/each}
 								</ul>
 							</div>

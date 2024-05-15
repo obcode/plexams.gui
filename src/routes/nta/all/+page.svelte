@@ -16,6 +16,10 @@
 			filteredNTAs = data.ntas.filter((nta) =>
 				nta.name.toLowerCase().includes(searchTerm.toLowerCase())
 			);
+		} else if (roomAlone && currentSemester) {
+			filteredNTAs = data.ntas.filter(
+				(nta) => nta.needsRoomAlone && nta.lastSemester == data.semester
+			);
 		} else if (roomAlone) {
 			filteredNTAs = data.ntas.filter((nta) => nta.needsRoomAlone);
 		} else if (currentSemester) {
@@ -28,7 +32,7 @@
 
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">
-		{data.ntas.length} Studierende mit Nachteilsausgleich
+		{data.ntas.length} Studierende mit Nachteilsausgleich, {filteredNTAs.length} ausgewählt
 	</div>
 </div>
 

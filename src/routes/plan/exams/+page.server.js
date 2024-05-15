@@ -9,6 +9,10 @@ export async function load({ params }) {
 					number
 					date
 				}
+				slots {
+					dayNumber
+					slotNumber
+				}
 				starttimes {
 					number
 					start
