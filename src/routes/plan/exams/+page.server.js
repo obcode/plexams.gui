@@ -9,7 +9,7 @@ export async function load({ params }) {
 					number
 					date
 				}
-				slots {
+				goSlots {
 					dayNumber
 					slotNumber
 				}
