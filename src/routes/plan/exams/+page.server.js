@@ -110,6 +110,7 @@ export async function load({ params }) {
 					}
 				}
 				studentRegsCount
+				maxDuration
 				planEntry {
 					dayNumber
 					slotNumber
