@@ -105,6 +105,7 @@
 				<th>AnCode</th>
 				<th>Modul</th>
 				<th>Prüfer:in</th>
+				<th>Dauer</th>
 				<th>Wiederholungsprüfung</th>
 				<th>Constraints</th>
 				<th>Anmeldungen</th>
@@ -154,6 +155,13 @@
 						{#if exam.mainExamer.fk != 'FK07'}<div class="badge badge-secondary">
 								{exam.mainExamer.fk}
 							</div>{/if}
+					</td>
+					<td
+						>{#if exam.zpaExam.duration > 0}
+							{exam.zpaExam.duration}
+						{:else}
+							<div class="badge badge-warning">{exam.zpaExam.duration}</div>
+						{/if}
 					</td>
 					<td>
 						{#if exam.zpaExam.isRepeaterExam}

@@ -221,6 +221,9 @@
 										<div class="badge badge-info gap-2">Reserve</div>
 									{/if}
 								{/if}
+								{#if room.room.name == 'No Room'}
+									({room.studentsInRoom.length})
+								{/if}
 							</div>
 						{/if}
 					{/each}
