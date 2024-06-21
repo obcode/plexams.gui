@@ -44,10 +44,9 @@
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/exam/examWithRegs">Prüfungen mit Anmeldungen</a></li>
-				<li><a href="/exam/examGroups">Prüfungsgruppen</a></li>
-				<li><a href="/plan/examGroups">Prüfungen planen</a></li>
-				<li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li>
+				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
+				<li><a href="/plan/exams">Prüfungen planen</a></li>
+				<!-- <li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li> -->
 				<li><a href="/plan/rooms">Raumplanung</a></li>
 				<li><a href="/plan/roomsTable">Raumplanung (Tabelle)</a></li>
 				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
@@ -65,6 +64,7 @@
 				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
 				<li><a href="/exam/constraints">Constraints</a></li>
+				<li><a href="/exam/externalExams">Zusätzliche Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 			</ul>
 		</div>
@@ -77,7 +77,7 @@
 			>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
-				<li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li>
+				<!-- <li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li> -->
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
 		</div>
@@ -102,6 +102,7 @@
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
+				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen</a></li>
 				<li><a href="/primuss/exams">Prüfungslisten</a></li>
 			</ul>
 		</div>

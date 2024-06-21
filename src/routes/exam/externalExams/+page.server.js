@@ -4,17 +4,12 @@ import { request, gql } from 'graphql-request';
 export async function load({ params }) {
 	const query = gql`
 		query {
-			primussExams {
+			externalExams {
+				ancode
 				program
-				exams {
-					ancode
-					module
-					mainExamer
-					program
-					examType
-					presence
-					studentRegsCount
-				}
+				module
+				mainExamer
+				duration
 			}
 		}
 	`;
@@ -22,6 +17,6 @@ export async function load({ params }) {
 	const data = await request(env.PLEXAMS_SERVER, query);
 
 	return {
-		primussExams: data.primussExams
+		externalExams: data.externalExams
 	};
 }

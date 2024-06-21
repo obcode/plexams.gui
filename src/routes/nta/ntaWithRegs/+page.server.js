@@ -6,14 +6,21 @@ export async function load({ params }) {
 	const query = gql`
 		query {
 			ntasWithRegs {
+				name
+				mtknr
+				program
+				group
+				regs
 				nta {
-					mtknr
 					name
+					mtknr
 					compensation
+					deltaDurationPercent
 					needsRoomAlone
-				}
-				regs {
-					ancodes
+					program
+					from
+					until
+					lastSemester
 				}
 			}
 		}
@@ -26,20 +33,25 @@ export async function load({ params }) {
 	if (data.ntasWithRegs != null) {
 		for (let nta of ntasWithRegs) {
 			let exams = [];
-			for (const ancode of nta.regs.ancodes) {
+			for (const ancode of nta.regs) {
 				const query = gql`
 		query {
-			zpaExam(ancode: ${ancode}) {
+			generatedExam(ancode: ${ancode}) {
 				ancode
-				mainExamer
-				module
-				examType
+				zpaExam {
+					mainExamer
+					module
+					examType
+				}
+				constraints {
+					notPlannedByMe
+				}
 			}
 		}
 	`;
 
 				const data = await request(env.PLEXAMS_SERVER, query);
-				exams.push(data.zpaExam);
+				exams.push(data.generatedExam);
 			}
 
 			nta.exams = exams;

@@ -3,17 +3,17 @@
 	export let showOnlyExamsWithNTAs;
 	export let details;
 	export let showRooms;
-	import { onMount } from 'svelte';
+	// import { onMount } from 'svelte';
 
-	let exam = plannedExam.exam.exam;
-	let constraints = plannedExam.exam.constraints;
-	let ntas = plannedExam.exam.nta;
-	let slot = plannedExam.exam.slot;
+	let exam = plannedExam.zpaExam;
+	let constraints = plannedExam.constraints;
+	let ntas = plannedExam.ntas;
+	// let slot = plannedExam.planEntry;
 
 	let showRoom = true;
 	$: if (showRooms != 'all') {
 		showRoom = false;
-		for (const room of plannedExam.rooms) {
+		for (const room of plannedExam.plannedRooms) {
 			if (showRooms == room.room.name) showRoom = true;
 		}
 	} else {
@@ -32,14 +32,13 @@
 		return 'bg-base-100';
 	}
 
-	let studentRegs = 0;
-	for (const studReg of exam.studentRegs) {
-		studentRegs += studReg.studentRegs.length;
-	}
+	let studentRegs = plannedExam.studentRegsCount;
 
 	let studentsInRoom = 0;
-	for (const room of plannedExam.rooms) {
-		if (room.room.name != 'No Room') studentsInRoom += room.seatsPlanned;
+	if (plannedExam.plannedRooms) {
+		for (const room of plannedExam.plannedRooms) {
+			if (room.roomName != 'No Room') studentsInRoom += room.studentsInRoom.length;
+		}
 	}
 
 	let studentRegsWithoutRoom = studentRegs - studentsInRoom;
@@ -57,76 +56,76 @@
 	const lab =
 		constraints != null && constraints.roomConstraints != null && constraints.roomConstraints.lab;
 
-	let allowedRoomsUnfiltered = [];
+	// let allowedRoomsUnfiltered = [];
 
-	async function fetchRoomsForSlot() {
-		const day = slot.dayNumber;
-		const time = slot.slotNumber;
-		const response = await fetch('/api/plan/roomsForSlot', {
-			method: 'POST',
-			body: JSON.stringify({ day, time }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		// console.log(data.plannedExamsInSlot);
-		allowedRoomsUnfiltered = data.roomsForSlot;
-	}
+	// async function fetchRoomsForSlot() {
+	// 	const day = slot.dayNumber;
+	// 	const time = slot.slotNumber;
+	// 	const response = await fetch('/api/plan/roomsForSlot', {
+	// 		method: 'POST',
+	// 		body: JSON.stringify({ day, time }),
+	// 		headers: {
+	// 			'content-type': 'application/json'
+	// 		}
+	// 	});
+	// 	let data = await response.json();
+	// 	// console.log(data.plannedExamsInSlot);
+	// 	allowedRoomsUnfiltered = data.roomsForSlot;
+	// }
 
-	let allowedRooms = [];
+	// let allowedRooms = [];
 
-	$: if (exahm) {
-		allowedRooms = allowedRoomsUnfiltered.filter((room) => room.exahm);
-	} else if (lab) {
-		allowedRooms = allowedRoomsUnfiltered.filter((room) => room.lab);
-	} else if (placesWithSocket) {
-		allowedRooms = allowedRoomsUnfiltered.filter((room) => room.placesWithSocket);
-	} else {
-		allowedRooms = allowedRoomsUnfiltered;
-	}
+	// $: if (exahm) {
+	// 	allowedRooms = allowedRoomsUnfiltered.filter((room) => room.exahm);
+	// } else if (lab) {
+	// 	allowedRooms = allowedRoomsUnfiltered.filter((room) => room.lab);
+	// } else if (placesWithSocket) {
+	// 	allowedRooms = allowedRoomsUnfiltered.filter((room) => room.placesWithSocket);
+	// } else {
+	// 	allowedRooms = allowedRoomsUnfiltered;
+	// }
 
-	let roomToUse = 'none';
-	let roomToUseNTA = [];
+	// let roomToUse = 'none';
+	// let roomToUseNTA = [];
 
-	if (ntas) {
-		for (let nta of ntas) {
-			roomToUseNTA.push('none');
-		}
-	}
+	// if (ntas) {
+	// 	for (let nta of ntas) {
+	// 		roomToUseNTA.push('none');
+	// 	}
+	// }
 
-	async function addRoom(nta) {
-		if (nta) {
-			console.log(`für NTA ${nta} einplanen`);
-		} else {
-			console.log('als normalen Prüfungsraum einplanen');
+	// async function addRoom(nta) {
+	// 	if (nta) {
+	// 		console.log(`für NTA ${nta} einplanen`);
+	// 	} else {
+	// 		console.log('als normalen Prüfungsraum einplanen');
 
-			const response = await fetch('/api/rooms/addRoomToExam', {
-				method: 'POST',
-				body: JSON.stringify({
-					input: {
-						ancode: exam.ancode,
-						day: slot.dayNumber,
-						time: slot.slotNumber,
-						roomName: roomToUse,
-						seatsPlanned: 0,
-						duration: exam.duration,
-						handicap: false,
-						mktnrs: []
-					}
-				}),
-				headers: {
-					'content-type': 'application/json'
-				}
-			});
-			let data = await response.json();
-			return data.addExamGroupToSlot;
-		}
-	}
+	// 		const response = await fetch('/api/rooms/addRoomToExam', {
+	// 			method: 'POST',
+	// 			body: JSON.stringify({
+	// 				input: {
+	// 					ancode: exam.ancode,
+	// 					day: slot.dayNumber,
+	// 					time: slot.slotNumber,
+	// 					roomName: roomToUse,
+	// 					seatsPlanned: 0,
+	// 					duration: exam.duration,
+	// 					handicap: false,
+	// 					mktnrs: []
+	// 				}
+	// 			}),
+	// 			headers: {
+	// 				'content-type': 'application/json'
+	// 			}
+	// 		});
+	// 		let data = await response.json();
+	// 		return data.addExamGroupToSlot;
+	// 	}
+	// }
 
-	onMount(() => {
-		// fetchRoomsForSlot();
-	});
+	// onMount(() => {
+	// 	// fetchRoomsForSlot();
+	// });
 
 	function bgRoom(room) {
 		if (room.name == 'No Room') {
@@ -151,6 +150,14 @@
 			return 'bg-red-200';
 		}
 		return 'bg-green-300';
+	}
+
+	function ntaName(exam, mtknr) {
+		for (const nta of exam.ntas) {
+			if (nta.mtknr == mtknr) {
+				return nta.name;
+			}
+		}
 	}
 </script>
 
@@ -182,38 +189,47 @@
 					ohne Raum
 					<br />
 				{/if}
-				<div class="badge badge-warning">{exam.zpaExam.duration}</div>
+				<div class="badge badge-warning">{exam.duration}</div>
 				Min.
 			</div>
 
 			<div>
-				{exam.ancode}. {exam.zpaExam.mainExamer}:
-				{exam.zpaExam.module}
+				{exam.ancode}. {exam.mainExamer}:
+				{exam.module}
 			</div>
 
 			<div class="">
-				{#each plannedExam.rooms as room}
-					{#if room.handicap}
-						<div class="border-dashed border-2 border-black {bgRoom(room.room)} rounded-lg m-1 p-1">
-							{room.room.name} (
-							{#each room.students as student}
-								{student.name};
-							{/each}
-							<div class="badge badge-warning">{room.duration}</div>
-							Minuten)
-						</div>
-					{:else}
-						<div class="border-2 border-black {bgRoom(room.room)}  rounded-lg m-1 p-1">
-							{room.room.name}
-							{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}
-								({room.seatsPlanned}/{room.room.seats})
-								{#if room.reserve}
-									<div class="badge badge-info gap-2">Reserve</div>
+				{#if plannedExam.plannedRooms}
+					{#each plannedExam.plannedRooms as room}
+						{#if room.handicap}
+							<div
+								class="border-dashed border-2 border-black {bgRoom(room.room)} rounded-lg m-1 p-1"
+							>
+								{room.room.name} (
+								{#each room.studentsInRoom as student}
+									{ntaName(plannedExam, student)};
+								{/each}
+								<div class="badge badge-warning">{room.duration}</div>
+								Minuten)
+							</div>
+						{:else}
+							<div class="border-2 border-black {bgRoom(room.room)}  rounded-lg m-1 p-1">
+								{room.room.name}
+								{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}
+									({room.studentsInRoom.length}/{room.room.seats})
+									{#if room.reserve}
+										<div class="badge badge-info gap-2">Reserve</div>
+									{/if}
 								{/if}
-							{/if}
-						</div>
-					{/if}
-				{/each}
+								{#if room.room.name == 'No Room'}
+									({room.studentsInRoom.length})
+								{/if}
+							</div>
+						{/if}
+					{/each}
+				{:else}
+					kein Raum!!!
+				{/if}
 				<!-- <select class="select select-sm select-bordered  select-ghost m-2" bind:value={roomToUse}>
 					<option selected value="none">Raum auswählen</option>
 					{#each allowedRooms as room}
@@ -229,21 +245,21 @@
 					<ul>
 						{#each ntas as nta, index}
 							<li class="border border-gray-400 rounded m-1 p-1">
-								{nta.nta.name}
-								{#if nta.nta.needsRoomAlone}
+								{nta.name} ({nta.mtknr})
+								{#if nta.needsRoomAlone}
 									<div class="badge badge-error">Raum</div>
 								{/if}
 								{#if details}
 									<div>
-										{nta.nta.compensation}
+										{nta.compensation}
 									</div>
 								{/if}
 								<div class="flex justify-between m-2">
-									<div>{nta.nta.deltaDurationPercent}%</div>
+									<div>{nta.deltaDurationPercent}%</div>
 									<div class="w-3/4">
 										<progress
 											class="progress progress-error w-full"
-											value={nta.nta.deltaDurationPercent}
+											value={nta.deltaDurationPercent}
 											max={100}
 										/>
 									</div>

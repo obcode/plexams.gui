@@ -55,6 +55,7 @@
 
 {#each data.semesterConfig.days as day}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="border-2 border-black rounded-lg shadow-xl bg-green-400 m-2 p-2 text-center"
 		on:click={() => (showDays[day.number] = !showDays[day.number])}

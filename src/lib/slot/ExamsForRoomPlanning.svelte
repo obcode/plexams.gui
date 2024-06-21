@@ -7,10 +7,10 @@
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
 
-	let examsInSlotWithRooms = [];
+	let examsInSlot = [];
 
 	async function fetchExamsInSlot() {
-		const response = await fetch('/api/plan/examsInSlotWithRooms', {
+		const response = await fetch('/api/examsInSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
 			headers: {
@@ -19,7 +19,7 @@
 		});
 		let data = await response.json();
 		// console.log(data.plannedExamsInSlot);
-		examsInSlotWithRooms = data.examsInSlotWithRooms;
+		examsInSlot = data.examsInSlot;
 	}
 
 	onMount(() => {
@@ -27,6 +27,8 @@
 	});
 </script>
 
-{#each examsInSlotWithRooms as plannedExam}
-	<ExamWithNTAsForRoomPlanning {plannedExam} {showOnlyExamsWithNTAs} {details} {showRooms} />
+{#each examsInSlot as plannedExam}
+	{#if !plannedExam.constraints || !plannedExam.constraints.notPlannedByMe}
+		<ExamWithNTAsForRoomPlanning {plannedExam} {showOnlyExamsWithNTAs} {details} {showRooms} />
+	{/if}
 {/each}

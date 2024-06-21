@@ -4,6 +4,7 @@
 
 	let ntaInput = {
 		name: '',
+		email: '',
 		mtknr: '',
 		compensation: '',
 		deltaDurationPercent: 0,
@@ -22,6 +23,7 @@
 			mutation ($ntaInput: NTAInput!) {
 				addNTA(input: $ntaInput) {
 					name
+					email
 					mtknr
 					compensation
 					deltaDurationPercent
@@ -45,6 +47,7 @@
 		request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
 			ntaInput = {
 				name: '',
+				email: '',
 				mtknr: '',
 				compensation: '',
 				deltaDurationPercent: 0,
@@ -101,6 +104,14 @@
 					placeholder="Name, Vorname"
 					class="input input-bordered w-full"
 					bind:value={ntaInput.name}
+				/>
+
+				<span>E-Mail</span>
+				<input
+					type="text"
+					placeholder="username@hm.edu"
+					class="input input-bordered w-full"
+					bind:value={ntaInput.email}
 				/>
 
 				<span>Matrikelnummer</span>

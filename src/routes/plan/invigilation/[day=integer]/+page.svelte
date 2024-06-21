@@ -4,7 +4,17 @@
 	import InvigilationDayPlanning from '$lib/invigilator/InvigilationDayPlanning.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
 
+	let selectedInvigilator = 0;
 	let details = true;
+
+	async function handleSelect(event) {
+		selectedInvigilator = 0;
+		selectedInvigilator = event.detail.selectedInvigilator;
+	}
+
+	async function handleUnselect(event) {
+		selectedInvigilator = 0;
+	}
 </script>
 
 <div class="text-center m-2">
@@ -41,9 +51,19 @@
 
 <div class="grid grid-cols-12 gap-4">
 	<div class="col-span-2">
-		<InvigilatorsForDay day={data.day} />
+		<InvigilatorsForDay
+			day={data.day}
+			{selectedInvigilator}
+			on:selected={handleSelect}
+			on:unselected={handleUnselect}
+		/>
 	</div>
 	<div class="col-span-10">
-		<InvigilationDayPlanning semesterConfig={data.semesterConfig} day={data.day} {details} />
+		<InvigilationDayPlanning
+			semesterConfig={data.semesterConfig}
+			day={data.day}
+			{details}
+			{selectedInvigilator}
+		/>
 	</div>
 </div>

@@ -42,7 +42,7 @@
 		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
-			body: JSON.stringify({ ancode, unknown: false }),
+			body: JSON.stringify({ ancode }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -53,7 +53,7 @@
 		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
-			body: JSON.stringify({ ancode, unknown: false }),
+			body: JSON.stringify({ ancode }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -62,7 +62,7 @@
 	}
 </script>
 
-<div class="flex ">
+<div class="flex">
 	<input
 		class="input input-bordered w-full max-w-x mr-2"
 		type="text"
@@ -103,6 +103,8 @@
 				<th>AnCode</th>
 				<th>Module</th>
 				<th>Prüfer:in</th>
+				<th>Primuss-Codes</th>
+				<th>Rep.</th>
 				<th>Art</th>
 				<th>Gruppen</th>
 			</tr>
@@ -120,6 +122,20 @@
 					<td><a href="/exam/examWithRegs/{exam.ancode}">{exam.ancode}</a></td>
 					<td>{exam.module}</td>
 					<td>{exam.mainExamer}</td>
+					<td>
+						{#each exam.primussAncodes as ancode}
+							{#if ancode.ancode == -1 || ancode.ancode == 0}
+								<div class="badge badge-error m-1">{ancode.program}/{ancode.ancode}</div>
+							{:else if ancode.ancode == exam.ancode}
+								<div class="badge m-1">{ancode.program}/{ancode.ancode}</div>
+							{:else}
+								<div class="badge badge-warning m-1">{ancode.program}/{ancode.ancode}</div>
+							{/if}
+						{/each}
+					</td>
+					<td>
+						{#if exam.isRepeaterExam}X{/if}
+					</td>
 					<td>{exam.examTypeFull}</td>
 					<td>{exam.groups}</td>
 				</tr>

@@ -4,17 +4,16 @@ import { request, gql } from 'graphql-request';
 export async function load({ params }) {
 	const query = gql`
 		query {
-			primussExams {
+			mucdaiExams {
+				primussAncode
+				module
+				mainExamer
+				mainExamerID
+				examType
+				duration
+				isRepeaterExam
 				program
-				exams {
-					ancode
-					module
-					mainExamer
-					program
-					examType
-					presence
-					studentRegsCount
-				}
+				plannedBy
 			}
 		}
 	`;
@@ -22,6 +21,6 @@ export async function load({ params }) {
 	const data = await request(env.PLEXAMS_SERVER, query);
 
 	return {
-		primussExams: data.primussExams
+		mucdaiExams: data.mucdaiExams
 	};
 }

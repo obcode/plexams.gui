@@ -1,15 +1,35 @@
 <script>
 	export let roomsWithInvigilators;
 	export let details;
+	export let selectedInvigilator;
 
-	function bg() {
-		if (roomsWithInvigilators.invigilator) return 'bg-green-300';
-		if (roomsWithInvigilators.name == 'No Room') return 'bg-cyan-100';
-		return 'bg-red-400';
+	let teacherIds = new Set();
+	if (roomsWithInvigilators.invigilator) {
+		teacherIds.add(roomsWithInvigilators.invigilator.id);
+	}
+	for (const roomAndExam of roomsWithInvigilators.roomAndExams) {
+		teacherIds.add(roomAndExam.exam.mainExamerID);
+	}
+
+	let bgRoom = 'bg-red-400';
+	$: {
+		if (teacherIds.has(selectedInvigilator)) {
+			bgRoom = 'bg-blue-400';
+		} else {
+			bgRoom = 'bg-red-400';
+			if (roomsWithInvigilators) {
+				if (roomsWithInvigilators.invigilator) {
+					bgRoom = 'bg-green-300';
+				}
+				if (roomsWithInvigilators.name == 'No Room') {
+					bgRoom = 'bg-cyan-100';
+				}
+			}
+		}
 	}
 </script>
 
-<div class="card lg:card-side {bg()} shadow-xl m-2 border-2 border-black rounded-lg">
+<div class="card lg:card-side {bgRoom} shadow-xl m-2 border-2 border-black rounded-lg">
 	<div class="card-body">
 		<h2 class="card-title">
 			{roomsWithInvigilators.name},
@@ -29,7 +49,7 @@
 				{#each roomsWithInvigilators.roomAndExams as roomAndExam}
 					<li class="border-2 border-black rounded-lg m-1 p-1">
 						{roomAndExam.exam.ancode}. {roomAndExam.exam.mainExamer}: {roomAndExam.exam.module}
-						<div class="badge badge-error">{roomAndExam.room.seatsPlanned}</div>
+						<div class="badge badge-error">{roomAndExam.room.studentsInRoom.length}</div>
 						Studs,
 						<div class="badge badge-accent">{roomAndExam.room.duration}</div>
 						Min.

@@ -1,21 +1,5 @@
 <script>
 	export let data;
-	import { onMount } from 'svelte';
-	import ExamCard from '$lib/exam/ExamCard.svelte';
-	import PrimussExamCard from '$lib/PrimussExamCard.svelte';
-
-	let fk07programs = [];
-	async function getFk07programs() {
-		const response = await fetch('/api/fk07programs', {
-			method: 'GET'
-		});
-
-		fk07programs = await response.json();
-	}
-
-	onMount(() => {
-		getFk07programs();
-	});
 
 	function differentTitlesOrMainExamer(exam) {
 		let diffModule = false;
@@ -29,68 +13,48 @@
 			}
 		});
 		if ((diffModule && diffMainExamer) || (exam.errors && exam.errors.length > 0)) {
-			return 'bg-red-500';
+			return 'bg-red-200';
 		}
-		return 'bg-green-500';
-	}
-
-	let toRemove = [];
-
-	function toggleToRemove(primussExam) {
-		if (toRemove.includes((primussExam.ancode, primussExam.program))) {
-			if (Array.isArray(toRemove)) {
-				toRemove = toRemove.filter(
-					(entry) => !(entry == (primussExam.ancode, primussExam.program))
-				);
-			}
-		} else {
-			toRemove = (primussExam.ancode, primussExam.program) + toRemove;
-		}
-	}
-
-	function removeExam(event) {
-		toRemove = [event.detail, ...toRemove];
-	}
-
-	function doNotRemoveExam(event) {
-		if (Array.isArray(toRemove)) {
-			toRemove = toRemove.filter(
-				(entry) => !(entry.ancode == event.detail.ancode && entry.program == event.detail.program)
-			);
-		}
+		return 'bg-green-200';
 	}
 </script>
 
-{#each data.connectedExams as exam}
-	<div class="flex justify-items-stretch {differentTitlesOrMainExamer(exam)}">
-		<div class="m-2">
-			<ExamCard exam={exam.zpaExam} />
-		</div>
-		{#each exam.primussExams as primussExam}
+{#if data && data.connectedExams}
+	<div class="w-fit ml-10">
+		{#each data.connectedExams as exam}
 			<div
-				class="m-2"
-				onClick={() => {
-					console.log('FIXME');
-					// toggleToRemove(primussExam);
-				}}
+				class=" grid grid-cols-2 gap-4 {differentTitlesOrMainExamer(
+					exam
+				)} p-2 m-1 border border-black rounded-xl"
 			>
-				<PrimussExamCard
-					exam={primussExam}
-					{fk07programs}
-					on:removeMe={removeExam}
-					on:doNotRemoveMe={doNotRemoveExam}
-				/>
+				<div>
+					{exam.zpaExam.ancode}. {exam.zpaExam.module} ({exam.zpaExam.mainExamer}),
+					{#each exam.zpaExam.groups as group}
+						<span class="badge m-1">{group}</span>
+					{/each}
+				</div>
+				<div>
+					<div>
+						{#each exam.primussExams as primussExam}
+							<div>
+								<span class="badge m-1">{primussExam.program}</span>
+								{primussExam.ancode}. {primussExam.module}
+								({primussExam.mainExamer}),
+							</div>
+						{/each}
+						{#if exam.errors && exam.errors.length > 0}
+							<div>
+								<ul>
+									{#each exam.errors as error}
+										<li class="bg-yellow-500 p-1 m-1 rounded-xl">{error}</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+					</div>
+				</div>
 			</div>
 		{/each}
-		{#if exam.errors && exam.errors.length > 0}
-			<div class="m-2 p-10 bg-yellow-500">
-				<ul class="list-disc">
-					{#each exam.errors as error}
-						<li>{error}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
 	</div>
 {:else}
 	<div class="flex items-center justify-center h-screen">
@@ -99,4 +63,4 @@
 			class="w-16 h-16 border-4 border-red-400 border-solid rounded-full animate-spin"
 		/>
 	</div>
-{/each}
+{/if}

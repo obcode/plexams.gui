@@ -1,6 +1,21 @@
 <script>
 	export let data;
 	import Step from '$lib/Step.svelte';
+
+	let highestDone = 0;
+
+	let workflow;
+
+	if (data.workflow && data.workflow.length > 0) {
+		for (let i = 0; i < data.workflow.length; i++) {
+			console.log(data.workflow[i]);
+			const step = data.workflow[i];
+			if (highestDone == step.number - 1 && step.done) {
+				highestDone = step.number;
+			}
+		}
+		console.log(`Highest Done = ${highestDone}`);
+	}
 </script>
 
 <div class="text-center m-2">

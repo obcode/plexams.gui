@@ -18,6 +18,10 @@ export async function GET({ url }) {
 				duration
 				isRepeaterExam
 				groups
+				primussAncodes {
+        			program
+        			ancode
+    			}
 			}
 		}
 	`;

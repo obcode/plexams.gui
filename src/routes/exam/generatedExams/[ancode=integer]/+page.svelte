@@ -5,15 +5,18 @@
 	let studentCount;
 	let gridparams;
 
-	if (data.examWithRegs) {
-		exam = data.examWithRegs;
-		programs = exam.studentRegs.length;
+	if (data.generatedExam) {
+		exam = data.generatedExam;
+		programs = exam.primussExams.length;
 		gridparams = `grid-cols-${programs} gap-${programs}`;
-		studentCount = exam.studentRegs.reduce((sum, reg) => sum + reg.studentRegs.length, 0);
+		studentCount = exam.primussExams.reduce(
+			(sum, primussExam) => sum + primussExam.studentRegs.length,
+			0
+		);
 	}
 </script>
 
-{#if data.examWithRegs}
+{#if data.generatedExam}
 	<div class="text-center m-2 text-4xl">
 		<span class="uppercase">{exam.ancode}. {exam.zpaExam.mainExamer}, {exam.zpaExam.module}</span>
 	</div>
@@ -23,12 +26,12 @@
 	</div>
 
 	<div class="grid {gridparams}">
-		{#each exam.studentRegs as regs}
+		{#each exam.primussExams as primussExam}
 			<div class="card bg-base-100 shadow-xl">
 				<div class="card-body">
-					<h2 class="card-title">{regs.program}</h2>
+					<h2 class="card-title">{primussExam.exam.program}</h2>
 					<ol class="list-inside list-decimal">
-						{#each regs.studentRegs as student}
+						{#each primussExam.studentRegs as student}
 							<li>{student.name}</li>
 						{/each}
 					</ol>

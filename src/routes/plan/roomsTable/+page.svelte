@@ -64,19 +64,20 @@
 		<tbody>
 			{#each data.semesterConfig.starttimes as time}
 				<tr>
-					<td class="border-solid  border-8 border-sky-500 content-center bg-green-400">
+					<td class="border-solid border-8 border-sky-500 content-center bg-green-400">
 						<div>
 							<div>#{time.number}</div>
 							<div>{time.start}</div>
 						</div>
 					</td>
 					{#each data.semesterConfig.days as day}
-						<td class="align-top border-solid  border-8 border-sky-500 ">
+						<td class="align-top border-solid border-8 border-sky-500">
 							<ExamsForRoomPlanning
 								day={day.number}
 								time={time.number}
 								{showOnlyExamsWithNTAs}
 								{details}
+								showRooms="true"
 							/>
 						</td>
 					{/each}

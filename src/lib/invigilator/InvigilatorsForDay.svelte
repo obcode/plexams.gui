@@ -1,7 +1,10 @@
 <script>
 	export let day;
+	export let selectedInvigilator;
 	import InvigilatorForDay from '$lib/invigilator/InvigilatorForDay.svelte';
 	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 
 	let want = [];
 	let can = [];
@@ -26,6 +29,13 @@
 		});
 	}
 
+	function forwardSelected(event) {
+		dispatch('selected', event.detail);
+	}
+	function forwardUnselected(event) {
+		dispatch('unselected', event.detail);
+	}
+
 	onMount(() => {
 		fetchInviglatorsForDay(day);
 	});
@@ -41,7 +51,12 @@
 		<ul>
 			{#each want as invigilator}
 				<li>
-					<InvigilatorForDay {invigilator} />
+					<InvigilatorForDay
+						{invigilator}
+						{selectedInvigilator}
+						on:selected={forwardSelected}
+						on:unselected={forwardUnselected}
+					/>
 				</li>
 			{/each}
 		</ul>
@@ -52,7 +67,12 @@
 		<ul>
 			{#each can as invigilator}
 				<li>
-					<InvigilatorForDay {invigilator} />
+					<InvigilatorForDay
+						{invigilator}
+						{selectedInvigilator}
+						on:selected={forwardSelected}
+						on:unselected={forwardUnselected}
+					/>
 				</li>
 			{/each}
 		</ul>

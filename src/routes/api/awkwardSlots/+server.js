@@ -5,18 +5,18 @@ import { request as gqlrequest, gql } from 'graphql-request';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const query = gql`
-		query ($examGroupCode: Int!) {
-			awkwardSlots(examGroupCode: $examGroupCode) {
+		query ($ancode: Int!) {
+			awkwardSlots(ancode: $ancode) {
 				dayNumber
 				slotNumber
 			}
 		}
 	`;
 
-	const { examGroupCode } = await request.json();
+	const { ancode } = await request.json();
 
 	const variables = {
-		examGroupCode
+		ancode
 	};
 
 	const data = await gqlrequest(env.PLEXAMS_SERVER, query, variables);

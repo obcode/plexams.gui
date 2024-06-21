@@ -23,6 +23,7 @@ export async function POST({ request }) {
 					requirements {
 						excludedDates
 						examDateTimes
+						examDays
 						partTime
 						oralExamsContribution
 						liveCodingContribution
@@ -54,6 +55,7 @@ export async function POST({ request }) {
 					requirements {
 						excludedDates
 						examDateTimes
+						examDays
 						partTime
 						oralExamsContribution
 						liveCodingContribution

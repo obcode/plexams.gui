@@ -1,7 +1,7 @@
 <script>
 	export let data;
 
-	let program = data.primussExams[0].program;
+	let program = data.primussExams.length > 0 ? data.primussExams[0].program : '';
 
 	let exams = [];
 
@@ -14,18 +14,20 @@
 	}
 </script>
 
-<h1 class="text-4xl text-center my-8 uppercase">Prüfungsliste aus Primuss</h1>
+<h1 class="text-4xl text-center my-8 uppercase">
+	{data.primussExams.length} Prüfungslisten aus Primuss
+</h1>
 
 <div class="grid grid-cols-1 justify-items-center">
-	<div class="btn-group">
+	<div class="join">
 		{#each data.primussExams as primussExam}
 			<input
 				type="radio"
 				name="options"
-				data-title={primussExam.program}
+				aria-label={primussExam.program}
 				bind:group={program}
 				value={primussExam.program}
-				class="btn"
+				class="btn join-item"
 			/>
 		{/each}
 	</div>
@@ -39,20 +41,20 @@
 					<th>Prüfer:in</th>
 					<th>Art</th>
 					<th>Anmeldungen</th>
-					<th>Konflikte</th>
 				</tr>
 			</thead>
 			<tbody>
-				{#each exams[0].exams as exam}
-					<tr>
-						<td class={bg(exam.studentRegs.length)}>{exam.ancode}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.module}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.mainExamer}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.examType}</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.studentRegs.length} Anmeldungen</td>
-						<td class={bg(exam.studentRegs.length)}>{exam.conflicts.conflicts.length} Konflikte</td>
-					</tr>
-				{/each}
+				{#if exams.length > 0}
+					{#each exams[0].exams as exam}
+						<tr>
+							<td class={bg(exam.studentRegsCount)}>{exam.ancode}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.module}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.mainExamer}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.examType}</td>
+							<td class={bg(exam.studentRegsCount)}>{exam.studentRegsCount} Anmeldungen</td>
+						</tr>
+					{/each}
+				{/if}
 			</tbody>
 		</table>
 	</div>
