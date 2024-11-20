@@ -39,7 +39,7 @@
 		// calculateConflicts();
 	}
 
-	let exahmRooms = [];
+	let exahm = [];
 
 	async function fetchEXaHMRooms() {
 		const response = await fetch('/api/plan/roomsForSlot', {
@@ -50,7 +50,7 @@
 			}
 		});
 		let data = await response.json();
-		exahmRooms = data.roomsForSlot.exahmRooms;
+		exahm = data.roomsForSlot.exahm;
 	}
 
 	let conflicts = 0;
@@ -152,7 +152,7 @@
 </div>
 {#if showOnlyEXaHMRooms}
 	<div>
-		{#each exahmRooms as room}
+		{#each exahm as room}
 			<div class="badge badge-warning">{room.name}</div>
 		{/each}
 	</div>

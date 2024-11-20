@@ -51,7 +51,7 @@ export async function POST({ request }) {
 					excludeDays
 					roomConstraints {
 						placesWithSocket
-						exahmRooms
+						exahm
 						seb
 						lab
 					}

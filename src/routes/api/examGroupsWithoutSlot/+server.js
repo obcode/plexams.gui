@@ -55,7 +55,7 @@ export async function GET({ url }) {
 						roomConstraints {
 							placesWithSocket
 							lab
-							exahmRooms
+							exahm
 							seb
 						}
 					}

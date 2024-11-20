@@ -76,7 +76,7 @@
 	exahm =
 		exam.constraints &&
 		exam.constraints.roomConstraints &&
-		(exam.constraints.roomConstraints.exahmRooms || exam.constraints.roomConstraints.seb);
+		(exam.constraints.roomConstraints.exahm || exam.constraints.roomConstraints.seb);
 
 	let programs = [];
 	for (const primussExam of exam.primussExams) {
@@ -450,7 +450,7 @@
 		{#if exam.constraints && exam.constraints.online}
 			<div class="badge badge-error">online</div>
 		{/if}
-		{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahmRooms}
+		{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
 			<div class="badge badge-error">EXaHM</div>
 		{/if}
 		{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
