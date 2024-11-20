@@ -3,6 +3,7 @@
 	"version": "0.0.2",
 	"author": "Oliver Braun <oliver.braun@hm.edu>",
 	"license": "BSD-3-Clause",
+	"private": true,
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
