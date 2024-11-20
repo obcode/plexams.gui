@@ -1,13 +1,19 @@
-FROM node:19-alpine
+FROM node:23-alpine AS builder
+# RUN npm install -g npm@9.7.2
 
-# install dependencies
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY package*.json .
 RUN npm ci
-
-# Copy all local files into the image.
 COPY . .
 RUN npm run build
+RUN npm prune --production
 
+FROM node:23-alpine
+WORKDIR /app
+COPY --from=builder /app/build build/
+COPY --from=builder /app/node_modules node_modules/
+COPY package.json .
 EXPOSE 3000
-CMD ["node", "./build"]
+ENV NODE_ENV=production
+
+CMD ["node", "-r", "dotenv/config", "./build"]
