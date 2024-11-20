@@ -44,9 +44,7 @@
 	let studentRegsWithoutRoom = studentRegs - studentsInRoom;
 
 	const exahm =
-		constraints != null &&
-		constraints.roomConstraints != null &&
-		constraints.roomConstraints.exahmRooms;
+		constraints != null && constraints.roomConstraints != null && constraints.roomConstraints.exahm;
 	const seb =
 		constraints != null && constraints.roomConstraints != null && constraints.roomConstraints.seb;
 	const placesWithSocket =

@@ -189,7 +189,7 @@
 							<div class="badge badge-warning">Online</div>
 						{/if}
 						{#if exam.constraints && exam.constraints.roomConstraints}
-							{#if exam.constraints.roomConstraints.exahmRooms}
+							{#if exam.constraints.roomConstraints.exahm}
 								<div class="badge badge-error">EXaHM</div>
 							{/if}
 							{#if exam.constraints.roomConstraints.seb}

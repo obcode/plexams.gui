@@ -25,7 +25,7 @@
 				(exam) =>
 					exam.constraints &&
 					exam.constraints.roomConstraints &&
-					exam.constraints.roomConstraints.exahmRooms
+					exam.constraints.roomConstraints.exahm
 			);
 		} else if (toShow == 'SafeExamBrowser') {
 			filteredExams = examsWithConstraints.filter(
@@ -170,7 +170,7 @@
 							{#if exam.constraints.roomConstraints.lab}
 								Labor,
 							{/if}
-							{#if exam.constraints.roomConstraints.exahmRooms}
+							{#if exam.constraints.roomConstraints.exahm}
 								EXaHM,
 							{/if}
 							{#if exam.constraints.roomConstraints.seb}

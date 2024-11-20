@@ -28,7 +28,7 @@ export async function load({ params }) {
 					roomConstraints {
 						placesWithSocket
 						lab
-						exahmRooms
+						exahm
 						seb
 					}
 				}

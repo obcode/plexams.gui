@@ -77,7 +77,7 @@ export async function POST({ request }) {
 					roomConstraints {
 						placesWithSocket
 						lab
-						exahmRooms
+						exahm
 						seb
 					}
 				}
