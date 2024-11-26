@@ -138,7 +138,7 @@
 		if (room.name == 'R1.049') {
 			return 'bg-blue-300';
 		}
-		if (room.exahm) {
+		if (room.exahmRooms) {
 			return 'bg-cyan-300';
 		}
 		if (room.lab) {

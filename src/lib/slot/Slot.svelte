@@ -50,7 +50,7 @@
 			}
 		});
 		let data = await response.json();
-		exahm = data.roomsForSlot.exahm;
+		exahm = data.roomsForSlot.exahmRooms;
 	}
 
 	let conflicts = 0;
