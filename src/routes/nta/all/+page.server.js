@@ -19,6 +19,7 @@ export async function load({ params }) {
 					ancode
 					module
 				}
+				deactivated
 			}
 		}
 	`;
