@@ -68,6 +68,7 @@
 						<th>E-Mail</th>
 						<th>Mtknr</th>
 						<th>Ausgleich</th>
+						<th>Bescheid von</th>
 						<th>gültig bis</th>
 						<th>zuletzt</th>
 					</tr>

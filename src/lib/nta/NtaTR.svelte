@@ -17,7 +17,14 @@
 	</td>
 	<td><a href="/nta/{nta.mtknr}"><span class="font-mono">{nta.mtknr}</span></a></td>
 	<td class={maybeColor}>{nta.compensation}</td>
-	<td>{nta.until}</td>
+	<td>{nta.from}</td>
+	<td>
+		{#if nta.deactivated}
+			<i class="text-red-800">deaktiviert</i>
+		{:else}
+			{nta.until}
+		{/if}
+	</td>
 	<td>
 		{#if nta.lastSemester}
 			{nta.lastSemester}
