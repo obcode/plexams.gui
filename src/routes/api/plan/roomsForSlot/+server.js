@@ -12,7 +12,7 @@ export async function POST({ request }) {
 				normalRooms {
 					name
 				}
-				exahm {
+				exahmRooms {
 					name
 				}
 				labRooms {
