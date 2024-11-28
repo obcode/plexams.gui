@@ -28,7 +28,12 @@
 				)} p-2 m-1 border border-black rounded-xl"
 			>
 				<div>
-					{exam.zpaExam.ancode}. {exam.zpaExam.module} ({exam.zpaExam.mainExamer}),
+					{#if exam.zpaExam.ancode < 1000}
+						{exam.zpaExam.ancode}.
+					{:else}
+						<span class="bg-yellow-200">{exam.zpaExam.ancode}.</span>
+					{/if}
+					{exam.zpaExam.module} ({exam.zpaExam.mainExamer}),
 					{#each exam.zpaExam.groups as group}
 						<span class="badge m-1">{group}</span>
 					{/each}
