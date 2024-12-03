@@ -20,6 +20,7 @@
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 	import { onMount } from 'svelte';
 	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
+	import { Tooltip } from '@svelte-plugins/tooltips';
 
 	const dispatch = createEventDispatcher();
 
@@ -267,7 +268,6 @@
 			ancodeToShow = ancodeToShow.replace('FK', 'FK0');
 		}
 	}
-	console.log(ancodeToShow);
 </script>
 
 {#if show}
@@ -351,7 +351,10 @@
 				</div>
 			{/if} -->
 		{#if !details && inSlot}
-			<h1>{ancodeToShow}</h1>
+			<Tooltip
+				content="{exam.zpaExam.module}
+					({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}">{ancodeToShow}</Tooltip
+			>
 		{:else}
 			<div class="flex">
 				<div class="flex-none">
