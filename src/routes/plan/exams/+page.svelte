@@ -8,7 +8,7 @@
 	let examsWithoutSlot = data.examsWithoutSlot;
 
 	let onlyPlannedByMe = false;
-	let details = true;
+	let details = false;
 	let moveable = false;
 
 	let maxSlots = data.semesterConfig.days.length * data.semesterConfig.starttimes.length;
@@ -275,7 +275,6 @@
 				<input
 					type="checkbox"
 					class="toggle mx-3"
-					checked
 					on:click={() => {
 						details = !details;
 					}}
