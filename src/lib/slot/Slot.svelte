@@ -146,7 +146,9 @@
 			</div>
 		{/if}
 		<div class="flex justify-end">
-			<div class="badge {badgeColor(count)} gap-2 m-1">{count}</div>
+			{#if count > 0}
+				<div class="badge {badgeColor(count)} gap-2 m-1">{count}</div>
+			{/if}
 		</div>
 	{/if}
 </div>
