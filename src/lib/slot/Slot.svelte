@@ -3,6 +3,7 @@
 	export let time;
 	export let maxSlots;
 	export let selectedExam;
+	export let selectedExamerID;
 	export let onlyPlannedByMe;
 	export let onlyConflicts;
 	export let details;
@@ -171,6 +172,7 @@
 		{showOnlyExahm}
 		{showOnlySEB}
 		{selectedExam}
+		{selectedExamerID}
 		{onlyPlannedByMe}
 		{onlyConflicts}
 		{details}

@@ -8,6 +8,7 @@
 	export let showOnlyExahm;
 	export let showOnlySEB;
 	export let selectedExam;
+	export let selectedExamerID;
 	export let onlyPlannedByMe;
 	export let onlyConflicts;
 	export let details;
@@ -59,7 +60,7 @@
 	let sameSlot = false;
 
 	$: {
-		selected = selectedExam == exam.ancode;
+		selected = selectedExam == exam.ancode || selectedExamerID == exam.zpaExam.mainExamerID;
 		sameSlot =
 			exam.constraints != null &&
 			exam.constraints.sameSlot != null &&
@@ -142,8 +143,10 @@
 		} else {
 			showConflictCount = false;
 		}
-		if (selected) {
+		if (selectedExam == exam.ancode) {
 			colors = 'bg-cyan-700 border-cyan-900 text-white';
+		} else if (selectedExamerID == exam.zpaExam.mainExamerID) {
+			colors = 'bg-blue-200 border-blue-900';
 		} else if (sameSlot) {
 			colors = 'bg-cyan-500 border-cyan-900 text-white';
 		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
@@ -162,11 +165,13 @@
 	function select(code) {
 		if (!selected) {
 			dispatch('selected', {
-				ancode: code
+				ancode: code,
+				mainExamerID: exam.zpaExam.mainExamerID
 			});
 		} else {
 			dispatch('unselected', {
-				ancode: code
+				ancode: code,
+				mainExamerID: exam.zpaExam.mainExamerID
 			});
 		}
 	}

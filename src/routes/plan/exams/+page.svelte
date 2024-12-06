@@ -79,7 +79,7 @@
 		if (status == 'unknown' || status == '') {
 			return '';
 		} else if (status == 'allowed') {
-			return 'bg-green-500';
+			return 'bg-green-200';
 		} else if (status == 'awkward') {
 			return 'bg-yellow-500';
 		} else if (status == 'forbidden') {
@@ -129,10 +129,12 @@
 
 	let selectedExam = -1;
 	let conflictingAncodes = [];
+	let selectedExamerID = -1;
 
 	async function handleSelect(event) {
 		initSlotsStatus('forbidden');
 		selectedExam = event.detail.ancode;
+		selectedExamerID = event.detail.mainExamerID;
 		let allowedSlots = await fetchAllowedSlots(event.detail.ancode);
 		for (let slot of allowedSlots) {
 			slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'allowed';
@@ -150,6 +152,7 @@
 	async function handleUnselect(event) {
 		initSlotsStatus('unknown');
 		selectedExam = -1;
+		selectedExamerID = -1;
 		conflictingAncodes = [];
 	}
 
@@ -417,6 +420,7 @@
 									{time}
 									{maxSlots}
 									{selectedExam}
+									{selectedExamerID}
 									{onlyPlannedByMe}
 									{onlyConflicts}
 									{details}
@@ -454,6 +458,7 @@
 	{showOnlyExahm}
 	{showOnlySEB}
 	{selectedExam}
+	{selectedExamerID}
 	{onlyPlannedByMe}
 	{onlyConflicts}
 	{details}

@@ -8,6 +8,7 @@
 	export let showOnlyExahm;
 	export let showOnlySEB;
 	export let selectedExam;
+	export let selectedExamerID;
 	export let onlyPlannedByMe;
 	export let details;
 	export let moveable;
@@ -68,6 +69,7 @@
 					{showOnlyExahm}
 					{showOnlySEB}
 					{selectedExam}
+					{selectedExamerID}
 					{onlyPlannedByMe}
 					{details}
 					{moveable}
@@ -106,6 +108,7 @@
 				{showOnlyExahm}
 				{showOnlySEB}
 				{selectedExam}
+				{selectedExamerID}
 				{onlyPlannedByMe}
 				{details}
 				{moveable}
