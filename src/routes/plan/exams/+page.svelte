@@ -410,11 +410,8 @@
 					</td>
 					{#each data.semesterConfig.days as day}
 						<td
-							class="align-top border-dashed border-2 border-sky-500
-							{statusColor(slotsStatus[[day.number, time.number]])}
-							 "
-						>
-							<div class="{mucdaiSlotToShow[[day.number, time.number]]} ">
+							class="align-top border-dashed border-2 border-sky-500 {statusColor(slotsStatus[[day.number, time.number]])}">
+							<div class="{mucdaiSlotToShow[[day.number, time.number]]}">
 								<Slot
 									{day}
 									{time}
