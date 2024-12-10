@@ -9,7 +9,7 @@
 				{nta.nta.name} ({nta.nta.program})
 			</span>
 			{#if nta.nta.needsRoomAlone}
-				<span class="text-red-900 font-extrabold">eigener Raum</span>
+			<div class="badge badge-warning">eigener Raum</div>
 			{/if}
 		</div>
 		<div>
@@ -28,6 +28,12 @@
 						{:else}
 							<li>
 								{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
+								{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
+								<div class="badge badge-error">SEB</div>
+								{/if}
+								{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
+								<div class="badge badge-error">EXaHM</div>
+								{/if}
 							</li>
 						{/if}
 					{/each}

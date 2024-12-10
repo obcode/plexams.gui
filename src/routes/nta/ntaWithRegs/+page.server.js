@@ -45,6 +45,10 @@ export async function load({ params }) {
 				}
 				constraints {
 					notPlannedByMe
+					roomConstraints {
+						seb
+						exahm
+					}
 				}
 			}
 		}
