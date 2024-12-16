@@ -8,6 +8,9 @@
 			<span class="text-xl text-green-900">
 				{nta.nta.name} ({nta.nta.program})
 			</span>
+			{#if nta.nta.needsHardware}
+			<div class="badge badge-info">spezielle Hardware</div>
+			{/if}
 			{#if nta.nta.needsRoomAlone}
 			<div class="badge badge-warning">eigener Raum</div>
 			{/if}

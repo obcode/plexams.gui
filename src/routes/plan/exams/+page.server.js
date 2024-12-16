@@ -72,6 +72,7 @@ export async function load({ params }) {
 						compensation
 						deltaDurationPercent
 						needsRoomAlone
+						needsHardware
 						program
 						from
 						until
