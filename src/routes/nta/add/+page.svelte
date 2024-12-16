@@ -9,6 +9,7 @@
 		compensation: '',
 		deltaDurationPercent: 0,
 		needsRoomAlone: false,
+		needsHardware: false,
 		program: '',
 		from: '',
 		until: ''
@@ -28,6 +29,7 @@
 					compensation
 					deltaDurationPercent
 					needsRoomAlone
+					needsHardware
 					program
 					from
 					until
@@ -52,6 +54,7 @@
 				compensation: '',
 				deltaDurationPercent: 0,
 				needsRoomAlone: false,
+				needsHardware: false,
 				program: '',
 				from: '',
 				until: ''
@@ -147,6 +150,16 @@
 						eigener Raum</span
 					>
 					<input type="checkbox" class="checkbox" bind:checked={ntaInput.needsRoomAlone} />
+				</label>
+
+				<label class="label cursor-pointer">
+					<span>
+						{#if !ntaInput.needsHardware}
+							keine
+						{/if}
+						spezielle Hardware (PC o.ä.)</span
+					>
+					<input type="checkbox" class="checkbox" bind:checked={ntaInput.needsHardware} />
 				</label>
 
 				<span>Studiengang</span>
