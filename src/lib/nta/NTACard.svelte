@@ -9,10 +9,10 @@
 				{nta.nta.name} ({nta.nta.program})
 			</span>
 			{#if nta.nta.needsHardware}
-			<div class="badge badge-info">spezielle Hardware</div>
+				<div class="badge badge-info">spezielle Hardware</div>
 			{/if}
 			{#if nta.nta.needsRoomAlone}
-			<div class="badge badge-warning">eigener Raum</div>
+				<div class="badge badge-warning">eigener Raum</div>
 			{/if}
 		</div>
 		<div>
@@ -32,10 +32,15 @@
 							<li>
 								{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
 								{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
-								<div class="badge badge-error">SEB</div>
+									<div class="badge badge-error">SEB</div>
 								{/if}
 								{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
-								<div class="badge badge-error">EXaHM</div>
+									<div class="badge badge-error">EXaHM</div>
+								{/if}
+								{#if exam.roomName}
+									<div class="badge badge-success">{exam.roomName}</div>
+								{:else}
+									<div class="badge badge-warning">noch nicht geplant</div>
 								{/if}
 							</li>
 						{/if}
