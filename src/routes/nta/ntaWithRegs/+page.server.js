@@ -56,6 +56,25 @@ export async function load({ params }) {
 	`;
 
 				const data = await request(env.PLEXAMS_SERVER, query);
+
+				const roomQuery = gql`
+					query {
+						plannedRoomForStudent(ancode: ${ancode}, mtknr: "${nta.mtknr}") {
+							room {
+								name
+							}
+						}
+					}
+				`;
+
+				const roomData = await request(env.PLEXAMS_SERVER, roomQuery).catch((e) => {
+					(e) => console.log(e);
+				});
+
+				if (roomData != null && roomData.plannedRoomForStudent.room != null) {
+					data.generatedExam.roomName = roomData.plannedRoomForStudent.room.name;
+				}
+
 				exams.push(data.generatedExam);
 			}
 
