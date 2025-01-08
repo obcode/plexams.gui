@@ -71,7 +71,11 @@ export async function load({ params }) {
 					(e) => console.log(e);
 				});
 
-				if (roomData != null && roomData.plannedRoomForStudent.room != null) {
+				if (
+					roomData != null &&
+					roomData.plannedRoomForStudent != null &&
+					roomData.plannedRoomForStudent.room != null
+				) {
 					data.generatedExam.roomName = roomData.plannedRoomForStudent.room.name;
 				}
 
