@@ -88,11 +88,16 @@
 		<div class="ml-7">
 			<ol class="list-decimal">
 				{#each invigilations as invigilation}
-					<li>
+					<li class="mb-1 rounded">
 						<Invigilation {invigilation} />
 					</li>
 				{/each}
 			</ol>
+		</div>
+	{/if}
+	{#if invigilator.todos.invigilationDays.length > 3}
+		<div class="badge bagde-error bg-red-500">
+			{invigilator.todos.invigilationDays.length} Tage!
 		</div>
 	{/if}
 </div>
