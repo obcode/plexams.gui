@@ -24,6 +24,41 @@
 		getNextDeadline();
 		getSemester();
 	});
+
+	const themes = [
+		'light',
+		'dark',
+		'cupcake',
+		'bumblebee',
+		'emerald',
+		'corporate',
+		'synthwave',
+		'retro',
+		'cyberpunk',
+		'valentine',
+		'halloween',
+		'garden',
+		'forest',
+		'aqua',
+		'lofi',
+		'pastel',
+		'fantasy',
+		'wireframe',
+		'black',
+		'luxury',
+		'dracula',
+		'cmyk',
+		'autumn',
+		'business',
+		'acid',
+		'lemonade',
+		'night',
+		'coffee',
+		'winter',
+		'dim',
+		'nord',
+		'sunset'
+	];
 </script>
 
 <div class="navbar bg-base-100">
@@ -108,6 +143,13 @@
 				<li><a href="/primuss/exams">Prüfungslisten</a></li>
 			</ul>
 		</div>
+		Theme:
+		<select data-choose-theme class="select select-xs w-32">
+			<option disabled selected>Wähle ein Thema</option>
+			{#each themes as theme}
+				<option value={theme}>{theme}</option>
+			{/each}
+		</select>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label tabindex="-1" class="badge mx-4"> {semester} </label>
