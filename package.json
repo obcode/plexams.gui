@@ -17,31 +17,31 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
-		"@event-calendar/core": "^2.6.1",
-		"@event-calendar/time-grid": "^2.6.1",
-		"@playwright/test": "^1.44.0",
-		"@sveltejs/adapter-auto": "^3.2.0",
-		"@sveltejs/adapter-node": "^5.0.1",
-		"@sveltejs/kit": "^2.5.7",
-		"@sveltejs/vite-plugin-svelte": "^3.1.0",
-		"@tailwindcss/typography": "^0.5.13",
+		"@event-calendar/core": "^4.0.3",
+		"@event-calendar/time-grid": "^3.12.0",
+		"@playwright/test": "^1.52.0",
+		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/adapter-node": "^5.2.12",
+		"@sveltejs/kit": "^2.20.7",
+		"@sveltejs/vite-plugin-svelte": "^4.0.4",
+		"@tailwindcss/typography": "^0.5.16",
 		"@tailwindcss/postcss": "^4.1.4",
-		"autoprefixer": "^10.4.19",
+		"autoprefixer": "^10.4.21",
 		"daisyui": "^5.0.28",
-		"postcss": "^8.4.38",
-		"prettier-plugin-svelte": "^3.2.3",
-		"svelte": "^4.2.16",
-		"svelte-check": "^3.7.1",
-		"svelte-preprocess": "^5.1.4",
+		"postcss": "^8.5.3",
+		"prettier-plugin-svelte": "^3.3.3",
+		"svelte": "^5.28.2",
+		"svelte-check": "^4.1.6",
+		"svelte-preprocess": "^6.0.3",
 		"tailwindcss": "^4.1.4",
 		"theme-change": "^2.5.0",
-		"typescript": "^5.4.5",
-		"vite": "^5.2.11"
+		"typescript": "^5.8.3",
+		"vite": "^5.4.18"
 	},
 	"type": "module",
 	"dependencies": {
-		"@svelte-plugins/tooltips": "^3.0.1",
-		"graphql": "^16.8.1",
-		"graphql-request": "^6.1.0"
+		"@svelte-plugins/tooltips": "^3.0.3",
+		"graphql": "^16.11.0",
+		"graphql-request": "^7.1.2"
 	}
 }
