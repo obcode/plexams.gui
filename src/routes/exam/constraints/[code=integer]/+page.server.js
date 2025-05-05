@@ -43,7 +43,7 @@ export async function load({ params }) {
 
 	const dataC = await request(env.PLEXAMS_SERVER, queryC);
 
-	if (dataC.constraintForAncode.sameSlot) {
+	if (dataC.constraintForAncode && dataC.constraintForAncode.sameSlot) {
 		let sameSlotExams = [];
 		for (const ancode of dataC.constraintForAncode.sameSlot) {
 			const querySameSlot = gql`
@@ -69,9 +69,28 @@ export async function load({ params }) {
 		}
 		dataC.constraintForAncode.sameSlotExams = sameSlotExams;
 	}
+
+	const semesterQuery = gql`
+		query {
+			semesterConfig {
+				days {
+					number
+					date
+				}
+				starttimes {
+					number
+					start
+				}
+			}
+		}
+	`;
+
+	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+
 	return {
 		code: params.code,
 		exam: dataE.zpaExam,
-		constraints: dataC.constraintForAncode
+		constraints: dataC.constraintForAncode,
+		semesterConfig: semesterData.semesterConfig
 	};
 }
