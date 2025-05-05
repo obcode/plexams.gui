@@ -1,7 +1,7 @@
 <script>
 	export let data;
 	// import { onMount } from 'svelte';
-	import ConstraintsTable from '../../../lib/ConstraintsTable.svelte';
+	import ConstraintsTable from '$lib/ConstraintsTable.svelte';
 
 	// let zpaExamsToPlanWithConstraints = [];
 	// async function getZpaExamsToPlan() {
