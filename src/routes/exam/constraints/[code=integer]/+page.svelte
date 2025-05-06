@@ -273,13 +273,12 @@
 
 <div class="divider"></div>
 <div class="flex w-full justify-center">
+	<button class="btn m-2" on:click={() => (location.href = '/exam/constraints')}
+		>Zurück zu allen Constraints</button
+	>
 	<button class="btn m-2" on:click={() => addConstraints()}>Änderungen übernehmen</button>
-	<!-- <button class="btn m-2" on:click={() => deleteConstraints()}
-		>Alle Constraints für diese Prüfung löschen</button
-	> -->
+	<button class="btn m-2" on:click={() => (showModal = true)}>Constraints anzeigen</button>
 </div>
-
-<button class="btn m-2" on:click={() => (showModal = true)}>Constraints anzeigen</button>
 
 {#if showModal}
 	<div class="modal modal-open">
