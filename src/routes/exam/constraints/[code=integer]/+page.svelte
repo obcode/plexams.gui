@@ -22,7 +22,10 @@
 		lab: false,
 		seb: false,
 		exahm: false,
-		excludeDays: []
+		excludeDays: [],
+		kdpJiraURL: '',
+		maxStudents: 0,
+		comments: ''
 	};
 
 	if (constraints) {
@@ -33,6 +36,9 @@
 			constraintsInput.lab = constraints.roomConstraints.lab;
 			constraintsInput.seb = constraints.roomConstraints.seb;
 			constraintsInput.exahm = constraints.roomConstraints.exahm;
+			constraintsInput.kdpJiraURL = constraints.roomConstraints.kdpJiraURL;
+			constraintsInput.maxStudents = constraints.roomConstraints.maxStudents;
+			constraintsInput.comments = constraints.roomConstraints.comments;
 		}
 		if (constraints.excludeDays) {
 			constraintsInput.excludeDays =
@@ -57,6 +63,19 @@
 				const [dayPart, monthPart, yearPart] = date.split('.');
 				return new Date(`20${yearPart}-${monthPart}-${dayPart}T12:00:00`);
 			});
+		}
+		if (!constraintsInput.kdpJiraURL || constraintsInput.kdpJiraURL === '') {
+			constraintsInput.kdpJiraURL = null;
+		} else {
+			constraintsInput.kdpJiraURL = constraintsInput.kdpJiraURL.trim();
+		}
+		if (!constraintsInput.comments || constraintsInput.comments === '') {
+			constraintsInput.comments = null;
+		} else {
+			constraintsInput.comments = constraintsInput.comments.trim();
+		}
+		if (!constraintsInput.maxStudents || constraintsInput.maxStudents === 0) {
+			constraintsInput.maxStudents = null;
 		}
 
 		console.log('ConstraintsInput', constraintsInput);
@@ -105,6 +124,7 @@
 	}
 	let filterText = '';
 	let showModal = false;
+	let navigateAncode = '';
 
 	$: console.log('ConstraintsInput', constraintsInput.excludeDays);
 </script>
@@ -198,6 +218,38 @@
 			</label>
 		</fieldset>
 	</div>
+	{#if constraintsInput.seb || constraintsInput.exahm}
+		<div class="flex w-full justify-center mt-4">
+			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-3/4 border p-4">
+				<label class="label">
+					<span class="label-text">KDP Jira URL</span>
+					<input
+						type="url"
+						class="input input-bordered w-full"
+						bind:value={constraintsInput.kdpJiraURL}
+						placeholder="https://example.com"
+					/>
+				</label>
+				<label class="label mt-4">
+					<span class="label-text">Maximale Anzahl Studierende</span>
+					<input
+						type="number"
+						class="input input-bordered w-full"
+						bind:value={constraintsInput.maxStudents}
+						placeholder="0"
+					/>
+				</label>
+				<label class="label mt-4">
+					<span class="label-text">Kommentare</span>
+					<textarea
+						class="textarea textarea-bordered w-full"
+						bind:value={constraintsInput.comments}
+						placeholder="Kommentare eingeben..."
+					></textarea>
+				</label>
+			</fieldset>
+		</div>
+	{/if}
 	<div class="divider">Prüfungen, die im gleichen Slot stattfinden müssen</div>
 	<div class="flex w-full justify-center">
 		<div class="w-1/2 p-4">
@@ -278,6 +330,24 @@
 	>
 	<button class="btn m-2" on:click={() => addConstraints()}>Änderungen übernehmen</button>
 	<button class="btn m-2" on:click={() => (showModal = true)}>Constraints anzeigen</button>
+</div>
+<div class="flex w-full justify-center mt-4">
+	<input
+		type="number"
+		class="input input-bordered w-64 mr-2"
+		bind:value={navigateAncode}
+		placeholder="Ancode eingeben"
+	/>
+	<button
+		class="btn"
+		on:click={() => {
+			if (navigateAncode) {
+				location.href = `/exam/constraints/${navigateAncode}`;
+			}
+		}}
+	>
+		Zu Constraint wechseln
+	</button>
 </div>
 
 {#if showModal}

@@ -27,7 +27,7 @@
 	<span class="uppercase">{exams.length} Prüfungen mit EXaHM oder SEB</span>
 </div>
 
-<table class="table-auto border-collapse border border-gray-400 w-full text-left">
+<table class="table-auto table-zebra border-collapse border border-gray-400 w-full text-left">
 	<thead>
 		<tr>
 			<th class="border border-gray-400 px-4 py-2">Ancode</th>
@@ -49,7 +49,10 @@
 			<th class="border border-gray-400 px-4 py-2">DE</th>
 			<th class="border border-gray-400 px-4 py-2">GS</th>
 			<th class="border border-gray-400 px-4 py-2">ID</th>
+			<th class="border border-gray-400 px-4 py-2">Räume (Studierende)</th>
 			<th class="border border-gray-400 px-4 py-2">Gruppen</th>
+			<th class="border border-gray-400 px-4 py-2">Jira</th>
+			<th class="border border-gray-400 px-4 py-2">Kommentar</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -67,13 +70,45 @@
 						style="background-color: {exam.zpaExam.primussAncodes.some(
 							(ancode) => ancode.program === program
 						)
-							? 'red'
+							? 'cyan'
 							: 'transparent'}"
 					>
 					</td>
 				{/each}
+				<td
+					class="border border-gray-400 px-4 py-2"
+					style="background-color: {exam.constraints.roomConstraints.maxStudents
+						? 'transparent'
+						: 'red'}"
+				>
+					{#if exam.constraints.roomConstraints.maxStudents}
+						{Math.ceil(exam.constraints.roomConstraints.maxStudents / 30)} ({exam.constraints
+							.roomConstraints.maxStudents})
+					{:else}
+						fehlt
+					{/if}
+				</td>
 				<td class="border border-gray-400 px-4 py-2">{exam.zpaExam.groups.join(', ')}</td>
-			</tr>
+				<td
+					class="border border-gray-400 px-4 py-2"
+					style="background-color: {exam.constraints.roomConstraints.kdpJiraURL
+						? 'transparent'
+						: 'red'}"
+				>
+					{#if exam.constraints.roomConstraints.kdpJiraURL}
+						<a href={exam.constraints.roomConstraints.kdpJiraURL} target="_blank">
+							{exam.constraints.roomConstraints.kdpJiraURL.split('/').pop()}
+						</a>
+					{:else}
+						fehlt
+					{/if}
+				</td>
+				<td class="border border-gray-400 px-4 py-2">
+					{#if exam.constraints.roomConstraints.comments}
+						{exam.constraints.roomConstraints.comments}
+					{/if}
+				</td></tr
+			>
 		{/each}
 	</tbody>
 </table>
