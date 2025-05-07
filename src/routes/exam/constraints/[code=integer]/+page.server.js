@@ -36,6 +36,9 @@ export async function load({ params }) {
                     lab
                     exahm
                     seb
+                    kdpJiraURL
+                    maxStudents
+                    comments
                 }
 			}
         }
