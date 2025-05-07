@@ -31,7 +31,8 @@
 			}
 		});
 		let data = await response.json();
-		exams = data.examsInSlot;
+		exams = data.preExamsInSlot;
+		console.log('exams', exams);
 	}
 
 	let exahm = [];
@@ -58,7 +59,7 @@
 
 <div class="flex justify-between">
 	<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
-	{#if exams.length > 0}
+	{#if exams && exams.length > 0}
 		{#if conflicts > 0}
 			<div class="alert shadow-lg p-1 w-full">
 				<div>
@@ -78,11 +79,6 @@
 				</div>
 			</div>
 		{/if}
-		<div class="flex justify-end">
-			{#if count > 0}
-				<div class="badge {badgeColor(count)} gap-2 m-1">{count}</div>
-			{/if}
-		</div>
 	{/if}
 </div>
 {#if showOnlyEXaHMRooms}
@@ -93,23 +89,8 @@
 	</div>
 {/if}
 
-{#each exams as exam}
-	<PreSlotExam
-		{exam}
-		{maxSlots}
-		{showExam}
-		{showAncode}
-		{showExamerID}
-		{showOnlyOnline}
-		{showOnlyExahm}
-		{showOnlySEB}
-		{selectedExam}
-		{selectedExamerID}
-		{onlyPlannedByMe}
-		{onlyConflicts}
-		{details}
-		{moveable}
-		inSlot={true}
-		{conflictingAncodes}
-	/>
-{/each}
+{#if exams}
+	{#each exams as exam}
+		<PreSlotExam {exam} />
+	{/each}
+{/if}

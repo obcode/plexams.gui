@@ -1,6 +1,5 @@
 <script>
 	export let data;
-	// import { onMount } from 'svelte';
 
 	let exams = data.zpaExamsToPlanWithConstraints.filter(
 		(exam) =>
@@ -8,19 +7,7 @@
 			exam.constraints.roomConstraints &&
 			(exam.constraints.roomConstraints.exahm || exam.constraints.roomConstraints.seb)
 	);
-
-	// let zpaExamsToPlanWithConstraints = [];
-	// async function getZpaExamsToPlan() {
-	// 	const response = await fetch('/api/examswithconstraints', {
-	// 		method: 'GET'
-	// 	});
-
-	// 	zpaExamsToPlanWithConstraints = await response.json();
-	// }
-
-	// onMount(() => {
-	// 	getZpaExamsToPlan();
-	// });
+	console.log('exams', exams);
 </script>
 
 <div class="text-center m-2 text-4xl">
@@ -53,12 +40,18 @@
 			<th class="border border-gray-400 px-4 py-2">Gruppen</th>
 			<th class="border border-gray-400 px-4 py-2">Jira</th>
 			<th class="border border-gray-400 px-4 py-2">Kommentar</th>
+			<th class="border border-gray-400 px-4 py-2">Vorgeplant</th>
 		</tr>
 	</thead>
 	<tbody>
 		{#each exams as exam}
 			<tr>
-				<td class="border border-gray-400 px-4 py-2">{exam.zpaExam.ancode}</td>
+				<td class="border border-gray-400 px-4 py-2"
+					>{exam.zpaExam.ancode}
+					{#if exam.zpaExam.isRepeaterExam}
+						<span class="text-red-500"> (Wiederholung)</span>
+					{/if}
+				</td>
 				<td class="border border-gray-400 px-4 py-2">{exam.zpaExam.module}</td>
 				<td class="border border-gray-400 px-4 py-2">{exam.zpaExam.mainExamer}</td>
 				<td class="border border-gray-400 px-4 py-2">
@@ -107,8 +100,16 @@
 					{#if exam.constraints.roomConstraints.comments}
 						{exam.constraints.roomConstraints.comments}
 					{/if}
-				</td></tr
-			>
+				</td>
+				<td
+					class="border border-gray-400 px-4 py-2"
+					style="background-color: {exam.planEntry ? 'cyan' : 'transparent'}"
+				>
+					{#if exam.planEntry}
+						({exam.planEntry.dayNumber}, {exam.planEntry.slotNumber})
+					{/if}
+				</td>
+			</tr>
 		{/each}
 	</tbody>
 </table>
