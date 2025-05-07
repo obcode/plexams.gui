@@ -1,11 +1,8 @@
 <script>
 	export let data;
 	import PreSlot from '$lib/slot/PreSlot.svelte';
-	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
-
-	let examsWithoutSlot = data.examsWithoutSlot;
 
 	let onlyPlannedByMe = false;
 	let details = false;

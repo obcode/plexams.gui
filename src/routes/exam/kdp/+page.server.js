@@ -39,6 +39,12 @@ export async function load({ params }) {
 						comments
 					}
 				}
+				planEntry {
+					dayNumber
+					slotNumber
+					ancode
+					locked
+				}
 			}
 		}
 	`;

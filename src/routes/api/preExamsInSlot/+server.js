@@ -6,12 +6,10 @@ import { request as gqlrequest, gql } from 'graphql-request';
 export async function POST({ request }) {
 	const query = gql`
 		query ($day: Int!, $time: Int!) {
-			examsInSlot(day: $day, time: $time) {
-				ancode
+			preExamsInSlot(day: $day, time: $time) {
 				zpaExam {
 					zpaID
 					semester
-
 					ancode
 					module
 					mainExamer
@@ -26,112 +24,28 @@ export async function POST({ request }) {
 						ancode
 					}
 				}
-				primussExams {
-					exam {
-						ancode
-						module
-						mainExamer
-						program
-						examType
-						presence
-					}
-					studentRegs {
-						mtknr
-						ancode
-						program
-						group
-						name
-						presence
-					}
-					conflicts {
-						ancode
-						numberOfStuds
-					}
-					ntas {
-						name
-						mtknr
-						compensation
-						deltaDurationPercent
-						needsRoomAlone
-						program
-						from
-						until
-						lastSemester
-						exams {
-							semester
-							ancode
-							module
-							mainExamer
-						}
-					}
-				}
 				constraints {
 					ancode
 					notPlannedByMe
+					online
 					excludeDays
 					possibleDays
-					fixedDay
-					fixedTime
 					sameSlot
-					online
 					roomConstraints {
 						placesWithSocket
 						lab
 						exahm
 						seb
+						kdpJiraURL
+						maxStudents
+						comments
 					}
 				}
-				conflicts {
-					ancode
-					numberOfStuds
-					primussAncodes {
-						ancode
-						program
-						numberOfStuds
-					}
-				}
-				studentRegsCount
-				ntas {
-					name
-					mtknr
-					compensation
-					deltaDurationPercent
-					needsRoomAlone
-					program
-					from
-					until
-					lastSemester
-					exams {
-						semester
-						ancode
-						module
-						mainExamer
-					}
-				}
-				maxDuration
 				planEntry {
 					dayNumber
 					slotNumber
 					ancode
 					locked
-				}
-				plannedRooms {
-					room {
-						name
-						seats
-						handicap
-						lab
-						placesWithSocket
-						needsRequest
-						exahm
-						seb
-					}
-					duration
-					handicap
-					handicapRoomAlone
-					reserve
-					studentsInRoom
-					ntaMtknr
 				}
 			}
 		}
