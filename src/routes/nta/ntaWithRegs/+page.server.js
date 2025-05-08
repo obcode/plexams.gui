@@ -1,6 +1,5 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
-import { append } from 'svelte/internal';
 
 export async function load({ params }) {
 	const query = gql`
