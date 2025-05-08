@@ -2,8 +2,6 @@
 	export let exams;
 
 	import { goto } from '$app/navigation';
-	import ConstraintsTable from '$lib/ConstraintsTable.svelte';
-	import { bgEvent } from '@event-calendar/core';
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 
 	let searchTermAncode = '';
