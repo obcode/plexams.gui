@@ -235,6 +235,16 @@
 		let data = await response.json();
 		return data.conflictingAncodes;
 	}
+
+	function globalForbiddenSlot(day, time) {
+		const key = `${day},${time}`;
+		console.log('globalForbiddenSlot', day, time, key);
+		console.log('globalForbiddenSlot Zugriff', data.globalSlotStatus.get(key));
+		console.log('globalForbiddenSlot all', data.globalSlotStatus);
+		if (data.globalSlotStatus.get(key) === 'forbidden') {
+			return 'bg-red-500';
+		}
+	}
 </script>
 
 <div class="text-center m-2">
@@ -410,8 +420,16 @@
 					</td>
 					{#each data.semesterConfig.days as day}
 						<td
-							class="align-top border-dashed border-2 border-sky-500 {statusColor(slotsStatus[[day.number, time.number]])}">
-							<div class="{mucdaiSlotToShow[[day.number, time.number]]}">
+							class="align-top border-dashed border-2 border-sky-500 {statusColor(
+								slotsStatus[[day.number, time.number]]
+							)} "
+						>
+							<div
+								class="{mucdaiSlotToShow[[day.number, time.number]]} {globalForbiddenSlot(
+									day.number,
+									time.number
+								)}"
+							>
 								<Slot
 									{day}
 									{time}

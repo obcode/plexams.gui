@@ -148,7 +148,7 @@
 		{/if}
 		<div class="flex justify-end">
 			{#if count > 0}
-				<div class="badge {badgeColor(count)} gap-2 m-1">{count}</div>
+				<div class="badge {badgeColor(count)} gap-2 m-1 rounded-lg border-black">{count}</div>
 			{/if}
 		</div>
 	{/if}
@@ -156,7 +156,7 @@
 {#if showOnlyEXaHMRooms}
 	<div>
 		{#each exahm as room}
-			<div class="badge badge-warning">{room.name}</div>
+			<div class="badge badge-warning m-1 rounded-lg border-black">{room.name}</div>
 		{/each}
 	</div>
 {/if}

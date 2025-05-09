@@ -483,13 +483,13 @@
 				<div class="badge badge-error">online</div>
 			{/if}
 			{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
-				<div class="badge badge-error">EXaHM</div>
+				<div class="badge badge-error rounded-lg border-black">EXaHM</div>
 			{/if}
 			{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
-				<div class="badge badge-error">S.E.B.</div>
+				<div class="badge badge-error rounded-lg border-black">SEB</div>
 			{/if}
 			{#if exam.constraints != null && exam.constraints.sameSlot != null && exam.constraints.sameSlot.length > 0}
-				<div class="badge badge-warning">sameSlot</div>
+				<div class="badge badge-warning rounded-lg border-black">sameSlot</div>
 			{/if}
 		{/if}
 	</div>
