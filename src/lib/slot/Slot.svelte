@@ -1,6 +1,7 @@
 <script>
 	export let day;
 	export let time;
+	export let forbiddenSlot;
 	export let maxSlots;
 	export let selectedExam;
 	export let selectedExamerID;
@@ -125,7 +126,9 @@
 </script>
 
 <div class="flex justify-between">
-	<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
+	{#if !forbiddenSlot}
+		<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
+	{/if}
 	{#if exams.length > 0}
 		{#if conflicts > 0}
 			<div class="alert shadow-lg p-1 w-full">
