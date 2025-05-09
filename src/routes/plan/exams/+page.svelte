@@ -242,8 +242,13 @@
 		console.log('globalForbiddenSlot Zugriff', data.globalSlotStatus.get(key));
 		console.log('globalForbiddenSlot all', data.globalSlotStatus);
 		if (data.globalSlotStatus.get(key) === 'forbidden') {
-			return 'bg-red-500';
+			return 'bg-gray-400';
 		}
+	}
+
+	function forbiddenSlot(day, time) {
+		const key = `${day},${time}`;
+		return data.globalSlotStatus.get(key) === 'forbidden';
 	}
 </script>
 
@@ -398,7 +403,7 @@
 	>
 		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 			<tr>
-				<th />
+				<th></th>
 				{#each data.semesterConfig.days as day}
 					<th class="border-dashed border-2 border-sky-500 object-center">
 						<div class="">
@@ -422,17 +427,13 @@
 						<td
 							class="align-top border-dashed border-2 border-sky-500 {statusColor(
 								slotsStatus[[day.number, time.number]]
-							)} "
+							)}  {globalForbiddenSlot(day.number, time.number)}"
 						>
-							<div
-								class="{mucdaiSlotToShow[[day.number, time.number]]} {globalForbiddenSlot(
-									day.number,
-									time.number
-								)}"
-							>
+							<div class={mucdaiSlotToShow[[day.number, time.number]]}>
 								<Slot
 									{day}
 									{time}
+									forbiddenSlot={forbiddenSlot(day.number, time.number)}
 									{maxSlots}
 									{selectedExam}
 									{selectedExamerID}
