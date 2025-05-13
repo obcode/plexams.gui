@@ -250,6 +250,19 @@
 		const key = `${day},${time}`;
 		return data.globalSlotStatus.get(key) === 'forbidden';
 	}
+
+	function unplannedExams(program) {
+		let count = 0;
+		for (const exam of examsWithoutSlot) {
+			if (exam.constraints && exam.constraints.notPlannedByMe) {
+				continue;
+			}
+			if (exam.primussExams.some((primussExam) => primussExam.exam.program === program)) {
+				count++;
+			}
+		}
+		return count;
+	}
 </script>
 
 <div class="text-center m-2">
@@ -347,7 +360,13 @@
 		<select class="select select-primary w-full max-w-xs my-2" bind:value={showExam}>
 			<option selected value="all">Alle Gruppen</option>
 			{#each allProgramsInPlan as program}
-				<option>{program}</option>
+				{@const count = unplannedExams(program)}
+				<option value={program}
+					>{program}
+					{#if count > 0}
+						({count})
+					{/if}
+				</option>
 			{/each}
 		</select>
 	</div>
