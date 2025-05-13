@@ -96,7 +96,7 @@
 		) {
 			show = false;
 		} else {
-			if (showExam == 'all') {
+			if (showExam == 'all' || conflictingAncodes.includes(exam.ancode)) {
 				show = true;
 			} else {
 				show = programs.includes(showExam);
