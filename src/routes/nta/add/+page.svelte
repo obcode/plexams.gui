@@ -126,6 +126,7 @@
 				/>
 
 				<span>Kompensation</span>
+				<!-- svelte-ignore element_invalid_self_closing_tag -->
 				<textarea
 					class="textarea textarea-bordered w-full"
 					placeholder="Kompensation"
@@ -141,7 +142,7 @@
 					step="5"
 					bind:value={ntaInput.deltaDurationPercent}
 				/>
-
+				<br />
 				<label class="label cursor-pointer">
 					<span>
 						{#if !ntaInput.needsRoomAlone}
@@ -151,7 +152,7 @@
 					>
 					<input type="checkbox" class="checkbox" bind:checked={ntaInput.needsRoomAlone} />
 				</label>
-
+				<br />
 				<label class="label cursor-pointer">
 					<span>
 						{#if !ntaInput.needsHardware}
@@ -161,7 +162,7 @@
 					>
 					<input type="checkbox" class="checkbox" bind:checked={ntaInput.needsHardware} />
 				</label>
-
+				<br />
 				<span>Studiengang</span>
 				<input
 					type="text"

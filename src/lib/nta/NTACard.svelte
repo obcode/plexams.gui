@@ -19,6 +19,9 @@
 			<span class="text-blue-900">
 				{nta.nta.compensation}
 			</span>
+			<span class="text-red-500">
+				gültig bis {nta.nta.until}
+			</span>
 		</div>
 		<div>
 			<span class="text-black-900">
