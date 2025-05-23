@@ -30,6 +30,7 @@ export async function load({ params }) {
 					possibleDays
 					sameSlot
 					roomConstraints {
+						allowedRooms
 						placesWithSocket
 						lab
 						exahm

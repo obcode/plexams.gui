@@ -32,6 +32,7 @@ export async function load({ params }) {
                 possibleDays
                 sameSlot
                 roomConstraints {
+                    allowedRooms
                     placesWithSocket
                     lab
                     exahm
@@ -90,10 +91,28 @@ export async function load({ params }) {
 
 	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
 
+	const roomsQuery = gql`
+		query {
+			rooms {
+				name
+				seats
+				handicap
+				lab
+				placesWithSocket
+				needsRequest
+				exahm
+				seb
+			}
+		}
+	`;
+
+	const roomsData = await request(env.PLEXAMS_SERVER, roomsQuery);
+
 	return {
 		code: params.code,
 		exam: dataE.zpaExam,
 		constraints: dataC.constraintForAncode,
-		semesterConfig: semesterData.semesterConfig
+		semesterConfig: semesterData.semesterConfig,
+		rooms: roomsData.rooms
 	};
 }

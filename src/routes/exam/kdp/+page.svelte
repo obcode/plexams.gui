@@ -37,10 +37,11 @@
 			<th class="border border-gray-400 px-4 py-2">GS</th>
 			<th class="border border-gray-400 px-4 py-2">ID</th>
 			<th class="border border-gray-400 px-4 py-2">Räume (Studierende)</th>
+			<th class="border border-gray-400 px-4 py-2">Räume eingeschränkt</th>
 			<th class="border border-gray-400 px-4 py-2">Gruppen</th>
 			<th class="border border-gray-400 px-4 py-2">Jira</th>
-			<th class="border border-gray-400 px-4 py-2">Kommentar</th>
 			<th class="border border-gray-400 px-4 py-2">Vorgeplant</th>
+			<th class="border border-gray-400 px-4 py-2">Kommentar</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -81,6 +82,19 @@
 						fehlt
 					{/if}
 				</td>
+				<td
+					class="border border-gray-400 px-4 py-2"
+					style="background-color: {exam.constraints.roomConstraints.allowedRooms &&
+					exam.constraints.roomConstraints.allowedRooms.length > 0
+						? 'yellow'
+						: 'transparent'}"
+				>
+					<ul>
+						{#each exam.constraints.roomConstraints.allowedRooms as room}
+							<li>{room}</li>
+						{/each}
+					</ul>
+				</td>
 				<td class="border border-gray-400 px-4 py-2">{exam.zpaExam.groups.join(', ')}</td>
 				<td
 					class="border border-gray-400 px-4 py-2"
@@ -96,17 +110,17 @@
 						fehlt
 					{/if}
 				</td>
-				<td class="border border-gray-400 px-4 py-2">
-					{#if exam.constraints.roomConstraints.comments}
-						{exam.constraints.roomConstraints.comments}
-					{/if}
-				</td>
 				<td
 					class="border border-gray-400 px-4 py-2"
 					style="background-color: {exam.planEntry ? 'cyan' : 'transparent'}"
 				>
 					{#if exam.planEntry}
 						({exam.planEntry.dayNumber}, {exam.planEntry.slotNumber})
+					{/if}
+				</td>
+				<td class="border border-gray-400 px-4 py-2">
+					{#if exam.constraints.roomConstraints.comments}
+						{exam.constraints.roomConstraints.comments}
 					{/if}
 				</td>
 			</tr>

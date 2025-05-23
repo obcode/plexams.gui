@@ -5,6 +5,7 @@
 	let constraints = data.constraints;
 	let exam = data.exam;
 	let semesterConfig = data.semesterConfig;
+	let rooms = data.rooms;
 
 	let days = semesterConfig.days.map((day) => {
 		return new Date(day.date).toLocaleDateString('de-DE', {
@@ -18,6 +19,7 @@
 	let constraintsInput = {
 		notPlannedByMe: false,
 		online: false,
+		allowedRooms: [],
 		placesWithSocket: false,
 		lab: false,
 		seb: false,
@@ -32,6 +34,7 @@
 		constraintsInput.notPlannedByMe = constraints.notPlannedByMe;
 		constraintsInput.online = constraints.online;
 		if (constraints.roomConstraints) {
+			constraintsInput.allowedRooms = constraints.roomConstraints.allowedRooms || [];
 			constraintsInput.placesWithSocket = constraints.roomConstraints.placesWithSocket;
 			constraintsInput.lab = constraints.roomConstraints.lab;
 			constraintsInput.seb = constraints.roomConstraints.seb;
@@ -171,6 +174,7 @@
 		<fieldset
 			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
 			class:bg-green-100={constraintsInput.lab}
+			class:border-green-500={constraintsInput.lab}
 		>
 			<label class="label">
 				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.lab} />
@@ -181,6 +185,7 @@
 		<fieldset
 			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
 			class:bg-green-100={constraintsInput.seb}
+			class:border-green-500={constraintsInput.seb}
 		>
 			<label class="label">
 				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.seb} />
@@ -191,6 +196,7 @@
 		<fieldset
 			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
 			class:bg-green-100={constraintsInput.exahm}
+			class:border-green-500={constraintsInput.exahm}
 		>
 			<label class="label">
 				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.exahm} />
@@ -201,6 +207,7 @@
 		<fieldset
 			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
 			class:bg-green-100={constraintsInput.placesWithSocket}
+			class:border-green-500={constraintsInput.placesWithSocket}
 		>
 			<label class="label">
 				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.placesWithSocket} />
@@ -211,6 +218,7 @@
 		<fieldset
 			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
 			class:bg-green-100={constraintsInput.online}
+			class:border-green-500={constraintsInput.online}
 		>
 			<label class="label">
 				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.online} />
@@ -229,6 +237,15 @@
 						bind:value={constraintsInput.kdpJiraURL}
 						placeholder="https://example.com"
 					/>
+					{#if constraintsInput.kdpJiraURL}
+						<button
+							class="btn btn-sm ml-2"
+							on:click={() => window.open(constraintsInput.kdpJiraURL, '_blank')}
+							disabled={!constraintsInput.kdpJiraURL}
+						>
+							Link öffnen
+						</button>
+					{/if}
 				</label>
 				<label class="label mt-4">
 					<span class="label-text">Maximale Anzahl Studierende</span>
@@ -250,6 +267,36 @@
 			</fieldset>
 		</div>
 	{/if}
+	<div class="divider">
+		Einschränkung auf bestimmte Räume ({constraintsInput.allowedRooms.length} Räume ausgewählt)
+	</div>
+	<div class="flex w-full justify-center">
+		<div class="w-3/4 border rounded-box">
+			<div class="flex flex-wrap gap-2 justify-center">
+				{#each rooms as room}
+					{@const isSelected = constraintsInput.allowedRooms.includes(room.name)}
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						class="badge badge-lg cursor-pointer p-4 {isSelected
+							? 'bg-green-100 border-green-500'
+							: 'bg-base-200'}"
+						on:click={() => {
+							if (isSelected) {
+								constraintsInput.allowedRooms = constraintsInput.allowedRooms.filter(
+									(r) => r !== room.name
+								);
+							} else {
+								constraintsInput.allowedRooms = [...constraintsInput.allowedRooms, room.name];
+							}
+						}}
+					>
+						{room.name}
+					</div>
+				{/each}
+			</div>
+		</div>
+	</div>
 	<div class="divider">Prüfungen, die im gleichen Slot stattfinden müssen</div>
 	<div class="flex w-full justify-center">
 		<div class="w-1/2 p-4">
@@ -288,7 +335,9 @@
 			<h3 class="text-center mb-4">Ausgewählte Prüfungen</h3>
 			<ul class="list-inside">
 				{#each sameSlotExams as selectedExam (selectedExam.ancode)}
-					<li class="flex justify-between items-center bg-green-100 p-2 mb-2 rounded-lg">
+					<li
+						class="flex justify-between items-center bg-green-100 border-green-500 p-2 mb-2 rounded-lg"
+					>
 						<span>
 							{selectedExam.ancode}. {selectedExam.module} ({selectedExam.mainExamer})
 						</span>
@@ -306,7 +355,9 @@
 			<fieldset
 				class="fieldset bg-base-100 border-base-300 rounded-box w-1/6 border p-4 m-2"
 				class:bg-red-100={constraintsInput?.excludeDays?.includes(day)}
+				class:border-red-500={constraintsInput?.excludeDays?.includes(day)}
 				class:bg-green-100={!constraintsInput?.excludeDays?.includes(day)}
+				class:border-green-500={!constraintsInput?.excludeDays?.includes(day)}
 			>
 				<label class="label">
 					<input
