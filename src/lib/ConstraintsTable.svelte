@@ -162,22 +162,41 @@
 							</ul>
 						{/if}</td
 					>
-					<td class={bgConstraints(exam.constraints)}
-						>{#if exam.constraints && exam.constraints.roomConstraints}
-							{#if exam.constraints.roomConstraints.placesWithSocket}
-								Plätze mit Steckdosen,
-							{/if}
-							{#if exam.constraints.roomConstraints.lab}
-								Labor,
-							{/if}
-							{#if exam.constraints.roomConstraints.exahm}
-								EXaHM,
-							{/if}
-							{#if exam.constraints.roomConstraints.seb}
-								SafeExamBrowser,
-							{/if}
-						{/if}</td
-					>
+					<td class={bgConstraints(exam.constraints)}>
+						{#if exam.constraints && exam.constraints.roomConstraints}
+							<div class="flex justify-between items-center w-full">
+								<div>
+									{#if exam.constraints.roomConstraints.allowedRooms && exam.constraints.roomConstraints.allowedRooms.length > 0}
+										{exam.constraints.roomConstraints.allowedRooms},
+									{/if}
+									{#if exam.constraints.roomConstraints.placesWithSocket}
+										Plätze mit Steckdosen,
+									{/if}
+									{#if exam.constraints.roomConstraints.lab}
+										Labor,
+									{/if}
+									{#if exam.constraints.roomConstraints.exahm}
+										EXaHM,
+									{/if}
+									{#if exam.constraints.roomConstraints.seb}
+										SafeExamBrowser,
+									{/if}
+								</div>
+								{#if exam.constraints.roomConstraints.kdpJiraURL}
+									<div class="flex justify-end">
+										<button
+											class="btn btn-sm"
+											on:click={() =>
+												window.open(exam.constraints.roomConstraints.kdpJiraURL, '_blank')}
+											disabled={!exam.constraints.roomConstraints.kdpJiraURL}
+										>
+											Jira-Ticket öffnen
+										</button>
+									</div>
+								{/if}
+							</div>
+						{/if}
+					</td>
 				</tr>
 			{/each}
 		</tbody>
