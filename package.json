@@ -17,14 +17,17 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
-		"@event-calendar/core": "^4.3.1",
-		"@event-calendar/time-grid": "^3.12.0",
+		"@graphql-codegen/cli": "^5.0.6",
+		"@graphql-codegen/typescript": "^4.1.6",
+		"@graphql-codegen/typescript-operations": "^4.6.1",
+		"@svelte-plugins/tooltips": "^3.0.3",
 		"@sveltejs/adapter-auto": "^6.0.1",
 		"@sveltejs/kit": "^2.21.2",
 		"@sveltejs/vite-plugin-svelte": "^5.1.0",
 		"@tailwindcss/postcss": "^4.1.8",
 		"@tailwindcss/typography": "^0.5.16",
 		"daisyui": "^5.0.43",
+		"graphql-request": "^7.2.0",
 		"prettier-plugin-svelte": "^3.4.0",
 		"svelte": "^5.33.14",
 		"svelte-check": "^4.2.1",
@@ -32,9 +35,13 @@
 		"theme-change": "^2.5.0",
 		"tslib": "^2.8.1",
 		"typescript": "^5.8.3",
-		"vite": "^6.3.5",
-		"@svelte-plugins/tooltips": "^3.0.3",
-		"graphql-request": "^7.2.0"
+		"vite": "^6.3.5"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"@fullcalendar/core": "^6.1.17",
+		"@fullcalendar/daygrid": "^6.1.17",
+		"@fullcalendar/timegrid": "^6.1.17",
+		"svelte-fullcalendar": "^3.0.0"
+	}
 }
