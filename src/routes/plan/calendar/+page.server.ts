@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { type PlannedExam } from '$lib/__generated__/graphql';
 
 export async function load() {
 	const query = gql`
@@ -132,7 +133,9 @@ export async function load() {
 
 	const data: any = await request(env.PLEXAMS_SERVER, query);
 
+	const plannedExams: PlannedExam[] = data.plannedExams;
+
 	return {
-		plannedExams: data.plannedExams
+		plannedExams
 	};
 }

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { mkDate } from '$lib/jshelper/misc';
+	import type { Maybe, Step } from '$lib/__generated__/graphql';
 
-	let nextDeadline = 'unknown';
+	let nextDeadline: Maybe<Step>;
 	async function getNextDeadline() {
 		const response = await fetch('/api/nextDeadline', {
 			method: 'GET'
