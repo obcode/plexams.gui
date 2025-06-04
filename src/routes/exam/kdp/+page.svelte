@@ -7,7 +7,6 @@
 			exam.constraints.roomConstraints &&
 			(exam.constraints.roomConstraints.exahm || exam.constraints.roomConstraints.seb)
 	);
-	console.log('exams', exams);
 </script>
 
 <div class="text-center m-2 text-4xl">

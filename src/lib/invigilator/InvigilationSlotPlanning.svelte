@@ -12,8 +12,6 @@
 	let loading = true;
 
 	async function fetchSlot(day, time) {
-		// console.log(`...fetching Slot (${day}, ${time})`);
-
 		const response = await fetch('/api/plan/roomsWithInvigilationsForSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
@@ -22,7 +20,6 @@
 			}
 		});
 		let data = await response.json();
-		// console.log(data.roomsWithInvigilationsForSlot);
 		slot = data.roomsWithInvigilationsForSlot;
 		noRooms = !slot || !slot.roomsWithInvigilators || slot.roomsWithInvigilators.length == 0;
 		loading = false;

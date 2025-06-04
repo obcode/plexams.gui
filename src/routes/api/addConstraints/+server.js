@@ -18,7 +18,6 @@ export async function POST({ request }) {
 		ancode,
 		constraints: constraints
 	};
-	console.log('adding constraints', variables);
 
 	const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, variables);
 

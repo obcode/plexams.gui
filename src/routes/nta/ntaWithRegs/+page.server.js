@@ -66,9 +66,7 @@ export async function load({ params }) {
 					}
 				`;
 
-				const roomData = await request(env.PLEXAMS_SERVER, roomQuery).catch((e) => {
-					(e) => console.log(e);
-				});
+				const roomData = await request(env.PLEXAMS_SERVER, roomQuery);
 
 				if (
 					roomData != null &&

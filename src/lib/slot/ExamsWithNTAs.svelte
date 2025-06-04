@@ -17,7 +17,6 @@
 			}
 		});
 		let data = await response.json();
-		// console.log(data.plannedExamsInSlot);
 		examsWithNTAs = data.plannedExamsInSlot;
 	}
 

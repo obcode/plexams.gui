@@ -2,7 +2,6 @@
 	export let exams;
 
 	async function addExam(ancode) {
-		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
 			body: JSON.stringify({ ancode, unknown: true }),
@@ -13,7 +12,6 @@
 		location.reload();
 	}
 	async function rmExam(ancode) {
-		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
 			body: JSON.stringify({ ancode, unknown: true }),
@@ -42,7 +40,7 @@
 			{#each exams as exam}
 				<tr>
 					<td>
-						<button class="btn btn-success  btn-sm" on:click={() => addExam(exam.ancode)}
+						<button class="btn btn-success btn-sm" on:click={() => addExam(exam.ancode)}
 							>Planen</button
 						>
 					</td>
@@ -52,7 +50,7 @@
 					<td>{exam.examTypeFull}</td>
 					<td>{exam.groups}</td>
 					<td>
-						<button class="btn btn-error  btn-sm" on:click={() => rmExam(exam.ancode)}
+						<button class="btn btn-error btn-sm" on:click={() => rmExam(exam.ancode)}
 							>Nicht planen</button
 						>
 					</td>

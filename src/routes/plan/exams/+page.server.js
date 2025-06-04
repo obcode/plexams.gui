@@ -140,14 +140,11 @@ export async function load({ params }) {
 	}
 
 	if (semesterConfig.forbiddenSlots) {
-		console.log('forbiddenSlots', semesterConfig.forbiddenSlots);
 		for (let slot of semesterConfig.forbiddenSlots) {
 			const key = `${slot.dayNumber},${slot.slotNumber}`;
 			globalSlotStatus.set(key, 'forbidden');
 		}
 	}
-
-	console.log('globalSlotStatus', globalSlotStatus);
 
 	return {
 		semesterConfig: semesterData.semesterConfig,
