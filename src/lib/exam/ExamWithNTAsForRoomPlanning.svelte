@@ -252,6 +252,7 @@
 								<div class="flex justify-between m-2">
 									<div>{nta.deltaDurationPercent}%</div>
 									<div class="w-3/4">
+										<!-- svelte-ignore element_invalid_self_closing_tag -->
 										<progress
 											class="progress progress-error w-full"
 											value={nta.deltaDurationPercent}

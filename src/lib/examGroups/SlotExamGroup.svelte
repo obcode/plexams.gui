@@ -287,6 +287,7 @@
 					<div class="badge badge-error">S.E.B.</div>
 				{/if}
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					class="border border-gray-400 rounded-lg p-1 mx-2"
 					on:click={select(group.examGroupCode)}
@@ -299,20 +300,25 @@
 				<div class="flex justify-between m-2">
 					<div>{regs} Regs</div>
 					<div class="w-1/2">
+						<!-- svelte-ignore element_invalid_self_closing_tag -->
 						<progress class="progress {regsColor} w-full" value={regs} max={regsMax} />
 					</div>
 				</div>
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
 					<div>{slots} Slots</div>
 					<div class="w-1/2">
+						<!-- svelte-ignore element_invalid_self_closing_tag -->
 						<progress class="progress {slotsColor} w-full" value={slots} max={slotsmax} />
 					</div>
 				</div>
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div class="flex justify-between m-2" on:click={select(group.examGroupCode)}>
 					<div>{conflicts} Konflikte</div>
 					<div class="w-1/2">
+						<!-- svelte-ignore element_invalid_self_closing_tag -->
 						<progress
 							class="progress {conflictsColor} w-full"
 							value={conflicts}
@@ -405,7 +411,7 @@
 							{#each allowedSlots as slot}
 								<option value={slot}
 									>({slot.dayNumber}, {slot.slotNumber})
-									<span class="font-mono"> {mkDateTimeShort(slot.starttime)}</span></option
+									{mkDateTimeShort(slot.starttime)}</option
 								>
 							{/each}
 						</select>
