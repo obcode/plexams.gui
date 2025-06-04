@@ -67,7 +67,6 @@
 	// 		}
 	// 	});
 	// 	let data = await response.json();
-	// 	// console.log(data.plannedExamsInSlot);
 	// 	allowedRoomsUnfiltered = data.roomsForSlot;
 	// }
 
@@ -94,9 +93,7 @@
 
 	// async function addRoom(nta) {
 	// 	if (nta) {
-	// 		console.log(`für NTA ${nta} einplanen`);
 	// 	} else {
-	// 		console.log('als normalen Prüfungsraum einplanen');
 
 	// 		const response = await fetch('/api/rooms/addRoomToExam', {
 	// 			method: 'POST',

@@ -18,7 +18,6 @@
 			}
 		});
 		let data = await response.json();
-		// console.log(data.plannedExamsInSlot);
 		examsInSlot = data.examsInSlot;
 	}
 

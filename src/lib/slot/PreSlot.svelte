@@ -32,7 +32,6 @@
 		});
 		let data = await response.json();
 		exams = data.preExamsInSlot;
-		console.log('exams', exams);
 	}
 
 	let exahm = [];

@@ -18,7 +18,6 @@
 			}
 		});
 		let data = await response.json();
-		// console.log(data);
 		want = data.invigilatorsForDay.want;
 		can = data.invigilatorsForDay.can.sort(function (invig1, invig2) {
 			return (

@@ -39,7 +39,6 @@
 	}
 
 	async function addExam(ancode) {
-		console.log(`${ancode} wird hinzugefügt.`);
 		await fetch('/api/zpaexams/addToPlan', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
@@ -50,7 +49,6 @@
 		location.reload();
 	}
 	async function rmExam(ancode) {
-		console.log(`${ancode} wird entfernt.`);
 		await fetch('/api/zpaexams/rmFromPlan', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),

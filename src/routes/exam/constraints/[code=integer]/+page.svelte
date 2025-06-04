@@ -81,8 +81,6 @@
 			constraintsInput.maxStudents = null;
 		}
 
-		console.log('ConstraintsInput', constraintsInput);
-
 		await fetch('/api/addConstraints', {
 			method: 'POST',
 			body: JSON.stringify({ ancode: exam.ancode, constraints: constraintsInput }),
@@ -90,12 +88,9 @@
 				'content-type': 'application/json'
 			}
 		});
-		console.log('Added constraints');
 		location.reload();
 	}
-	function deleteConstraints() {
-		console.log('Delete constraints');
-	}
+	function deleteConstraints() {}
 
 	let zpaExamsToPlan = [];
 	async function getZpaExamsToPlan() {
@@ -128,8 +123,6 @@
 	let filterText = '';
 	let showModal = false;
 	let navigateAncode = '';
-
-	$: console.log('ConstraintsInput', constraintsInput.excludeDays);
 </script>
 
 <div class="text-center m-2 text-4xl">

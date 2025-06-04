@@ -238,9 +238,6 @@
 
 	function globalForbiddenSlot(day, time) {
 		const key = `${day},${time}`;
-		console.log('globalForbiddenSlot', day, time, key);
-		console.log('globalForbiddenSlot Zugriff', data.globalSlotStatus.get(key));
-		console.log('globalForbiddenSlot all', data.globalSlotStatus);
 		if (data.globalSlotStatus.get(key) === 'forbidden') {
 			return 'bg-gray-400';
 		}
