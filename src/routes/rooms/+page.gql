@@ -1,0 +1,12 @@
+query Rooms {
+	rooms {
+		name
+		seats
+		handicap
+		lab
+		placesWithSocket
+		exahm
+		seb
+		needsRequest
+	}
+}
