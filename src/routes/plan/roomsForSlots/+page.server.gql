@@ -1,0 +1,26 @@
+query RoomsForSlots {
+	rooms {
+		name
+		seats
+		handicap
+		lab
+		placesWithSocket
+		exahm
+		seb
+		needsRequest
+	}
+	roomsForSlots {
+		day
+		slot
+		rooms {
+			name
+			seats
+			handicap
+			lab
+			placesWithSocket
+			exahm
+			seb
+			needsRequest
+		}
+	}
+}

@@ -28,6 +28,8 @@
 			rooms?.sort((r1: any, r2: any) => r1.name.localeCompare(r2.name));
 		}
 	}
+
+	let roomsForSlots = $Rooms?.data?.roomsForSlots || [];
 </script>
 
 <div class="text-center m-2">

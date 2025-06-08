@@ -499,7 +499,8 @@ type Query {
   primussExams: [PrimussExamByProgram]
   primussExamsForAnCode(ancode: Int!): [PrimussExam!]
   rooms: [Room!]!
-  roomsForSlot(day: Int!, time: Int!): SlotWithRooms
+  roomsForSlot(day: Int!, time: Int!): RoomsForSlot
+  roomsForSlots: [RoomsForSlot!]!
   roomsWithConstraints(exahm: Boolean, handicap: Boolean!, lab: Boolean!, placesWithSocket: Boolean!): [Room!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   semester: Semester!
@@ -583,6 +584,12 @@ type RoomWithInvigilator {
   studentCount: Int!
 }
 
+type RoomsForSlot {
+  day: Int!
+  rooms: [Room!]!
+  slot: Int!
+}
+
 type Semester {
   id: String!
 }
@@ -610,15 +617,6 @@ type Slot {
 type SlotWithExamGroups {
   dayNumber: Int!
   examGroups: [ExamGroup]
-  slotNumber: Int!
-}
-
-type SlotWithRooms {
-  dayNumber: Int!
-  exahmRooms: [Room!]!
-  labRooms: [Room!]!
-  normalRooms: [Room!]!
-  ntaRooms: [Room!]!
   slotNumber: Int!
 }
 
