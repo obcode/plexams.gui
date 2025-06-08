@@ -86,7 +86,7 @@
 				<li><a href="/plan/calendar">Kalenderansicht</a></li>
 				<!-- <li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li> -->
 				<li><a href="/plan/rooms">Raumplanung</a></li>
-				<li><a href="/plan/roomsTable">Raumplanung (Tabelle)</a></li>
+				<li><a href="/plan/roomsForSlots">Verfügbare Räume</a></li>
 				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
 				<li><a href="/plan/examsInPlanZPA">Prüfungsliste für ZPA</a></li>
 			</ul>
