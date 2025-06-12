@@ -414,6 +414,11 @@ type PreExam {
   zpaExam: ZPAExam!
 }
 
+type PrePlannedRoom {
+  ancode: Int!
+  roomName: String!
+}
+
 type PrimussExam {
   ancode: Int!
   examType: String!

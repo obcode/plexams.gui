@@ -6,7 +6,7 @@
 	<div class="card-body">
 		<div class="flex justify-between">
 			<span class="text-xl text-green-900">
-				{nta.nta.name} ({nta.nta.program})
+				{nta.nta.name} ({nta.nta.program} / {nta.nta.mtknr})
 			</span>
 			{#if nta.nta.needsHardware}
 				<div class="badge badge-info">spezielle Hardware</div>
