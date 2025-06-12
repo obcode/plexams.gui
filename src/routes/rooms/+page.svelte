@@ -1,40 +1,34 @@
-<script lang="ts">
-	import type { PageData } from './$houdini';
-	export let data: PageData;
+<script>
+	export let data;
 
-	$: ({ Rooms } = data);
+	let rooms = data.rooms;
 
-	let rooms: any = [];
-	$: rooms = $Rooms?.data?.rooms || [];
-
-	function onClick(column: any) {
+	function onClick(column) {
 		if (column === 'nta') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.handicap);
+			rooms = data.rooms.filter((r) => r.handicap);
 		} else if (column === 'lab') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.lab);
+			rooms = data.rooms.filter((r) => r.lab);
 		} else if (column === 'placesWithSocket') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.placesWithSocket);
+			rooms = data.rooms.filter((r) => r.placesWithSocket);
 		} else if (column === 'exahm') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.exahm);
+			rooms = data.rooms.filter((r) => r.exahm);
 		} else if (column === 'seb') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.seb);
+			rooms = data.rooms.filter((r) => r.seb);
 		} else if (column === 'needsRequest') {
-			rooms = $Rooms?.data?.rooms.filter((r) => r.needsRequest);
+			rooms = data.rooms.filter((r) => r.needsRequest);
 		} else if (column === 'seats') {
-			rooms = $Rooms?.data?.rooms;
-			rooms?.sort((r1: any, r2: any) => r2.seats - r1.seats);
+			rooms = data.rooms;
+			rooms.sort((r1, r2) => r2.seats - r1.seats);
 		} else if (column === 'name') {
-			rooms = $Rooms?.data?.rooms;
-			rooms?.sort((r1: any, r2: any) => r1.name.localeCompare(r2.name));
+			rooms = data.rooms;
+			rooms.sort((r1, r2) => r1.name.localeCompare(r2.name));
 		}
 	}
-
-	let roomsForSlots = $Rooms?.data?.roomsForSlots || [];
 </script>
 
 <div class="text-center m-2">
 	<div class="text-4xl text-center mt-8 uppercase">
-		{rooms.length} Räume
+		{data.rooms.length} Räume
 	</div>
 </div>
 
