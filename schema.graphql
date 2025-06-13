@@ -179,7 +179,8 @@ type ExamWithRegs {
 type ExamWithRegsAndRooms {
   exam: PlannedExam!
   normalRegsMtknr: [String!]!
-  ntas: [NTA!]!
+  ntasInAloneRooms: [NTA!]!
+  ntasInNormalRooms: [NTA!]!
   rooms: [PlannedRoom!]!
 }
 
@@ -416,6 +417,8 @@ type PreExam {
 
 type PrePlannedRoom {
   ancode: Int!
+  mtknr: String
+  reserve: Boolean!
   roomName: String!
 }
 
@@ -498,6 +501,7 @@ type Query {
   plannedRoomForStudent(ancode: Int!, mtknr: String!): PlannedRoom
   plannedRoomNames: [String!]
   plannedRoomNamesInSlot(day: Int!, time: Int!): [String!]
+  plannedRooms: [PlannedRoom!]!
   plannedRoomsInSlot(day: Int!, time: Int!): [PlannedRoom!]
   preExamsInSlot(day: Int!, time: Int!): [PreExam!]
   primussExam(ancode: Int!, program: String!): PrimussExam!
