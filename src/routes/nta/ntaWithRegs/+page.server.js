@@ -12,6 +12,7 @@ export async function load({ params }) {
 				regs
 				nta {
 					name
+					email
 					mtknr
 					compensation
 					deltaDurationPercent
