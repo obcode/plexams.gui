@@ -132,6 +132,7 @@ export async function POST({ request }) {
 					reserve
 					studentsInRoom
 					ntaMtknr
+					prePlanned
 				}
 			}
 		}

@@ -403,6 +403,7 @@ type PlannedRoom {
   handicap: Boolean!
   handicapRoomAlone: Boolean!
   ntaMtknr: String
+  prePlanned: Boolean!
   reserve: Boolean!
   room: Room!
   slot: Int!
