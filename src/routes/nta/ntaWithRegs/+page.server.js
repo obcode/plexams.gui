@@ -77,6 +77,25 @@ export async function load({ params }) {
 					data.generatedExam.roomName = roomData.plannedRoomForStudent.room.name;
 				}
 
+				const plannedExamQuery = gql`
+				query {
+					plannedExam(ancode: ${ancode}) {
+						planEntry {
+							starttime
+						}
+					}
+				}`;
+
+				const planData = await request(env.PLEXAMS_SERVER, plannedExamQuery);
+
+				if (
+					planData != null &&
+					planData.plannedExam != null &&
+					planData.plannedExam.planEntry != null
+				) {
+					data.generatedExam.starttime = planData.plannedExam.planEntry.starttime;
+				}
+
 				exams.push(data.generatedExam);
 			}
 
