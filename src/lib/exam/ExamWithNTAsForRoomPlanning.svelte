@@ -3,7 +3,6 @@
 	export let showOnlyExamsWithNTAs;
 	export let details;
 	export let showRooms;
-	// import { onMount } from 'svelte';
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
@@ -154,6 +153,25 @@
 			}
 		}
 	}
+
+	async function prePlanRoom(ancode, room) {
+		const roomName = room.room.name;
+		const reserve = room.reserve;
+		const mtknr = room.ntaMtknr;
+
+		console.log(`ancode: ${ancode}\nroomName: ${roomName}\nreserve: ${reserve}\nmtknr: ${mtknr}`);
+
+		const res = await fetch('/api/prePlanRoom', {
+			method: 'POST',
+			body: JSON.stringify({ ancode, roomName, reserve, mtknr }),
+			headers: {
+				'content-type': 'application/json'
+			}
+		});
+
+		const result = await res.json();
+		console.log(`result: ${JSON.stringify(result, null, 2)}`);
+	}
 </script>
 
 {#if show && showRoom}
@@ -222,6 +240,13 @@
 										<path d="M4 11h16" />
 										<path d="M15 19l2 2l4 -4" />
 									</svg>
+								{:else}
+									<button
+										class="btn btn-xs btn-outline mr-2"
+										on:click={() => prePlanRoom(exam.ancode, room)}
+									>
+										OK
+									</button>
 								{/if}
 								{room.room.name} (
 								{#each room.studentsInRoom as student}
@@ -252,6 +277,13 @@
 										<path d="M4 11h16" />
 										<path d="M15 19l2 2l4 -4" />
 									</svg>
+								{:else}
+									<button
+										class="btn btn-xs btn-outline mr-2"
+										on:click={() => prePlanRoom(exam.ancode, room)}
+									>
+										OK
+									</button>
 								{/if}
 								{room.room.name}
 								{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}

@@ -301,6 +301,7 @@ type Mutation {
   online(ancode: Int!): Boolean!
   placesWithSockets(ancode: Int!): Boolean!
   possibleDays(ancode: Int!, days: [String!]!): Boolean!
+  prePlanRoom(ancode: Int!, mtknr: String, reserve: Boolean!, roomName: String!): Boolean!
   removePrimussExam(input: PrimussExamInput): Boolean!
   rmConstraints(ancode: Int!): Boolean!
   rmExamFromSlot(ancode: Int!): Boolean!
