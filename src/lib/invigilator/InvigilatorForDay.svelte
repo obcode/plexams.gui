@@ -56,7 +56,7 @@
 	</div>
 	<div class="flex justify-between">
 		<div>
-			{#if invigilator.requirements.examDays && invigilator.requirements.examDays.length > 0}
+			{#if invigilator.requirements && invigilator.requirements.examDays && invigilator.requirements.examDays.length > 0}
 				{#each invigilator.requirements.examDays as day}
 					<div class="badge badge-success m-1">{day}</div>
 				{/each}
