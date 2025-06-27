@@ -23,7 +23,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const workflowData = await request('http://localhost:8080/query', workflowQuery);
+	const workflowData = await request(env.PLEXAMS_SERVER, workflowQuery);
 
 	return {
 		semester: semesterData.semester.id,

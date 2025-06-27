@@ -103,7 +103,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request('http://localhost:8080/query', examGroupsWithoutSlotQuery);
+	const data = await request(env.PLEXAMS_SERVER, examGroupsWithoutSlotQuery);
 
 	return {
 		semesterConfig: semesterData.semesterConfig,
