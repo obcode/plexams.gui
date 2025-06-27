@@ -126,7 +126,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request('http://localhost:8080/query', examsWithoutSlotQuery);
+	const data = await request(env.PLEXAMS_SERVER, examsWithoutSlotQuery);
 
 	let semesterConfig = semesterData.semesterConfig;
 
