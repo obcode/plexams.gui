@@ -1,25 +1,19 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
 	export let data: PageData;
-
-	$: ({ RoomsForSlots } = data);
+	let rooms = data.rooms;
 
 	let selectedDays: number[] = [];
 	let availableDays: number[] = [];
 
-	$: if ($RoomsForSlots?.data?.roomsForSlots) {
-		availableDays = [...new Set($RoomsForSlots.data.roomsForSlots.map((slot) => slot.day))].sort(
-			(a, b) => a - b
-		);
+	$: if (rooms) {
+		availableDays = [...new Set(rooms.map((slot) => slot.day))].sort((a, b) => a - b);
 	}
 
 	$: filteredSlots =
-		selectedDays.length === 0
-			? $RoomsForSlots?.data?.roomsForSlots
-			: $RoomsForSlots?.data?.roomsForSlots?.filter((slot) => selectedDays.includes(slot.day));
+		selectedDays.length === 0 ? rooms : rooms?.filter((slot) => selectedDays.includes(slot.day));
 
 	function roomAvailable(room: any, slot: any): string {
-		if (slot.rooms.map((room) => room.name).includes(room)) {
+		if (slot && slot.rooms.map((room) => room.name).includes(room)) {
 			return 'X';
 		}
 		return '';
@@ -56,7 +50,7 @@
 				<thead>
 					<tr>
 						<th>Slot</th>
-						{#each $RoomsForSlots?.data?.rooms as room}
+						{#each rooms as room}
 							<th>{room.name}</th>
 						{/each}
 					</tr>
@@ -65,7 +59,7 @@
 					{#each filteredSlots as slot}
 						<tr>
 							<td class="font-bold text-right"> ({slot.day}, {slot.slot})</td>
-							{#each $RoomsForSlots?.data?.rooms as room}
+							{#each rooms as room}
 								<td>{roomAvailable(room.name, slot)}</td>
 							{/each}
 						</tr>

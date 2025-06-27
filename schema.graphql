@@ -101,6 +101,7 @@ type Emails {
   fs: String!
   lbas: String!
   profs: String!
+  sekr: String!
 }
 
 type EnhancedPrimussExam {
