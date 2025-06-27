@@ -1,4 +1,5 @@
 import { CodegenConfig } from '@graphql-codegen/cli';
+import { env } from '$env/dynamic/private';
 
 const config: CodegenConfig = {
 	schema: env.PLEXAMS_SERVER,
