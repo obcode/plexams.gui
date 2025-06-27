@@ -159,8 +159,6 @@
 		const reserve = room.reserve;
 		const mtknr = room.ntaMtknr;
 
-		console.log(`ancode: ${ancode}\nroomName: ${roomName}\nreserve: ${reserve}\nmtknr: ${mtknr}`);
-
 		const res = await fetch('/api/prePlanRoom', {
 			method: 'POST',
 			body: JSON.stringify({ ancode, roomName, reserve, mtknr }),
@@ -170,7 +168,6 @@
 		});
 
 		const result = await res.json();
-		console.log(`result: ${JSON.stringify(result, null, 2)}`);
 	}
 </script>
 
