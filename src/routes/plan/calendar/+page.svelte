@@ -1,17 +1,15 @@
 <script lang="ts">
-	import type { PageData } from './$houdini';
 	// import dayGridPlugin from '@fullcalendar/daygrid';
 	import FullCalendar from 'svelte-fullcalendar';
 	import timeGridPlugin from '@fullcalendar/timegrid';
 
 	export let data: PageData;
-
-	$: ({ PlannedExams } = data);
+	let plannedExams = data.plannedExams;
 
 	let events: any[] = [];
 
-	$: if ($PlannedExams.data != null && $PlannedExams.data.plannedExams != null) {
-		for (const exam of $PlannedExams.data.plannedExams) {
+	$: if (plannedExams != null) {
+		for (const exam of plannedExams) {
 			if (exam.planEntry) {
 				let color = '#3788d8';
 				if (exam.constraints && exam.constraints.notPlannedByMe) {
@@ -62,7 +60,7 @@
 </script>
 
 <!-- 
-{#each $PlannedExams.data.plannedExams as item}
+{#each plannedExams as item}
 	<div>{item.ancode}</div>
 {/each} -->
 

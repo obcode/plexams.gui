@@ -27,11 +27,8 @@
 		}
 	}
 
-	console.log('Planned Rooms Set:', data.plannedRooms);
-
 	function roomPlanned(day, slot, roomName) {
 		const entry = `${day}-${slot}-${roomName}`;
-		console.log('Checking if room is planned:', entry);
 		return data.plannedRooms.has(entry);
 	}
 
