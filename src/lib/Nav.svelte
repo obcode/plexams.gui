@@ -3,15 +3,6 @@
 	import { mkDate } from '$lib/jshelper/misc';
 	import type { Maybe, Step } from '$lib/__generated__/graphql';
 
-	let nextDeadline: Maybe<Step>;
-	async function getNextDeadline() {
-		const response = await fetch('/api/nextDeadline', {
-			method: 'GET'
-		});
-
-		nextDeadline = await response.json();
-	}
-
 	let semester = 'unknown';
 	async function getSemester() {
 		const response = await fetch('/api/semester', {
@@ -22,7 +13,6 @@
 	}
 
 	onMount(() => {
-		getNextDeadline();
 		getSemester();
 	});
 
@@ -64,12 +54,7 @@
 
 <div class="navbar bg-base-100">
 	<div class="flex-1">
-		<a class="btn btn-ghost normal-case text-xl" href="/"
-			>Plexams
-			{#if nextDeadline}
-				(nächste Deadline: {mkDate(nextDeadline.deadline)})
-			{/if}
-		</a>
+		<a class="btn btn-ghost normal-case text-xl" href="/">Plexams</a>
 	</div>
 
 	<div class="flex-none">
