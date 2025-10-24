@@ -22,6 +22,20 @@ export async function load({ params }) {
 					slotNumber
 				}
 			}
+			roomsForSlots {
+				day
+				slot
+				rooms {
+					name
+					seats
+					handicap
+					lab
+					placesWithSocket
+					exahm
+					seb
+					needsRequest
+				}
+			}
 		}
 	`;
 
@@ -146,9 +160,18 @@ export async function load({ params }) {
 		}
 	}
 
+	let roomForSlotsMap = new Map();
+	if (semesterData.roomsForSlots) {
+		for (let slot of semesterData.roomsForSlots) {
+			const key = `${slot.day},${slot.slot}`;
+			roomForSlotsMap.set(key, slot.rooms);
+		}
+	}
+
 	return {
 		semesterConfig: semesterData.semesterConfig,
 		examsWithoutSlot: data.examsWithoutSlot,
-		globalSlotStatus: globalSlotStatus
+		globalSlotStatus: globalSlotStatus,
+		roomsForSlots: roomForSlotsMap
 	};
 }

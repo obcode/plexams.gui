@@ -450,6 +450,9 @@
 									{day}
 									{time}
 									forbiddenSlot={forbiddenSlot(day.number, time.number)}
+									exahmrooms={data.roomsForSlots
+										.get(`${day.number},${time.number}`)
+										.filter((r) => r.exahm)}
 									{maxSlots}
 									{selectedExam}
 									{selectedExamerID}
