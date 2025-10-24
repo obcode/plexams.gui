@@ -2,6 +2,7 @@
 	export let day;
 	export let time;
 	export let forbiddenSlot;
+	export let exahmrooms;
 	export let maxSlots;
 	export let selectedExam;
 	export let selectedExamerID;
@@ -41,19 +42,7 @@
 		// calculateConflicts();
 	}
 
-	let exahm = [];
-
-	async function fetchEXaHMRooms() {
-		const response = await fetch('/api/plan/roomsForSlot', {
-			method: 'POST',
-			body: JSON.stringify({ day: day.number, time: time.number }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		exahm = data.roomsForSlot.exahmRooms;
-	}
+	let exahm = exahmrooms;
 
 	let conflicts = 0;
 
@@ -96,7 +85,6 @@
 
 	onMount(() => {
 		fetchExams();
-		fetchEXaHMRooms();
 	});
 
 	function forwardSelected(event) {
