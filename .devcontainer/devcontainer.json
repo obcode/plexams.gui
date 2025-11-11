@@ -44,6 +44,9 @@
     "source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly",
     "source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly"
   ],
+  // mount the workspace into a named Docker volume instead of bind-mounting the host repo
+  "workspaceMount": "source=${localWorkspaceFolderBasename},target=/workspace/${localWorkspaceFolderBasename},type=volume",
+  "workspaceFolder": "/workspace/${localWorkspaceFolderBasename}",
   "forwardPorts": [
     5173,
     4173
@@ -58,7 +61,7 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "bash -c 'source /usr/local/share/nvm/nvm.sh && npm install'",
+  "postCreateCommand": "bash -c 'chown -R node:node /workspace/plexams.gui'",
   "remoteUser": "node",
   "runArgs": [
     "--network=host"
