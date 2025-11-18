@@ -136,6 +136,7 @@
 					</td>
 					<td>{exam.examTypeFull}</td>
 					<td>{exam.groups}</td>
+					<td><a href="/exam/constraints/{exam.ancode}" class="btn btn-sm">Constraints</a> </td>
 				</tr>
 			{/each}
 		</tbody>
