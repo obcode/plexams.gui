@@ -86,6 +86,7 @@
 				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
 				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
+				<li><a href="/exam/examersToPlan">Zu planende Prüfende</a></li>
 				<li><a href="/exam/constraints">Constraints</a></li>
 				<li><a href="/exam/kdp">EXaHM/SEB</a></li>
 				<li><a href="/rooms">Räume</a></li>
