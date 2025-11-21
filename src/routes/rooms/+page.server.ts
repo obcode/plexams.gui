@@ -13,6 +13,8 @@ export async function load() {
 				exahm
 				seb
 				needsRequest
+				sebSeats
+				hmebSeats
 			}
 		}
 	`;

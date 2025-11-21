@@ -76,6 +76,12 @@
 						<td>
 							{#if room.seb}
 								<div class="badge badge-info">SEB</div>
+								{#if room.sebSeats > 0}
+									<div class="badge">{room.sebSeats} SEB</div>
+								{/if}
+								{#if room.hmebSeats > 0}
+									<div class="badge">{room.hmebSeats} HMEB</div>
+								{/if}
 							{/if}
 						</td>
 						<td>
