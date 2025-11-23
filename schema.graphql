@@ -14,24 +14,11 @@ Indicates exactly one field must be supplied and this field must not be `null`.
 """
 directive @oneOf on INPUT_OBJECT
 
-type AdditionalExam {
-  ancode: Int!
-  duration: Int!
-  groups: [String!]!
-  isRepeaterExam: Boolean!
-  mainExamer: String!
-  mainExamerID: Int!
-  module: String!
-}
-
-input AdditionalExamInput {
-  ancode: Int!
-  duration: Int!
-  groups: [String!]!
-  isRepeaterExam: Boolean!
-  mainExamerID: Int!
-  module: String!
-}
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
 
 type AnCode {
   ancode: Int!
@@ -43,146 +30,79 @@ type Conflict {
 }
 
 type ConflictPerProgram {
-  conflicts: [Conflict!]!
   program: String!
+  conflicts: [Conflict!]!
 }
 
 type Conflicts {
   ancode: Int!
-  conflicts: [Conflict!]!
-  mainExamer: String!
   module: String!
+  mainExamer: String!
+  conflicts: [Conflict!]!
 }
 
 type ConflictsPerProgramAncode {
+  program: String!
   ancode: Int!
   conflicts: Conflicts
-  program: String!
 }
 
 type ConnectedExam {
-  errors: [String!]!
-  otherPrimussExams: [PrimussExam!]!
-  primussExams: [PrimussExam!]!
   zpaExam: ZPAExam!
+  primussExams: [PrimussExam!]!
+  otherPrimussExams: [PrimussExam!]!
+  errors: [String!]!
 }
 
 type Constraints {
   ancode: Int!
+  notPlannedByMe: Boolean!
   excludeDays: [Time!]
+  possibleDays: [Time!]
   fixedDay: Time
   fixedTime: Time
-  notPlannedByMe: Boolean!
-  online: Boolean!
-  possibleDays: [Time!]
-  roomConstraints: RoomConstraints
   sameSlot: [Int!]
+  online: Boolean!
+  roomConstraints: RoomConstraints
 }
 
 input ConstraintsInput {
   allowedRooms: [String!]
-  comments: String
-  exahm: Boolean
+  notPlannedByMe: Boolean
   excludeDays: [Time!]
+  possibleDays: [Time!]
   fixedDay: Time
   fixedTime: Time
-  kdpJiraURL: String
-  lab: Boolean
-  maxStudents: Int
-  notPlannedByMe: Boolean
+  sameSlot: [Int!]
   online: Boolean
   placesWithSocket: Boolean
-  possibleDays: [Time!]
-  sameSlot: [Int!]
+  lab: Boolean
+  exahm: Boolean
   seb: Boolean
+  kdpJiraURL: String
+  maxStudents: Int
+  comments: String
 }
 
 type Emails {
-  fs: String!
-  lbas: String!
   profs: String!
+  lbas: String!
+  lbasLastSemester: String!
+  additionalExamer: [String!]!
+  fs: String!
   sekr: String!
 }
 
 type EnhancedPrimussExam {
-  conflicts: [Conflict!]!
   exam: PrimussExam!
-  ntas: [NTA!]!
   studentRegs: [StudentReg!]!
-}
-
-type Exam {
-  ancode: Int!
-  conflicts: [ConflictsPerProgramAncode!]!
-  connectErrors: [String!]!
-  constraints: Constraints
-  externalExam: ExternalExam
-  ntaStudents: [Student!]
-  primussExams: [PrimussExam!]!
-  regularStudents: [Student!]
-  rooms: [RoomForExam!]
-  slot: Slot
-  studentRegs: [StudentRegsPerAncodeAndProgram!]!
-  zpaExam: ZPAExam
+  conflicts: [Conflict!]!
+  ntas: [NTA!]!
 }
 
 type ExamDay {
-  date: Time!
   number: Int!
-}
-
-type ExamGroup {
-  examGroupCode: Int!
-  examGroupInfo: ExamGroupInfo
-  exams: [ExamToPlan!]!
-}
-
-type ExamGroupConflict {
-  count: Int!
-  examGroupCode: Int!
-}
-
-type ExamGroupInfo {
-  conflicts: [ExamGroupConflict]
-  excludeDays: [Int!]
-  fixedDay: Int
-  fixedSlot: Slot
-  maxDuration: Int!
-  maxDurationNTA: Int
-  notPlannedByMe: Boolean!
-  possibleDays: [Int!]
-  possibleSlots: [Slot!]
-  programs: [String!]!
-  studentRegs: Int!
-}
-
-type ExamInPlan {
-  constraints: Constraints
-  exam: ExamWithRegs!
-  nta: [NTAWithRegs!]
-  slot: Slot
-}
-
-type ExamToPlan {
-  constraints: Constraints
-  exam: ExamWithRegs!
-}
-
-type ExamWithRegs {
-  ancode: Int!
-  conflicts: [ConflictPerProgram!]!
-  connectErrors: [String!]!
-  primussExams: [PrimussExam!]!
-  studentRegs: [StudentRegsPerAncodeAndProgram!]!
-  zpaExam: ZPAExam!
-}
-
-type ExamWithRegsAndRooms {
-  exam: PlannedExam!
-  normalRegsMtknr: [String!]!
-  ntasInAloneRooms: [NTA!]!
-  ntasInNormalRooms: [NTA!]!
-  rooms: [PlannedRoom!]!
+  date: Time!
 }
 
 type ExamerInPlan {
@@ -190,12 +110,12 @@ type ExamerInPlan {
   mainExamerID: Int!
 }
 
-type ExternalExam {
-  ancode: Int!
-  duration: Int!
-  mainExamer: String!
-  module: String!
-  program: String!
+type ExamWithRegsAndRooms {
+  exam: PlannedExam!
+  normalRegsMtknr: [String!]!
+  ntasInNormalRooms: [NTA!]!
+  ntasInAloneRooms: [NTA!]!
+  rooms: [PlannedRoom!]!
 }
 
 type FK07Program {
@@ -204,23 +124,23 @@ type FK07Program {
 
 type GeneratedExam {
   ancode: Int!
-  conflicts: [ZPAConflict!]!
-  constraints: Constraints
-  mainExamer: Teacher!
-  maxDuration: Int!
-  ntas: [NTA!]!
-  primussExams: [EnhancedPrimussExam!]!
-  studentRegsCount: Int!
   zpaExam: ZPAExam!
+  mainExamer: Teacher!
+  primussExams: [EnhancedPrimussExam!]!
+  constraints: Constraints
+  conflicts: [ZPAConflict!]!
+  studentRegsCount: Int!
+  ntas: [NTA!]!
+  maxDuration: Int!
 }
 
 type Invigilation {
+  roomName: String
   duration: Int!
   invigilatorID: Int!
+  slot: Slot!
   isReserve: Boolean!
   isSelfInvigilation: Boolean!
-  roomName: String
-  slot: Slot!
 }
 
 type InvigilationSlot {
@@ -229,124 +149,118 @@ type InvigilationSlot {
 }
 
 type InvigilationTodos {
-  invigilatorCount: Int!
-  invigilators: [Invigilator!]!
   sumExamRooms: Int!
+  sumReserve: Int!
   sumOtherContributions: Int!
   sumOtherContributionsOvertimeCutted: Int!
-  sumReserve: Int!
+  invigilatorCount: Int!
   todoPerInvigilator: Int!
   todoPerInvigilatorOvertimeCutted: Int!
+  invigilators: [Invigilator!]!
 }
 
 type Invigilator {
-  requirements: InvigilatorRequirements
   teacher: Teacher!
+  requirements: InvigilatorRequirements
   todos: InvigilatorTodos
 }
 
 type InvigilatorRequirements {
-  allContributions: Int!
-  examDateTimes: [Time!]!
-  examDays: [Int!]!
   excludedDates: [Time!]!
   excludedDays: [Int!]!
-  factor: Float!
-  freeSemester: Float!
+  examDateTimes: [Time!]!
+  examDays: [Int!]!
+  partTime: Float!
+  oralExamsContribution: Int!
   liveCodingContribution: Int!
   masterContribution: Int!
-  onlyInSlots: [Slot!]!
-  oralExamsContribution: Int!
+  freeSemester: Float!
   overtimeLastSemester: Float!
   overtimeThisSemester: Float!
-  partTime: Float!
+  allContributions: Int!
+  factor: Float!
+  onlyInSlots: [Slot!]!
+}
+
+type InvigilatorsForDay {
+  want: [Invigilator!]!
+  can: [Invigilator!]!
 }
 
 type InvigilatorTodos {
+  totalMinutes: Int!
   doingMinutes: Int!
   enough: Boolean!
   invigilationDays: [Int!]
   invigilations: [Invigilation!]
-  totalMinutes: Int!
-}
-
-type InvigilatorsForDay {
-  can: [Invigilator!]!
-  want: [Invigilator!]!
 }
 
 type MucDaiExam {
-  duration: Int!
-  examType: String!
-  isRepeaterExam: Boolean!
+  primussAncode: Int!
+  module: String!
   mainExamer: String!
   mainExamerID: Int
-  module: String!
-  plannedBy: String!
-  primussAncode: Int!
+  examType: String!
+  duration: Int!
+  isRepeaterExam: Boolean!
   program: String!
+  plannedBy: String!
 }
 
 type Mutation {
-  addAdditionalExam(exam: AdditionalExamInput!): Boolean!
-  addConstraints(ancode: Int!, constraints: ConstraintsInput!): Constraints!
-  addExamGroupToSlot(day: Int!, examGroupCode: Int!, time: Int!): Boolean!
-  addExamToSlot(ancode: Int!, day: Int!, time: Int!): Boolean!
-  addNTA(input: NTAInput!): NTA!
-  addRoomToExam(input: RoomForExamInput!): Boolean!
-  addZpaExamToPlan(ancode: Int!): Boolean!
-  exahm(ancode: Int!): Boolean!
-  excludeDays(ancode: Int!, days: [String!]!): Boolean!
-  lab(ancode: Int!): Boolean!
   notPlannedByMe(ancode: Int!): Boolean!
-  online(ancode: Int!): Boolean!
-  placesWithSockets(ancode: Int!): Boolean!
+  excludeDays(ancode: Int!, days: [String!]!): Boolean!
   possibleDays(ancode: Int!, days: [String!]!): Boolean!
-  prePlanRoom(ancode: Int!, mtknr: String, reserve: Boolean!, roomName: String!): Boolean!
-  removePrimussExam(input: PrimussExamInput): Boolean!
-  rmConstraints(ancode: Int!): Boolean!
-  rmExamFromSlot(ancode: Int!): Boolean!
-  rmExamGroupFromSlot(examGroupCode: Int!): Boolean!
-  rmZpaExamFromPlan(ancode: Int!): Boolean!
   sameSlot(ancode: Int!, ancodes: [Int!]!): Boolean!
+  placesWithSockets(ancode: Int!): Boolean!
+  lab(ancode: Int!): Boolean!
+  exahm(ancode: Int!): Boolean!
   seb(ancode: Int!): Boolean!
-  setSemester(input: String!): Semester!
+  online(ancode: Int!): Boolean!
+  addConstraints(ancode: Int!, constraints: ConstraintsInput!): Constraints!
+  rmConstraints(ancode: Int!): Boolean!
+  addNTA(input: NTAInput!): NTA!
+  addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
+  rmExamFromSlot(ancode: Int!): Boolean!
+  prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
   zpaExamsToPlan(input: [Int!]!): [ZPAExam!]!
+  addZpaExamToPlan(ancode: Int!): Boolean!
+  rmZpaExamFromPlan(ancode: Int!): Boolean!
 }
 
 type NTA {
-  compensation: String!
-  deactivated: Boolean!
-  deltaDurationPercent: Int!
-  email: String
-  exams: [NTAExam!]!
-  from: String!
-  lastSemester: String
-  mtknr: String!
   name: String!
-  needsHardware: Boolean!
+  email: String
+  mtknr: String!
+  compensation: String!
+  deltaDurationPercent: Int!
   needsRoomAlone: Boolean!
+  needsHardware: Boolean!
   program: String!
+  from: String!
   until: String!
+  lastSemester: String
+  exams: [NTAExam!]!
+  deactivated: Boolean!
 }
 
 type NTAExam {
-  ancode: String!
-  mainExamer: String!
-  module: String!
   semester: String!
+  ancode: String!
+  module: String!
+  mainExamer: String!
 }
 
 input NTAInput {
+  name: String!
+  email: String
+  mtknr: String!
   compensation: String!
   deltaDurationPercent: Int!
-  email: String
-  from: String!
-  mtknr: String!
-  name: String!
-  needsHardware: Boolean!
   needsRoomAlone: Boolean!
+  needsHardware: Boolean!
   program: String!
+  from: String!
   until: String!
 }
 
@@ -361,88 +275,77 @@ type NTAWithRegsByExam {
 }
 
 type NTAWithRegsByExamAndTeacher {
-  exams: [NTAWithRegsByExam!]
   teacher: Teacher!
-}
-
-type Plan {
-  semesterConfig: SemesterConfig
-  slots: [SlotWithExamGroups]
+  exams: [NTAWithRegsByExam!]
 }
 
 type PlanEntry {
-  ancode: Int!
   dayNumber: Int!
-  locked: Boolean!
   slotNumber: Int!
   starttime: Time!
+  ancode: Int!
+  locked: Boolean!
 }
 
 type PlannedExam {
   ancode: Int!
-  conflicts: [ZPAConflict!]!
-  constraints: Constraints
+  zpaExam: ZPAExam!
   mainExamer: Teacher!
-  maxDuration: Int!
+  primussExams: [EnhancedPrimussExam!]!
+  constraints: Constraints
+  conflicts: [ZPAConflict!]!
+  studentRegsCount: Int!
   ntas: [NTA!]!
+  maxDuration: Int!
   planEntry: PlanEntry
   plannedRooms: [PlannedRoom!]
-  primussExams: [EnhancedPrimussExam!]!
-  studentRegsCount: Int!
-  zpaExam: ZPAExam!
-}
-
-type PlannedExamWithNTA {
-  constraints: Constraints
-  exam: ExamWithRegs!
-  nta: [NTAWithRegs!]
 }
 
 type PlannedRoom {
-  ancode: Int!
   day: Int!
+  slot: Int!
+  room: Room!
+  ancode: Int!
   duration: Int!
   handicap: Boolean!
   handicapRoomAlone: Boolean!
+  reserve: Boolean!
+  studentsInRoom: [String!]!
   ntaMtknr: String
   prePlanned: Boolean!
-  reserve: Boolean!
-  room: Room!
-  slot: Int!
-  studentsInRoom: [String!]!
 }
 
 type PreExam {
+  zpaExam: ZPAExam!
   constraints: Constraints
   planEntry: PlanEntry
-  zpaExam: ZPAExam!
 }
 
 type PrePlannedRoom {
   ancode: Int!
+  roomName: String!
   mtknr: String
   reserve: Boolean!
-  roomName: String!
 }
 
 type PrimussExam {
   ancode: Int!
-  examType: String!
-  mainExamer: String!
   module: String!
-  presence: String!
+  mainExamer: String!
   program: String!
+  examType: String!
+  presence: String!
 }
 
 type PrimussExamAncode {
   ancode: Int!
-  numberOfStuds: Int!
   program: String!
+  numberOfStuds: Int!
 }
 
 type PrimussExamByProgram {
-  exams: [PrimussExamWithCount!]!
   program: String!
+  exams: [PrimussExamWithCount!]!
 }
 
 input PrimussExamInput {
@@ -452,154 +355,118 @@ input PrimussExamInput {
 
 type PrimussExamWithCount {
   ancode: Int!
-  examType: String!
-  mainExamer: String!
   module: String!
-  presence: String!
+  mainExamer: String!
   program: String!
+  examType: String!
+  presence: String!
   studentRegsCount: Int!
 }
 
 type Query {
-  additionalExams: [AdditionalExam!]!
-  allProgramsInPlan: [String!]
   allSemesterNames: [Semester!]!
-  allowedSlots(ancode: Int!): [Slot!]
-  ancodesInPlan: [Int!]
-  awkwardSlots(ancode: Int!): [Slot!]!
-  conflictingAncodes(ancode: Int!): [Conflict!]
-  connectedExam(ancode: Int!): ConnectedExam
-  connectedExams: [ConnectedExam!]!
-  constraintForAncode(ancode: Int!): Constraints
-  dayOkForInvigilator(day: Int!, invigilatorID: Int!): Boolean
-  exam(ancode: Int!): Exam
-  examGroup(examGroupCode: Int!): ExamGroup
-  examGroups: [ExamGroup!]!
-  examGroupsWithoutSlot: [ExamGroup!]
-  examWithRegs(ancode: Int!): ExamWithRegs
-  examerInPlan: [ExamerInPlan!]
-  exams: [Exam!]!
-  examsInPlan: [ExamInPlan!]
-  examsInSlot(day: Int!, time: Int!): [PlannedExam!]
-  examsInSlotWithRooms(day: Int!, time: Int!): [ExamWithRegsAndRooms!]
-  examsWithRegs: [ExamWithRegs!]
-  examsWithoutSlot: [PlannedExam!]!
-  externalExams: [ExternalExam!]!
-  fk07programs: [FK07Program!]!
-  generatedExam(ancode: Int!): GeneratedExam
-  generatedExams: [GeneratedExam!]!
-  invigilatorTodos: InvigilationTodos
-  invigilators: [ZPAInvigilator!]!
-  invigilatorsForDay(day: Int!): InvigilatorsForDay
-  invigilatorsWithReq: [Invigilator!]!
-  mucdaiExams: [MucDaiExam!]!
-  nextDeadline: Step
-  nta(mtknr: String!): NTAWithRegs
-  ntas: [NTA!]
-  ntasWithRegs: [Student!]
-  ntasWithRegsByTeacher: [NTAWithRegsByExamAndTeacher!]
-  plannedExam(ancode: Int!): PlannedExam
-  plannedExams: [PlannedExam!]!
-  plannedExamsInSlot(day: Int!, time: Int!): [PlannedExamWithNTA!]
-  plannedRoomForStudent(ancode: Int!, mtknr: String!): PlannedRoom
-  plannedRoomNames: [String!]
-  plannedRoomNamesInSlot(day: Int!, time: Int!): [String!]
-  plannedRooms: [PlannedRoom!]!
-  plannedRoomsInSlot(day: Int!, time: Int!): [PlannedRoom!]
-  preExamsInSlot(day: Int!, time: Int!): [PreExam!]
-  primussExam(ancode: Int!, program: String!): PrimussExam!
-  primussExams: [PrimussExamByProgram]
-  primussExamsForAnCode(ancode: Int!): [PrimussExam!]
-  rooms: [Room!]!
-  roomsForSlot(day: Int!, time: Int!): RoomsForSlot
-  roomsForSlots: [RoomsForSlot!]!
-  roomsWithConstraints(exahm: Boolean, handicap: Boolean!, lab: Boolean!, placesWithSocket: Boolean!): [Room!]!
-  roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   semester: Semester!
   semesterConfig: SemesterConfig!
-  studentByMtknr(mtknr: String!): Student
+  constraintForAncode(ancode: Int!): Constraints
+  zpaExamsToPlanWithConstraints: [ZPAExamWithConstraints!]!
+  connectedExam(ancode: Int!): ConnectedExam
+  connectedExams: [ConnectedExam!]!
+  generatedExams: [GeneratedExam!]!
+  generatedExam(ancode: Int!): GeneratedExam
+  plannedExams: [PlannedExam!]!
+  plannedExam(ancode: Int!): PlannedExam
+  mucdaiExams: [MucDaiExam!]!
+  conflictingAncodes(ancode: Int!): [Conflict!]
+  invigilatorTodos: InvigilationTodos
+  invigilatorsWithReq: [Invigilator!]!
+  roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
+  invigilatorsForDay(day: Int!): InvigilatorsForDay
+  ntas: [NTA!]
+  ntasWithRegs: [Student!]
+  nta(mtknr: String!): NTAWithRegs
+  allProgramsInPlan: [String!]
+  ancodesInPlan: [Int!]
+  examerInPlan: [ExamerInPlan!]
+  preExamsInSlot(day: Int!, time: Int!): [PreExam!]
+  examsInSlot(day: Int!, time: Int!): [PlannedExam!]
+  examsWithoutSlot: [PlannedExam!]!
+  allowedSlots(ancode: Int!): [Slot!]
+  awkwardSlots(ancode: Int!): [Slot!]!
+  primussExams: [PrimussExamByProgram]
+  primussExam(program: String!, ancode: Int!): PrimussExam!
+  primussExamsForAnCode(ancode: Int!): [PrimussExam!]
   studentRegsForProgram(program: String!): [StudentReg!]
-  studentRegsImportErrors: [RegWithError!]!
-  students: [Student!]!
+  rooms: [Room!]!
+  prePlannedRooms: [PrePlannedRoom!]!
+  roomsForSlots: [RoomsForSlot!]!
+  plannedRooms: [PlannedRoom!]!
+  plannedRoomNames: [String!]
+  plannedRoomNamesInSlot(day: Int!, time: Int!): [String!]
+  plannedRoomsInSlot(day: Int!, time: Int!): [PlannedRoom!]
+  plannedRoomForStudent(ancode: Int!, mtknr: String!): PlannedRoom
+  studentByMtknr(mtknr: String!): Student
   studentsByName(regex: String!): [Student!]!
+  students: [Student!]!
   teacher(id: Int!): Teacher
   teachers(fromZPA: Boolean): [Teacher!]!
-  workflow: [Step!]!
-  zpaAnCodes: [AnCode]
-  zpaExam(ancode: Int!): ZPAExam
+  invigilators: [ZPAInvigilator!]!
+  fk07programs: [FK07Program!]!
   zpaExams(fromZPA: Boolean): [ZPAExam!]!
   zpaExamsByType: [ZPAExamsForType!]!
+  zpaExamsToPlan: [ZPAExam!]!
   zpaExamsNotToPlan: [ZPAExam!]!
   zpaExamsPlaningStatusUnknown: [ZPAExam!]!
-  zpaExamsToPlan: [ZPAExam!]!
-  zpaExamsToPlanWithConstraints: [ZPAExamWithConstraints!]!
+  zpaExam(ancode: Int!): ZPAExam
+  zpaAnCodes: [AnCode]
+  studentRegsImportErrors: [RegWithError!]!
 }
 
 type RegWithError {
-  error: ZPAStudentRegError!
   registration: ZPAStudentReg!
+  error: ZPAStudentRegError!
 }
 
 type Room {
-  exahm: Boolean!
+  name: String!
+  seats: Int!
   handicap: Boolean!
   lab: Boolean!
-  name: String!
-  needsRequest: Boolean!
   placesWithSocket: Boolean!
-  seats: Int!
+  needsRequest: Boolean!
+  exahm: Boolean!
   seb: Boolean!
+  sebSeats: Int
+  hmebSeats: Int
 }
 
 type RoomAndExam {
-  exam: ZPAExam!
   room: PlannedRoom!
+  exam: ZPAExam!
 }
 
 type RoomConstraints {
   allowedRooms: [String!]
-  comments: String
-  exahm: Boolean!
-  kdpJiraURL: String
-  lab: Boolean!
-  maxStudents: Int
   placesWithSocket: Boolean!
+  lab: Boolean!
+  exahm: Boolean!
   seb: Boolean!
-}
-
-type RoomForExam {
-  ancode: Int!
-  duration: Int!
-  handicap: Boolean!
-  reserve: Boolean!
-  room: Room
-  seatsPlanned: Int!
-  students: [StudentReg!]!
-}
-
-input RoomForExamInput {
-  ancode: Int!
-  day: Int!
-  duration: Int!
-  handicap: Boolean!
-  mktnrs: [String!]
-  roomName: String!
-  seatsPlanned: Int!
-  time: Int!
-}
-
-type RoomWithInvigilator {
-  invigilator: Teacher
-  maxDuration: Int!
-  name: String!
-  roomAndExams: [RoomAndExam!]!
-  studentCount: Int!
+  kdpJiraURL: String
+  maxStudents: Int
+  comments: String
 }
 
 type RoomsForSlot {
   day: Int!
-  rooms: [Room!]!
   slot: Int!
+  rooms: [Room!]!
+}
+
+type RoomWithInvigilator {
+  name: String!
+  maxDuration: Int!
+  studentCount: Int!
+  roomAndExams: [RoomAndExam!]!
+  invigilator: Teacher
 }
 
 type Semester {
@@ -608,16 +475,16 @@ type Semester {
 
 type SemesterConfig {
   days: [ExamDay!]!
-  emails: Emails!
+  starttimes: [Starttime!]!
+  slots: [Slot!]!
+  goSlotsRaw: [[Int!]!]
+  goSlots: [Slot!]!
+  goDay0: Time!
   forbiddenSlots: [Slot!]
   from: Time!
   fromFK07: Time!
-  goDay0: Time!
-  goSlots: [Slot!]!
-  goSlotsRaw: [[Int!]!]
-  slots: [Slot!]!
-  starttimes: [Starttime!]!
   until: Time!
+  emails: Emails!
 }
 
 type Slot {
@@ -626,40 +493,27 @@ type Slot {
   starttime: Time!
 }
 
-type SlotWithExamGroups {
-  dayNumber: Int!
-  examGroups: [ExamGroup]
-  slotNumber: Int!
-}
-
 type Starttime {
   number: Int!
   start: String!
 }
 
-type Step {
-  deadline: Time
-  done: Boolean!
-  name: String!
-  number: Int!
-}
-
 type Student {
-  group: String!
   mtknr: String!
-  name: String!
-  nta: NTA
   program: String!
+  group: String!
+  name: String!
   regs: [Int!]!
+  nta: NTA
 }
 
 type StudentReg {
-  ancode: Int!
-  group: String!
   mtknr: String!
+  ancode: Int!
+  program: String!
+  group: String!
   name: String!
   presence: String!
-  program: String!
 }
 
 type StudentRegsPerAncode {
@@ -668,27 +522,28 @@ type StudentRegsPerAncode {
 }
 
 type StudentRegsPerAncodeAndProgram {
-  ancode: Int!
   program: String!
+  ancode: Int!
   studentRegs: [StudentReg!]!
 }
 
 type StudentRegsPerStudent {
-  ancodes: [Int!]!
   student: Student!
+  ancodes: [Int!]!
 }
 
 type Teacher {
-  email: String!
-  fk: String!
+  shortname: String!
   fullname: String!
-  id: Int!
-  isLBA: Boolean!
   isProf: Boolean!
+  isLBA: Boolean!
   isProfHC: Boolean!
   isStaff: Boolean!
   lastSemester: String!
-  shortname: String!
+  fk: String!
+  id: Int!
+  email: String!
+  isActive: Boolean!
 }
 
 scalar Time
@@ -700,39 +555,39 @@ type ZPAConflict {
 }
 
 type ZPAExam {
+  zpaID: Int!
+  semester: String!
   ancode: Int!
-  duration: Int!
-  examType: String!
-  examTypeFull: String!
-  groups: [String!]!
-  isRepeaterExam: Boolean!
+  module: String!
   mainExamer: String!
   mainExamerID: Int!
-  module: String!
+  examType: String!
+  examTypeFull: String!
+  duration: Int!
+  isRepeaterExam: Boolean!
+  groups: [String!]!
   primussAncodes: [ZPAPrimussAncodes!]!
-  semester: String!
-  zpaID: Int!
-}
-
-type ZPAExamWithConstraints {
-  constraints: Constraints
-  planEntry: PlanEntry
-  zpaExam: ZPAExam!
 }
 
 type ZPAExamsForType {
-  exams: [ZPAExam!]!
   type: String!
+  exams: [ZPAExam!]!
+}
+
+type ZPAExamWithConstraints {
+  zpaExam: ZPAExam!
+  constraints: Constraints
+  planEntry: PlanEntry
 }
 
 type ZPAInvigilator {
-  hasSubmittedRequirements: Boolean!
   teacher: Teacher!
+  hasSubmittedRequirements: Boolean!
 }
 
 type ZPAPrimussAncodes {
-  ancode: Int!
   program: String!
+  ancode: Int!
 }
 
 type ZPAStudentReg {
@@ -742,9 +597,10 @@ type ZPAStudentReg {
 }
 
 type ZPAStudentRegError {
+  semester: String!
   ancode: String!
   exam: String!
   mtknr: String!
   program: String!
-  semester: String!
 }
+

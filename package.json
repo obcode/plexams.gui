@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"devhost": "vite dev --host",
+		"update-schema.graphql": "bash -lc 'set -a && [ -f .env ] && . .env || true; npx --yes get-graphql-schema \"$PLEXAMS_SERVER\" > schema.graphql && npm run codegen'",
 		"codegen": "graphql-codegen",
 		"build": "vite build",
 		"package": "svelte-kit package",
