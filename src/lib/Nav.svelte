@@ -68,6 +68,7 @@
 				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
 				<li><a href="/plan/pre">Vorab-Planung (ohne Primuss-Daten)</a></li>
 				<li><a href="/plan/exams">Prüfungen planen</a></li>
+				<li><a href="/plan/kdprooms">Raumplanung KDP</a></li>
 				<li><a href="/plan/calendar">Kalenderansicht</a></li>
 				<!-- <li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li> -->
 				<li><a href="/plan/rooms">Raumplanung</a></li>
