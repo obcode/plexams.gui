@@ -42,7 +42,12 @@
 			</div>
 			<div class="text-sm opacity-90 flex items-center gap-3">
 				<div class="badge badge-info">T-Räume: {slot.tRooms.length}</div>
-				<div class="badge badge-success" style="background-color:transparent;border:1px solid currentColor;padding:0.25rem 0.5rem;">Prüfungen: {slot.exams.length}</div>
+				<div
+					class="badge badge-success"
+					style="background-color:transparent;border:1px solid currentColor;padding:0.25rem 0.5rem;"
+				>
+					Prüfungen: {slot.exams.length}
+				</div>
 			</div>
 		</div>
 		<div class="collapse-content">

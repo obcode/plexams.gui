@@ -47,11 +47,16 @@ export async function load() {
 				reserve
 			}
 			semesterConfig {
-				days { number date }
-				starttimes { number start }
+				days {
+					number
+					date
+				}
+				starttimes {
+					number
+					start
+				}
 			}
 		}
-
 	`;
 	const data = await request(env.PLEXAMS_SERVER, query);
 
@@ -130,8 +135,8 @@ export async function load() {
 
 	// Convert to array and attach date/starttime, then sort
 	const slots = Array.from(slotMap.values()).map((s) => {
-		const date = s.day >= 0 ? dayMap.get(s.day) ?? null : null;
-		const start = s.slot >= 0 ? starttimeMap.get(s.slot) ?? null : null;
+		const date = s.day >= 0 ? (dayMap.get(s.day) ?? null) : null;
+		const start = s.slot >= 0 ? (starttimeMap.get(s.slot) ?? null) : null;
 		return { ...s, date, start };
 	});
 
