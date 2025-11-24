@@ -361,7 +361,7 @@
 				<option value={program}
 					>{program}
 					{#if count > 0}
-						({count})
+						({count} noch zu planen)
 					{/if}
 				</option>
 			{/each}
