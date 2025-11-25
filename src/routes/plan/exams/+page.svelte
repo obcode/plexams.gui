@@ -254,7 +254,12 @@
 			if (exam.constraints && exam.constraints.notPlannedByMe) {
 				continue;
 			}
-			if (exam.primussExams.some((primussExam) => primussExam.exam.program === program)) {
+			if (
+				exam.primussExams.some(
+					(primussExam) =>
+						primussExam.exam.program === program && primussExam.studentRegs.length > 0
+				)
+			) {
 				count++;
 			}
 		}
