@@ -151,6 +151,8 @@
 			colors = 'bg-cyan-500 border-cyan-900 text-white';
 		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
 			colors = 'bg-red-700 border-red-900 text-white';
+		} else if (exam.constraints && exam.constraints.notPlannedByMe && exam.ancode > 999) {
+			colors = 'bg-cyan-100 border-cyan-300';
 		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
 			colors = 'bg-red-200 border-red-300';
 		} else if (locked) {
@@ -499,6 +501,9 @@
 						</div>
 					{/if}
 				{/each}
+				<div class="badge gap-2 mx-1">
+					{exam.zpaExam.groups}
+				</div>
 			</a>
 
 			{#if exam.constraints && exam.constraints.online}
