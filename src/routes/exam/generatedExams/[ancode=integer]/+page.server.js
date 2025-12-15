@@ -40,6 +40,10 @@ export async function load({ params }) {
 						group
 						name
 						presence
+						zpaStudent {
+							email
+							gender
+						}
 					}
 					conflicts {
 						ancode

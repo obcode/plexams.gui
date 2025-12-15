@@ -32,7 +32,12 @@
 					<h2 class="card-title">{primussExam.exam.program}</h2>
 					<ol class="list-inside list-decimal">
 						{#each primussExam.studentRegs as student}
-							<li>{student.name}</li>
+							<li>
+								{student.name}
+								{#if student.zpaStudent}
+									({student.zpaStudent.gender}) &lt;{student.zpaStudent.email}&gt;
+								{/if}
+							</li>
 						{/each}
 					</ol>
 				</div>
