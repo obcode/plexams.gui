@@ -134,7 +134,7 @@
 		if (room.name == 'R1.049') {
 			return 'bg-blue-300';
 		}
-		if (room.exahmRooms) {
+		if (room.exahm) {
 			return 'bg-cyan-300';
 		}
 		if (room.lab) {
@@ -158,6 +158,7 @@
 		const roomName = room.room.name;
 		const reserve = room.reserve;
 		const mtknr = room.ntaMtknr;
+		room.prePlanned = true;
 
 		const res = await fetch('/api/prePlanRoom', {
 			method: 'POST',
