@@ -1,7 +1,17 @@
 {
   "name": "plexams.go",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "username": "node",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    },
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/node:1": {
       "nodeGypDependencies": true,
@@ -61,8 +71,11 @@
       "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "bash -c 'chown -R node:node /workspace/plexams.gui'",
   "remoteUser": "node",
+  "remoteEnv": {
+    "SHELL": "/bin/zsh"
+  },
+  "postCreateCommand": "/usr/local/bin/setup-shell.sh",
   "runArgs": [
     "--network=host"
   ]
