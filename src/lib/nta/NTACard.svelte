@@ -59,6 +59,13 @@
 											{/if}
 										</td>
 										<td class="pr-4">
+											{#if exam.invigilator}
+												{exam.invigilator}
+											{:else}
+												<div class="badge badge-warning">noch nicht geplant</div>
+											{/if}
+										</td>
+										<td class="pr-4">
 											{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
 												<div class="badge badge-error">SEB</div>
 											{/if}

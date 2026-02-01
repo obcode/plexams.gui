@@ -82,6 +82,8 @@ export async function load({ params }) {
 					plannedExam(ancode: ${ancode}) {
 						planEntry {
 							starttime
+							dayNumber
+							slotNumber
 						}
 					}
 				}`;
@@ -94,6 +96,29 @@ export async function load({ params }) {
 					planData.plannedExam.planEntry != null
 				) {
 					data.generatedExam.starttime = planData.plannedExam.planEntry.starttime;
+
+					if (data.generatedExam.roomName != null) {
+						const invigilatorQuery = gql`
+						query {
+							invigilator(room: "${data.generatedExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
+								shortname
+							 }
+						}`;
+
+						console.log(invigilatorQuery);
+
+						const invigilatorData = await request(env.PLEXAMS_SERVER, invigilatorQuery);
+
+						console.log(invigilatorData);
+
+						if (
+							invigilatorData != null &&
+							invigilatorData.invigilator != null &&
+							invigilatorData.invigilator.shortname != null
+						) {
+							data.generatedExam.invigilator = invigilatorData.invigilator.shortname;
+						}
+					}
 				}
 
 				exams.push(data.generatedExam);
