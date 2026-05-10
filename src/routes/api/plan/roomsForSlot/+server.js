@@ -7,19 +7,11 @@ export async function POST({ request }) {
 	const query = gql`
 		query ($day: Int!, $time: Int!) {
 			roomsForSlot(day: $day, time: $time) {
-				dayNumber
-				slotNumber
-				normalRooms {
+				day
+				slot
+				rooms {
 					name
-				}
-				exahmRooms {
-					name
-				}
-				labRooms {
-					name
-				}
-				ntaRooms {
-					name
+					exahm
 				}
 			}
 		}

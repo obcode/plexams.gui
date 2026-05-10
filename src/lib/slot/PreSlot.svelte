@@ -45,7 +45,8 @@
 			}
 		});
 		let data = await response.json();
-		exahm = data.roomsForSlot.exahmRooms;
+		console.log(data);
+		exahm = data.roomsForSlot.rooms.filter((room) => room.exahm);
 	}
 
 	let conflicts = 0;
