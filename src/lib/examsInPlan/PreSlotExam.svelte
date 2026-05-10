@@ -1,13 +1,22 @@
 <script>
 	export let exam;
+	import { mkStarttime } from '$lib/jshelper/misc';
+
 	let bg = 'bg-cyan-200';
 	if (exam.zpaExam.isRepeaterExam) {
 		bg = 'bg-red-200';
 	}
+	if (exam.constraints && exam.constraints.notPlannedByMe) {
+		bg = 'bg-gray-200';
+	}
+	console.log(exam.planEntry.externalTime);
 </script>
 
 {#if exam}
 	<div class="shadow-lg m-1 p-2 border-2 rounded-lg shadow-slate-300 {bg}">
+		{#if exam.planEntry.externalTime != null}
+			<div class="badge bg-red-300">{mkStarttime(exam.planEntry.externalTime)}</div>
+		{/if}
 		<div class="grow">
 			{exam.zpaExam.ancode}.
 			{exam.zpaExam.module}

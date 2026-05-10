@@ -45,7 +45,6 @@
 			}
 		});
 		let data = await response.json();
-		console.log(data);
 		exahm = data.roomsForSlot.rooms.filter((room) => room.exahm);
 	}
 

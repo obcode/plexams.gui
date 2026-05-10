@@ -44,6 +44,7 @@ export async function POST({ request }) {
 				planEntry {
 					dayNumber
 					slotNumber
+					externalTime
 					ancode
 					locked
 				}
