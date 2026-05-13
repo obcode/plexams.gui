@@ -124,13 +124,13 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Primuss </label>
+			<label tabindex="-1" class="btn btn-ghost"> Primuss / CSV</label>
 			<ul
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen</a></li>
-				<li><a href="/primuss/exams">Prüfungslisten</a></li>
+				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen aus CSVs</a></li>
+				<li><a href="/primuss/exams">Prüfungslisten aus Primuss</a></li>
 			</ul>
 		</div>
 		Theme:
