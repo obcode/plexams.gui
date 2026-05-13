@@ -385,6 +385,11 @@
 				{ancodeToShow}
 			</Tooltip>
 		{:else}
+			{#if exam.planEntry && exam.planEntry.externalTime != null}
+				<div class="badge bg-white-300">
+					{mkStarttime(exam.planEntry.externalTime)}
+				</div>
+			{/if}
 			<div class="flex">
 				<div class="flex-none">
 					<div class="flex">
