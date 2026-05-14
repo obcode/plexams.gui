@@ -104,6 +104,7 @@
 			>
 				<li><a href="/nta/add"> NTA hinzufügen </a></li>
 				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
+				<li><a href="/nta/examsWithNtas"> Prüfungen mit NTAs</a></li>
 				<!-- <li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li> -->
 				<li><a href="/nta/all"> Bekannte NTAs </a></li>
 			</ul>
