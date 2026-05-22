@@ -90,6 +90,7 @@
 				<li><a href="/exam/examersToPlan">Zu planende Prüfende</a></li>
 				<li><a href="/exam/constraints">Constraints</a></li>
 				<li><a href="/exam/kdp">EXaHM/SEB</a></li>
+				<li><a href="/plan/annyBookings">Anny-Buchungen</a></li>
 				<li><a href="/rooms">Räume</a></li>
 				<li><a href="/exam/externalExams">Zusätzliche Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>

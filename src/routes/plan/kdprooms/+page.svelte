@@ -74,7 +74,9 @@
 	}
 </script>
 
-<div class="text-center m-4 text-3xl uppercase">KD Räume Übersicht (EXaHM / SEB Bedarf + Anny)</div>
+<div class="text-center m-4 text-3xl uppercase">
+	KDP Räume Übersicht (EXaHM / SEB Bedarf + Anny)
+</div>
 
 <div class="flex items-center gap-4 mb-4">
 	<label class="label cursor-pointer gap-2">
