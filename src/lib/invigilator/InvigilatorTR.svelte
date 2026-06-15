@@ -6,7 +6,7 @@
 	import InvigilatorDays from './InvigilatorDays.svelte';
 
 	function bg(invigilator) {
-		if (!invigilator.requirements) {
+		if (!invigilator.requirements.fromZpa) {
 			return 'bg-red-400';
 		}
 		if (invigilator.todos.enough) {
@@ -77,7 +77,9 @@
 			{#if contribution > 0}{contribution}{/if}
 		</td>
 		<td class={bgEnough()}>
-			{#if invigilator.todos} {invigilator.todos.totalMinutes} {/if}
+			{#if invigilator.todos}
+				{invigilator.todos.totalMinutes}
+			{/if}
 		</td>
 		<td>
 			{#if invigilator.todos.doingMinutes > 0}

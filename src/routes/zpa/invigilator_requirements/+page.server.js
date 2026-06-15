@@ -39,6 +39,7 @@ export async function load({ params }) {
 						overtimeThisSemester
 						allContributions
 						factor
+						fromZpa
 					}
 					todos {
 						totalMinutes
