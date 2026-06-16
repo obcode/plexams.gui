@@ -57,17 +57,17 @@
 	{#if small}
 		<div class="text-center">
 			<div class="flex">
-				{#each semesterConfig.days as day, i}
-					<div class="border border-black p-1 {bg(i + 1)}">
-						{i + 1}
+				{#each semesterConfig.days as day}
+					<div class="border border-black p-1 {bg(day.number)}">
+						{day.number}
 					</div>
 				{/each}
 			</div>
 			{#if invigilator.todos.invigilationDays.length > 0}
 				<div class="flex">
-					{#each semesterConfig.days as day, i}
-						<div class="border border-black p-1 {bgInvigilation(i + 1)}">
-							{i + 1}
+					{#each semesterConfig.days as day}
+						<div class="border border-black p-1 {bgInvigilation(day.number)}">
+							{day.number}
 						</div>
 					{/each}
 				</div>
@@ -78,21 +78,21 @@
 					<table class="border-collapse text-xs">
 						<thead>
 							<tr>
-								{#each semesterConfig.days as day, i}
-									<th class="border border-black px-1">{i + 1}</th>
+								{#each semesterConfig.days as day}
+									<th class="border border-black px-1">{day.number}</th>
 								{/each}
 							</tr>
 						</thead>
 						<tbody>
 							{#each semesterConfig.starttimes as time}
 								<tr>
-									{#each semesterConfig.days as day, i}
+									{#each semesterConfig.days as day}
 										<td
-											class="border border-black px-1 {inOnlyInSlots(i + 1, time.number)
+											class="border border-black px-1 {inOnlyInSlots(day.number, time.number)
 												? 'bg-purple-500 text-white'
 												: ''}"
 										>
-											{inOnlyInSlots(i + 1, time.number) ? '✓' : ''}
+											{inOnlyInSlots(day.number, time.number) ? '✓' : ''}
 										</td>
 									{/each}
 								</tr>
@@ -112,17 +112,17 @@
 				{/each}
 			</div>
 			<div class="flex">
-				{#each semesterConfig.days as day, i}
-					<div class="w-20 border border-black p-1 {bg(i + 1)}">
-						{i + 1}
+				{#each semesterConfig.days as day}
+					<div class="w-20 border border-black p-1 {bg(day.number)}">
+						{day.number}
 					</div>
 				{/each}
 			</div>
 			{#if invigilator.todos.invigilationDays.length > 0}
 				<div class="flex">
-					{#each semesterConfig.days as day, i}
-						<div class="w-20 border border-black p-1 {bgInvigilation(i + 1)}">
-							{i + 1}
+					{#each semesterConfig.days as day}
+						<div class="w-20 border border-black p-1 {bgInvigilation(day.number)}">
+							{day.number}
 						</div>
 					{/each}
 				</div>
