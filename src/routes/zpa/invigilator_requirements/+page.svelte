@@ -134,9 +134,10 @@
 	<div class="overflow-x-auto" transition:fade>
 		<table class="table table-compact w-full">
 			<thead>
-				<tr>
+				<tr class="text-center">
 					<th />
 					<th>Name</th>
+					<th>Aufsicht</th>
 					<th>Tage</th>
 					<th>Faktor</th>
 					<th>anrechenbar</th>

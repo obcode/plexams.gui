@@ -3,6 +3,7 @@
 	export let index;
 	export let invigilator;
 
+	import Invigilation from './Invigilation.svelte';
 	import InvigilatorDays from './InvigilatorDays.svelte';
 
 	function bg(invigilator) {
@@ -53,11 +54,36 @@
 			return 'bg-red-100';
 		}
 	}
+	const invigilations = invigilator.todos.invigilations.sort(function (i1, i2) {
+		const day = i1.slot.dayNumber - i2.slot.dayNumber;
+		if (day != 0) {
+			return day;
+		}
+		return i1.slot.slotNumber - i2.slot.slotNumber;
+	});
 </script>
 
 <tr>
 	<td>{index + 1}</td>
 	<td class={bg(invigilator)}>{invigilator.teacher.shortname} ({invigilator.teacher.id})</td>
+	<td>
+		{#if invigilator.todos.invigilations.length > 0}
+			<div class="ml-7">
+				<ol class="list-decimal">
+					{#each invigilations as invigilation}
+						<li class="mb-1 rounded">
+							<Invigilation {invigilation} />
+						</li>
+					{/each}
+				</ol>
+			</div>
+		{/if}
+		{#if invigilator.todos.invigilationDays.length > 3}
+			<div class="badge bagde-error bg-red-500">
+				{invigilator.todos.invigilationDays.length} Tage!
+			</div>
+		{/if}
+	</td>
 	<td><InvigilatorDays {semesterConfig} {invigilator} /></td>
 	{#if invigilator.requirements}
 		<td>

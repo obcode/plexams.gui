@@ -44,6 +44,11 @@ export async function load({ params }) {
 							slotNumber
 						}
 						fromZpa
+						timeWindows {
+							date
+							from
+							until
+						}
 					}
 					todos {
 						totalMinutes

@@ -4,7 +4,9 @@
       "Bash(npx svelte-check *)",
       "Bash(grep -rn \"{#each.*as.*,.*i}\" /workspace/plexams.gui/src --include=\"*.svelte\")",
       "Bash(perl -i -pe ' *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { requirements { timeWindows { date from until } } } } }\"}')",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

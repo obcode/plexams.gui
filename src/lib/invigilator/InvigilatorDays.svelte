@@ -2,7 +2,6 @@
 	export let semesterConfig;
 	export let invigilator;
 	import { mkDateShort } from '$lib/jshelper/misc';
-	import Invigilation from './Invigilation.svelte';
 	const requirements = invigilator.requirements;
 
 	const onlyInSlots = requirements?.onlyInSlots ?? [];
@@ -21,15 +20,17 @@
 		return onlyInSlotsSet.has(`${dayNumber}-${slotNumber}`);
 	}
 
-	let small = true;
+	const timeWindows = requirements?.timeWindows ?? [];
+	const hasTimeWindows = timeWindows.length > 0;
+	/**
+	 * @param {string} datetime
+	 */
+	function twTime(datetime) {
+		const m = String(datetime).match(/T(\d{2}:\d{2})/);
+		return m ? m[1] : '';
+	}
 
-	const invigilations = invigilator.todos.invigilations.sort(function (i1, i2) {
-		const day = i1.slot.dayNumber - i2.slot.dayNumber;
-		if (day != 0) {
-			return day;
-		}
-		return i1.slot.slotNumber - i2.slot.slotNumber;
-	});
+	let small = true;
 
 	function bg(day) {
 		if (!requirements) {
@@ -56,6 +57,7 @@
 <div class="flex" on:click={() => (small = !small)} on:keypress={() => small}>
 	{#if small}
 		<div class="text-center">
+			<div class="mb-1 text-xs font-bold">📅 Tage</div>
 			<div class="flex">
 				{#each semesterConfig.days as day}
 					<div class="border border-black p-1 {bg(day.number)}">
@@ -72,38 +74,10 @@
 					{/each}
 				</div>
 			{/if}
-			{#if hasOnlyInSlots}
-				<div class=" text-center">
-					<div class="mb-1 text-xs font-bold">📌 nur in Slots</div>
-					<table class="border-collapse text-xs">
-						<thead>
-							<tr>
-								{#each semesterConfig.days as day}
-									<th class="border border-black px-1">{day.number}</th>
-								{/each}
-							</tr>
-						</thead>
-						<tbody>
-							{#each semesterConfig.starttimes as time}
-								<tr>
-									{#each semesterConfig.days as day}
-										<td
-											class="border border-black px-1 {inOnlyInSlots(day.number, time.number)
-												? 'bg-purple-500 text-white'
-												: ''}"
-										>
-											{inOnlyInSlots(day.number, time.number) ? '✓' : ''}
-										</td>
-									{/each}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			{/if}
 		</div>
 	{:else}
 		<div class="text-center">
+			<div class="mb-1 text-xs font-bold">📅 Tage</div>
 			<div class="flex">
 				{#each semesterConfig.days as day}
 					<div class="w-20 border border-black p-1">
@@ -129,21 +103,48 @@
 			{/if}
 		</div>
 	{/if}
-
-	{#if invigilator.todos.invigilations.length > 0}
-		<div class="ml-7">
-			<ol class="list-decimal">
-				{#each invigilations as invigilation}
-					<li class="mb-1 rounded">
-						<Invigilation {invigilation} />
-					</li>
-				{/each}
-			</ol>
+	{#if hasOnlyInSlots}
+		<div class="ml-8 text-center">
+			<div class="mb-1 text-xs font-bold">📌 nur in Slots</div>
+			<table class="border-collapse text-xs">
+				<thead>
+					<tr>
+						{#each semesterConfig.days as day}
+							<th class="border border-black px-1">{day.number}</th>
+						{/each}
+					</tr>
+				</thead>
+				<tbody>
+					{#each semesterConfig.starttimes as time}
+						<tr>
+							{#each semesterConfig.days as day}
+								<td
+									class="border border-black px-1 {inOnlyInSlots(day.number, time.number)
+										? 'bg-purple-500 text-white'
+										: ''}"
+								>
+									{inOnlyInSlots(day.number, time.number) ? '✓' : ''}
+								</td>
+							{/each}
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	{/if}
-	{#if invigilator.todos.invigilationDays.length > 3}
-		<div class="badge bagde-error bg-red-500">
-			{invigilator.todos.invigilationDays.length} Tage!
+	{#if hasTimeWindows}
+		<div class="ml-8 text-center">
+			<div class="mb-1 text-xs font-bold">⏰ Zeitfenster</div>
+			<table class="border-collapse text-xs">
+				<tbody>
+					{#each timeWindows as tw}
+						<tr>
+							<td class="border border-black px-1">{mkDateShort(tw.date)}</td>
+							<td class="border border-black px-1">{twTime(tw.from)}–{twTime(tw.until)}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		</div>
 	{/if}
 </div>
