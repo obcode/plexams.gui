@@ -101,10 +101,10 @@
 <div class="flex justify-center">
 	{#each data.semesterConfig.days as day}
 		<div class="btn-group">
-			<button class="btn btn-outline gap-2 m-1">
+			<a class="btn btn-outline gap-2 m-1" href="/plan/invigilation/{day.number}">
 				Tag {day.number}
 				<div class="badge badge-warning">{mkDateShort(day.date)}</div>
-			</button>
+			</a>
 		</div>
 	{/each}
 </div>
