@@ -54,6 +54,7 @@ export async function load({ params }) {
 							}
 							isReserve
 							isSelfInvigilation
+							prePlanned
 						}
 					}
 				}
