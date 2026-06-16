@@ -28,7 +28,10 @@ export async function load({ params }) {
 					requirements {
 						excludedDates
 						excludedDays
-						examDateTimes
+						examTimes {
+							from
+							until
+						}
 						examDays
 						partTime
 						oralExamsContribution
@@ -39,10 +42,6 @@ export async function load({ params }) {
 						overtimeThisSemester
 						allContributions
 						factor
-						onlyInSlots {
-							dayNumber
-							slotNumber
-						}
 						fromZpa
 						timeWindows {
 							date
@@ -64,6 +63,7 @@ export async function load({ params }) {
 							isReserve
 							isSelfInvigilation
 							prePlanned
+							duration
 						}
 					}
 				}

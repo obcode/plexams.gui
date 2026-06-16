@@ -14,11 +14,27 @@
 	let sortOpen = true;
 
 	let stillOpen = 0;
+	let sumTotal = 0;
+	let sumDoing = 0;
 	for (const invig of data.todos.invigilators) {
 		stillOpen += invig.todos.totalMinutes - invig.todos.doingMinutes;
+		sumTotal += invig.todos.totalMinutes;
+		sumDoing += invig.todos.doingMinutes;
 	}
 
 	const stillOpenPerInvig = Math.round(stillOpen / data.todos.invigilators.length);
+	const progressPercent = sumTotal > 0 ? Math.round((sumDoing / sumTotal) * 100) : 0;
+
+	// shared scale for the progress bars across all invigilators
+	let maxMinutes = 0;
+	for (const invig of data.todos.invigilators) {
+		maxMinutes = Math.max(
+			maxMinutes,
+			invig.todos.totalMinutes ?? 0,
+			invig.todos.doingMinutes ?? 0,
+			invig.requirements?.allContributions ?? 0
+		);
+	}
 
 	$: {
 		let filteredInvigilatorsTmp = [];
@@ -47,110 +63,75 @@
 	}
 </script>
 
-<div class="flex flex-col m-2">
-	<div>
-		<div class="text-4xl text-center mt-8 uppercase">
-			Aufsichten mit Anforderungen
-			<span class="badge badge-lg indicator-item">{invigilators.length}</span>
-		</div>
+<div class="mx-2 mt-4 flex flex-col gap-4">
+	<div class="flex items-center gap-3">
+		<h1 class="text-2xl font-semibold">Aufsichten mit Anforderungen</h1>
+		<span class="badge badge-primary badge-lg">{invigilators.length}</span>
 	</div>
 
-	<div class="text-center stats shadow justify-center">
-		<div class="stat place-items-center">
-			<div class="stat-title">Aufsichten in Räumen</div>
-			<div class="stat-value">{todos.sumExamRooms} Min.</div>
+	<div class="rounded-lg border border-base-300 bg-base-100 px-4 py-3">
+		<div class="mb-1 flex items-baseline justify-between text-sm">
+			<span class="font-medium">Planungsfortschritt</span>
+			<span class="tabular-nums text-base-content/60">
+				{sumDoing} / {sumTotal} Min.
+				<span class="ml-1 font-semibold text-base-content">{progressPercent} %</span>
+			</span>
 		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">Reserve-Aufsichten</div>
-			<div class="stat-value">{todos.sumReserve} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">anrechenbare Zeiten</div>
-			<div class="stat-value">{todos.sumOtherContributions} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">anrechenbare Zeiten (bereinigt)</div>
-			<div class="stat-value">{todos.sumOtherContributionsOvertimeCutted} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">zu leisten pro Aufsicht</div>
-			<div class="stat-value">{todos.todoPerInvigilator} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">zu leisten pro Aufsicht (bereinigt)</div>
-			<div class="stat-value">{todos.todoPerInvigilatorOvertimeCutted} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">Summe noch offen</div>
-			<div class="stat-value">{stillOpen} Min.</div>
-		</div>
-
-		<div class="stat place-items-center">
-			<div class="stat-title">Summe noch offen pro Aufsicht</div>
-			<div class="stat-value">{stillOpenPerInvig} Min.</div>
-		</div>
+		<progress class="progress progress-success h-3 w-full" value={sumDoing} max={sumTotal}
+		></progress>
 	</div>
-</div>
 
-<div class="flex justify-center">
-	{#each data.semesterConfig.days as day}
-		<div class="btn-group">
-			<a class="btn btn-outline gap-2 m-1" href="/plan/invigilation/{day.number}">
+	<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+		{#each [{ label: 'Aufsichten in Räumen', value: todos.sumExamRooms }, { label: 'Reserve-Aufsichten', value: todos.sumReserve }, { label: 'anrechenbar', value: todos.sumOtherContributions }, { label: 'anrechenbar (bereinigt)', value: todos.sumOtherContributionsOvertimeCutted }, { label: 'zu leisten / Aufsicht', value: todos.todoPerInvigilator }, { label: 'zu leisten / Aufsicht (bereinigt)', value: todos.todoPerInvigilatorOvertimeCutted }, { label: 'Summe noch offen', value: stillOpen, accent: true }, { label: 'noch offen / Aufsicht', value: stillOpenPerInvig, accent: true }] as stat}
+			<div
+				class="rounded-lg border border-base-300 bg-base-100 px-3 py-2 {stat.accent
+					? 'border-warning/40 bg-warning/10'
+					: ''}"
+			>
+				<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
+				<div class="text-lg font-semibold tabular-nums">
+					{stat.value}
+					<span class="text-xs font-normal text-base-content/50">Min.</span>
+				</div>
+			</div>
+		{/each}
+	</div>
+
+	<div class="flex flex-wrap justify-center gap-1">
+		{#each data.semesterConfig.days as day}
+			<a class="btn btn-outline btn-sm gap-2" href="/plan/invigilation/{day.number}">
 				Tag {day.number}
-				<div class="badge badge-warning">{mkDateShort(day.date)}</div>
+				<span class="badge badge-warning badge-sm">{mkDateShort(day.date)}</span>
 			</a>
-		</div>
-	{/each}
+		{/each}
+	</div>
 </div>
 
-<div class="flex my-2">
+<div
+	class="sticky top-0 z-10 mx-2 mt-2 flex items-center gap-3 border-b border-base-300 bg-base-100/95 py-2 backdrop-blur"
+>
 	<input
-		class="input input-bordered w-full max-w-x mr-2"
+		class="input input-bordered input-sm flex-1"
 		type="text"
 		bind:value={searchTerm}
 		placeholder="Suche Aufsichten"
 	/>
-	<div class="form-control m-3">
-		<label class="label cursor-pointer">
-			<span class="label-text">Alphabetisch</span>
-			<input
-				type="checkbox"
-				class="toggle mx-3"
-				on:click={() => {
-					sortOpen = !sortOpen;
-				}}
-			/>
-		</label>
-	</div>
+	<label class="label cursor-pointer gap-2">
+		<span class="label-text">Alphabetisch</span>
+		<input
+			type="checkbox"
+			class="toggle toggle-sm"
+			on:click={() => {
+				sortOpen = !sortOpen;
+			}}
+		/>
+	</label>
 </div>
 
 {#key filteredInvigilators}
-	<div class="overflow-x-auto" transition:fade>
-		<table class="table table-compact w-full">
-			<thead>
-				<tr class="text-center">
-					<th />
-					<th>Name</th>
-					<th>Aufsicht</th>
-					<th>Tage</th>
-					<th>Faktor</th>
-					<th>anrechenbar</th>
-					<th>zu leisten</th>
-					<th>geleistet</th>
-					<th>noch offen</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each filteredInvigilators as invigilator, index}
-					<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} />
-				{/each}
-			</tbody>
-		</table>
+	<div class="mx-2 flex flex-col items-center" transition:fade>
+		{#each filteredInvigilators as invigilator, index}
+			<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} {maxMinutes} />
+		{/each}
 	</div>
 {/key}

@@ -20,6 +20,32 @@ export type AnCode = {
   ancode: Scalars['Int']['output'];
 };
 
+export type AnnyBooking = {
+  __typename?: 'AnnyBooking';
+  blockerEndDate: Scalars['Time']['output'];
+  blockerStartDate: Scalars['Time']['output'];
+  bookingGroupIdentifier?: Maybe<Scalars['String']['output']>;
+  canEdit: Scalars['Boolean']['output'];
+  cancelableUntil?: Maybe<Scalars['Time']['output']>;
+  canceledAt?: Maybe<Scalars['Time']['output']>;
+  chargedDuration: Scalars['Int']['output'];
+  createdAt: Scalars['Time']['output'];
+  description: Scalars['String']['output'];
+  endDate: Scalars['Time']['output'];
+  hasCustomDescription: Scalars['Boolean']['output'];
+  isBlocker: Scalars['Boolean']['output'];
+  isEditable: Scalars['Boolean']['output'];
+  manuallyCreated: Scalars['Boolean']['output'];
+  note: Scalars['String']['output'];
+  number: Scalars['String']['output'];
+  personalizationName: Scalars['String']['output'];
+  room?: Maybe<Scalars['String']['output']>;
+  self: Scalars['String']['output'];
+  startDate: Scalars['Time']['output'];
+  status: Scalars['String']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
 export type Conflict = {
   __typename?: 'Conflict';
   ancode: Scalars['Int']['output'];
@@ -101,13 +127,35 @@ export type EnhancedPrimussExam = {
   conflicts: Array<Conflict>;
   exam: PrimussExam;
   ntas: Array<Nta>;
-  studentRegs: Array<StudentReg>;
+  studentRegs: Array<EnhancedStudentReg>;
+};
+
+export type EnhancedStudentReg = {
+  __typename?: 'EnhancedStudentReg';
+  ancode: Scalars['Int']['output'];
+  group: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  presence: Scalars['String']['output'];
+  program: Scalars['String']['output'];
+  zpaStudent?: Maybe<ZpaStudent>;
 };
 
 export type ExamDay = {
   __typename?: 'ExamDay';
   date: Scalars['Time']['output'];
   number: Scalars['Int']['output'];
+};
+
+/**
+ * ExamTime is the time span of one exam an invigilator is the main examer of:
+ * from the start time of the slot until the end time (start + maxDuration of the
+ * exam, i.e. the longest exam in the slot including NTA extensions).
+ */
+export type ExamTime = {
+  __typename?: 'ExamTime';
+  from: Scalars['Time']['output'];
+  until: Scalars['Time']['output'];
 };
 
 export type ExamWithRegsAndRooms = {
@@ -149,6 +197,7 @@ export type Invigilation = {
   invigilatorID: Scalars['Int']['output'];
   isReserve: Scalars['Boolean']['output'];
   isSelfInvigilation: Scalars['Boolean']['output'];
+  prePlanned: Scalars['Boolean']['output'];
   roomName?: Maybe<Scalars['String']['output']>;
   slot: Slot;
 };
@@ -157,6 +206,20 @@ export type InvigilationSlot = {
   __typename?: 'InvigilationSlot';
   reserve?: Maybe<Teacher>;
   roomsWithInvigilators: Array<RoomWithInvigilator>;
+};
+
+/**
+ * InvigilationTimeWindow restricts, for one calendar date, the times an
+ * invigilator may invigilate. An assigned invigilation must start no earlier than
+ * from (if set) and end no later than until (if set). The check is sub-slot
+ * granular and NTA-aware, since the end time includes the room's (possibly
+ * NTA-extended) duration.
+ */
+export type InvigilationTimeWindow = {
+  __typename?: 'InvigilationTimeWindow';
+  date: Scalars['Time']['output'];
+  from?: Maybe<Scalars['Time']['output']>;
+  until?: Maybe<Scalars['Time']['output']>;
 };
 
 export type InvigilationTodos = {
@@ -181,12 +244,18 @@ export type Invigilator = {
 export type InvigilatorRequirements = {
   __typename?: 'InvigilatorRequirements';
   allContributions: Scalars['Int']['output'];
-  examDateTimes: Array<Scalars['Time']['output']>;
   examDays: Array<Scalars['Int']['output']>;
+  examTimes: Array<ExamTime>;
   excludedDates: Array<Scalars['Time']['output']>;
   excludedDays: Array<Scalars['Int']['output']>;
   factor: Scalars['Float']['output'];
   freeSemester: Scalars['Float']['output'];
+  /**
+   * fromZpa is false if the invigilator has not yet entered their requirements in
+   * the ZPA. In that case default requirements (full time, no contributions) are
+   * used and the invigilator still has to provide their real requirements.
+   */
+  fromZpa: Scalars['Boolean']['output'];
   liveCodingContribution: Scalars['Int']['output'];
   masterContribution: Scalars['Int']['output'];
   onlyInSlots: Array<Slot>;
@@ -194,6 +263,7 @@ export type InvigilatorRequirements = {
   overtimeLastSemester: Scalars['Float']['output'];
   overtimeThisSemester: Scalars['Float']['output'];
   partTime: Scalars['Float']['output'];
+  timeWindows: Array<InvigilationTimeWindow>;
 };
 
 export type InvigilatorTodos = {
@@ -237,6 +307,13 @@ export type Mutation = {
   online: Scalars['Boolean']['output'];
   placesWithSockets: Scalars['Boolean']['output'];
   possibleDays: Scalars['Boolean']['output'];
+  prePlanInvigilation: Scalars['Boolean']['output'];
+  /**
+   * prePlanInvigilationInSlot promotes the invigilation currently planned for a
+   * room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
+   * fixed assignment, so it survives a re-run of the automatic planning.
+   */
+  prePlanInvigilationInSlot: Scalars['Boolean']['output'];
   prePlanRoom: Scalars['Boolean']['output'];
   rmConstraints: Scalars['Boolean']['output'];
   rmExamFromSlot: Scalars['Boolean']['output'];
@@ -304,6 +381,21 @@ export type MutationPlacesWithSocketsArgs = {
 export type MutationPossibleDaysArgs = {
   ancode: Scalars['Int']['input'];
   days: Array<Scalars['String']['input']>;
+};
+
+
+export type MutationPrePlanInvigilationArgs = {
+  day: Scalars['Int']['input'];
+  invigilatorID: Scalars['Int']['input'];
+  roomName?: InputMaybe<Scalars['String']['input']>;
+  slot: Scalars['Int']['input'];
+};
+
+
+export type MutationPrePlanInvigilationInSlotArgs = {
+  day: Scalars['Int']['input'];
+  roomName?: InputMaybe<Scalars['String']['input']>;
+  slot: Scalars['Int']['input'];
 };
 
 
@@ -405,6 +497,7 @@ export type PlanEntry = {
   __typename?: 'PlanEntry';
   ancode: Scalars['Int']['output'];
   dayNumber: Scalars['Int']['output'];
+  externalTime?: Maybe<Scalars['Time']['output']>;
   locked: Scalars['Boolean']['output'];
   slotNumber: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
@@ -445,6 +538,20 @@ export type PreExam = {
   constraints?: Maybe<Constraints>;
   planEntry?: Maybe<PlanEntry>;
   zpaExam: ZpaExam;
+};
+
+/**
+ * PrePlannedInvigilation fixes an invigilator for a room (or the reserve) in a
+ * slot before the automatic invigilation planning runs. roomName is null for a
+ * reserve invigilation.
+ */
+export type PrePlannedInvigilation = {
+  __typename?: 'PrePlannedInvigilation';
+  day: Scalars['Int']['output'];
+  invigilatorID: Scalars['Int']['output'];
+  isReserve: Scalars['Boolean']['output'];
+  roomName?: Maybe<Scalars['String']['output']>;
+  slot: Scalars['Int']['output'];
 };
 
 export type PrePlannedRoom = {
@@ -496,10 +603,12 @@ export type PrimussExamWithCount = {
 
 export type Query = {
   __typename?: 'Query';
+  allAnnyBookings: Array<AnnyBooking>;
   allProgramsInPlan?: Maybe<Array<Scalars['String']['output']>>;
   allSemesterNames: Array<Semester>;
   allowedSlots?: Maybe<Array<Slot>>;
   ancodesInPlan?: Maybe<Array<Scalars['Int']['output']>>;
+  annyBookings: Array<AnnyBooking>;
   awkwardSlots: Array<Slot>;
   conflictingAncodes?: Maybe<Array<Conflict>>;
   connectedExam?: Maybe<ConnectedExam>;
@@ -507,10 +616,12 @@ export type Query = {
   constraintForAncode?: Maybe<Constraints>;
   examerInPlan?: Maybe<Array<ExamerInPlan>>;
   examsInSlot?: Maybe<Array<PlannedExam>>;
+  examsWithNtas: Array<PlannedExam>;
   examsWithoutSlot: Array<PlannedExam>;
   fk07programs: Array<Fk07Program>;
   generatedExam?: Maybe<GeneratedExam>;
   generatedExams: Array<GeneratedExam>;
+  invigilator?: Maybe<Teacher>;
   invigilatorTodos?: Maybe<InvigilationTodos>;
   invigilators: Array<ZpaInvigilator>;
   invigilatorsForDay?: Maybe<InvigilatorsForDay>;
@@ -527,11 +638,13 @@ export type Query = {
   plannedRooms: Array<PlannedRoom>;
   plannedRoomsInSlot?: Maybe<Array<PlannedRoom>>;
   preExamsInSlot?: Maybe<Array<PreExam>>;
+  prePlannedInvigilations: Array<PrePlannedInvigilation>;
   prePlannedRooms: Array<PrePlannedRoom>;
   primussExam: PrimussExam;
   primussExams?: Maybe<Array<Maybe<PrimussExamByProgram>>>;
   primussExamsForAnCode?: Maybe<Array<PrimussExam>>;
   rooms: Array<Room>;
+  roomsForSlot?: Maybe<RoomsForSlot>;
   roomsForSlots: Array<RoomsForSlot>;
   roomsWithInvigilationsForSlot?: Maybe<InvigilationSlot>;
   semester: Semester;
@@ -556,6 +669,11 @@ export type Query = {
 
 export type QueryAllowedSlotsArgs = {
   ancode: Scalars['Int']['input'];
+};
+
+
+export type QueryAnnyBookingsArgs = {
+  room?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -587,6 +705,13 @@ export type QueryExamsInSlotArgs = {
 
 export type QueryGeneratedExamArgs = {
   ancode: Scalars['Int']['input'];
+};
+
+
+export type QueryInvigilatorArgs = {
+  day: Scalars['Int']['input'];
+  room: Scalars['String']['input'];
+  time: Scalars['Int']['input'];
 };
 
 
@@ -640,6 +765,12 @@ export type QueryPrimussExamsForAnCodeArgs = {
 };
 
 
+export type QueryRoomsForSlotArgs = {
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
+};
+
+
 export type QueryRoomsWithInvigilationsForSlotArgs = {
   day: Scalars['Int']['input'];
   time: Scalars['Int']['input'];
@@ -684,6 +815,12 @@ export type RegWithError = {
   __typename?: 'RegWithError';
   error: ZpaStudentRegError;
   registration: ZpaStudentReg;
+};
+
+export type RegWithProgram = {
+  __typename?: 'RegWithProgram';
+  program: Scalars['String']['output'];
+  reg: Scalars['Int']['output'];
 };
 
 export type Room = {
@@ -775,6 +912,8 @@ export type Student = {
   nta?: Maybe<Nta>;
   program: Scalars['String']['output'];
   regs: Array<Scalars['Int']['output']>;
+  regsWithProgram: Array<RegWithProgram>;
+  zpaStudent?: Maybe<ZpaStudent>;
 };
 
 export type StudentReg = {
@@ -867,6 +1006,17 @@ export type ZpaPrimussAncodes = {
   __typename?: 'ZPAPrimussAncodes';
   ancode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
+};
+
+export type ZpaStudent = {
+  __typename?: 'ZPAStudent';
+  email: Scalars['String']['output'];
+  firstName: Scalars['String']['output'];
+  gender: Scalars['String']['output'];
+  greeting: Scalars['String']['output'];
+  group: Scalars['String']['output'];
+  lastName: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
 };
 
 export type ZpaStudentReg = {

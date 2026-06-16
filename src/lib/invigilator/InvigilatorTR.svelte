@@ -2,22 +2,19 @@
 	export let semesterConfig;
 	export let index;
 	export let invigilator;
+	// shared scale across all rows so the progress bars are comparable
+	export let maxMinutes = 0;
 
-	import Invigilation from './Invigilation.svelte';
 	import InvigilatorDays from './InvigilatorDays.svelte';
 
-	function bg(invigilator) {
+	function nameBg(invigilator) {
 		if (!invigilator.requirements.fromZpa) {
 			return 'bg-red-400';
 		}
 		if (invigilator.todos.enough) {
 			return 'bg-green-400';
 		}
-	}
-	function bgEnough() {
-		if (invigilator.todos.enough) {
-			return 'bg-green-400';
-		}
+		return 'bg-base-200';
 	}
 
 	let contribution = 0;
@@ -28,90 +25,90 @@
 	let openMinutes = 0;
 	$: openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
 
-	function bgOpenMinutes() {
+	function openColor() {
 		if (openMinutes <= 0) {
-			return 'bg-green-400';
+			return 'progress-success';
 		}
 		if (openMinutes < 60) {
-			return 'bg-yellow-400';
+			return 'progress-warning';
 		}
-		if (openMinutes > 600) {
-			return 'bg-red-600';
-		}
-		if (openMinutes > 500) {
-			return 'bg-red-500';
-		}
-		if (openMinutes > 400) {
-			return 'bg-red-400';
-		}
-		if (openMinutes > 300) {
-			return 'bg-red-300';
-		}
-		if (openMinutes > 200) {
-			return 'bg-red-200';
-		}
-		if (openMinutes > 100) {
-			return 'bg-red-100';
-		}
+		return 'progress-error';
 	}
-	const invigilations = invigilator.todos.invigilations.sort(function (i1, i2) {
-		const day = i1.slot.dayNumber - i2.slot.dayNumber;
-		if (day != 0) {
-			return day;
-		}
-		return i1.slot.slotNumber - i2.slot.slotNumber;
-	});
 </script>
 
-<tr>
-	<td>{index + 1}</td>
-	<td class={bg(invigilator)}>{invigilator.teacher.shortname} ({invigilator.teacher.id})</td>
-	<td>
-		{#if invigilator.todos.invigilations.length > 0}
-			<div class="ml-7">
-				<ol class="list-decimal">
-					{#each invigilations as invigilation}
-						<li class="mb-1 rounded">
-							<Invigilation {invigilation} />
-						</li>
-					{/each}
-				</ol>
-			</div>
-		{/if}
-		{#if invigilator.todos.invigilationDays.length > 3}
-			<div class="badge bagde-error bg-red-500">
-				{invigilator.todos.invigilationDays.length} Tage!
-			</div>
-		{/if}
-	</td>
-	<td><InvigilatorDays {semesterConfig} {invigilator} /></td>
-	{#if invigilator.requirements}
-		<td>
+<div class="flex items-stretch gap-3 border-b border-base-300 py-2">
+	<!-- left: textual info + progress bars -->
+	<div class="w-72 shrink-0 text-sm">
+		<div class="rounded px-2 py-1 font-bold {nameBg(invigilator)}">
+			{index + 1}. {invigilator.teacher.shortname} ({invigilator.teacher.id})
+		</div>
+
+		{#if invigilator.requirements}
 			{#if invigilator.requirements.factor != 1}
-				{invigilator.requirements.factor}
-				({#if invigilator.requirements.partTime != 1}
-					Teilzeit {invigilator.requirements.partTime}{/if}
-				{#if invigilator.requirements.freeSemester != 0}
-					Freisemester {invigilator.requirements
-						.freeSemester}{/if}{#if invigilator.requirements.overtimeLastSemester != 0}
-					letztes Semester {invigilator.requirements.overtimeLastSemester}{/if}
-				{#if invigilator.requirements.overtimeThisSemester != 0}
-					dieses Semester {invigilator.requirements.overtimeThisSemester}{/if})
+				<div class="px-2 py-1 text-xs text-gray-600">
+					Faktor {invigilator.requirements.factor}
+					{#if invigilator.requirements.partTime != 1}· Teilzeit {invigilator.requirements
+							.partTime}{/if}
+					{#if invigilator.requirements.freeSemester != 0}· Freisemester {invigilator.requirements
+							.freeSemester}{/if}
+					{#if invigilator.requirements.overtimeLastSemester != 0}· letztes Semester {invigilator
+							.requirements.overtimeLastSemester}{/if}
+					{#if invigilator.requirements.overtimeThisSemester != 0}· dieses Semester {invigilator
+							.requirements.overtimeThisSemester}{/if}
+				</div>
 			{/if}
-		</td>
-		<td>
-			{#if contribution > 0}{contribution}{/if}
-		</td>
-		<td class={bgEnough()}>
-			{#if invigilator.todos}
-				{invigilator.todos.totalMinutes}
-			{/if}
-		</td>
-		<td>
-			{#if invigilator.todos.doingMinutes > 0}
-				{invigilator.todos.doingMinutes}
-			{/if}
-		</td>
-		<td class={bgOpenMinutes()}>{openMinutes}</td>
-	{/if}
-</tr>
+
+			<div class="mt-1 flex flex-col gap-1 px-2 text-xs">
+				<div class="flex items-center gap-2">
+					<span class="w-20 shrink-0 text-right text-gray-600">anrechenbar</span>
+					<progress
+						class="progress progress-info flex-1"
+						value={contribution > 0 ? contribution : 0}
+						max={maxMinutes}
+					></progress>
+					<span class="w-12 shrink-0 text-right tabular-nums"
+						>{contribution > 0 ? contribution : ''}</span
+					>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<span class="w-20 shrink-0 text-right text-gray-600">zu leisten</span>
+					<progress
+						class="progress progress-neutral flex-1"
+						value={invigilator.todos.totalMinutes}
+						max={maxMinutes}
+					></progress>
+					<span class="w-12 shrink-0 text-right tabular-nums">{invigilator.todos.totalMinutes}</span
+					>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<span class="w-20 shrink-0 text-right text-gray-600">geleistet</span>
+					<progress
+						class="progress progress-success flex-1"
+						value={invigilator.todos.doingMinutes}
+						max={maxMinutes}
+					></progress>
+					<span class="w-12 shrink-0 text-right tabular-nums"
+						>{invigilator.todos.doingMinutes > 0 ? invigilator.todos.doingMinutes : ''}</span
+					>
+				</div>
+
+				<div class="flex items-center gap-2">
+					<span class="w-20 shrink-0 text-right text-gray-600">noch offen</span>
+					<progress
+						class="progress {openColor()} flex-1"
+						value={openMinutes > 0 ? openMinutes : 0}
+						max={maxMinutes}
+					></progress>
+					<span class="w-12 shrink-0 text-right font-semibold tabular-nums">{openMinutes}</span>
+				</div>
+			</div>
+		{/if}
+	</div>
+
+	<!-- right: calendar -->
+	<div class="overflow-x-auto">
+		<InvigilatorDays {semesterConfig} {invigilator} />
+	</div>
+</div>

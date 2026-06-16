@@ -24,6 +24,31 @@ type AnCode {
   ancode: Int!
 }
 
+type AnnyBooking {
+  number: String!
+  startDate: Time!
+  endDate: Time!
+  blockerStartDate: Time!
+  blockerEndDate: Time!
+  chargedDuration: Int!
+  description: String!
+  createdAt: Time!
+  updatedAt: Time!
+  canceledAt: Time
+  status: String!
+  isBlocker: Boolean!
+  canEdit: Boolean!
+  isEditable: Boolean!
+  manuallyCreated: Boolean!
+  note: String!
+  room: String
+  self: String!
+  personalizationName: String!
+  bookingGroupIdentifier: String
+  cancelableUntil: Time
+  hasCustomDescription: Boolean!
+}
+
 type Conflict {
   ancode: Int!
   numberOfStuds: Int!
@@ -95,9 +120,19 @@ type Emails {
 
 type EnhancedPrimussExam {
   exam: PrimussExam!
-  studentRegs: [StudentReg!]!
+  studentRegs: [EnhancedStudentReg!]!
   conflicts: [Conflict!]!
   ntas: [NTA!]!
+}
+
+type EnhancedStudentReg {
+  mtknr: String!
+  ancode: Int!
+  program: String!
+  group: String!
+  name: String!
+  presence: String!
+  zpaStudent: ZPAStudent
 }
 
 type ExamDay {
@@ -108,6 +143,16 @@ type ExamDay {
 type ExamerInPlan {
   mainExamer: String!
   mainExamerID: Int!
+}
+
+"""
+ExamTime is the time span of one exam an invigilator is the main examer of:
+from the start time of the slot until the end time (start + maxDuration of the
+exam, i.e. the longest exam in the slot including NTA extensions).
+"""
+type ExamTime {
+  from: Time!
+  until: Time!
 }
 
 type ExamWithRegsAndRooms {
@@ -141,11 +186,25 @@ type Invigilation {
   slot: Slot!
   isReserve: Boolean!
   isSelfInvigilation: Boolean!
+  prePlanned: Boolean!
 }
 
 type InvigilationSlot {
   reserve: Teacher
   roomsWithInvigilators: [RoomWithInvigilator!]!
+}
+
+"""
+InvigilationTimeWindow restricts, for one calendar date, the times an
+invigilator may invigilate. An assigned invigilation must start no earlier than
+from (if set) and end no later than until (if set). The check is sub-slot
+granular and NTA-aware, since the end time includes the room's (possibly
+NTA-extended) duration.
+"""
+type InvigilationTimeWindow {
+  date: Time!
+  from: Time
+  until: Time
 }
 
 type InvigilationTodos {
@@ -168,7 +227,7 @@ type Invigilator {
 type InvigilatorRequirements {
   excludedDates: [Time!]!
   excludedDays: [Int!]!
-  examDateTimes: [Time!]!
+  examTimes: [ExamTime!]!
   examDays: [Int!]!
   partTime: Float!
   oralExamsContribution: Int!
@@ -180,6 +239,14 @@ type InvigilatorRequirements {
   allContributions: Int!
   factor: Float!
   onlyInSlots: [Slot!]!
+
+  """
+  fromZpa is false if the invigilator has not yet entered their requirements in
+  the ZPA. In that case default requirements (full time, no contributions) are
+  used and the invigilator still has to provide their real requirements.
+  """
+  fromZpa: Boolean!
+  timeWindows: [InvigilationTimeWindow!]!
 }
 
 type InvigilatorsForDay {
@@ -219,6 +286,14 @@ type Mutation {
   online(ancode: Int!): Boolean!
   addConstraints(ancode: Int!, constraints: ConstraintsInput!): Constraints!
   rmConstraints(ancode: Int!): Boolean!
+  prePlanInvigilation(invigilatorID: Int!, day: Int!, slot: Int!, roomName: String): Boolean!
+
+  """
+  prePlanInvigilationInSlot promotes the invigilation currently planned for a
+  room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
+  fixed assignment, so it survives a re-run of the automatic planning.
+  """
+  prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
   addNTA(input: NTAInput!): NTA!
   addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
   rmExamFromSlot(ancode: Int!): Boolean!
@@ -283,6 +358,7 @@ type PlanEntry {
   dayNumber: Int!
   slotNumber: Int!
   starttime: Time!
+  externalTime: Time
   ancode: Int!
   locked: Boolean!
 }
@@ -319,6 +395,19 @@ type PreExam {
   zpaExam: ZPAExam!
   constraints: Constraints
   planEntry: PlanEntry
+}
+
+"""
+PrePlannedInvigilation fixes an invigilator for a room (or the reserve) in a
+slot before the automatic invigilation planning runs. roomName is null for a
+reserve invigilation.
+"""
+type PrePlannedInvigilation {
+  invigilatorID: Int!
+  day: Int!
+  slot: Int!
+  roomName: String
+  isReserve: Boolean!
 }
 
 type PrePlannedRoom {
@@ -367,6 +456,8 @@ type Query {
   allSemesterNames: [Semester!]!
   semester: Semester!
   semesterConfig: SemesterConfig!
+  annyBookings(room: String): [AnnyBooking!]!
+  allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
   zpaExamsToPlanWithConstraints: [ZPAExamWithConstraints!]!
   connectedExam(ancode: Int!): ConnectedExam
@@ -381,9 +472,12 @@ type Query {
   invigilatorsWithReq: [Invigilator!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   invigilatorsForDay(day: Int!): InvigilatorsForDay
+  invigilator(room: String!, day: Int!, time: Int!): Teacher
+  prePlannedInvigilations: [PrePlannedInvigilation!]!
   ntas: [NTA!]
   ntasWithRegs: [Student!]
   nta(mtknr: String!): NTAWithRegs
+  examsWithNtas: [PlannedExam!]!
   allProgramsInPlan: [String!]
   ancodesInPlan: [Int!]
   examerInPlan: [ExamerInPlan!]
@@ -398,6 +492,7 @@ type Query {
   studentRegsForProgram(program: String!): [StudentReg!]
   rooms: [Room!]!
   prePlannedRooms: [PrePlannedRoom!]!
+  roomsForSlot(day: Int!, time: Int!): RoomsForSlot
   roomsForSlots: [RoomsForSlot!]!
   plannedRooms: [PlannedRoom!]!
   plannedRoomNames: [String!]
@@ -424,6 +519,11 @@ type Query {
 type RegWithError {
   registration: ZPAStudentReg!
   error: ZPAStudentRegError!
+}
+
+type RegWithProgram {
+  program: String!
+  reg: Int!
 }
 
 type Room {
@@ -504,6 +604,8 @@ type Student {
   group: String!
   name: String!
   regs: [Int!]!
+  regsWithProgram: [RegWithProgram!]!
+  zpaStudent: ZPAStudent
   nta: NTA
 }
 
@@ -588,6 +690,16 @@ type ZPAInvigilator {
 type ZPAPrimussAncodes {
   program: String!
   ancode: Int!
+}
+
+type ZPAStudent {
+  mtknr: String!
+  greeting: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  gender: String!
+  group: String!
 }
 
 type ZPAStudentReg {

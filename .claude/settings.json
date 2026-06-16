@@ -6,7 +6,16 @@
       "Bash(perl -i -pe ' *)",
       "Bash(git stash *)",
       "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { requirements { timeWindows { date from until } } } } }\"}')",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ semesterConfig { days { number date } starttimes { number start } } }\"}')",
+      "Bash(node -e ' *)",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { teacher { shortname } requirements { examDateTimes { from until } } } } }\"}')",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\)['data']['invigilatorTodos']['invigilators']; [print\\(i['teacher']['shortname'], i['requirements']['examDateTimes']\\) for i in d if i['requirements'].get\\('examDateTimes'\\)][:8]\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { teacher { shortname } requirements { examTimes { from until } } } } }\"}')",
+      "Bash(python3 -c \"import json,sys; print\\(json.load\\(sys.stdin\\)['scripts'].get\\('update-schema.graphql'\\)\\)\")",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { teacher { shortname } todos { invigilations { roomName slot { dayNumber slotNumber } isReserve isSelfInvigilation duration } } requirements { examTimes { from until } } } } }\"}')",
+      "Bash(curl -s -m 5 -X POST http://localhost:8080/query -H \"Content-Type: application/json\" -d '{\"query\":\"{ invigilatorTodos { invigilators { teacher { shortname } requirements { timeWindows { date from until } } } } }\"}')"
     ]
   }
 }
