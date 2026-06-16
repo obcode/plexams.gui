@@ -241,34 +241,14 @@
 			{#if showConflictCount}
 				<div class="alert shadow-lg p-1 w-full">
 					<div>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="stroke-current flex-shrink-0 h-6 w-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-							/></svg
-						>
+						<span class="text-xl">⚠️</span>
 						<span>{conflictCount(selectedGroup)} Konflikte</span>
 					</div>
 				</div>
 			{/if}
 			{#if allowedSlots.length == 0}
 				<div class="p-1 m-2">
-					<svg
-						viewBox="0 0 100 100"
-						class="stroke-current flex-shrink-0 h-3 w-3"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="m78.57 28.57v14.285h10.715c1.9727 0 3.5703 1.6016 3.5703 3.5742v50c0 1.9727-1.5977 3.5703-3.5703 3.5703h-78.57c-1.9727 0-3.5703-1.5977-3.5703-3.5703v-50c0-1.9727 1.5977-3.5742 3.5703-3.5742h10.715v-14.285c0-15.777 12.789-28.57 28.57-28.57s28.57 12.793 28.57 28.57zm-14.285 14.285v-14.285c0-7.8867-6.3945-14.285-14.285-14.285s-14.285 6.3984-14.285 14.285v14.285z"
-							fill-rule="evenodd"
-						/>
-					</svg>
+					<span title="festgelegt">🔒</span>
 				</div>
 			{/if}
 			<div class="flex justify-between">
@@ -368,36 +348,14 @@
 				{#if group.examGroupInfo.notPlannedByMe}
 					<div class="alert shadow-lg p-1 w-full">
 						<div>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="stroke-current flex-shrink-0 h-6 w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-								/></svg
-							>
+							<span class="text-xl">⚠️</span>
 							<span>Nicht von mir geplant</span>
 						</div>
 					</div>
 				{:else if allowedSlots.length == 0}
 					<div class="alert shadow-lg p-1 w-full">
 						<div>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="stroke-current flex-shrink-0 h-6 w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-								/></svg
-							>
+							<span class="text-xl">⚠️</span>
 							<span>nicht verschiebbar</span>
 						</div>
 					</div>

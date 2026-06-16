@@ -8,11 +8,16 @@
 	}
 </script>
 
-<div class={bg()}>
-	Tag {invigilation.slot.dayNumber}, Slot {invigilation.slot.slotNumber}:
-	{#if invigilation.roomName}
-		{invigilation.roomName}
-	{:else}
-		Reserve
+<div>
+	<span class="badge {bg()}">
+		Tag {invigilation.slot.dayNumber}, Slot {invigilation.slot.slotNumber}:
+		{#if invigilation.roomName}
+			{invigilation.roomName}
+		{:else}
+			Reserve
+		{/if}
+	</span>
+	{#if invigilation.prePlanned}
+		<span title="vorgeplant">📌</span>
 	{/if}
 </div>
