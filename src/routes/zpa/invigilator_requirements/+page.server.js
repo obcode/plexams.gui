@@ -39,6 +39,10 @@ export async function load({ params }) {
 						overtimeThisSemester
 						allContributions
 						factor
+						onlyInSlots {
+							dayNumber
+							slotNumber
+						}
 						fromZpa
 					}
 					todos {

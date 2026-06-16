@@ -5,6 +5,22 @@
 	import Invigilation from './Invigilation.svelte';
 	const requirements = invigilator.requirements;
 
+	const onlyInSlots = requirements?.onlyInSlots ?? [];
+	const hasOnlyInSlots = onlyInSlots.length > 0;
+	const onlyInSlotsSet = new Set(
+		onlyInSlots.map(
+			(/** @type {{ dayNumber: number, slotNumber: number }} */ s) =>
+				`${s.dayNumber}-${s.slotNumber}`
+		)
+	);
+	/**
+	 * @param {number} dayNumber
+	 * @param {number} slotNumber
+	 */
+	function inOnlyInSlots(dayNumber, slotNumber) {
+		return onlyInSlotsSet.has(`${dayNumber}-${slotNumber}`);
+	}
+
 	let small = true;
 
 	const invigilations = invigilator.todos.invigilations.sort(function (i1, i2) {
@@ -56,6 +72,35 @@
 					{/each}
 				</div>
 			{/if}
+			{#if hasOnlyInSlots}
+				<div class=" text-center">
+					<div class="mb-1 text-xs font-bold">📌 nur in Slots</div>
+					<table class="border-collapse text-xs">
+						<thead>
+							<tr>
+								{#each semesterConfig.days as day, i}
+									<th class="border border-black px-1">{i + 1}</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each semesterConfig.starttimes as time}
+								<tr>
+									{#each semesterConfig.days as day, i}
+										<td
+											class="border border-black px-1 {inOnlyInSlots(i + 1, time.number)
+												? 'bg-purple-500 text-white'
+												: ''}"
+										>
+											{inOnlyInSlots(i + 1, time.number) ? '✓' : ''}
+										</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<div class="text-center">
@@ -84,6 +129,7 @@
 			{/if}
 		</div>
 	{/if}
+
 	{#if invigilator.todos.invigilations.length > 0}
 		<div class="ml-7">
 			<ol class="list-decimal">
