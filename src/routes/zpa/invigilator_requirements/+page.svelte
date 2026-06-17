@@ -12,6 +12,7 @@
 	let filteredInvigilators = [];
 
 	let sortOpen = true;
+	let showInvigilations = true;
 
 	let stillOpen = 0;
 	let sumTotal = 0;
@@ -117,6 +118,15 @@
 		placeholder="Suche Aufsichten"
 	/>
 	<label class="label cursor-pointer gap-2">
+		<span class="label-text">Nur Prüfungen</span>
+		<input
+			type="checkbox"
+			class="toggle toggle-sm"
+			checked={!showInvigilations}
+			on:change={(e) => (showInvigilations = !e.currentTarget.checked)}
+		/>
+	</label>
+	<label class="label cursor-pointer gap-2">
 		<span class="label-text">Alphabetisch</span>
 		<input
 			type="checkbox"
@@ -131,7 +141,13 @@
 {#key filteredInvigilators}
 	<div class="mx-2 flex flex-col items-center" transition:fade>
 		{#each filteredInvigilators as invigilator, index}
-			<InvigilatorTR semesterConfig={data.semesterConfig} {index} {invigilator} {maxMinutes} />
+			<InvigilatorTR
+				semesterConfig={data.semesterConfig}
+				{index}
+				{invigilator}
+				{maxMinutes}
+				{showInvigilations}
+			/>
 		{/each}
 	</div>
 {/key}

@@ -4,6 +4,8 @@
 	export let invigilator;
 	// shared scale across all rows so the progress bars are comparable
 	export let maxMinutes = 0;
+	// forwarded to the calendar: hide Aufsicht/Reserve blocks, show only exams
+	export let showInvigilations = true;
 
 	import InvigilatorDays from './InvigilatorDays.svelte';
 
@@ -109,6 +111,6 @@
 
 	<!-- right: calendar -->
 	<div class="overflow-x-auto">
-		<InvigilatorDays {semesterConfig} {invigilator} />
+		<InvigilatorDays {semesterConfig} {invigilator} {showInvigilations} />
 	</div>
 </div>

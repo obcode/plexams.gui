@@ -1,6 +1,8 @@
 <script>
 	export let semesterConfig;
 	export let invigilator;
+	// when false, only own exams are drawn (the Aufsicht/Reserve blocks are hidden)
+	export let showInvigilations = true;
 	import { mkDateShort } from '$lib/jshelper/misc';
 	const requirements = invigilator.requirements;
 
@@ -80,7 +82,9 @@
 	const calHeight = (calMax - calMin) * PX_PER_MIN;
 	/** @type {number[]} */
 	const calHours = [];
-	for (let h = calMin; h <= calMax; h += 60) {
+	// note: stop *before* calMax — a label exactly at the bottom edge would sit
+	// outside the grid (over the legend) and the bottom border already marks the end.
+	for (let h = calMin; h < calMax; h += 60) {
 		calHours.push(h);
 	}
 	/**
@@ -139,8 +143,10 @@
 	 * Foreground events (own exams + invigilations) for one day, with side-by-side
 	 * lane layout so overlapping blocks (e.g. own exam + self-invigilation) stay readable.
 	 * @param {{ number: number, date: string }} day
+	 * @param {boolean} withInvigilations  passed in (not closed over) so the template
+	 *   call re-runs reactively when the toggle changes
 	 */
-	function eventsForDay(day) {
+	function eventsForDay(day, withInvigilations) {
 		/** @type {{ startMin: number, endMin: number, label: string, from: string, until: string, title: string, cls: string }[]} */
 		const events = [];
 		// own exams (exact times from examTimes); green if self-invigilated, else blue
@@ -163,7 +169,7 @@
 			});
 		}
 		// invigilations (self-invigilations are shown via the green exam above)
-		for (const inv of invigilations) {
+		for (const inv of withInvigilations ? invigilations : []) {
 			if (inv.slot?.dayNumber !== day.number) continue;
 			if (inv.isSelfInvigilation) continue;
 			const startMin = slotStartMin.get(inv.slot.slotNumber) ?? 0;
@@ -232,7 +238,7 @@
 			</div>
 			<!-- one column per exam day -->
 			{#each semesterConfig.days as day}
-				{@const dayEvents = eventsForDay(day)}
+				{@const dayEvents = eventsForDay(day, showInvigilations)}
 				<div class="flex flex-col">
 					<div
 						class="border-l border-r border-t border-black px-1 text-center leading-tight {dayEvents.length ===
@@ -242,8 +248,8 @@
 								? 'bg-yellow-300'
 								: 'bg-green-300'}"
 					>
-						<div class="font-bold">{day.number}</div>
-						<div class="text-[10px] text-gray-700">{mkDateShort(day.date)}</div>
+						<div class="text-bold">{mkDateShort(day.date)}</div>
+						<!-- <div class="font-[10px] text-gray-700">{day.number}</div> -->
 					</div>
 					<div
 						class="relative w-20 overflow-hidden border border-black {excludedDays.includes(
