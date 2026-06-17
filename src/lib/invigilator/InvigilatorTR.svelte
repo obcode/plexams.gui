@@ -38,11 +38,15 @@
 	}
 </script>
 
-<div class="flex items-stretch gap-3 border-b border-base-300 py-2">
+<div
+	class="flex items-stretch gap-3 border-b border-base-300 bg-base-100 py-2"
+	data-invig-card
+	data-invig-name={invigilator.teacher.id}
+>
 	<!-- left: textual info + progress bars -->
 	<div class="w-72 shrink-0 text-sm">
 		<div class="rounded px-2 py-1 font-bold {nameBg(invigilator)}">
-			{index + 1}. {invigilator.teacher.shortname} ({invigilator.teacher.id})
+			{invigilator.teacher.shortname} ({invigilator.teacher.id})
 		</div>
 
 		{#if invigilator.requirements}

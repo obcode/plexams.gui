@@ -62,6 +62,58 @@
 		}
 		filteredInvigilators = filteredInvigilatorsTmp;
 	}
+
+	let exporting = false;
+	let exportProgress = '';
+
+	// Captures every currently shown invigilator card to PNG and bundles them into
+	// one ZIP. Respects the active search filter (no search → everyone). The libs
+	// are imported dynamically so they stay out of the SSR/main bundle.
+	async function exportAllPng() {
+		const { toPng } = await import('html-to-image');
+		const JSZip = (await import('jszip')).default;
+		const cards = /** @type {HTMLElement[]} */ (
+			Array.from(document.querySelectorAll('[data-invig-card]'))
+		);
+		if (!cards.length) return;
+		exporting = true;
+		try {
+			const zip = new JSZip();
+			/** @type {Record<string, number>} */
+			const used = {};
+			// warm-up render — html-to-image's first capture can come out blank
+			// before fonts/styles are resolved; throw the result away.
+			await toPng(cards[0], { pixelRatio: 1, cacheBust: true });
+			for (let i = 0; i < cards.length; i++) {
+				exportProgress = `${i + 1} / ${cards.length}`;
+				const dataUrl = await toPng(cards[i], {
+					pixelRatio: 2,
+					backgroundColor: '#ffffff',
+					cacheBust: true
+				});
+				let name = (cards[i].getAttribute('data-invig-name') || `aufsicht_${i + 1}`).replace(
+					/[^\w.-]+/g,
+					'_'
+				);
+				if (used[name]) {
+					name = `${name}_${used[name]++}`;
+				} else {
+					used[name] = 1;
+				}
+				zip.file(`${name}.png`, dataUrl.split(',')[1], { base64: true });
+			}
+			const blob = await zip.generateAsync({ type: 'blob' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'aufsichten-kalender.zip';
+			a.click();
+			URL.revokeObjectURL(url);
+		} finally {
+			exporting = false;
+			exportProgress = '';
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -136,6 +188,14 @@
 			}}
 		/>
 	</label>
+	<button class="btn btn-outline btn-sm gap-2" on:click={exportAllPng} disabled={exporting}>
+		{#if exporting}
+			<span class="loading loading-spinner loading-xs"></span>
+			{exportProgress}
+		{:else}
+			📷 Kalender als PNG (ZIP)
+		{/if}
+	</button>
 </div>
 
 {#key filteredInvigilators}
