@@ -110,9 +110,9 @@
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
-				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
-				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
+				<li><a href="/zpa/invigilator_requirements">Anforderungen und Planung</a></li>
 				<li><a href="/plan/invigilation/generate">Generierung</a></li>
+				<li><a href="/plan/invigilation">Zeitplan</a></li>
 			</ul>
 		</div>
 

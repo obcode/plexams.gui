@@ -223,7 +223,9 @@
 		<span class="badge badge-neutral badge-sm">👥 Personen</span>
 		<span class="badge badge-accent badge-sm">⏱ Dauer</span>
 		<span class="badge badge-secondary badge-sm">NTA (Details im Hover)</span>
-		<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content">fehlt</span>
+		<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content"
+			>keine Aufsicht / Reserve</span
+		>
 	</div>
 
 	<div class="flex flex-col gap-5">
