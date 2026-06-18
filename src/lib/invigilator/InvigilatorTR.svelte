@@ -105,9 +105,13 @@
 >
 	<!-- left: textual info + progress bars -->
 	<div class="w-72 shrink-0 text-sm">
-		<div class="rounded px-2 py-1 font-bold {nameBg(invigilator)}">
+		<a
+			href="/plan/invigilation?focus={invigilator.teacher.id}"
+			class="block rounded px-2 py-1 font-bold hover:underline {nameBg(invigilator)}"
+			title="im Aufsichtsplan anzeigen"
+		>
 			{invigilator.teacher.shortname} ({invigilator.teacher.id})
-		</div>
+		</a>
 
 		{#if invigilator.requirements}
 			<!-- all bars first, scaled to the 100 % reference -->
