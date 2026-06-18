@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import { validationGroups } from '$lib/validation/validators';
+import { validationGroups, zpaGroup } from '$lib/validation/validators';
 import { getWsClient } from '$lib/validation/wsClient';
 
 // Geteilter Validierungs-Status pro Gruppe. Wird gespeist von den
@@ -54,9 +54,13 @@ export function setGroupStats(id, stats) {
 	});
 }
 
-// Aggregierter Status für die Nav-Ampel.
-export const validationSummary = derived(validationStore, ($s) => {
-	const entries = validationGroups.map((g) => $s[g.id]).filter(Boolean);
+/**
+ * Aggregiert eine Menge von Gruppen-Status zu einer Ampel.
+ * @param {(GroupStatus | undefined)[]} raw
+ * @param {number} expected Anzahl erwarteter Gruppen (für "unvollständig")
+ */
+function summarize(raw, expected) {
+	const entries = raw.filter(Boolean);
 	const doneEntries = entries.filter((e) => e.done);
 	const running = entries.some((e) => e.running);
 	const errors = doneEntries.reduce((a, e) => a + (e.errors ?? 0), 0);
@@ -71,10 +75,21 @@ export const validationSummary = derived(validationStore, ($s) => {
 	}
 
 	const ts = doneEntries.length ? Math.min(...doneEntries.map((e) => e.ts ?? 0)) : null;
-	const partial = doneEntries.length < validationGroups.length;
+	const partial = doneEntries.length < expected;
 
 	return { level, errors, warnings, running, ts, partial };
-});
+}
+
+// Aggregierter Status für die allgemeine Nav-Ampel (Räume + Aufsichten).
+export const validationSummary = derived(validationStore, ($s) =>
+	summarize(
+		validationGroups.map((g) => $s[g.id]),
+		validationGroups.length
+	)
+);
+
+// Eigene Ampel nur für die ZPA-Validierungen (separat von der allgemeinen).
+export const zpaSummary = derived(validationStore, ($s) => summarize([$s[zpaGroup.id]], 1));
 
 /**
  * Headless einmalige Prüfung aller Gruppen (ohne Terminal-Rendering).
@@ -88,6 +103,19 @@ export async function runValidationCheck() {
 		return;
 	}
 	for (const group of validationGroups) runGroupCheck(client, group);
+}
+
+/**
+ * Headless einmalige Prüfung nur der ZPA-Validatoren (eigene Ampel).
+ */
+export async function runZpaCheck() {
+	let client;
+	try {
+		client = await getWsClient();
+	} catch {
+		return;
+	}
+	runGroupCheck(client, zpaGroup);
 }
 
 /**
@@ -113,13 +141,19 @@ function runGroupCheck(client, group) {
 	setGroupStats(group.id, { errors: 0, warnings: 0, running: true, done: false, ok: false });
 
 	for (const v of group.validators) {
-		const query = `subscription { ${v.key} { level validation { ok errorCount warningCount } } }`;
+		const spec = v.argSpec ?? [];
+		const decl = spec.length ? `(${spec.map((a) => `$${a.name}: ${a.type}`).join(', ')})` : '';
+		const callArgs = spec.length ? `(${spec.map((a) => `${a.name}: $${a.name}`).join(', ')})` : '';
+		/** @type {Record<string, any>} */
+		const variables = {};
+		for (const a of spec) variables[a.name] = a.value;
+		const query = `subscription ${decl} { ${v.key}${callArgs} { level validation { ok errorCount warningCount } } }`;
 		const finish = () => {
 			remaining = Math.max(0, remaining - 1);
 			flush();
 		};
 		client.subscribe(
-			{ query },
+			{ query, variables },
 			{
 				/** @param {any} msg */
 				next: (msg) => {

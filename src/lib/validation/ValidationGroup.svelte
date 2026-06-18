@@ -5,7 +5,7 @@
 	import { setGroupStats } from '$lib/validation/store';
 	import ValidatorCard from '$lib/validation/ValidatorCard.svelte';
 
-	/** @type {{ key: string, title: string, description: string }[]} */
+	/** @type {import('$lib/validation/validators').ValidatorDef[]} */
 	export let validators;
 	/** optionale Überschrift über der Gruppe */
 	export let title = '';
@@ -13,6 +13,9 @@
 	export let autostart = true;
 	/** wenn gesetzt, wird das Ergebnis unter dieser ID in den globalen Store gespiegelt */
 	export let storeId = '';
+	/** pro Validator-Key überschreibbare Argument-Werte, z. B. { validateConflicts: { ancode: 42 } } */
+	/** @type {Record<string, Record<string, any>>} */
+	export let argOverrides = {};
 	/** Karten ein-/ausklappbar machen (Header bleibt sichtbar) */
 	export let collapsible = false;
 	/** initial eingeklappt (nur relevant bei collapsible) */
@@ -44,6 +47,10 @@
 	/** @type {(null | (() => void))[]} */
 	let subs = validators.map(() => null);
 
+	// erst nach dem ersten Lauf in den Store spiegeln, damit ein nicht
+	// autostartendes Mounten den letzten gespeicherten Stand nicht überschreibt.
+	let started = false;
+
 	/** @type {any} */
 	let convert = null;
 	/** @type {any} */
@@ -56,8 +63,43 @@
 		if (!wsClient) wsClient = await getWsClient();
 	}
 
-	/** @param {number} i */
-	async function runValidator(i) {
+	// baut Subscription-Query + Variablen aus dem (optionalen) argSpec eines
+	// Validators; per-Aufruf-Overrides haben Vorrang vor argOverrides, dann
+	// vor den argSpec-Defaultwerten.
+	/**
+	 * @param {any} def
+	 * @param {Record<string, any>} [callVars]
+	 */
+	function buildQuery(def, callVars) {
+		const spec = def.argSpec ?? [];
+		const fields = `level
+			text
+			validation {
+				name ok errorCount warningCount
+				findings { level message ancode relatedAncodes room day slot invigilatorID studentMtknr }
+			}`;
+		if (!spec.length) {
+			return { query: `subscription { ${def.key} { ${fields} } }`, variables: {} };
+		}
+		const decl = spec.map((/** @type {any} */ a) => `$${a.name}: ${a.type}`).join(', ');
+		const callArgs = spec.map((/** @type {any} */ a) => `${a.name}: $${a.name}`).join(', ');
+		/** @type {Record<string, any>} */
+		const variables = {};
+		for (const a of spec) {
+			const override = callVars?.[a.name] ?? argOverrides[def.key]?.[a.name];
+			variables[a.name] = override ?? a.value;
+		}
+		return {
+			query: `subscription (${decl}) { ${def.key}(${callArgs}) { ${fields} } }`,
+			variables
+		};
+	}
+
+	/**
+	 * @param {number} i
+	 * @param {Record<string, any>} [callVars]
+	 */
+	async function runValidator(i, callVars) {
 		try {
 			await ensureClient();
 		} catch (e) {
@@ -65,6 +107,7 @@
 			return;
 		}
 
+		started = true;
 		const v = state[i];
 		if (subs[i]) {
 			subs[i]?.();
@@ -77,17 +120,10 @@
 		v.errorMsg = null;
 		state = state;
 
-		const query = `subscription { ${v.key} {
-			level
-			text
-			validation {
-				name ok errorCount warningCount
-				findings { level message ancode relatedAncodes room day slot invigilatorID studentMtknr }
-			}
-		} }`;
+		const { query, variables } = buildQuery(v, callVars);
 
 		subs[i] = wsClient.subscribe(
-			{ query },
+			{ query, variables },
 			{
 				/** @param {any} msg */
 				next: (msg) => {
@@ -139,6 +175,17 @@
 		for (let i = 0; i < state.length; i++) runValidator(i);
 	}
 
+	/**
+	 * Einzelnen Validator (per Key) neu starten, optional mit expliziten
+	 * Argument-Werten (umgeht Race mit dem argOverrides-Prop).
+	 * @param {string} key
+	 * @param {Record<string, any>} [callVars]
+	 */
+	export function runByKey(key, callVars) {
+		const i = state.findIndex((v) => v.key === key);
+		if (i >= 0) runValidator(i, callVars);
+	}
+
 	onMount(() => {
 		if (autostart) runAll();
 	});
@@ -162,7 +209,7 @@
 		ok: allOk
 	};
 	$: dispatch('stats', stats);
-	$: if (storeId) setGroupStats(storeId, stats);
+	$: if (storeId && started) setGroupStats(storeId, stats);
 </script>
 
 <div class="flex flex-col gap-3">

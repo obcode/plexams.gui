@@ -1,7 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { validationSummary, runValidationCheck } from '$lib/validation/store';
+	import {
+		validationSummary,
+		runValidationCheck,
+		zpaSummary,
+		runZpaCheck
+	} from '$lib/validation/store';
 
 	function dotClass(level: string) {
 		if (level === 'ok') return 'bg-success';
@@ -28,17 +33,20 @@
 		return `vor ${Math.round(h / 24)} Tg.`;
 	}
 
-	function validationTitle(s: {
-		level: string;
-		errors: number;
-		warnings: number;
-		ts: number | null;
-		partial: boolean;
-	}) {
+	function statusTitle(
+		name: string,
+		s: {
+			level: string;
+			errors: number;
+			warnings: number;
+			ts: number | null;
+			partial: boolean;
+		}
+	) {
 		const base = s.ts ? `zuletzt geprüft ${ago(s.ts)}` : 'noch nicht geprüft';
 		const counts = s.level === 'unknown' ? '' : ` — ${s.errors} Fehler, ${s.warnings} Warnungen`;
 		const part = s.partial && s.ts ? ' (unvollständig)' : '';
-		return `Validierung: ${base}${counts}${part} · klicken zum Prüfen`;
+		return `${name}: ${base}${counts}${part} · klicken zum Prüfen`;
 	}
 
 	let semester = 'unknown';
@@ -73,7 +81,8 @@
 			items: [
 				{ href: '/exam/generatedExams', label: 'generierte Prüfungen mit Anmeldungen, etc.' },
 				{ href: '/plan/pre', label: 'Vorab-Planung (ohne Primuss-Daten)' },
-				{ href: '/plan/exams', label: 'Prüfungen planen' }
+				{ href: '/plan/exams', label: 'Prüfungen planen' },
+				{ href: '/plan/exams/validate', label: 'Validierung' }
 			]
 		},
 		{
@@ -250,7 +259,7 @@
 			</a>
 			<button
 				class="btn btn-ghost btn-sm btn-circle"
-				title={validationTitle($validationSummary)}
+				title={statusTitle('Validierung', $validationSummary)}
 				aria-label="Validierung jetzt prüfen"
 				on:click={runValidationCheck}
 			>
@@ -261,6 +270,38 @@
 						class="inline-block h-2.5 w-2.5 rounded-full {dotClass($validationSummary.level)}"
 						class:opacity-50={$validationSummary.partial}
 						class:animate-pulse={$validationSummary.level === 'error'}
+					></span>
+				{/if}
+			</button>
+		</div>
+
+		<!-- ZPA-Pille mit eigener Status-Ampel -->
+		<div
+			class="flex items-center gap-0.5 rounded-full border bg-base-100 p-0.5 {pillBorder(
+				$zpaSummary.level
+			)}"
+		>
+			<a
+				class="btn btn-ghost btn-sm rounded-full font-medium hover:text-base-content {pathname ===
+				'/zpa/publish'
+					? 'bg-primary/10 text-primary'
+					: 'text-base-content/80'}"
+				href="/zpa/publish"
+			>
+				ZPA
+			</a>
+			<button
+				class="btn btn-ghost btn-sm btn-circle"
+				title={statusTitle('ZPA-Validierung', $zpaSummary)}
+				aria-label="ZPA jetzt prüfen"
+				on:click={runZpaCheck}
+			>
+				{#if $zpaSummary.running}
+					<span class="loading loading-spinner loading-xs"></span>
+				{:else}
+					<span
+						class="inline-block h-2.5 w-2.5 rounded-full {dotClass($zpaSummary.level)}"
+						class:animate-pulse={$zpaSummary.level === 'error'}
 					></span>
 				{/if}
 			</button>

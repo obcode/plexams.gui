@@ -4,7 +4,8 @@
 // (sowie die Gesamtseite /validate) eingebunden.
 
 /**
- * @typedef {{ key: string, title: string, description: string }} ValidatorDef
+ * @typedef {{ name: string, type: string, value: any }} ArgSpec
+ * @typedef {{ key: string, title: string, description: string, argSpec?: ArgSpec[] }} ValidatorDef
  */
 
 /** @type {ValidatorDef[]} */
@@ -64,10 +65,42 @@ export const roomValidators = [
 	}
 ];
 
+/** @type {ValidatorDef[]} */
+export const schedulingValidators = [
+	{
+		key: 'validateConflicts',
+		title: 'Konflikte',
+		description: 'Konflikte im Zeitplan',
+		argSpec: [
+			{ name: 'onlyPlannedByMe', type: 'Boolean!', value: true },
+			{ name: 'ancode', type: 'Int!', value: 0 }
+		]
+	},
+	{
+		key: 'validateConstraints',
+		title: 'Constraints',
+		description: 'Constraints im Zeitplan eingehalten'
+	}
+];
+
 // Kanonische Reihenfolge/Registry aller Gruppen für die Gesamtseite /validate
 // und den Status-Indikator in der Nav. Weitere Gruppen hier ergänzen.
 /** @type {ValidatorGroup[]} */
 export const validationGroups = [
+	{ id: 'scheduling', title: 'Terminplanung', validators: schedulingValidators },
 	{ id: 'rooms', title: 'Räume', validators: roomValidators },
 	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }
 ];
+
+// ZPA-Validatoren: bewusst NICHT in validationGroups, damit sie weder die
+// Gesamtseite /validate noch die allgemeine Nav-Ampel beeinflussen. Sie haben
+// eine eigene Ampel und starten nur auf Klick.
+/** @type {ValidatorDef[]} */
+export const zpaValidators = [
+	{ key: 'validateZPADateTimes', title: 'Termine', description: 'Datum/Uhrzeit im ZPA' },
+	{ key: 'validateZPARooms', title: 'Räume', description: 'Räume im ZPA' },
+	{ key: 'validateZPAInvigilators', title: 'Aufsichten', description: 'Aufsichten im ZPA' }
+];
+
+/** @type {ValidatorGroup} */
+export const zpaGroup = { id: 'zpa', title: 'ZPA', validators: zpaValidators };
