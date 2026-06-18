@@ -1,12 +1,6 @@
 <script>
 	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import { invigilationValidators, roomValidators } from '$lib/validation/validators';
-
-	// Alle Validierungs-Gruppen der Gesamtseite. Weitere Gruppen hier ergänzen.
-	const groups = [
-		{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators },
-		{ id: 'rooms', title: 'Räume', validators: roomValidators }
-	];
+	import { validationGroups as groups } from '$lib/validation/validators';
 
 	/** @type {Record<string, { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }>} */
 	let stats = {};
@@ -68,6 +62,9 @@
 		<ValidationGroup
 			validators={group.validators}
 			title={group.title}
+			storeId={group.id}
+			collapsible
+			collapsed
 			on:stats={(e) => onStats(group.id, e)}
 		/>
 	{/each}

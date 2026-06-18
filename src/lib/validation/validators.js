@@ -36,6 +36,10 @@ export const invigilationValidators = [
 	}
 ];
 
+/**
+ * @typedef {{ id: string, title: string, validators: ValidatorDef[] }} ValidatorGroup
+ */
+
 /** @type {ValidatorDef[]} */
 export const roomValidators = [
 	{
@@ -58,4 +62,12 @@ export const roomValidators = [
 		title: 'Zeitabstände',
 		description: 'Abstände zwischen Räumen'
 	}
+];
+
+// Kanonische Reihenfolge/Registry aller Gruppen für die Gesamtseite /validate
+// und den Status-Indikator in der Nav. Weitere Gruppen hier ergänzen.
+/** @type {ValidatorGroup[]} */
+export const validationGroups = [
+	{ id: 'rooms', title: 'Räume', validators: roomValidators },
+	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }
 ];

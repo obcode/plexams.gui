@@ -1,20 +1,138 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { mkDate } from '$lib/jshelper/misc';
-	import type { Maybe, Step } from '$lib/__generated__/graphql';
+	import { page } from '$app/stores';
+	import { validationSummary, runValidationCheck } from '$lib/validation/store';
+
+	function dotClass(level: string) {
+		if (level === 'ok') return 'bg-success';
+		if (level === 'warning') return 'bg-warning';
+		if (level === 'error') return 'bg-error';
+		return 'bg-base-content/30';
+	}
+
+	function pillBorder(level: string) {
+		if (level === 'ok') return 'border-success/40';
+		if (level === 'warning') return 'border-warning/40';
+		if (level === 'error') return 'border-error/40';
+		return 'border-base-300';
+	}
+
+	function ago(ts: number | null) {
+		if (!ts) return 'noch nicht geprüft';
+		const sec = Math.round((Date.now() - ts) / 1000);
+		if (sec < 60) return 'gerade eben';
+		const min = Math.round(sec / 60);
+		if (min < 60) return `vor ${min} Min.`;
+		const h = Math.round(min / 60);
+		if (h < 24) return `vor ${h} Std.`;
+		return `vor ${Math.round(h / 24)} Tg.`;
+	}
+
+	function validationTitle(s: {
+		level: string;
+		errors: number;
+		warnings: number;
+		ts: number | null;
+		partial: boolean;
+	}) {
+		const base = s.ts ? `zuletzt geprüft ${ago(s.ts)}` : 'noch nicht geprüft';
+		const counts = s.level === 'unknown' ? '' : ` — ${s.errors} Fehler, ${s.warnings} Warnungen`;
+		const part = s.partial && s.ts ? ' (unvollständig)' : '';
+		return `Validierung: ${base}${counts}${part} · klicken zum Prüfen`;
+	}
 
 	let semester = 'unknown';
 	async function getSemester() {
-		const response = await fetch('/api/semester', {
-			method: 'GET'
-		});
-
+		const response = await fetch('/api/semester', { method: 'GET' });
 		semester = await response.json();
 	}
 
 	onMount(() => {
 		getSemester();
 	});
+
+	type MenuItem = { href: string; label: string };
+	type Menu = { label: string; items: MenuItem[] };
+
+	const menus: Menu[] = [
+		{
+			label: 'Vorbereitung',
+			items: [
+				{ href: '/exam/examsToPlan', label: 'Zu planende ZPA-Prüfungen' },
+				{ href: '/exam/examsNotToPlan', label: 'Nicht zu planende ZPA-Prüfungen' },
+				{ href: '/exam/examsPlaningStatusUnknown', label: 'Nicht zugeordnete ZPA-Prüfungen' },
+				{ href: '/exam/examersToPlan', label: 'Zu planende Prüfende' },
+				{ href: '/exam/constraints', label: 'Constraints' },
+				{ href: '/exam/kdp', label: 'EXaHM/SEB' },
+				{ href: '/plan/annyBookings', label: 'Anny-Buchungen' },
+				{ href: '/exam/connected', label: 'Anmeldungszuordnung (ZPA/Primuss)' }
+			]
+		},
+		{
+			label: 'Terminplanung',
+			items: [
+				{ href: '/exam/generatedExams', label: 'generierte Prüfungen mit Anmeldungen, etc.' },
+				{ href: '/plan/pre', label: 'Vorab-Planung (ohne Primuss-Daten)' },
+				{ href: '/plan/exams', label: 'Prüfungen planen' }
+			]
+		},
+		{
+			label: 'Raumplanung',
+			items: [
+				{ href: '/plan/kdprooms', label: 'Raumplanung KDP' },
+				{ href: '/plan/rooms', label: 'Raumplanung' },
+				{ href: '/plan/plannedRooms', label: 'Geplante Räume' },
+				{ href: '/rooms', label: 'Vorhandene Räume' },
+				{ href: '/plan/rooms/validate', label: 'Validierung' }
+			]
+		},
+		{
+			label: 'Aufsichtenplanung',
+			items: [
+				{ href: '/zpa/invigilator_requirements', label: 'Anforderungen und Planung' },
+				{ href: '/plan/invigilation', label: 'Zeitplan' },
+				{ href: '/plan/invigilation/generate', label: 'Generierung' },
+				{ href: '/plan/invigilation/validate', label: 'Validierung' }
+			]
+		},
+		{
+			label: 'NTA',
+			items: [
+				{ href: '/nta/add', label: 'NTA hinzufügen' },
+				{ href: '/nta/ntaWithRegs', label: 'NTAs mit Anmeldungen' },
+				{ href: '/nta/examsWithNtas', label: 'Prüfungen mit NTAs' },
+				{ href: '/nta/all', label: 'Bekannte NTAs' }
+			]
+		},
+		{
+			label: 'Externe Daten',
+			items: [
+				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
+				{ href: '/zpa/teacher', label: 'Dozierende (ZPA)' },
+				{ href: '/zpa/invigilators', label: 'Aufsichten (ZPA)' },
+				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
+				{ href: '/primuss/mucdai', label: 'MUC.DAI-Prüfungen (CSV)' },
+				{ href: '/primuss/exams', label: 'Prüfungslisten (Primuss)' }
+			]
+		}
+	];
+
+	// Aktiver Pfad: der am besten passende (längste) Treffer unter allen Links —
+	// so gewinnt z. B. /plan/invigilation/generate gegen /plan/invigilation.
+	function matchLen(href: string, path: string) {
+		if (path === href) return href.length + 1;
+		if (href !== '/' && path.startsWith(href + '/')) return href.length;
+		return 0;
+	}
+
+	$: pathname = $page.url.pathname;
+	$: activeHref = menus
+		.flatMap((m) => m.items.map((i) => i.href))
+		.reduce(
+			(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
+			''
+		);
+	$: activeMenu = menus.find((m) => m.items.some((i) => i.href === activeHref))?.label ?? '';
 
 	const themes = [
 		'light',
@@ -52,113 +170,186 @@
 	];
 </script>
 
-<div class="navbar bg-base-100">
-	<div class="flex-1">
-		<a class="btn btn-ghost normal-case text-xl" href="/">Plexams</a>
-	</div>
-
-	<div class="flex-none">
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+<header
+	class="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/80 backdrop-blur-md supports-[backdrop-filter]:bg-base-100/70"
+>
+	<div class="mx-auto flex h-16 items-center gap-2 px-3">
+		<!-- Brand -->
+		<a href="/" class="group flex items-center gap-2 rounded-xl px-1 py-1">
+			<span
+				class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-lg font-black text-primary-content shadow-sm transition-transform group-hover:scale-105"
 			>
-				<li><a href="/exam/examsToPlan">Zu planende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsNotToPlan">Nicht zu planende ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examsPlaningStatusUnknown">Nicht zugeordnete ZPA-Prüfungen</a></li>
-				<li><a href="/exam/examersToPlan">Zu planende Prüfende</a></li>
-				<li><a href="/exam/constraints">Constraints</a></li>
-				<li><a href="/exam/kdp">EXaHM/SEB</a></li>
-				<li><a href="/plan/annyBookings">Anny-Buchungen</a></li>
-				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
-			</ul>
-		</div>
-
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Terminplanung </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+				P
+			</span>
+			<span
+				class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent"
 			>
-				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
-				<li><a href="/plan/pre">Vorab-Planung (ohne Primuss-Daten)</a></li>
-				<li><a href="/plan/exams">Prüfungen planen</a></li>
-			</ul>
-		</div>
+				Plexams
+			</span>
+		</a>
 
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Raumplanung </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/plan/kdprooms">Raumplanung KDP</a></li>
-				<li><a href="/plan/rooms">Raumplanung</a></li>
-				<li><a href="/plan/plannedRooms">Geplante Räume</a></li>
-				<li><a href="/rooms">Vorhandene Räume</a></li>
-				<li><a href="/plan/rooms/validate">Validierung</a></li>
-			</ul>
-		</div>
-
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Aufsichtenplanung </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/zpa/invigilator_requirements">Anforderungen und Planung</a></li>
-				<li><a href="/plan/invigilation">Zeitplan</a></li>
-				<li><a href="/plan/invigilation/generate">Generierung</a></li>
-				<li><a href="/plan/invigilation/validate">Validierung</a></li>
-			</ul>
-		</div>
-
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> NTA </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/nta/add"> NTA hinzufügen </a></li>
-				<li><a href="/nta/ntaWithRegs"> NTAs mit Anmeldungen </a></li>
-				<li><a href="/nta/examsWithNtas"> Prüfungen mit NTAs</a></li>
-				<!-- <li><a href="/nta/ntaWithRegsByTeacher"> NTAs mit Anmeldungen nach Prüfer:in</a></li> -->
-				<li><a href="/nta/all"> Bekannte NTAs </a></li>
-			</ul>
-		</div>
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Externe Daten </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-				<li><a href="/zpa/teacher">Dozierende (ZPA)</a></li>
-				<li><a href="/zpa/invigilators">Aufsichten (ZPA)</a></li>
-				<li><a href="/zpa/studentregs">Importfehler Anmeldungen (ZPA)</a></li>
-				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen (CSV)</a></li>
-				<li><a href="/primuss/exams">Prüfungslisten (Primuss)</a></li>
-			</ul>
-		</div>
-		<a class="btn btn-ghost" href="/validate"> Validierung </a>
-
-		Theme:
-		<select data-choose-theme class="select select-xs w-32">
-			<option disabled selected>Wähle ein Thema</option>
-			{#each themes as theme}
-				<option value={theme}>{theme}</option>
+		<!-- Hauptmenü (Desktop) -->
+		<nav class="ml-2 hidden items-center gap-0.5 lg:flex">
+			{#each menus as menu}
+				<div class="dropdown dropdown-bottom">
+					<div
+						tabindex="0"
+						role="button"
+						class="btn btn-ghost btn-sm gap-1 rounded-full font-medium hover:bg-base-200 {menu.label ===
+						activeMenu
+							? 'bg-primary/10 text-primary'
+							: 'text-base-content/70 hover:text-base-content'}"
+					>
+						{menu.label}
+						<svg
+							class="h-3 w-3 opacity-50"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							stroke-width="2.5"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+						</svg>
+					</div>
+					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+					<ul
+						tabindex="0"
+						class="menu dropdown-content z-50 mt-3 w-64 gap-0.5 rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+					>
+						{#each menu.items as item}
+							<li>
+								<a
+									class="rounded-lg {item.href === activeHref
+										? 'bg-primary/15 font-medium text-primary'
+										: ''}"
+									href={item.href}>{item.label}</a
+								>
+							</li>
+						{/each}
+					</ul>
+				</div>
 			{/each}
-		</select>
+		</nav>
+
+		<div class="flex-1"></div>
+
+		<!-- Validierungs-Pille mit Status -->
+		<div
+			class="flex items-center gap-0.5 rounded-full border bg-base-100 p-0.5 {pillBorder(
+				$validationSummary.level
+			)}"
+		>
+			<a
+				class="btn btn-ghost btn-sm rounded-full font-medium hover:text-base-content {pathname ===
+				'/validate'
+					? 'bg-primary/10 text-primary'
+					: 'text-base-content/80'}"
+				href="/validate"
+			>
+				Validierung
+			</a>
+			<button
+				class="btn btn-ghost btn-sm btn-circle"
+				title={validationTitle($validationSummary)}
+				aria-label="Validierung jetzt prüfen"
+				on:click={runValidationCheck}
+			>
+				{#if $validationSummary.running}
+					<span class="loading loading-spinner loading-xs"></span>
+				{:else}
+					<span
+						class="inline-block h-2.5 w-2.5 rounded-full {dotClass($validationSummary.level)}"
+						class:opacity-50={$validationSummary.partial}
+						class:animate-pulse={$validationSummary.level === 'error'}
+					></span>
+				{/if}
+			</button>
+		</div>
+
+		<!-- Theme-Auswahl -->
 		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="badge mx-4"> {semester} </label>
+			<div
+				tabindex="0"
+				role="button"
+				class="btn btn-ghost btn-sm btn-circle"
+				title="Theme wählen"
+				aria-label="Theme wählen"
+			>
+				<svg
+					class="h-5 w-5"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="1.6"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M9.53 16.12a3 3 0 0 0-5.78 1.13 2.25 2.25 0 0 1-2.4 2.24 4.5 4.5 0 0 0 8.4-2.24c0-.4-.08-.78-.22-1.13Zm0 0a16 16 0 0 0 3.39-1.62m-5.04-.03a16 16 0 0 1 1.62-3.39m3.42 3.42a16 16 0 0 0 4.76-4.65l3.88-5.81a1.15 1.15 0 0 0-1.6-1.6l-5.81 3.88a16 16 0 0 0-4.65 4.76m3.42 3.42a6.78 6.78 0 0 0-3.42-3.42"
+					/>
+				</svg>
+			</div>
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<ul
+				tabindex="0"
+				class="menu dropdown-content z-50 mt-3 max-h-96 w-44 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+			>
+				{#each themes as theme}
+					<li>
+						<button
+							class="rounded-lg capitalize"
+							data-set-theme={theme}
+							data-act-class="font-semibold"
+						>
+							{theme}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
+
+		<!-- Semester -->
+		<span
+			class="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary sm:inline-flex"
+		>
+			<span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
+			{semester}
+		</span>
+
+		<!-- Hamburger (Mobile/Tablet) -->
+		<div class="dropdown dropdown-end lg:hidden">
+			<div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle" aria-label="Menü">
+				<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+			</div>
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<ul
+				tabindex="0"
+				class="menu dropdown-content z-50 mt-3 max-h-[80vh] w-72 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+			>
+				{#each menus as menu}
+					<li>
+						<details open={menu.label === activeMenu}>
+							<summary class="font-medium {menu.label === activeMenu ? 'text-primary' : ''}"
+								>{menu.label}</summary
+							>
+							<ul>
+								{#each menu.items as item}
+									<li>
+										<a
+											class={item.href === activeHref
+												? 'bg-primary/15 font-medium text-primary'
+												: ''}
+											href={item.href}>{item.label}</a
+										>
+									</li>
+								{/each}
+							</ul>
+						</details>
+					</li>
+				{/each}
+			</ul>
 		</div>
 	</div>
-</div>
+</header>

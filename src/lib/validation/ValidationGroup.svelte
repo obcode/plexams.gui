@@ -1,6 +1,8 @@
 <script>
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
+	import { setGroupStats } from '$lib/validation/store';
 	import ValidatorCard from '$lib/validation/ValidatorCard.svelte';
 
 	/** @type {{ key: string, title: string, description: string }[]} */
@@ -9,6 +11,14 @@
 	export let title = '';
 	/** automatisch beim Einhängen starten */
 	export let autostart = true;
+	/** wenn gesetzt, wird das Ergebnis unter dieser ID in den globalen Store gespiegelt */
+	export let storeId = '';
+	/** Karten ein-/ausklappbar machen (Header bleibt sichtbar) */
+	export let collapsible = false;
+	/** initial eingeklappt (nur relevant bei collapsible) */
+	export let collapsed = false;
+
+	let open = !collapsed;
 
 	const dispatch = createEventDispatcher();
 
@@ -143,20 +153,31 @@
 	$: allDone = state.every((v) => v.status === 'done' || v.status === 'error');
 	$: allOk = allDone && state.every((v) => v.report && v.report.ok);
 
-	// Kennzahlen nach oben melden (für die Gesamtseite).
-	$: dispatch('stats', {
+	// Kennzahlen nach oben melden (für die Gesamtseite) und in den globalen Store.
+	$: stats = {
 		errors: totalErrors,
 		warnings: totalWarnings,
 		running: anyRunning,
 		done: allDone,
 		ok: allOk
-	});
+	};
+	$: dispatch('stats', stats);
+	$: if (storeId) setGroupStats(storeId, stats);
 </script>
 
 <div class="flex flex-col gap-3">
 	<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		{#if title}
-			<div class="flex items-center gap-2">
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<svelte:element
+				this={collapsible ? 'button' : 'div'}
+				class="flex items-center gap-2 {collapsible ? 'cursor-pointer' : ''}"
+				aria-expanded={collapsible ? open : undefined}
+				on:click={() => collapsible && (open = !open)}
+			>
+				{#if collapsible}
+					<span class="text-base-content/50">{open ? '▾' : '▸'}</span>
+				{/if}
 				<span class="text-lg font-semibold">{title}</span>
 				{#if anyRunning}
 					<span class="badge badge-info gap-2">
@@ -167,7 +188,7 @@
 				{:else if allDone}
 					<span class="badge badge-error">Probleme</span>
 				{/if}
-			</div>
+			</svelte:element>
 			<div class="hidden h-8 w-px bg-base-300 sm:block"></div>
 		{/if}
 		<div class="flex gap-2">
@@ -207,9 +228,11 @@
 		</div>
 	{/if}
 
-	<div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
-		{#each state as validator, i}
-			<ValidatorCard {validator} on:restart={() => runValidator(i)} />
-		{/each}
-	</div>
+	{#if !collapsible || open}
+		<div class="grid grid-cols-1 gap-3 xl:grid-cols-2" transition:slide>
+			{#each state as validator, i}
+				<ValidatorCard {validator} on:restart={() => runValidator(i)} />
+			{/each}
+		</div>
+	{/if}
 </div>
