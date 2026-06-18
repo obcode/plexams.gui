@@ -1,0 +1,508 @@
+<script>
+	import { onDestroy, tick } from 'svelte';
+	import { fade } from 'svelte/transition';
+	import { env } from '$env/dynamic/public';
+
+	// --- Eingaben ---
+	let dryRun = true;
+	let seed = 1;
+	let iterations = 1_000_000;
+
+	const ITER_MIN = 1_000_000;
+	const ITER_MAX = 20_000_000;
+	const ITER_STEP = 1_000_000;
+
+	// --- Laufzeit-Status ---
+	let running = false;
+	/** @type {string | null} */
+	let errorMsg = null;
+	let done = false;
+
+	// Terminal: alle Zeilen ausser PROGRESS werden angehaengt; die jeweils
+	// letzte PROGRESS-Zeile wird in-place aktualisiert (Spinner-Gefuehl).
+	/** @type {{ level: string, html: string }[]} */
+	let lines = [];
+	/** @type {{ html: string, progress: any } | null} */
+	let current = null;
+	/** @type {any} */
+	let report = null;
+
+	/** @type {HTMLDivElement} */
+	let termEl;
+
+	// ANSI->HTML Konverter und WS-Client werden nur im Browser geladen.
+	/** @type {any} */
+	let convert = null;
+	/** @type {any} */
+	let wsClient = null;
+	/** @type {(() => void) | null} */
+	let unsubscribe = null;
+
+	const SUBSCRIPTION = `
+		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int) {
+			generateInvigilations(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
+				level
+				text
+				progress { iteration total bestCost balance unfilled }
+				report {
+					seed iterations iterationsRun stoppedEarly
+					balance { satisfied invigilators toleranceMin withinTolerance over under maxOver maxUnder }
+					coverage { positions unfilled }
+					minutes { withinTolerance over under toleranceMin }
+					outliers { invigilatorID doing target open percent }
+					fairness { kind total max buckets { count invigilators } }
+					softCost { total breakdown { name cost } }
+				}
+			}
+		}
+	`;
+
+	function wsUrl() {
+		const http = env.PUBLIC_PLEXAMS_SERVER || 'http://localhost:8080/query';
+		return http.replace(/^http/, 'ws');
+	}
+
+	async function scrollToBottom() {
+		await tick();
+		if (termEl) termEl.scrollTop = termEl.scrollHeight;
+	}
+
+	async function start() {
+		if (running) return;
+		// Status zuruecksetzen
+		lines = [];
+		current = null;
+		report = null;
+		errorMsg = null;
+		done = false;
+		running = true;
+
+		try {
+			if (!convert) {
+				const Convert = (await import('ansi-to-html')).default;
+				convert = new Convert({
+					fg: '#d4d4d4',
+					bg: '#1e1e2e',
+					newline: false,
+					escapeXML: true,
+					colors: {
+						0: '#1e1e2e',
+						1: '#f38ba8',
+						2: '#a6e3a1',
+						3: '#f9e2af',
+						4: '#89b4fa',
+						5: '#cba6f7',
+						6: '#94e2d5',
+						7: '#bac2de'
+					}
+				});
+			}
+			if (!wsClient) {
+				const { createClient } = await import('graphql-ws');
+				wsClient = createClient({ url: wsUrl(), lazy: true, retryAttempts: 0 });
+			}
+		} catch (e) {
+			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+			running = false;
+			return;
+		}
+
+		unsubscribe = wsClient.subscribe(
+			{
+				query: SUBSCRIPTION,
+				variables: { dryRun, seed, iterations }
+			},
+			{
+				/** @param {any} msg */
+				next: (msg) => {
+					if (msg.errors && msg.errors.length) {
+						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						return;
+					}
+					const line = msg.data && msg.data.generateInvigilations;
+					if (!line) return;
+					const html = convert.toHtml(line.text ?? '');
+					if (line.level === 'PROGRESS') {
+						current = { html, progress: line.progress };
+					} else {
+						// laufende PROGRESS-Zeile als feste Zeile uebernehmen
+						if (current) {
+							lines = [...lines, { level: 'PROGRESS', html: current.html }];
+							current = null;
+						}
+						lines = [...lines, { level: line.level, html }];
+						if (line.report) report = line.report;
+						if (line.level === 'DONE') done = true;
+					}
+					scrollToBottom();
+				},
+				/** @param {any} err */
+				error: (err) => {
+					errorMsg =
+						err instanceof Error
+							? err.message
+							: Array.isArray(err)
+								? err.map((/** @type {any} */ e) => e.message).join('; ')
+								: err && err.reason
+									? err.reason
+									: 'Verbindungsfehler';
+					running = false;
+				},
+				complete: () => {
+					if (current) {
+						lines = [...lines, { level: 'PROGRESS', html: current.html }];
+						current = null;
+					}
+					running = false;
+					done = true;
+				}
+			}
+		);
+	}
+
+	function stop() {
+		if (unsubscribe) {
+			unsubscribe();
+			unsubscribe = null;
+		}
+		running = false;
+	}
+
+	onDestroy(() => {
+		if (unsubscribe) unsubscribe();
+		if (wsClient) wsClient.dispose();
+	});
+
+	/** @param {number} n */
+	const fmt = (n) => (n ?? 0).toLocaleString('de-DE');
+
+	$: progressPct =
+		current && current.progress && current.progress.total
+			? Math.min(100, Math.round((current.progress.iteration / current.progress.total) * 100))
+			: 0;
+</script>
+
+<div class="mx-2 mt-4 flex flex-col gap-4">
+	<div class="flex flex-wrap items-center gap-3">
+		<h1 class="text-2xl font-semibold">Aufsichten generieren</h1>
+		{#if running}
+			<span class="badge badge-info gap-2">
+				<span class="loading loading-spinner loading-xs"></span> läuft …
+			</span>
+		{:else if done && !errorMsg}
+			<span class="badge badge-success">fertig</span>
+		{/if}
+		{#if dryRun}
+			<span class="badge badge-ghost">Probelauf (kein Schreiben in die DB)</span>
+		{:else}
+			<span class="badge badge-warning">schreibt in die Datenbank</span>
+		{/if}
+	</div>
+
+	<!-- Eingaben -->
+	<div class="flex flex-wrap items-start gap-6 rounded-lg border border-base-300 bg-base-100 p-4">
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Probelauf (Dry Run)</span>
+			<label class="label cursor-pointer justify-start gap-3 px-0">
+				<input
+					type="checkbox"
+					class="toggle toggle-primary"
+					bind:checked={dryRun}
+					disabled={running}
+				/>
+				<span class="label-text">{dryRun ? 'nur berechnen' : 'speichern'}</span>
+			</label>
+		</label>
+
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Seed</span>
+			<input
+				type="number"
+				class="input input-bordered input-sm w-24"
+				bind:value={seed}
+				min="0"
+				disabled={running}
+			/>
+		</label>
+
+		<div class="flex flex-col gap-1">
+			<div class="flex items-baseline justify-between gap-3">
+				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
+			</div>
+			<input
+				type="range"
+				class="range range-primary range-sm w-64"
+				min={ITER_MIN}
+				max={ITER_MAX}
+				step={ITER_STEP}
+				bind:value={iterations}
+				disabled={running}
+			/>
+			<div class="flex justify-between text-[10px] text-base-content/50">
+				<span>{fmt(ITER_MIN)}</span>
+				<span>{fmt(ITER_MAX)}</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="flex items-center gap-3">
+		{#if running}
+			<button class="btn btn-error btn-sm gap-2" on:click={stop}>
+				<span class="loading loading-spinner loading-xs"></span> Abbrechen
+			</button>
+		{:else}
+			<button class="btn btn-primary btn-sm gap-2" on:click={start}>▶ Generierung starten</button>
+		{/if}
+		{#if current && current.progress}
+			<div class="flex flex-1 items-center gap-3">
+				<progress class="progress progress-primary w-48" value={progressPct} max="100"></progress>
+				<span class="text-xs tabular-nums text-base-content/70">
+					{fmt(current.progress.iteration)} / {fmt(current.progress.total)} · Kosten {current.progress.bestCost?.toFixed?.(
+						2
+					) ?? current.progress.bestCost} · offen {current.progress.unfilled} ·
+					{current.progress.balance ? '⚖ balanciert' : 'nicht balanciert'}
+				</span>
+			</div>
+		{/if}
+	</div>
+
+	{#if errorMsg}
+		<div class="alert alert-error" transition:fade>
+			<span>{errorMsg}</span>
+		</div>
+	{/if}
+
+	<!-- Terminal -->
+	<div
+		bind:this={termEl}
+		class="h-96 overflow-auto rounded-lg border border-base-300 p-3 font-mono text-xs leading-relaxed"
+		style="background:#1e1e2e; color:#d4d4d4"
+	>
+		{#if !lines.length && !current && !running}
+			<div class="text-base-content/40" style="color:#6c7086">
+				Bereit. Parameter wählen und „Generierung starten" drücken.
+			</div>
+		{/if}
+		{#each lines as line}
+			<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
+		{/each}
+		{#if current}
+			<div class="flex items-start gap-2 whitespace-pre-wrap break-words" style="color:#f9e2af">
+				<span class="loading loading-spinner loading-xs mt-0.5"></span>
+				<span>{@html current.html}</span>
+			</div>
+		{/if}
+	</div>
+</div>
+
+{#if report}
+	<div class="mx-2 my-4 flex flex-col gap-4" transition:fade>
+		<div class="flex flex-wrap items-center gap-3">
+			<h2 class="text-xl font-semibold">Ergebnis-Report</h2>
+			{#if dryRun}
+				<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
+			{/if}
+		</div>
+
+		<!-- Kennzahlen -->
+		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+			{#each [{ label: 'Seed', value: report.seed }, { label: 'Iterationen', value: fmt(report.iterations) }, { label: 'gelaufen', value: fmt(report.iterationsRun) }, { label: 'früh gestoppt', value: report.stoppedEarly ? 'ja' : 'nein' }] as stat}
+				<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
+					<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
+					<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
+				</div>
+			{/each}
+		</div>
+
+		<div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+			<!-- Balance -->
+			<div
+				class="rounded-lg border bg-base-100 p-4 {report.balance.satisfied
+					? 'border-success/40'
+					: 'border-error/40'}"
+			>
+				<div class="mb-3 flex items-center justify-between">
+					<span class="font-medium">Balance</span>
+					<span class="badge {report.balance.satisfied ? 'badge-success' : 'badge-error'}">
+						{report.balance.satisfied ? '✓ ±Toleranz erfüllt' : '✗ nicht erfüllt'}
+					</span>
+				</div>
+				<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm tabular-nums">
+					<span class="text-base-content/60">Aufsichten</span>
+					<span class="text-right">{report.balance.invigilators}</span>
+					<span class="text-base-content/60">Toleranz</span>
+					<span class="text-right">±{report.balance.toleranceMin} Min.</span>
+					<span class="text-base-content/60">in Toleranz</span>
+					<span class="text-right text-success">{report.balance.withinTolerance}</span>
+					<span class="text-base-content/60">darüber</span>
+					<span class="text-right text-warning"
+						>{report.balance.over} (max {report.balance.maxOver})</span
+					>
+					<span class="text-base-content/60">darunter</span>
+					<span class="text-right text-warning"
+						>{report.balance.under} (max {report.balance.maxUnder})</span
+					>
+				</div>
+			</div>
+
+			<!-- Coverage + Minutes -->
+			<div class="flex flex-col gap-3">
+				<div
+					class="rounded-lg border bg-base-100 p-4 {report.coverage.unfilled === 0
+						? 'border-success/40'
+						: 'border-error/40'}"
+				>
+					<div class="mb-3 flex items-center justify-between">
+						<span class="font-medium">Abdeckung</span>
+						<span class="badge {report.coverage.unfilled === 0 ? 'badge-success' : 'badge-error'}">
+							{report.coverage.unfilled === 0
+								? '✓ vollständig'
+								: `${report.coverage.unfilled} offen`}
+						</span>
+					</div>
+					<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm tabular-nums">
+						<span class="text-base-content/60">Positionen</span>
+						<span class="text-right">{report.coverage.positions}</span>
+						<span class="text-base-content/60">unbesetzt</span>
+						<span
+							class="text-right {report.coverage.unfilled === 0 ? 'text-success' : 'text-error'}"
+							>{report.coverage.unfilled}</span
+						>
+					</div>
+				</div>
+
+				<div class="rounded-lg border border-base-300 bg-base-100 p-4">
+					<div class="mb-3 font-medium">
+						Minuten <span class="text-xs text-base-content/50"
+							>(±{report.minutes.toleranceMin})</span
+						>
+					</div>
+					<div class="grid grid-cols-3 gap-2 text-center text-sm tabular-nums">
+						<div class="rounded bg-success/10 p-2">
+							<div class="text-lg font-semibold text-success">{report.minutes.withinTolerance}</div>
+							<div class="text-[10px] text-base-content/60">in Toleranz</div>
+						</div>
+						<div class="rounded bg-warning/10 p-2">
+							<div class="text-lg font-semibold text-warning">{report.minutes.over}</div>
+							<div class="text-[10px] text-base-content/60">darüber</div>
+						</div>
+						<div class="rounded bg-info/10 p-2">
+							<div class="text-lg font-semibold text-info">{report.minutes.under}</div>
+							<div class="text-[10px] text-base-content/60">darunter</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+			<!-- Outlier -->
+			<div class="rounded-lg border border-base-300 bg-base-100 p-4">
+				<div class="mb-3 font-medium">Ausreißer</div>
+				{#if report.outliers.length}
+					<div class="overflow-x-auto">
+						<table class="table table-zebra table-xs">
+							<thead>
+								<tr>
+									<th>ID</th>
+									<th class="text-right">geleistet</th>
+									<th class="text-right">Soll</th>
+									<th class="text-right">offen</th>
+									<th class="text-right">%</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each report.outliers as o}
+									<tr>
+										<td class="tabular-nums">{o.invigilatorID}</td>
+										<td class="text-right tabular-nums">{o.doing}</td>
+										<td class="text-right tabular-nums">{o.target}</td>
+										<td class="text-right tabular-nums">{o.open}</td>
+										<td
+											class="text-right tabular-nums {o.percent >= 100
+												? 'text-success'
+												: o.percent >= 80
+													? 'text-warning'
+													: 'text-error'}">{o.percent?.toFixed?.(0) ?? o.percent}%</td
+										>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{:else}
+					<div class="text-sm text-base-content/50">keine</div>
+				{/if}
+			</div>
+
+			<!-- Soft-Cost -->
+			<div class="rounded-lg border border-base-300 bg-base-100 p-4">
+				<div class="mb-3 flex items-center justify-between">
+					<span class="font-medium">Soft-Cost</span>
+					<span class="badge badge-neutral tabular-nums"
+						>Σ {report.softCost.total?.toFixed?.(2) ?? report.softCost.total}</span
+					>
+				</div>
+				{#if report.softCost.breakdown.length}
+					{@const maxCost = Math.max(
+						...report.softCost.breakdown.map((/** @type {any} */ b) => b.cost),
+						1
+					)}
+					<div class="flex flex-col gap-2">
+						{#each report.softCost.breakdown as b}
+							<div>
+								<div class="flex justify-between text-xs">
+									<span class="text-base-content/70">{b.name}</span>
+									<span class="tabular-nums">{b.cost?.toFixed?.(2) ?? b.cost}</span>
+								</div>
+								<progress
+									class="progress progress-secondary h-1.5 w-full"
+									value={b.cost}
+									max={maxCost}
+								></progress>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="text-sm text-base-content/50">keine</div>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Fairness -->
+		<div class="rounded-lg border border-base-300 bg-base-100 p-4">
+			<div class="mb-3 font-medium">Fairness-Verteilung</div>
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+				{#each report.fairness as f}
+					<div>
+						<div class="mb-2 flex items-baseline justify-between">
+							<span class="text-sm font-medium capitalize">{f.kind}</span>
+							<span class="text-xs text-base-content/50">Σ {f.total} · max {f.max}</span>
+						</div>
+						<div class="flex flex-col gap-1">
+							{#each f.buckets as bucket}
+								{@const maxInv = Math.max(
+									...f.buckets.map((/** @type {any} */ x) => x.invigilators),
+									1
+								)}
+								<div class="flex items-center gap-2 text-xs">
+									<span class="w-8 text-right tabular-nums text-base-content/60"
+										>{bucket.count}×</span
+									>
+									<div class="h-4 flex-1 overflow-hidden rounded bg-base-200">
+										<div
+											class="h-full bg-primary"
+											style="width: {(bucket.invigilators / maxInv) * 100}%"
+										></div>
+									</div>
+									<span class="w-10 tabular-nums text-base-content/70">{bucket.invigilators}</span>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/each}
+			</div>
+		</div>
+	</div>
+{/if}
