@@ -111,8 +111,9 @@
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/invigilator_requirements">Anforderungen und Planung</a></li>
-				<li><a href="/plan/invigilation/generate">Generierung</a></li>
 				<li><a href="/plan/invigilation">Zeitplan</a></li>
+				<li><a href="/plan/invigilation/generate">Generierung</a></li>
+				<li><a href="/plan/invigilation/validate">Validierung</a></li>
 			</ul>
 		</div>
 
