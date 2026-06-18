@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import {
 		validationSummary,
+		validationDots,
 		runValidationCheck,
 		zpaSummary,
 		runZpaCheck
@@ -258,20 +259,19 @@
 				Validierung
 			</a>
 			<button
-				class="btn btn-ghost btn-sm btn-circle"
-				title={statusTitle('Validierung', $validationSummary)}
+				class="btn btn-ghost btn-sm gap-1 px-2"
 				aria-label="Validierung jetzt prüfen"
 				on:click={runValidationCheck}
 			>
-				{#if $validationSummary.running}
-					<span class="loading loading-spinner loading-xs"></span>
-				{:else}
+				{#each $validationDots as d}
 					<span
-						class="inline-block h-2.5 w-2.5 rounded-full {dotClass($validationSummary.level)}"
-						class:opacity-50={$validationSummary.partial}
-						class:animate-pulse={$validationSummary.level === 'error'}
+						class="inline-block h-2.5 w-2.5 rounded-full {d.running
+							? 'animate-pulse bg-info'
+							: dotClass(d.level)}"
+						class:animate-pulse={d.level === 'error'}
+						title={statusTitle(d.title, d)}
 					></span>
-				{/if}
+				{/each}
 			</button>
 		</div>
 

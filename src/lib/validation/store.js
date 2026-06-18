@@ -88,6 +88,11 @@ export const validationSummary = derived(validationStore, ($s) =>
 	)
 );
 
+// Pro-Gruppe-Status in fester Reihenfolge (für die drei Punkte in der Nav).
+export const validationDots = derived(validationStore, ($s) =>
+	validationGroups.map((g) => ({ id: g.id, title: g.title, ...summarize([$s[g.id]], 1) }))
+);
+
 // Eigene Ampel nur für die ZPA-Validierungen (separat von der allgemeinen).
 export const zpaSummary = derived(validationStore, ($s) => summarize([$s[zpaGroup.id]], 1));
 
