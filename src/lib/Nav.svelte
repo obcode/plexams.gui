@@ -60,25 +60,6 @@
 	<div class="flex-none">
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Plan </label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
-				<li><a href="/plan/pre">Vorab-Planung (ohne Primuss-Daten)</a></li>
-				<li><a href="/plan/exams">Prüfungen planen</a></li>
-				<li><a href="/plan/kdprooms">Raumplanung KDP</a></li>
-				<li><a href="/plan/calendar">Kalenderansicht</a></li>
-				<!-- <li><a href="/plan/ntas">geplante Prüfungen mit NTAs</a></li> -->
-				<li><a href="/plan/rooms">Raumplanung</a></li>
-				<li><a href="/plan/plannedRooms">Geplante Räume</a></li>
-				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
-				<li><a href="/plan/examsInPlanZPA">Prüfungsliste für ZPA</a></li>
-			</ul>
-		</div>
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label tabindex="-1" class="btn btn-ghost"> Vorbereitung </label>
 			<ul
 				tabindex="-1"
@@ -91,11 +72,49 @@
 				<li><a href="/exam/constraints">Constraints</a></li>
 				<li><a href="/exam/kdp">EXaHM/SEB</a></li>
 				<li><a href="/plan/annyBookings">Anny-Buchungen</a></li>
-				<li><a href="/rooms">Räume</a></li>
-				<li><a href="/exam/externalExams">Zusätzliche Prüfungen</a></li>
 				<li><a href="/exam/connected">Anmeldungszuordnung (ZPA/Primuss)</a></li>
 			</ul>
 		</div>
+
+		<div class="dropdown dropdown-end">
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label tabindex="-1" class="btn btn-ghost"> Terminplanung </label>
+			<ul
+				tabindex="-1"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+			>
+				<li><a href="/exam/generatedExams">generierte Prüfungen mit Anmeldungen, etc.</a></li>
+				<li><a href="/plan/pre">Vorab-Planung (ohne Primuss-Daten)</a></li>
+				<li><a href="/plan/exams">Prüfungen planen</a></li>
+			</ul>
+		</div>
+
+		<div class="dropdown dropdown-end">
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label tabindex="-1" class="btn btn-ghost"> Raumplanung </label>
+			<ul
+				tabindex="-1"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+			>
+				<li><a href="/plan/kdprooms">Raumplanung KDP</a></li>
+				<li><a href="/plan/rooms">Raumplanung</a></li>
+				<li><a href="/plan/plannedRooms">Geplante Räume</a></li>
+				<li><a href="/rooms">Vorhandene Räume</a></li>
+			</ul>
+		</div>
+
+		<div class="dropdown dropdown-end">
+			<!-- svelte-ignore a11y-label-has-associated-control -->
+			<label tabindex="-1" class="btn btn-ghost"> Aufsichtenplanung </label>
+			<ul
+				tabindex="-1"
+				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
+			>
+				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
+				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
+			</ul>
+		</div>
+
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
 			<label tabindex="-1" class="btn btn-ghost"> NTA </label>
@@ -112,27 +131,17 @@
 		</div>
 		<div class="dropdown dropdown-end">
 			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> ZPA </label>
+			<label tabindex="-1" class="btn btn-ghost"> Externe Daten </label>
 			<ul
 				tabindex="-1"
 				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
 			>
 				<li><a href="/zpa/exams">Prüfungsliste (ZPA)</a></li>
-				<li><a href="/zpa/teacher">Dozierende</a></li>
-				<li><a href="/zpa/invigilators">Aufsichten</a></li>
-				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
-				<li><a href="/zpa/studentregs">Importfehler Anmeldungen</a></li>
-			</ul>
-		</div>
-		<div class="dropdown dropdown-end">
-			<!-- svelte-ignore a11y-label-has-associated-control -->
-			<label tabindex="-1" class="btn btn-ghost"> Primuss / CSV</label>
-			<ul
-				tabindex="-1"
-				class="mt-3 p-2 z-30 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-max"
-			>
-				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen aus CSVs</a></li>
-				<li><a href="/primuss/exams">Prüfungslisten aus Primuss</a></li>
+				<li><a href="/zpa/teacher">Dozierende (ZPA)</a></li>
+				<li><a href="/zpa/invigilators">Aufsichten (ZPA)</a></li>
+				<li><a href="/zpa/studentregs">Importfehler Anmeldungen (ZPA)</a></li>
+				<li><a href="/primuss/mucdai">MUC.DAI-Prüfungen (CSV)</a></li>
+				<li><a href="/primuss/exams">Prüfungslisten (Primuss)</a></li>
 			</ul>
 		</div>
 		Theme:

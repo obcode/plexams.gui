@@ -26,17 +26,6 @@
 	const stillOpenPerInvig = Math.round(stillOpen / data.todos.invigilators.length);
 	const progressPercent = sumTotal > 0 ? Math.round((sumDoing / sumTotal) * 100) : 0;
 
-	// shared scale for the progress bars across all invigilators
-	let maxMinutes = 0;
-	for (const invig of data.todos.invigilators) {
-		maxMinutes = Math.max(
-			maxMinutes,
-			invig.todos.totalMinutes ?? 0,
-			invig.todos.doingMinutes ?? 0,
-			invig.requirements?.allContributions ?? 0
-		);
-	}
-
 	$: {
 		let filteredInvigilatorsTmp = [];
 		filteredInvigilators = filteredInvigilatorsTmp;
@@ -205,8 +194,8 @@
 				semesterConfig={data.semesterConfig}
 				{index}
 				{invigilator}
-				{maxMinutes}
 				{showInvigilations}
+				base100={todos.todoPerInvigilatorOvertimeCutted}
 			/>
 		{/each}
 	</div>
