@@ -112,6 +112,7 @@
 			>
 				<li><a href="/zpa/invigilator_requirements">Aufsichten mit Anforderungen</a></li>
 				<li><a href="/plan/invigilation/1">Aufsichtenplanung</a></li>
+				<li><a href="/plan/invigilation/generate">Generierung</a></li>
 			</ul>
 		</div>
 

@@ -44,6 +44,8 @@
 		"@fullcalendar/core": "^6.1.17",
 		"@fullcalendar/daygrid": "^6.1.17",
 		"@fullcalendar/timegrid": "^6.1.17",
+		"ansi-to-html": "^0.7.2",
+		"graphql-ws": "^6.0.8",
 		"html-to-image": "^1.11.13",
 		"jszip": "^3.10.1",
 		"svelte-fullcalendar": "^3.0.0"
