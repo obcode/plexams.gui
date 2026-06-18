@@ -26,6 +26,49 @@
 	const stillOpenPerInvig = Math.round(stillOpen / data.todos.invigilators.length);
 	const progressPercent = sumTotal > 0 ? Math.round((sumDoing / sumTotal) * 100) : 0;
 
+	// --- Übersichts-Grafiken ---
+	const invigCount = invigilators.length;
+
+	// noch offene Minuten je Aufsicht (Abweichung vom Soll)
+	const openMinutesList = invigilators.map(
+		(/** @type {any} */ i) => i.todos.totalMinutes - i.todos.doingMinutes
+	);
+
+	// Erfüllung: „fertig" = keine offenen Minuten mehr (geleistet ≥ zu leisten)
+	const doneCount = openMinutesList.filter((/** @type {number} */ o) => o <= 0).length;
+	const donePercent = invigCount > 0 ? Math.round((doneCount / invigCount) * 100) : 0;
+
+	// Dot-Plot: ein Punkt pro Aufsicht, an seiner Position auf der „noch offen"-Achse.
+	// Punkte mit ähnlichem Wert werden gestapelt, damit man die Dichte sieht.
+	const openMin = openMinutesList.length ? Math.min(...openMinutesList) : 0;
+	const openMax = openMinutesList.length ? Math.max(...openMinutesList) : 0;
+	const openSpan = openMax - openMin || 1;
+	const DOT_BINS = 40;
+	const DOT_STEP = 8; // px je gestapeltem Punkt
+	/** @type {Record<number, number>} */
+	const binFill = {};
+	const openDots = [...openMinutesList]
+		.sort((a, b) => a - b)
+		.map((v) => {
+			const t = (v - openMin) / openSpan;
+			const bin = Math.round(t * (DOT_BINS - 1));
+			const stack = binFill[bin] ?? 0;
+			binFill[bin] = stack + 1;
+			const cls = v <= 0 ? 'bg-success' : v <= 200 ? 'bg-warning' : 'bg-error';
+			return { leftPct: t * 100, bottom: stack * DOT_STEP, value: v, cls };
+		});
+	const maxStack = Math.max(1, ...Object.values(binFill));
+	const dotPlotHeight = maxStack * DOT_STEP + 6;
+	const zeroPct = openMin < 0 && openMax > 0 ? ((0 - openMin) / openSpan) * 100 : null;
+
+	// Zusammensetzung der angerechneten/geleisteten Zeiten
+	const composition = [
+		{ label: 'Räume', value: todos.sumExamRooms ?? 0, cls: 'bg-orange-300' },
+		{ label: 'Reserve', value: todos.sumReserve ?? 0, cls: 'bg-yellow-300' },
+		{ label: 'anrechenbar', value: todos.sumOtherContributions ?? 0, cls: 'bg-info' }
+	];
+	const compTotal = composition.reduce((s, c) => s + c.value, 0) || 1;
+
 	$: {
 		let filteredInvigilatorsTmp = [];
 		filteredInvigilators = filteredInvigilatorsTmp;
@@ -137,6 +180,79 @@
 				</div>
 			</div>
 		{/each}
+	</div>
+
+	<div class="grid grid-cols-1 gap-3 md:grid-cols-4">
+		<!-- Erfüllung -->
+		<div
+			class="flex flex-col items-center justify-center rounded-lg border border-base-300 bg-base-100 p-3"
+		>
+			<div class="mb-2 text-xs font-medium text-base-content/60">fertig (nichts offen)</div>
+			<div
+				class="radial-progress text-success"
+				style="--value:{donePercent}; --size:6rem; --thickness:0.6rem"
+				role="progressbar"
+			>
+				{donePercent} %
+			</div>
+			<div class="mt-2 text-sm tabular-nums">{doneCount} / {invigCount}</div>
+		</div>
+
+		<!-- Verteilung der noch offenen Minuten als Dot-Plot -->
+		<div class="rounded-lg border border-base-300 bg-base-100 p-3 md:col-span-2">
+			<div class="mb-3 flex items-baseline justify-between">
+				<span class="text-xs font-medium text-base-content/60"
+					>Verteilung „noch offen" — ein Punkt pro Aufsicht</span
+				>
+				<span class="text-[10px] text-base-content/50">{invigCount} Aufsichten</span>
+			</div>
+			<div class="relative" style="height: {dotPlotHeight}px">
+				{#if zeroPct !== null}
+					<div class="absolute inset-y-0 w-px bg-base-300" style="left: {zeroPct}%"></div>
+					<div
+						class="absolute -top-3 -translate-x-1/2 text-[9px] text-base-content/50"
+						style="left: {zeroPct}%"
+					>
+						0
+					</div>
+				{/if}
+				{#each openDots as d}
+					<div
+						class="absolute h-1.5 w-1.5 -translate-x-1/2 rounded-full opacity-80 {d.cls}"
+						style="left: {d.leftPct}%; bottom: {d.bottom}px"
+						title="{d.value} Min. offen"
+					></div>
+				{/each}
+			</div>
+			<div class="mt-1 flex justify-between text-[10px] text-base-content/60">
+				<span>min {openMin} Min.</span>
+				<span>max {openMax} Min.</span>
+			</div>
+		</div>
+
+		<!-- Zusammensetzung der Zeiten -->
+		<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+			<div class="mb-2 text-xs font-medium text-base-content/60">Zusammensetzung der Zeiten</div>
+			<div class="flex h-4 w-full overflow-hidden rounded">
+				{#each composition as c}
+					<div
+						class={c.cls}
+						style="width: {(c.value / compTotal) * 100}%"
+						title="{c.label}: {c.value} Min."
+					></div>
+				{/each}
+			</div>
+			<div class="mt-2 flex flex-col gap-1 text-[11px]">
+				{#each composition as c}
+					<div class="flex items-center justify-between">
+						<span class="flex items-center gap-1.5">
+							<span class="inline-block h-2 w-2 rounded-full {c.cls}"></span>{c.label}
+						</span>
+						<span class="tabular-nums">{c.value} Min.</span>
+					</div>
+				{/each}
+			</div>
+		</div>
 	</div>
 
 	<div class="flex flex-wrap justify-center gap-1">
