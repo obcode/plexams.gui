@@ -6,7 +6,7 @@
 	// --- Eingaben ---
 	let dryRun = true;
 	let seed = 1;
-	let iterations = 1_000_000;
+	let iterations = 2_000_000;
 
 	const ITER_MIN = 1_000_000;
 	const ITER_MAX = 20_000_000;

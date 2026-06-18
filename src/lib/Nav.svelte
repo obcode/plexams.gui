@@ -100,6 +100,7 @@
 				<li><a href="/plan/rooms">Raumplanung</a></li>
 				<li><a href="/plan/plannedRooms">Geplante Räume</a></li>
 				<li><a href="/rooms">Vorhandene Räume</a></li>
+				<li><a href="/plan/rooms/validate">Validierung</a></li>
 			</ul>
 		</div>
 
@@ -146,6 +147,8 @@
 				<li><a href="/primuss/exams">Prüfungslisten (Primuss)</a></li>
 			</ul>
 		</div>
+		<a class="btn btn-ghost" href="/validate"> Validierung </a>
+
 		Theme:
 		<select data-choose-theme class="select select-xs w-32">
 			<option disabled selected>Wähle ein Thema</option>
