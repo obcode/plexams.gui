@@ -141,7 +141,6 @@
 						v.lines.push({ level: 'PROGRESS', html: v.current.html });
 					} else {
 						if (v.current) {
-							v.lines.push({ level: 'PROGRESS', html: v.current.html });
 							v.current = null;
 						}
 						v.lines.push({ level: line.level, html });
