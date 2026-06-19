@@ -1,8 +1,8 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(grep -rl '\\\\$houdini' src/)",
-      "Bash(grep -rl '\\\\$props\\\\|\\\\$state\\\\|\\\\$derived' src/)"
-    ]
-  }
+	"permissions": {
+		"allow": [
+			"Bash(grep -rl '\\\\$houdini' src/)",
+			"Bash(grep -rl '\\\\$props\\\\|\\\\$state\\\\|\\\\$derived' src/)"
+		]
+	}
 }

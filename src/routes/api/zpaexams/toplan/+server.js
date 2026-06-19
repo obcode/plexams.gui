@@ -19,9 +19,9 @@ export async function GET({ url }) {
 				isRepeaterExam
 				groups
 				primussAncodes {
-        			program
-        			ancode
-    			}
+					program
+					ancode
+				}
 			}
 		}
 	`;

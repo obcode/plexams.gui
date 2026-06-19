@@ -30,6 +30,7 @@ npm run update-schema.graphql    # refetch schema from $PLEXAMS_SERVER, then cod
 ## Backend connection
 
 The backend URL comes from `.env`:
+
 - `PLEXAMS_SERVER` — private, used server-side (default `http://localhost:8080/query`).
 - `PUBLIC_PLEXAMS_SERVER` — exposed to the client.
 
@@ -43,7 +44,7 @@ There are **two GraphQL access patterns**, both using the `graphql-request` libr
 
 2. **Client-side proxy endpoints** — `src/routes/api/**/+server.js` expose `GET`/`POST` handlers that forward a query or mutation to the backend (`import { env } from '$env/dynamic/private'`). Svelte components `fetch('/api/...')` these for interactivity (e.g. assigning an exam to a slot, planning a room). **Mutations go through these `/api` endpoints**, never directly from the browser. When adding interactivity, add an `/api/<name>/+server.js` that wraps the GraphQL call and `fetch` it from the component.
 
-GraphQL queries are written inline as `gql\`...\`` template strings in each `+page.server.js` / `+server.js` — there are no shared `.graphql` document files. The same large exam selection set is duplicated across many files; when changing a query's fields, search for the other copies.
+GraphQL queries are written inline as `gql\`...\``template strings in each`+page.server.js`/`+server.js`— there are no shared`.graphql` document files. The same large exam selection set is duplicated across many files; when changing a query's fields, search for the other copies.
 
 ### Caveats about the data layer
 
@@ -53,10 +54,11 @@ GraphQL queries are written inline as `gql\`...\`` template strings in each `+pa
 ## Routes / domain map
 
 Route folders mirror the planning workflow. Key domain terms:
+
 - **Exam / Prüfung** — has an `ancode` (the primary identifier across the system), a `mainExamer`, registrations, conflicts, constraints.
 - **ZPA** — the central exam-administration system; source of exams to plan.
 - **Primuss** — the registration system; source of student registrations (`studentRegs`).
-- **NTA** — *Nachteilsausgleich*, disability accommodations (extra time, room-alone, etc.); a cross-cutting concern attached to exams and students (`mtknr` = student id).
+- **NTA** — _Nachteilsausgleich_, disability accommodations (extra time, room-alone, etc.); a cross-cutting concern attached to exams and students (`mtknr` = student id).
 - **Slot** — a (day, time) cell in the plan grid; exams are assigned to slots.
 - **Room planning** — assigning rooms to slotted exams; **KDP / EXaHM / SEB** are special computer-exam room categories. **Anny** is an external room-booking source.
 - **Invigilation / Aufsicht** — assigning supervisors to exam rooms per day/slot.

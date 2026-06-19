@@ -124,6 +124,10 @@
 				{ href: '/primuss/mucdai', label: 'MUC.DAI-Prüfungen (CSV)' },
 				{ href: '/primuss/exams', label: 'Prüfungslisten (Primuss)' }
 			]
+		},
+		{
+			label: 'E-Mails',
+			items: [{ href: '/email', label: 'E-Mails versenden' }]
 		}
 	];
 
