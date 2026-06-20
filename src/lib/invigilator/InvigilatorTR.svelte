@@ -108,9 +108,9 @@
 		<a
 			href="/plan/invigilation?focus={invigilator.teacher.id}"
 			class="block rounded px-2 py-1 font-bold hover:underline {nameBg(invigilator)}"
-			title="im Aufsichtsplan anzeigen"
+			title="ID {invigilator.teacher.id} — im Aufsichtsplan anzeigen"
 		>
-			{invigilator.teacher.shortname} ({invigilator.teacher.id})
+			{invigilator.teacher.shortname}
 		</a>
 
 		{#if invigilator.requirements}
