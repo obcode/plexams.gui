@@ -20,14 +20,16 @@ export function backendBase() {
  */
 
 /**
- * Einzeldatei hochladen (z. B. ein im Browser erzeugtes PNG pro Aufsicht).
- * @param {{ kind: string, key: string | number, blob: Blob, filename: string }} p
+ * Einzeldatei hochladen (z. B. ein im Browser erzeugtes PNG pro Aufsicht oder
+ * ein einzelnes Deckblatt-PDF). `key` ist optional: ohne key leitet der Server
+ * ihn aus den End-Ziffern des Dateinamens ab (HTTP 400, wenn das misslingt).
+ * @param {{ kind: string, key?: string | number | null, blob: Blob, filename: string }} p
  * @returns {Promise<{ ok: boolean, blocked: boolean, result?: any, error?: string }>}
  */
 export async function uploadAttachment({ kind, key, blob, filename }) {
 	const fd = new FormData();
 	fd.append('kind', kind);
-	fd.append('key', String(key));
+	if (key !== undefined && key !== null && String(key) !== '') fd.append('key', String(key));
 	fd.append('file', blob, filename);
 	return postUpload(`${backendBase()}/upload/email-attachment`, fd);
 }

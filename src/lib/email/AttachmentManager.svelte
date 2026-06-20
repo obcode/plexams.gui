@@ -4,7 +4,8 @@
 	import {
 		listAttachments,
 		clearAttachments,
-		uploadAttachmentsZip
+		uploadAttachmentsZip,
+		uploadAttachment
 	} from '$lib/email/attachments';
 
 	// Wiederverwendbare Verwaltung des E-Mail-Anhang-Speichers für EINE Art
@@ -23,6 +24,10 @@
 	export let unitPlural = 'Anhänge';
 	/** ZIP-Upload anbieten (für cover-page) */
 	export let acceptZip = false;
+	/** Einzeldatei-Upload („nachreichen") anbieten */
+	export let acceptSingle = false;
+	/** accept-Attribut des Einzeldatei-Inputs, z. B. '.pdf' */
+	export let singleAccept = '';
 	/** optional: erwartete keys für Abgleich, [{ key, label }]
 	 * @type {{ key: string | number, label: string }[]} */
 	export let expectedKeys = [];
@@ -43,8 +48,20 @@
 	let confirming = false;
 	let clearing = false;
 
+	// Einzeldatei nachreichen
+	/** gewählter key (leer = aus Dateiname ableiten) */
+	let singleKey = '';
+	let singleUploading = false;
+	/** @type {{ filename: string, key: string } | null} */
+	let singleResult = null;
+	let singleBlocked = false;
+	/** @type {string | null} */
+	let singleError = null;
+
 	/** @type {HTMLInputElement} */
 	let fileInput;
+	/** @type {HTMLInputElement} */
+	let singleInput;
 
 	// meldet den aktuellen Anhang-Stand nach oben (nach Laden/Upload/Leeren)
 	const dispatch = createEventDispatcher();
@@ -86,6 +103,39 @@
 			return;
 		}
 		uploadResult = { stored: res.result?.stored ?? 0, skipped: res.result?.skipped ?? [] };
+		await load();
+	}
+
+	/** @param {Event} e */
+	async function onSingleSelected(e) {
+		const input = /** @type {HTMLInputElement} */ (e.target);
+		const file = input.files && input.files[0];
+		if (!file) return;
+		singleUploading = true;
+		singleResult = null;
+		singleBlocked = false;
+		singleError = null;
+		const res = await uploadAttachment({
+			kind,
+			key: singleKey || undefined,
+			blob: file,
+			filename: file.name
+		});
+		singleUploading = false;
+		input.value = '';
+		if (res.blocked) {
+			singleBlocked = true;
+			return;
+		}
+		if (!res.ok) {
+			// u. a. HTTP 400, wenn der Server keinen key aus dem Namen ableiten kann
+			singleError = res.error ?? 'Upload fehlgeschlagen';
+			return;
+		}
+		singleResult = {
+			filename: res.result?.filename ?? file.name,
+			key: String(res.result?.key ?? singleKey)
+		};
 		await load();
 	}
 
@@ -212,6 +262,54 @@
 			</button>
 		{/if}
 	</div>
+
+	<!-- Einzeldatei nachreichen -->
+	{#if acceptSingle}
+		<div class="flex flex-wrap items-end gap-3 rounded-lg border border-base-300 bg-base-200/40 p-3">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Einzelne Datei nachreichen</span>
+				<select class="select select-bordered select-sm w-72" bind:value={singleKey}>
+					<option value="">key aus Dateiname ableiten</option>
+					{#each expectedKeys as k (k.key)}
+						<option value={k.key}>{k.label} ({k.key})</option>
+					{/each}
+				</select>
+			</label>
+			<button
+				class="btn btn-primary btn-sm gap-2"
+				disabled={singleUploading}
+				on:click={() => singleInput.click()}
+			>
+				{#if singleUploading}
+					<span class="loading loading-spinner loading-xs"></span>
+				{/if}
+				⬆ Datei wählen & hochladen
+			</button>
+			<input
+				bind:this={singleInput}
+				type="file"
+				accept={singleAccept}
+				class="hidden"
+				on:change={onSingleSelected}
+			/>
+		</div>
+		{#if singleBlocked}
+			<div class="alert alert-warning py-2 text-sm" transition:fade>
+				<span>
+					Upload momentan nicht möglich: Es läuft gerade eine Validierung oder ein anderer
+					Transfer/E-Mail-Versand. Bitte später erneut versuchen.
+				</span>
+			</div>
+		{/if}
+		{#if singleError}
+			<div class="alert alert-error py-2 text-sm" transition:fade><span>{singleError}</span></div>
+		{/if}
+		{#if singleResult}
+			<div class="alert alert-success py-2 text-sm" transition:fade>
+				<span>Gespeichert: {singleResult.filename} (key {singleResult.key}).</span>
+			</div>
+		{/if}
+	{/if}
 
 	<!-- Upload-Rückmeldung -->
 	{#if uploadBlocked}

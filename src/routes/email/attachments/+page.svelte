@@ -61,9 +61,11 @@
 		<AttachmentManager
 			kind="cover-page"
 			title="Deckblätter"
-			description="ZIP mit den Deckblatt-PDFs hochladen. Der key (Lehrer-ID) wird aus der letzten Ziffernfolge des Dateinamens abgeleitet, z. B. Deckblatt_12345.pdf → 12345. Abgeglichen gegen die Prüfenden mit von mir geplanten Prüfungen."
+			description="ZIP mit allen Deckblatt-PDFs hochladen oder ein einzelnes PDF nachreichen. Der key (Lehrer-ID) wird aus der letzten Ziffernfolge des Dateinamens abgeleitet (z. B. Deckblatt_12345.pdf → 12345) oder beim Einzel-Upload direkt gewählt. Abgeglichen gegen die Prüfenden mit von mir geplanten Prüfungen."
 			unitPlural="Deckblätter"
 			acceptZip={true}
+			acceptSingle={true}
+			singleAccept=".pdf"
 			expectedKeys={data.expectedExamers}
 			on:change={(e) => (coverAttachments = e.detail)}
 		/>
