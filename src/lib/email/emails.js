@@ -55,6 +55,16 @@ export const publishedEmails = [
 ];
 
 /** @type {EmailDef[]} */
+export const coverPageEmails = [
+	{
+		key: 'sendEmailCoverPages',
+		title: 'Deckblätter (alle)',
+		description:
+			'Deckblatt-PDFs an alle Prüfenden mit von mir geplanten Prüfungen. Vorher die PDFs unter „Anhänge“ hochladen. Einzelversand auf der Anhänge-Seite.'
+	}
+];
+
+/** @type {EmailDef[]} */
 export const invigilationEmails = [
 	{
 		key: 'sendEmailInvigilations',
@@ -73,6 +83,7 @@ export const invigilationEmails = [
 export const emailGroups = [
 	{ id: 'constraints', title: 'Vorbereitung', emails: constraintEmails },
 	{ id: 'planning', title: 'Planung', emails: planningEmails },
+	{ id: 'coverpages', title: 'Deckblätter', emails: coverPageEmails },
 	{ id: 'published', title: 'Veröffentlichung', emails: publishedEmails },
 	{ id: 'invigilation', title: 'Aufsichten', emails: invigilationEmails }
 ];

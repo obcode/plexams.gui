@@ -16,6 +16,12 @@
 	export let title;
 	/** kurze Beschreibung darunter */
 	export let description = '';
+	/** zusätzliche Subscription-Argumente neben `run`, z. B.
+	 * { teacherID: { type: 'Int!', value: 123 } }
+	 * @type {Record<string, { type: string, value: any }>} */
+	export let extraArgs = {};
+	/** Buttons deaktivieren (z. B. solange keine Auswahl getroffen ist) */
+	export let disabled = false;
 
 	// --- Laufzeit-Status ---
 	let running = false;
@@ -80,10 +86,18 @@
 			return;
 		}
 
+		// Query + Variablen aus run + optionalen extraArgs aufbauen.
+		const entries = Object.entries(extraArgs);
+		const decls = ['$run: Boolean!', ...entries.map(([n, a]) => `$${n}: ${a.type}`)].join(', ');
+		const callArgs = ['run: $run', ...entries.map(([n]) => `${n}: $${n}`)].join(', ');
+		/** @type {Record<string, any>} */
+		const variables = { run };
+		for (const [n, a] of entries) variables[n] = a.value;
+
 		unsubscribe = wsClient.subscribe(
 			{
-				query: `subscription ($run: Boolean!) { ${emailKey}(run: $run) { level text } }`,
-				variables: { run }
+				query: `subscription (${decls}) { ${emailKey}(${callArgs}) { level text } }`,
+				variables
 			},
 			{
 				/** @param {any} msg */
@@ -176,7 +190,11 @@
 
 	<!-- Aktionen -->
 	<div class="flex flex-wrap items-center gap-2">
-		<button class="btn btn-primary btn-sm gap-2" disabled={running} on:click={() => start(false)}>
+		<button
+			class="btn btn-primary btn-sm gap-2"
+			disabled={running || disabled}
+			on:click={() => start(false)}
+		>
 			{#if running && !lastReal}
 				<span class="loading loading-spinner loading-xs"></span>
 			{/if}
@@ -198,7 +216,7 @@
 		{:else}
 			<button
 				class="btn btn-outline btn-error btn-sm gap-2"
-				disabled={running}
+				disabled={running || disabled}
 				on:click={() => (confirming = true)}
 			>
 				✉ Wirklich senden …
