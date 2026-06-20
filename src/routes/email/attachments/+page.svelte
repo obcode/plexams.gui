@@ -37,11 +37,18 @@
 		<AttachmentManager
 			kind="invigilation-image"
 			title="Aufsichtskalender"
-			description="Pro Aufsicht ein Kalender-PNG (key = Aufsichts-ID). Am einfachsten direkt unter „Aufsichten mit Anforderungen“ über „Bilder auf Server hochladen“. Alternativ hier ein ZIP hochladen — der key wird aus der letzten Ziffernfolge des Dateinamens abgeleitet (die Export-Dateien heißen bereits <id>.png)."
+			description="Pro Aufsicht ein Kalender-PNG (key = Aufsichts-ID). Die Kalender werden aus den gerenderten Karten erzeugt — das geht auf „Aufsichten mit Anforderungen“ über „Kalender auf Server hochladen“."
 			unitPlural="Kalender"
-			acceptZip={true}
 			expectedKeys={data.expectedInvigilators}
-		/>
+		>
+			<a
+				slot="actions"
+				href="/zpa/invigilator_requirements"
+				class="btn btn-primary btn-sm gap-2"
+			>
+				⬆ Kalender auf Server hochladen
+			</a>
+		</AttachmentManager>
 	</section>
 
 	<section class="flex flex-col gap-3">

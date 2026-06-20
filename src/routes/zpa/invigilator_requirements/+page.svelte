@@ -443,7 +443,7 @@
 			<span class="loading loading-spinner loading-xs"></span>
 			{uploadProgress}
 		{:else}
-			⬆ Bilder auf Server hochladen
+			⬆ Kalender auf Server hochladen
 		{/if}
 	</button>
 </div>

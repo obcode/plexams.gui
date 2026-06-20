@@ -189,6 +189,9 @@
 			/>
 		{/if}
 
+		<!-- zusätzliche, kind-spezifische Aktion (z. B. Link zur Erzeugung) -->
+		<slot name="actions" />
+
 		<button class="btn btn-ghost btn-sm" on:click={load} disabled={loading}>↻ Aktualisieren</button>
 
 		<div class="flex-1"></div>
