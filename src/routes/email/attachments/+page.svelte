@@ -4,6 +4,12 @@
 
 	export let data;
 
+	// Hochgeladene Aufsichtskalender (vom AttachmentManager gemeldet) → steuert,
+	// ob „Veröffentlichte Aufsichten“ versendet werden kann.
+	/** @type {import('$lib/email/attachments').Attachment[]} */
+	let invigAttachments = [];
+	$: hasInvigImages = invigAttachments.length > 0;
+
 	// Hochgeladene Deckblätter (vom AttachmentManager gemeldet) → steuert, ob
 	// versendet werden kann und welche Prüfenden im Einzelversand wählbar sind.
 	/** @type {import('$lib/email/attachments').Attachment[]} */
@@ -40,6 +46,7 @@
 			description="Pro Aufsicht ein Kalender-PNG (key = Aufsichts-ID). Die Kalender werden aus den gerenderten Karten erzeugt — das geht nur auf „Aufsichten mit Anforderungen“."
 			unitPlural="Kalender"
 			expectedKeys={data.expectedInvigilators}
+			on:change={(e) => (invigAttachments = e.detail)}
 		>
 			<a
 				slot="actions"
@@ -54,6 +61,28 @@
 			Hinweis: Dieser Button wechselt auf die Seite „Aufsichten mit Anforderungen“. Dort musst du den
 			Upload mit „Kalender auf Server hochladen“ noch einmal auslösen.
 		</p>
+
+		<!-- Versand der veröffentlichten Aufsichten -->
+		<div class="flex flex-col gap-1">
+			<h3 class="text-sm font-semibold text-base-content/70">Versenden</h3>
+			<p class="text-xs text-base-content/50">
+				Probelauf mailt nur an die Testadresse. Je Aufsicht eine Mail mit ihrem Kalender; fehlt ein
+				PNG, kommt dafür eine WARN-Zeile — der Rest läuft weiter.
+			</p>
+		</div>
+
+		{#if !hasInvigImages}
+			<div class="alert alert-warning py-2 text-sm">
+				<span>Es sind noch keine Aufsichtskalender hochgeladen — Versand nicht möglich.</span>
+			</div>
+		{/if}
+
+		<EmailSender
+			emailKey="sendEmailPublishedInvigilations"
+			title="Veröffentlichte Aufsichten versenden"
+			description="Je Aufsicht eine Mail mit ihrem Aufsichtskalender."
+			disabled={!hasInvigImages}
+		/>
 	</section>
 
 	<section class="flex flex-col gap-3">

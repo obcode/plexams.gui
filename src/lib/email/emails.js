@@ -51,6 +51,12 @@ export const publishedEmails = [
 		key: 'sendEmailPublishedRooms',
 		title: 'Veröffentlichte Räume',
 		description: 'Die endgültig veröffentlichte Raumplanung'
+	},
+	{
+		key: 'sendEmailPublishedInvigilations',
+		title: 'Veröffentlichte Aufsichten',
+		description:
+			'Je Aufsicht eine Mail mit ihrem Aufsichtskalender (PNG). Vorher die Kalender unter „Anhänge“ hochladen; fehlende erscheinen als WARN-Zeile.'
 	}
 ];
 
