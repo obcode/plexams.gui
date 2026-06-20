@@ -4,11 +4,13 @@
 // Subscriptions. Argument jeder Subscription: `run: Boolean!`
 // (false = Probelauf, mailt nur an den Planer; true = wirklich versenden).
 //
-// Noch NICHT angeboten (Backend folgt in späteren Phasen): cover-pages,
-// primuss-data, nta-*, published-invigilations.
+// Versände mit Anhängen (Deckblätter, Aufsichtskalender) tragen zusätzlich
+// `links` auf die Seiten, wo Upload/Einzelversand/Erzeugung passieren.
+// Noch NICHT angeboten (Backend folgt später): primuss-data, nta-*.
 
 /**
- * @typedef {{ key: string, title: string, description: string }} EmailDef
+ * @typedef {{ href: string, label: string, primary?: boolean }} EmailLink
+ * @typedef {{ key: string, title: string, description: string, links?: EmailLink[] }} EmailDef
  * @typedef {{ id: string, title: string, emails: EmailDef[] }} EmailGroup
  */
 
@@ -37,36 +39,20 @@ export const planningEmails = [
 		key: 'sendEmailDraft',
 		title: 'Planentwurf',
 		description: 'Entwurf des Prüfungsplans zur Kontrolle an die Prüfenden'
-	}
-];
-
-/** @type {EmailDef[]} */
-export const publishedEmails = [
+	},
 	{
 		key: 'sendEmailPublishedExams',
 		title: 'Veröffentlichte Termine',
 		description: 'Die endgültig veröffentlichten Prüfungstermine'
-	},
-	{
-		key: 'sendEmailPublishedRooms',
-		title: 'Veröffentlichte Räume',
-		description: 'Die endgültig veröffentlichte Raumplanung'
-	},
-	{
-		key: 'sendEmailPublishedInvigilations',
-		title: 'Veröffentlichte Aufsichten',
-		description:
-			'Je Aufsicht eine Mail mit ihrem Aufsichtskalender (PNG). Vorher die Kalender unter „Anhänge“ hochladen; fehlende erscheinen als WARN-Zeile.'
 	}
 ];
 
 /** @type {EmailDef[]} */
-export const coverPageEmails = [
+export const roomEmails = [
 	{
-		key: 'sendEmailCoverPages',
-		title: 'Deckblätter (alle)',
-		description:
-			'Deckblatt-PDFs an alle Prüfenden mit von mir geplanten Prüfungen. Vorher die PDFs unter „Anhänge“ hochladen. Einzelversand auf der Anhänge-Seite.'
+		key: 'sendEmailPublishedRooms',
+		title: 'Veröffentlichte Räume',
+		description: 'Die endgültig veröffentlichte Raumplanung'
 	}
 ];
 
@@ -81,15 +67,39 @@ export const invigilationEmails = [
 		key: 'sendEmailInvigilationsMissing',
 		title: 'Fehlende Anforderungen für Aufsichten',
 		description: 'Erinnerung an noch nicht eingetragene / fehlende Anforderungen an die Aufsichten'
+	},
+	{
+		key: 'sendEmailPublishedInvigilations',
+		title: 'Veröffentlichte Aufsichten',
+		description:
+			'Je Aufsicht eine Mail mit ihrem Aufsichtskalender (PNG); fehlende erscheinen als WARN-Zeile. Die Kalender werden auf „Aufsichten mit Anforderungen“ erzeugt & hochgeladen.',
+		links: [
+			{ href: '/email/attachments', label: '→ Anhänge: Kalender' },
+			{ href: '/zpa/invigilator_requirements', label: '→ Aufsichten mit Anforderungen' }
+		]
 	}
 ];
 
-// Kanonische Reihenfolge der Gruppen für die Übersichtsseite /email.
+/** @type {EmailDef[]} */
+export const coverPageEmails = [
+	{
+		key: 'sendEmailCoverPages',
+		title: 'Deckblätter (alle)',
+		description:
+			'Deckblatt-PDFs an alle Prüfenden mit von mir geplanten Prüfungen. Hochladen (ZIP oder einzeln), Status-Abgleich und Einzelversand auf der Anhänge-Seite.',
+		links: [
+			{ href: '/email/attachments', label: '→ Anhänge: Deckblätter (hochladen & einzeln senden)' }
+		]
+	}
+];
+
+// Kanonische Reihenfolge der Gruppen für die Übersichtsseite /email
+// (Workflow-Reihenfolge; Deckblätter ganz am Ende).
 /** @type {EmailGroup[]} */
 export const emailGroups = [
 	{ id: 'constraints', title: 'Vorbereitung', emails: constraintEmails },
 	{ id: 'planning', title: 'Planung', emails: planningEmails },
-	{ id: 'coverpages', title: 'Deckblätter', emails: coverPageEmails },
-	{ id: 'published', title: 'Veröffentlichung', emails: publishedEmails },
-	{ id: 'invigilation', title: 'Aufsichten', emails: invigilationEmails }
+	{ id: 'rooms', title: 'Räume', emails: roomEmails },
+	{ id: 'invigilation', title: 'Aufsichten', emails: invigilationEmails },
+	{ id: 'coverpages', title: 'Deckblätter', emails: coverPageEmails }
 ];
