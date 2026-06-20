@@ -127,7 +127,10 @@
 		},
 		{
 			label: 'E-Mails',
-			items: [{ href: '/email', label: 'E-Mails versenden' }]
+			items: [
+				{ href: '/email', label: 'E-Mails versenden' },
+				{ href: '/email/attachments', label: 'Anhänge (Deckblätter, Bilder)' }
+			]
 		}
 	];
 
