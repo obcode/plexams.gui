@@ -490,7 +490,7 @@ type Query {
 	allProgramsInPlan: [String!]
 	ancodesInPlan: [Int!]
 	examerInPlan: [ExamerInPlan!]
-	examersWithExamsPlannedByMe: [ExamerInPlan!]!
+	examersWithExamsPlannedByMe: [Teacher!]!
 	preExamsInSlot(day: Int!, time: Int!): [PreExam!]
 	examsInSlot(day: Int!, time: Int!): [PlannedExam!]
 	examsWithoutSlot: [PlannedExam!]!

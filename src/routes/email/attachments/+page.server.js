@@ -9,8 +9,8 @@ export async function load() {
 	const query = gql`
 		query {
 			examersWithExamsPlannedByMe {
-				mainExamer
-				mainExamerID
+				id
+				shortname
 			}
 			invigilatorTodos {
 				invigilators {
@@ -28,8 +28,8 @@ export async function load() {
 	// Prüfende mit von mir geplanten Prüfungen (eindeutig nach ID)
 	const examerMap = new Map();
 	(data.examersWithExamsPlannedByMe ?? []).forEach((/** @type {any} */ e) => {
-		if (!examerMap.has(e.mainExamerID)) {
-			examerMap.set(e.mainExamerID, { key: e.mainExamerID, label: e.mainExamer });
+		if (!examerMap.has(e.id)) {
+			examerMap.set(e.id, { key: e.id, label: e.shortname });
 		}
 	});
 	/** @type {{ key: string | number, label: string }[]} */
