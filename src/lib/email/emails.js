@@ -58,13 +58,13 @@ export const publishedEmails = [
 export const invigilationEmails = [
 	{
 		key: 'sendEmailInvigilations',
-		title: 'Aufsichten',
-		description: 'Die zugeteilten Aufsichten an die Aufsichtführenden'
+		title: 'Anforderungen für Aufsichten',
+		description: 'Aufforderung an die Aufsichten ihre Anforderungen einzutragen'
 	},
 	{
 		key: 'sendEmailInvigilationsMissing',
-		title: 'Fehlende Aufsichten',
-		description: 'Erinnerung an noch nicht eingetragene / fehlende Aufsichten'
+		title: 'Fehlende Anforderungen für Aufsichten',
+		description: 'Erinnerung an noch nicht eingetragene / fehlende Anforderungen an die Aufsichten'
 	}
 ];
 
