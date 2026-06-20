@@ -4,9 +4,20 @@
 
 	export let data;
 
+	// Hochgeladene Deckblätter (vom AttachmentManager gemeldet) → steuert, ob
+	// versendet werden kann und welche Prüfenden im Einzelversand wählbar sind.
+	/** @type {import('$lib/email/attachments').Attachment[]} */
+	let coverAttachments = [];
+	$: uploadedExamerKeys = new Set(coverAttachments.map((a) => String(a.key)));
+	$: hasCovers = uploadedExamerKeys.size > 0;
+	// nur Prüfende, für die ein Deckblatt vorliegt
+	$: availableExamers = data.expectedExamers.filter((/** @type {any} */ e) =>
+		uploadedExamerKeys.has(String(e.key))
+	);
+
 	// Auswahl für den Einzelversand eines Deckblatts.
 	let selectedExamerId = '';
-	$: selectedExamer = data.expectedExamers.find(
+	$: selectedExamer = availableExamers.find(
 		(/** @type {any} */ e) => String(e.key) === String(selectedExamerId)
 	);
 </script>
@@ -42,6 +53,7 @@
 			unitPlural="Deckblätter"
 			acceptZip={true}
 			expectedKeys={data.expectedExamers}
+			on:change={(e) => (coverAttachments = e.detail)}
 		/>
 
 		<!-- Versand der Deckblätter -->
@@ -54,20 +66,31 @@
 			</p>
 		</div>
 
+		{#if !hasCovers}
+			<div class="alert alert-warning py-2 text-sm">
+				<span>Es sind noch keine Deckblätter hochgeladen — Versand nicht möglich.</span>
+			</div>
+		{/if}
+
 		<EmailSender
 			emailKey="sendEmailCoverPages"
 			title="Alle Deckblätter versenden"
 			description="An alle Prüfenden mit von mir geplanten Prüfungen."
+			disabled={!hasCovers}
 		/>
 
 		<!-- Einzelversand -->
 		<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 			<div class="flex flex-wrap items-end gap-3">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Einzelne/r Prüfende/r</span>
-					<select class="select select-bordered select-sm w-64" bind:value={selectedExamerId}>
+					<span class="text-xs font-medium text-base-content/60">Einzelner Prüfender</span>
+					<select
+						class="select select-bordered select-sm w-64"
+						bind:value={selectedExamerId}
+						disabled={!availableExamers.length}
+					>
 						<option value="">— auswählen —</option>
-						{#each data.expectedExamers as e (e.key)}
+						{#each availableExamers as e (e.key)}
 							<option value={e.key}>{e.label} ({e.key})</option>
 						{/each}
 					</select>
@@ -77,10 +100,10 @@
 				emailKey="sendEmailCoverPage"
 				title={selectedExamer
 					? `Deckblatt an ${selectedExamer.label}`
-					: 'Deckblatt an einzelne/n Prüfende/n'}
+					: 'Deckblatt an einzelnen Prüfenden'}
 				description="Sendet nur das Deckblatt der oben gewählten Person."
-				extraArgs={{ teacherID: { type: 'Int!', value: Number(selectedExamerId) } }}
-				disabled={!selectedExamerId}
+				extraArgs={{ teacherID: { type: 'Int!', value: Number(selectedExamer?.key ?? 0) } }}
+				disabled={!selectedExamer}
 			/>
 		</div>
 	</section>

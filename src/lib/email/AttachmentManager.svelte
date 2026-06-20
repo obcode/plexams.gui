@@ -1,5 +1,5 @@
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import {
 		listAttachments,
@@ -46,11 +46,15 @@
 	/** @type {HTMLInputElement} */
 	let fileInput;
 
+	// meldet den aktuellen Anhang-Stand nach oben (nach Laden/Upload/Leeren)
+	const dispatch = createEventDispatcher();
+
 	async function load() {
 		loading = true;
 		loadError = null;
 		try {
 			attachments = await listAttachments(kind);
+			dispatch('change', attachments);
 		} catch (e) {
 			loadError = e instanceof Error ? e.message : String(e);
 		} finally {
