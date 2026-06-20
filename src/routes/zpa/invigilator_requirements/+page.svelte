@@ -98,6 +98,7 @@
 		});
 	const ratioPlotHeight = Math.max(1, ...Object.values(ratioBinFill)) * DOT_STEP + 6;
 	const ratioCount = ratioItems.length;
+	const ratioWithoutCount = invigCount - ratioCount;
 
 	// Dot-Filter: Klick auf einen Punkt filtert die Liste auf alle Aufsichten in
 	// derselben Spalte (gleicher Wert/Bin).
@@ -203,6 +204,67 @@
 			exportProgress = '';
 		}
 	}
+
+	let uploading = false;
+	let uploadProgress = '';
+	/** @type {{ done: number, failed: string[], blocked: boolean } | null} */
+	let uploadResult = null;
+
+	// Captures every currently shown invigilator card to PNG and uploads each one
+	// directly to the backend attachment store (kind invigilation-image, key =
+	// Aufsichts-/Lehrer-ID). Respects the active search filter. No ZIP needed —
+	// the images are sent straight to the server.
+	async function uploadAllPng() {
+		const { toBlob } = await import('html-to-image');
+		const { uploadAttachment } = await import('$lib/email/attachments');
+		const cards = /** @type {HTMLElement[]} */ (
+			Array.from(document.querySelectorAll('[data-invig-card]'))
+		);
+		if (!cards.length) return;
+		uploading = true;
+		uploadResult = null;
+		let done = 0;
+		/** @type {string[]} */
+		const failed = [];
+		let blocked = false;
+		try {
+			// warm-up render — html-to-image's first capture can come out blank.
+			await toBlob(cards[0], { pixelRatio: 1, cacheBust: true });
+			for (let i = 0; i < cards.length; i++) {
+				uploadProgress = `${i + 1} / ${cards.length}`;
+				const id = cards[i].getAttribute('data-invig-name') || `aufsicht_${i + 1}`;
+				const blob = await toBlob(cards[i], {
+					pixelRatio: 2,
+					backgroundColor: '#ffffff',
+					cacheBust: true
+				});
+				if (!blob) {
+					failed.push(id);
+					continue;
+				}
+				const res = await uploadAttachment({
+					kind: 'invigilation-image',
+					key: id,
+					blob,
+					filename: `invig-${id}.png`
+				});
+				// 409: Validierung/Transfer/Mail läuft → abbrechen, nur Hinweis.
+				if (res.blocked) {
+					blocked = true;
+					break;
+				}
+				if (!res.ok) {
+					failed.push(id);
+					continue;
+				}
+				done++;
+			}
+		} finally {
+			uploading = false;
+			uploadProgress = '';
+			uploadResult = { done, failed, blocked };
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -227,14 +289,16 @@
 		{/each}
 	</div>
 
-	<div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+	<div class="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_2fr_1fr]">
 		<!-- Verhältnis Räume/Reserve als Dot-Plot -->
 		<div class="rounded-lg border border-base-300 bg-base-100 p-3">
 			<div class="mb-3 flex items-baseline justify-between">
 				<span class="text-xs font-medium text-base-content/60"
 					>Verhältnis Räume / Reserve — ein Punkt pro Aufsicht</span
 				>
-				<span class="text-[10px] text-base-content/50">{ratioCount} mit Aufsichten</span>
+				<span class="text-[10px] text-base-content/50"
+					>{ratioCount} mit Aufsichten · {ratioWithoutCount} ohne Aufsichten</span
+				>
 			</div>
 			<div class="relative" style="height: {ratioPlotHeight}px">
 				<!-- 50/50-Linie -->
@@ -297,6 +361,34 @@
 				<span>max {openMax} Min.</span>
 			</div>
 		</div>
+
+		<!-- Manuell per semester.yaml ausgeschlossene Aufsichten -->
+		<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
+			<div class="mb-3 flex items-baseline justify-between">
+				<span class="text-xs font-medium text-base-content/60">
+					Manuell ausgeschlossen — <span class="font-mono">isNotInvigilator</span> in semester.yaml
+				</span>
+				<span class="text-[10px] text-base-content/50">{data.excludedByConfig.length} Person(en)</span>
+			</div>
+			{#if data.excludedByConfig.length}
+				<div class="flex flex-col gap-1">
+					{#each data.excludedByConfig as ex}
+						<span
+							class="badge badge-outline badge-warning badge-sm w-full justify-start truncate"
+							title="ID {ex.teacher.id} · Faktor {ex.requirements?.factor}"
+						>
+							{ex.teacher.fullname}
+						</span>
+					{/each}
+				</div>
+				<div class="mt-2 text-[10px] text-base-content/50">
+					Würden Aufsicht machen (Faktor &gt; 0), sind aber per Konfiguration ausgenommen — prüfen,
+					ob die Liste noch aktuell ist.
+				</div>
+			{:else}
+				<div class="text-sm text-base-content/50">Niemand manuell ausgeschlossen.</div>
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -342,7 +434,44 @@
 			📷 Kalender als PNG (ZIP)
 		{/if}
 	</button>
+	<button
+		class="btn btn-primary btn-sm gap-2"
+		on:click={uploadAllPng}
+		disabled={uploading || exporting}
+	>
+		{#if uploading}
+			<span class="loading loading-spinner loading-xs"></span>
+			{uploadProgress}
+		{:else}
+			⬆ Bilder auf Server hochladen
+		{/if}
+	</button>
 </div>
+
+{#if uploadResult}
+	<div
+		class="mx-2 alert py-2 text-sm {uploadResult.blocked || uploadResult.failed.length
+			? 'alert-warning'
+			: 'alert-success'}"
+		transition:fade
+	>
+		<div>
+			<div>{uploadResult.done} Bild(er) hochgeladen.</div>
+			{#if uploadResult.blocked}
+				<div class="mt-1 text-xs">
+					Abgebrochen: Es läuft gerade eine Validierung oder ein anderer Transfer/E-Mail-Versand.
+					Bitte später erneut hochladen.
+				</div>
+			{/if}
+			{#if uploadResult.failed.length}
+				<div class="mt-1 text-xs">
+					Fehlgeschlagen ({uploadResult.failed.length}):
+					<span class="font-mono">{uploadResult.failed.join(', ')}</span>
+				</div>
+			{/if}
+		</div>
+	</div>
+{/if}
 
 {#key filteredInvigilators}
 	<div class="mx-2 flex flex-col items-center" transition:fade>

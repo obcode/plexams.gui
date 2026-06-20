@@ -90,8 +90,28 @@ export async function load({ params }) {
 
 	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
 
+	// Personen, die Aufsicht machen würden (factor > 0), aber per
+	// invigilatorConstraints.<id>.isNotInvigilator in der semester.yaml manuell
+	// ausgeschlossen sind.
+	const excludedQuery = gql`
+		query {
+			invigilatorsExcludedByConfig {
+				teacher {
+					id
+					fullname
+				}
+				requirements {
+					factor
+				}
+			}
+		}
+	`;
+
+	const excludedData = await request(env.PLEXAMS_SERVER, excludedQuery);
+
 	return {
 		semesterConfig: semesterData.semesterConfig,
-		todos: dataTodos.invigilatorTodos
+		todos: dataTodos.invigilatorTodos,
+		excludedByConfig: excludedData.invigilatorsExcludedByConfig ?? []
 	};
 }

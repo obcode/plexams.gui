@@ -478,6 +478,7 @@ type Query {
 	conflictingAncodes(ancode: Int!): [Conflict!]
 	invigilatorTodos: InvigilationTodos
 	invigilatorsWithReq: [Invigilator!]!
+	invigilatorsExcludedByConfig: [Invigilator!]!
 	roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
 	invigilatorsForDay(day: Int!): InvigilatorsForDay
 	invigilator(room: String!, day: Int!, time: Int!): Teacher
