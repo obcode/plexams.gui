@@ -122,5 +122,39 @@ export async function load() {
 		planned: plannedByKey[`${r.day}-${r.slot}-${r.room}`] ?? []
 	}));
 
-	return { roomRequests: enriched };
+	// Für „Anfrage hinzufügen": alle Prüfungstage, Slot-Startzeiten und die
+	// als Management-Request markierten Räume.
+	const cfg = await request(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				semesterConfig {
+					days {
+						number
+						date
+					}
+					starttimes {
+						number
+						start
+					}
+				}
+				rooms {
+					name
+					requestWith
+				}
+			}
+		`
+	);
+
+	const managementRooms = (cfg.rooms ?? [])
+		.filter((/** @type {any} */ r) => r.requestWith === 'MANAGEMENT')
+		.map((/** @type {any} */ r) => r.name)
+		.sort();
+
+	return {
+		roomRequests: enriched,
+		days: cfg.semesterConfig?.days ?? [],
+		starttimes: cfg.semesterConfig?.starttimes ?? [],
+		managementRooms
+	};
 }

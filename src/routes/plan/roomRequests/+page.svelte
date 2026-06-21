@@ -61,19 +61,41 @@
 		a.from.localeCompare(b.from)
 	);
 
-	// Tag → Datum/Offset (für „Anfrage hinzufügen")
+	// Tag → Datum/Offset aus semesterConfig.days (für „Anfrage hinzufügen")
 	$: dayInfo = (() => {
 		/** @type {Record<number, { date: string, offset: string }>} */
 		const m = {};
-		for (const r of data.roomRequests) {
-			const mm = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2})?(.*)$/.exec(r.from);
-			if (mm && !(r.day in m)) m[r.day] = { date: mm[1], offset: mm[2] || '+02:00' };
+		for (const d of data.days) {
+			const mm = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2})?(.*)$/.exec(d.date);
+			if (mm) m[d.number] = { date: mm[1], offset: mm[2] || '+02:00' };
 		}
 		return m;
 	})();
-	$: knownDays = Object.keys(dayInfo)
-		.map(Number)
-		.sort((a, b) => a - b);
+
+	/** @param {string} hhmm Minuten seit Mitternacht */
+	const toMin = (hhmm) => {
+		const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm ?? '');
+		return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+	};
+	// Slot aus der Startzeit ableiten: die Slot-Startzeit, die der „von"-Zeit am
+	// nächsten liegt (die Anfrage trägt ±15 Min Puffer).
+	/** @param {string} hhmm */
+	function slotForTime(hhmm) {
+		const t = toMin(hhmm);
+		if (t == null) return null;
+		let best = null;
+		let bestDiff = Infinity;
+		for (const s of data.starttimes) {
+			const st = toMin(s.start);
+			if (st == null) continue;
+			const diff = Math.abs(t - st);
+			if (diff < bestDiff) {
+				bestDiff = diff;
+				best = s.number;
+			}
+		}
+		return best;
+	}
 
 	/** @type {Set<string>} */
 	let busyKeys = new Set();
@@ -147,29 +169,36 @@
 	function openAdd() {
 		modalMode = 'add';
 		mEditReq = null;
-		mRoom = '';
-		mDay = knownDays.length ? String(knownDays[0]) : '';
+		mRoom = data.managementRooms.length ? data.managementRooms[0] : '';
+		mDay = data.days.length ? String(data.days[0].number) : '';
 		mSlot = '';
 		mFromTime = '';
 		mUntilTime = '';
 		mError = null;
 		modalOpen = true;
 	}
-	$: modalValid =
-		mFromTime && mUntilTime && (modalMode === 'edit' || (mRoom.trim() && mDay && mSlot));
+	// abgeleiteter Slot (Add-Modus) bzw. fixer Slot (Edit)
+	$: derivedSlot = modalMode === 'add' ? slotForTime(mFromTime) : Number(mSlot);
+	$: modalValid = !!(
+		mFromTime &&
+		mUntilTime &&
+		(modalMode === 'edit' ? true : mRoom && mDay && derivedSlot)
+	);
 
 	async function saveModal() {
 		if (!modalValid) return;
 		mSaving = true;
 		mError = null;
-		let from, until;
+		let from, until, slot;
 		if (modalMode === 'edit') {
 			from = isoReplaceTime(mEditReq.from, mFromTime);
 			until = isoReplaceTime(mEditReq.until, mUntilTime);
+			slot = Number(mSlot);
 		} else {
 			const info = dayInfo[Number(mDay)];
-			if (!info) {
-				mError = 'Für diesen Tag ist kein Datum bekannt.';
+			slot = slotForTime(mFromTime);
+			if (!info || !slot) {
+				mError = 'Tag/Startzeit konnten keinem Slot zugeordnet werden.';
 				mSaving = false;
 				return;
 			}
@@ -181,7 +210,7 @@
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ room: mRoom, day: Number(mDay), slot: Number(mSlot), from, until })
+				body: JSON.stringify({ room: mRoom, day: Number(mDay), slot, from, until })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -274,7 +303,7 @@
 	}
 
 	const SECTIONS = [
-		{ key: 'preview', label: 'Probelauf' },
+		{ key: 'preview', label: 'Generierung' },
 		{ key: 'manage', label: 'Bestehende Anfragen' },
 		{ key: 'email', label: 'E-Mail senden' }
 	];
@@ -570,13 +599,15 @@
 				<div class="grid grid-cols-3 gap-3">
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Raum</span>
-						<input
-							type="text"
-							class="input input-bordered input-sm"
-							bind:value={mRoom}
-							readonly={modalMode === 'edit'}
-							class:input-disabled={modalMode === 'edit'}
-						/>
+						{#if modalMode === 'edit'}
+							<input type="text" class="input input-disabled input-sm" value={mRoom} readonly />
+						{:else}
+							<select class="select select-bordered select-sm" bind:value={mRoom}>
+								{#each data.managementRooms as r}
+									<option value={r}>{r}</option>
+								{/each}
+							</select>
+						{/if}
 					</label>
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Tag</span>
@@ -584,22 +615,24 @@
 							<input type="text" class="input input-disabled input-sm" value={mDay} readonly />
 						{:else}
 							<select class="select select-bordered select-sm" bind:value={mDay}>
-								{#each knownDays as d}
-									<option value={String(d)}>{d} ({dayInfo[d].date})</option>
+								{#each data.days as d}
+									<option value={String(d.number)}>{d.number} ({fmtDate(d.date)})</option>
 								{/each}
 							</select>
 						{/if}
 					</label>
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Slot</span>
-						<input
-							type="number"
-							min="1"
-							class="input input-bordered input-sm"
-							bind:value={mSlot}
-							readonly={modalMode === 'edit'}
-							class:input-disabled={modalMode === 'edit'}
-						/>
+						{#if modalMode === 'edit'}
+							<input type="text" class="input input-disabled input-sm" value={mSlot} readonly />
+						{:else}
+							<input
+								type="text"
+								class="input input-disabled input-sm"
+								value={derivedSlot ? `Slot ${derivedSlot}` : '—'}
+								readonly
+							/>
+						{/if}
 					</label>
 				</div>
 				<div class="grid grid-cols-2 gap-3">
