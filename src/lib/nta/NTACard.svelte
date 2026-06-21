@@ -10,6 +10,7 @@
 
 	let showFullComp = false;
 	let showOther = false;
+	let showMail = false;
 
 	$: comp = nta.nta.compensation ?? '';
 	$: longComp = comp.length > 70;
@@ -129,21 +130,40 @@
 		</div>
 	{/if}
 
-	<!-- Einzelversand für diese Person (mtknr vorbelegt, wiederholbar) -->
-	<div class="flex flex-col gap-2 border-t border-base-300 pt-2">
-		<EmailSender
-			emailKey="sendEmailNewNTA"
-			title="NTA-Bestätigung senden"
-			description="Bestätigung an {nta.nta.name}."
-			extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
-		/>
-		{#if nta.nta.needsRoomAlone}
-			<EmailSender
-				emailKey="sendEmailNTARoomAlone"
-				title="Einzelraum-Info senden"
-				description="Info zum eigenen Raum für {nta.nta.name}."
-				extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
-			/>
-		{/if}
+	<!-- Einzelversand: dezenter Button öffnet ein Modal -->
+	<div>
+		<button
+			class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
+			on:click={() => (showMail = true)}
+		>
+			✉ E-Mail versenden
+		</button>
 	</div>
 </div>
+
+{#if showMail}
+	<div class="modal modal-open">
+		<div class="modal-box flex max-w-lg flex-col gap-3">
+			<h3 class="text-lg font-semibold">E-Mail an {nta.nta.name}</h3>
+			<EmailSender
+				emailKey="sendEmailNewNTA"
+				title="NTA-Bestätigung senden"
+				description="Bestätigung an {nta.nta.name}."
+				extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
+			/>
+			{#if nta.nta.needsRoomAlone}
+				<EmailSender
+					emailKey="sendEmailNTARoomAlone"
+					title="Einzelraum-Info senden"
+					description="Info zum eigenen Raum für {nta.nta.name}."
+					extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
+				/>
+			{/if}
+			<div class="flex justify-end">
+				<button class="btn btn-ghost btn-sm" on:click={() => (showMail = false)}>Schließen</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showMail = false)}
+		></button>
+	</div>
+{/if}
