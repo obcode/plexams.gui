@@ -4,8 +4,19 @@
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
 	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
+	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 	import { slide } from 'svelte/transition';
 	import { tick } from 'svelte';
+	import { invalidateAll } from '$app/navigation';
+
+	// nach einer Generierung neu laden: invalidateAll frischt die Load-Daten
+	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
+	// client-seitig nachladenden Slot-Komponenten neu ein.
+	let reloadKey = 0;
+	async function onGenerated() {
+		reloadKey++;
+		await invalidateAll();
+	}
 
 	$: totalNoRoom = data.noRoomExams.reduce(
 		(/** @type {number} */ s, /** @type {any} */ n) => s + n.students,
@@ -90,6 +101,18 @@
 		</div>
 	</div>
 
+	<!-- Generierung -->
+	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div class="text-sm font-medium">Generierung</div>
+		<SubscriptionTerminal
+			actions={[
+				{ field: 'generateRoomsForExams', label: 'Räume für Prüfungen generieren', primary: true },
+				{ field: 'generateRoomsForSlots', label: 'Erlaubte Räume pro Slot neu berechnen' }
+			]}
+			on:done={onGenerated}
+		/>
+	</div>
+
 	<!-- Große Warnung, wenn irgendwo „No Room" verwendet wird -->
 	{#if data.noRoomExams.length}
 		<div class="alert alert-error shadow">
@@ -147,8 +170,9 @@
 		{/if}
 	</div>
 
-	<!-- ============== nach Prüfungen ============== -->
-	{#if view === 'exams'}
+	{#key reloadKey}
+		<!-- ============== nach Prüfungen ============== -->
+		{#if view === 'exams'}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
 			<span class="font-medium">Legende:</span>
 			{#each ROOM_CATEGORIES as c}
@@ -272,4 +296,5 @@
 			</table>
 		</div>
 	{/if}
+	{/key}
 </div>
