@@ -109,8 +109,8 @@
 		{
 			label: 'NTA',
 			items: [
-				{ href: '/nta/all', label: 'NTA-Stammdaten' },
-				{ href: '/nta/semester', label: 'NTA im Semester' }
+				{ href: '/nta/semester', label: 'NTA im Semester' },
+				{ href: '/nta/all', label: 'NTA-Stammdaten' }
 			]
 		},
 		{
