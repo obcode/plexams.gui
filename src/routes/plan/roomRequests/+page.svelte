@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import RoomRequestToggles from '$lib/room/RoomRequestToggles.svelte';
 	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
+	import EmailSender from '$lib/email/EmailSender.svelte';
 
 	export let data;
 
@@ -137,6 +138,13 @@
 			ignoriert.
 		</span>
 	</div>
+
+	<!-- Versand der Anfrage ans Gebäudemanagement (alle aktiven Requests, nach Raum gruppiert) -->
+	<EmailSender
+		emailKey="sendEmailRoomRequests"
+		title="Anfrage ans Gebäudemanagement senden"
+		description="Verschickt alle aktiven Anforderungen (nach Raum gruppiert). Probelauf geht an die Testadresse."
+	/>
 
 	{#if errorMsg}
 		<div class="alert alert-error py-2 text-sm"><span>{errorMsg}</span></div>
