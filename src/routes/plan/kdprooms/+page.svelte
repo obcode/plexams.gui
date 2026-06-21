@@ -4,6 +4,12 @@
 	let hideEmpty = true;
 	const roomOrder = ['T3.015', 'T3.016', 'T3.017', 'T3.023', 'T3.021'];
 
+	/** Datum aus ISO-String (keine Zeitzonen-/Hydration-Probleme). @param {string} iso */
+	const fmtDate = (iso) => {
+		const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+		return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
+	};
+
 	/** @param {any} slot */
 	function buildRoomStatus(slot) {
 		const bookedRooms = new Set(
@@ -16,21 +22,18 @@
 				(e.plannedRooms || []).map((/** @type {any} */ pr) => pr.name).filter(Boolean)
 			)
 		);
-
-		return roomOrder.map((room) => {
-			const booked = bookedRooms.has(room);
-			const used = usedRooms.has(room);
-			return { room, booked, used };
-		});
+		return roomOrder.map((room) => ({
+			room,
+			booked: bookedRooms.has(room),
+			used: usedRooms.has(room)
+		}));
 	}
 
 	/** @param {any[]} roomStatuses */
 	function getSlotHeaderColor(roomStatuses) {
-		const hasRed = roomStatuses.some((/** @type {any} */ rs) => rs.used && !rs.booked);
-		if (hasRed) return 'red';
-		const hasYellow = roomStatuses.some((/** @type {any} */ rs) => rs.booked && !rs.used);
-		if (hasYellow) return 'yellow';
-		return 'green';
+		if (roomStatuses.some((/** @type {any} */ rs) => rs.used && !rs.booked)) return 'error';
+		if (roomStatuses.some((/** @type {any} */ rs) => rs.booked && !rs.used)) return 'warning';
+		return 'success';
 	}
 
 	/** @param {any[]} bookings */
@@ -47,107 +50,94 @@
 	/** @param {any} value */
 	function formatBookingTime(value) {
 		if (!value) return '--:--';
-		const raw = String(value);
-		const localIsoMatch = raw.match(/^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})(?::\d{2}(?:\.\d+)?)?$/);
-		if (localIsoMatch) return localIsoMatch[1];
-		const parsed = new Date(raw);
-		if (Number.isNaN(parsed.getTime())) return '--:--';
-		return parsed.toLocaleTimeString('de-DE', {
-			timeZone: 'Europe/Berlin',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
+		const m = /^\d{4}-\d{2}-\d{2}T(\d{2}:\d{2})/.exec(String(value));
+		return m ? m[1] : '--:--';
 	}
 
 	/** @type {any[]} */
 	let filteredSlots = [];
-	$: {
-		// Wenn der Toggle aktiv ist, zeige Slots mit Prüfungsbedarf, Buchungen oder verfügbaren T-Räumen
-		filteredSlots = hideEmpty
-			? slots.filter(
-					(s) =>
-						(s.exams && s.exams.length > 0) ||
-						(s.tRooms && s.tRooms.length > 0) ||
-						(s.annyBookings && s.annyBookings.length > 0)
-				)
-			: slots;
-	}
+	$: filteredSlots = hideEmpty
+		? slots.filter(
+				(/** @type {any} */ s) =>
+					(s.exams && s.exams.length > 0) ||
+					(s.tRooms && s.tRooms.length > 0) ||
+					(s.annyBookings && s.annyBookings.length > 0)
+			)
+		: slots;
 </script>
 
-<div class="text-center m-4 text-3xl uppercase">
-	KDP Räume Übersicht (EXaHM / SEB Bedarf + Anny)
-</div>
+<div class="mx-2 mt-4 flex flex-col gap-4">
+	<div class="flex flex-wrap items-center gap-3">
+		<h1 class="text-2xl font-semibold">Anny-Anforderungen (KDP)</h1>
+		<span class="text-sm text-base-content/60">EXaHM / SEB-Bedarf + Anny-Buchungen</span>
+	</div>
 
-<div class="flex items-center gap-4 mb-4">
-	<label class="label cursor-pointer gap-2">
-		<span class="label-text">Nur Slots mit Bedarf zeigen</span>
-		<input type="checkbox" class="toggle toggle-primary" bind:checked={hideEmpty} />
-	</label>
-	<div class="badge badge-warning">Wdh. = Wiederholungsprüfung</div>
-</div>
+	<div class="flex flex-wrap items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
+		<label class="label cursor-pointer gap-2">
+			<input type="checkbox" class="toggle toggle-sm toggle-primary" bind:checked={hideEmpty} />
+			<span class="label-text">nur Slots mit Bedarf</span>
+		</label>
+		<span class="text-xs text-base-content/50">Wdh. = Wiederholungsprüfung</span>
+	</div>
 
-{#each filteredSlots as slot}
-	{@const roomStatuses = buildRoomStatus(slot)}
-	{@const slotHeaderColor = getSlotHeaderColor(roomStatuses)}
-	<div class="collapse bg-base-200 mb-2">
-		<input type="checkbox" />
-		<div
-			class="collapse-title text-xl font-medium flex justify-between"
-			class:bg-red-200={slotHeaderColor === 'red'}
-			class:bg-yellow-200={slotHeaderColor === 'yellow'}
-			class:bg-green-200={slotHeaderColor === 'green'}
-		>
-			<div>
-				{#if slot.date}
-					{new Date(slot.date).toLocaleDateString()} {slot.start ? ` ${slot.start}` : ''}
-				{:else}
-					Ungeplant
-				{/if}
-				<span class="text-sm text-gray-500"> ({slot.day}/{slot.slot})</span>
-			</div>
-			<div class="text-sm opacity-90 flex items-center gap-3">
-				<div class="grid grid-cols-5 gap-2">
+	{#each filteredSlots as slot}
+		{@const roomStatuses = buildRoomStatus(slot)}
+		{@const color = getSlotHeaderColor(roomStatuses)}
+		<div class="collapse-arrow collapse rounded-lg border border-base-300 bg-base-100">
+			<input type="checkbox" />
+			<div class="collapse-title flex flex-wrap items-center justify-between gap-3">
+				<div class="flex items-center gap-2 font-medium">
+					<span
+						class="inline-block h-2.5 w-2.5 rounded-full"
+						class:bg-error={color === 'error'}
+						class:bg-warning={color === 'warning'}
+						class:bg-success={color === 'success'}
+					></span>
+					{#if slot.date}
+						{fmtDate(slot.date)}{slot.start ? ` · ${slot.start}` : ''}
+					{:else}
+						Ungeplant
+					{/if}
+					<span class="text-sm text-base-content/50">(Tag {slot.day} · Slot {slot.slot})</span>
+				</div>
+				<div class="flex flex-wrap gap-1">
 					{#each roomStatuses as rs}
 						<div
-							class="rounded border px-2 py-1 min-w-[120px]"
-							class:bg-yellow-100={rs.booked && !rs.used}
-							class:border-yellow-400={rs.booked && !rs.used}
-							class:bg-red-100={rs.used && !rs.booked}
-							class:border-red-400={rs.used && !rs.booked}
-							class:bg-green-100={rs.used && rs.booked}
-							class:border-green-400={rs.used && rs.booked}
-							class:bg-base-100={!rs.used && !rs.booked}
+							class="rounded border px-2 py-0.5 text-xs {rs.used && rs.booked
+								? 'border-success/40 bg-success/10'
+								: rs.used && !rs.booked
+									? 'border-error/40 bg-error/10'
+									: rs.booked && !rs.used
+										? 'border-warning/40 bg-warning/10'
+										: 'border-base-300 text-base-content/40'}"
+							title={rs.used || rs.booked
+								? `gebucht: ${rs.booked ? 'ja' : 'nein'} · genutzt: ${rs.used ? 'ja' : 'nein'}`
+								: 'frei'}
 						>
-							<div class="font-semibold leading-tight">{rs.room}</div>
-							{#if rs.booked || rs.used}
-								<div class="text-xs leading-tight">gebucht: {rs.booked ? 'ja' : 'nein'}</div>
-								<div class="text-xs leading-tight">genutzt: {rs.used ? 'ja' : 'nein'}</div>
-							{:else}
-								<div class="h-8"></div>
-							{/if}
+							{rs.room}
 						</div>
 					{/each}
 				</div>
 			</div>
-		</div>
-		<div class="collapse-content">
-			<div class="grid md:grid-cols-4 gap-4">
-				<div class="card bg-base-100 shadow">
-					<div class="card-body p-4">
-						<h2 class="card-title">Anny Buchungen</h2>
+			<div class="collapse-content">
+				<div class="grid gap-3 md:grid-cols-4">
+					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+						<div class="mb-2 font-medium">Anny-Buchungen</div>
 						{#if !slot.annyBookings || slot.annyBookings.length === 0}
-							<div class="text-sm">Keine Buchungen</div>
+							<div class="text-sm text-base-content/50">Keine Buchungen</div>
 						{:else}
-							<table class="table table-compact w-full">
+							<table class="table table-sm">
 								<thead><tr><th>Raum</th><th>Zeit</th><th>Beschreibung</th></tr></thead>
 								<tbody>
 									{#each sortBookingsForDisplay(slot.annyBookings) as b}
 										<tr class:opacity-60={b.canceledAt}>
 											<td>{b.room || '--'}</td>
-											<td>{formatBookingTime(b.startDate)} - {formatBookingTime(b.endDate)}</td>
+											<td class="whitespace-nowrap tabular-nums"
+												>{formatBookingTime(b.startDate)}–{formatBookingTime(b.endDate)}</td
+											>
 											<td>
 												<div>{b.description}</div>
-												<div class="flex items-center gap-1 mt-1">
+												<div class="mt-1 flex items-center gap-1">
 													{#if b.isBlocker}<span class="badge badge-neutral badge-sm">Blocker</span
 														>{/if}
 													<span class="badge badge-outline badge-sm">{b.status}</span>
@@ -159,36 +149,34 @@
 							</table>
 						{/if}
 					</div>
-				</div>
-				<div class="card bg-base-100 shadow">
-					<div class="card-body p-4">
-						<h2 class="card-title">Verfügbare T-Räume</h2>
+
+					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+						<div class="mb-2 font-medium">Verfügbare T-Räume</div>
 						{#if slot.tRooms.length === 0}
-							<div class="text-sm">Keine T-Räume</div>
+							<div class="text-sm text-base-content/50">Keine T-Räume</div>
 						{:else}
-							<table class="table table-compact w-full">
-								<thead><tr><th>Raum</th><th>Sitze</th></tr></thead>
+							<table class="table table-sm">
+								<thead><tr><th>Raum</th><th class="text-right">Sitze</th></tr></thead>
 								<tbody>
 									{#each slot.tRooms as r}
-										<tr><td>{r.name}</td><td>{r.seats}</td></tr>
+										<tr><td>{r.name}</td><td class="text-right tabular-nums">{r.seats}</td></tr>
 									{/each}
 								</tbody>
 							</table>
 						{/if}
 					</div>
-				</div>
-				<div class="card bg-base-100 shadow md:col-span-2">
-					<div class="card-body p-4">
-						<h2 class="card-title">Prüfungen mit EXaHM / SEB Bedarf</h2>
+
+					<div class="rounded-lg border border-base-300 bg-base-100 p-3 md:col-span-2">
+						<div class="mb-2 font-medium">Prüfungen mit EXaHM / SEB-Bedarf</div>
 						{#if slot.exams.length === 0}
-							<div class="text-sm">Keine Prüfungen mit Bedarf</div>
+							<div class="text-sm text-base-content/50">Keine Prüfungen mit Bedarf</div>
 						{:else}
-							<table class="table table-compact w-full">
+							<table class="table table-sm">
 								<thead>
 									<tr>
 										<th>Ancode</th>
 										<th>Modul</th>
-										<th>Anmeldungen</th>
+										<th class="text-right">Anm.</th>
 										<th>Bedarf</th>
 										<th>Geplanter Raum</th>
 									</tr>
@@ -198,21 +186,21 @@
 										<tr>
 											<td><a class="link" href="/exam/constraints/{e.ancode}">{e.ancode}</a></td>
 											<td>{e.module}</td>
-											<td>{e.studentRegsCount}</td>
+											<td class="text-right tabular-nums">{e.studentRegsCount}</td>
 											<td>
-												{#if e.wantsExahm}<div class="badge badge-info">EXaHM</div>{/if}
-												{#if e.wantsSeb}<div class="badge badge-warning">SEB</div>{/if}
+												{#if e.wantsExahm}<span class="badge badge-info badge-sm">EXaHM</span>{/if}
+												{#if e.wantsSeb}<span class="badge badge-warning badge-sm">SEB</span>{/if}
 											</td>
 											<td>
 												{#if e.plannedRooms.length === 0}
-													<div class="text-sm">--</div>
+													<span class="text-sm text-base-content/40">—</span>
 												{:else}
 													{#each e.plannedRooms as pr}
-														<div>
+														<div class="whitespace-nowrap">
 															{pr.name} ({pr.seats})
-															{#if pr.prePlanned}<span class="badge badge-accent ml-1">pre</span
+															{#if pr.prePlanned}<span class="badge badge-accent badge-sm">pre</span
 																>{/if}
-															{#if pr.reserve}<span class="badge badge-secondary ml-1">res</span
+															{#if pr.reserve}<span class="badge badge-secondary badge-sm">res</span
 																>{/if}
 														</div>
 													{/each}
@@ -227,5 +215,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
-{/each}
+	{/each}
+</div>
