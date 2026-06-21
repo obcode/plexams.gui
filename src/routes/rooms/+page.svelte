@@ -1,7 +1,27 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
+	import { fade } from 'svelte/transition';
+	import RoomForm from '$lib/room/RoomForm.svelte';
 
 	export let data;
+
+	// Modal zum Anlegen/Bearbeiten
+	let showModal = false;
+	/** @type {any} */
+	let editRoom = null;
+	function openAdd() {
+		editRoom = null;
+		showModal = true;
+	}
+	/** @param {any} room */
+	function openEdit(room) {
+		editRoom = room;
+		showModal = true;
+	}
+	async function onSaved() {
+		showModal = false;
+		await invalidateAll();
+	}
 
 	// Eigenschaften eines Raums (Feldname → Anzeige); dienen als Badges UND als
 	// Filter-Chips.
@@ -76,6 +96,8 @@
 		{#if rooms.length !== data.rooms.length}
 			<span class="text-sm text-base-content/60">{rooms.length} angezeigt</span>
 		{/if}
+		<div class="flex-1"></div>
+		<button class="btn btn-primary btn-sm gap-2" on:click={openAdd}>+ Neuer Raum</button>
 	</div>
 
 	<!-- Filter-Toolbar -->
@@ -136,6 +158,7 @@
 					</th>
 					<th>Eigenschaften</th>
 					<th>aktiv</th>
+					<th></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -179,9 +202,30 @@
 								</span>
 							</label>
 						</td>
+						<td>
+							<button class="btn btn-ghost btn-xs" on:click={() => openEdit(room)}>✎ Bearbeiten</button>
+						</td>
 					</tr>
 				{/each}
 			</tbody>
 		</table>
 	</div>
+
+	{#if showModal}
+		<div class="modal modal-open" transition:fade>
+			<div class="modal-box max-w-2xl">
+				<h3 class="mb-4 text-lg font-semibold">
+					{editRoom ? `Raum bearbeiten: ${editRoom.name}` : 'Neuer Raum'}
+				</h3>
+				<RoomForm
+					mode={editRoom ? 'edit' : 'add'}
+					room={editRoom}
+					on:saved={onSaved}
+					on:cancel={() => (showModal = false)}
+				/>
+			</div>
+			<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showModal = false)}
+			></button>
+		</div>
+	{/if}
 </div>
