@@ -235,14 +235,21 @@
 	{#key reloadKey}
 		<!-- ============== nach Prüfungen ============== -->
 		{#if view === 'exams'}
-		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
-			<span class="font-medium">Legende:</span>
-			{#each ROOM_CATEGORIES as c}
-				<span class="inline-flex items-center gap-1">
-					<span class="inline-block h-3 w-3 rounded border border-base-content/20 {c.swatch}"></span>
-					{c.label}
-				</span>
-			{/each}
+		<div class="flex flex-col gap-1 text-xs text-base-content/70">
+			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+				<span class="font-medium">Legende:</span>
+				{#each ROOM_CATEGORIES as c}
+					<span class="inline-flex items-center gap-1">
+						<span class="inline-block h-3 w-3 rounded border border-base-content/20 {c.swatch}"
+						></span>
+						{c.label}
+					</span>
+				{/each}
+			</div>
+			<div>
+				📌 = in die Vorplanung fixiert (überlebt die Neugenerierung) — auf das Pin-Symbol am Raum
+				klicken zum Fixieren bzw. Lösen.
+			</div>
 		</div>
 		<div class="flex flex-col gap-2">
 			{#each data.semesterConfig.days as day}

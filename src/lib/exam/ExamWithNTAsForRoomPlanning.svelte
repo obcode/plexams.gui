@@ -119,23 +119,18 @@
 							? 'opacity-40'
 							: ''}"
 					>
-						{#if room.prePlanned}
-							<span title="vorgeplant">📌</span>
-							<button
-								class="btn btn-ghost btn-xs px-1"
-								title="aus Vorplanung entfernen"
-								on:click={() => removePrePlan(exam.ancode, room)}
-							>
-								✕
-							</button>
-						{:else}
-							<button
-								class="btn btn-outline btn-xs"
-								on:click={() => prePlanRoom(exam.ancode, room)}
-							>
-								OK
-							</button>
-						{/if}
+						<button
+							class="btn btn-ghost btn-xs btn-circle text-base transition-opacity {room.prePlanned
+								? ''
+								: 'opacity-25 hover:opacity-100'}"
+							title={room.prePlanned
+								? 'in Vorplanung fixiert – klicken zum Lösen'
+								: 'in Vorplanung fixieren (überlebt Neugenerierung)'}
+							on:click={() =>
+								room.prePlanned ? removePrePlan(exam.ancode, room) : prePlanRoom(exam.ancode, room)}
+						>
+							📌
+						</button>
 						{#if room.handicap}
 							<span>
 								{room.room.name} (
