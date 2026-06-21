@@ -110,7 +110,9 @@
 		<select class="select select-bordered select-sm w-56" bind:value={showRooms}>
 			<option value="all">Alle Räume</option>
 			{#each data.plannedRoomNames as plannedRoomName}
-				<option>{plannedRoomName}</option>
+				<option value={plannedRoomName}>
+					{plannedRoomName} ({data.roomCounts[plannedRoomName] ?? 0}×)
+				</option>
 			{/each}
 		</select>
 		{#if view === 'exams'}

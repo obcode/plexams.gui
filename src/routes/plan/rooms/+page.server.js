@@ -69,10 +69,21 @@ export async function load() {
 		(data.plannedRooms ?? []).map((/** @type {any} */ r) => `${r.day}-${r.slot}-${r.room.name}`)
 	);
 
+	// Wie oft (in wie vielen Slots) ist jeder Raum geplant?
+	/** @type {Record<string, Set<string>>} */
+	const roomSlotSets = {};
+	for (const r of data.plannedRooms ?? []) {
+		(roomSlotSets[r.room.name] ??= new Set()).add(`${r.day}-${r.slot}`);
+	}
+	/** @type {Record<string, number>} */
+	const roomCounts = {};
+	for (const [name, set] of Object.entries(roomSlotSets)) roomCounts[name] = set.size;
+
 	return {
 		semesterConfig: data.semesterConfig,
 		plannedRoomNames: data.plannedRoomNames,
 		plannedRooms,
+		roomCounts,
 		noRoomExams
 	};
 }
