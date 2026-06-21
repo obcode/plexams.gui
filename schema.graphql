@@ -324,6 +324,9 @@ type Mutation {
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
 	rmExamFromSlot(ancode: Int!): Boolean!
 	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
+	removePrePlannedRoom(ancode: Int!, roomName: String!, mtknr: String): Boolean!
+	blockRoomForSlot(room: String!, day: Int!, slot: Int!, reason: String): BlockedRoom!
+	unblockRoomForSlot(room: String!, day: Int!, slot: Int!): Boolean!
 	zpaExamsToPlan(input: [Int!]!): [ZPAExam!]!
 	addZpaExamToPlan(ancode: Int!): Boolean!
 	rmZpaExamFromPlan(ancode: Int!): Boolean!
@@ -474,6 +477,7 @@ type Query {
 	allSemesterNames: [Semester!]!
 	roomRequests: [RoomRequest!]!
 	roomRequestsPreview: [RoomRequestPreview!]!
+	blockedRooms: [BlockedRoom!]!
 	semester: Semester!
 	semesterConfig: SemesterConfig!
 	annyBookings(room: String): [AnnyBooking!]!
@@ -567,6 +571,13 @@ enum RoomRequestType {
 	NONE
 	ANNY
 	MANAGEMENT
+}
+
+type BlockedRoom {
+	room: String!
+	day: Int!
+	slot: Int!
+	reason: String
 }
 
 type RoomRequest {

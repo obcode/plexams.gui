@@ -14,6 +14,7 @@
 	// client-seitig nachladenden Slot-Komponenten neu ein.
 	let reloadKey = 0;
 	async function onGenerated() {
+		needsRegen = false;
 		reloadKey++;
 		await invalidateAll();
 	}
@@ -79,8 +80,57 @@
 	$: baseRooms = data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room');
 	$: gridRooms =
 		showRooms === 'all' ? baseRooms : baseRooms.filter((/** @type {string} */ r) => r === showRooms);
-	$: showNoRoomRow =
-		noRoomSet.size > 0 && (showRooms === 'all' || showRooms === 'No Room');
+	$: showNoRoomRow = noRoomSet.size > 0 && (showRooms === 'all' || showRooms === 'No Room');
+
+	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
+	// Generierung in planned_rooms wirken).
+	/** @type {Map<string, string>} */
+	let blockedMap = new Map(
+		data.blockedRooms.map((/** @type {any} */ b) => [`${b.day}-${b.slot}-${b.room}`, b.reason ?? ''])
+	);
+	/** @type {Set<string>} */
+	let blockBusy = new Set();
+	/** @type {string | null} */
+	let blockError = null;
+	let needsRegen = false;
+
+	/** @param {number} day @param {number} slot @param {string} room */
+	async function toggleBlock(day, slot, room) {
+		const key = `${day}-${slot}-${room}`;
+		if (blockBusy.has(key)) return;
+		const isBlocked = blockedMap.has(key);
+		/** @type {string | null} */
+		let reason = '';
+		if (!isBlocked) {
+			reason = window.prompt('Grund (optional), z. B. „anderweitig belegt 12–17":', '') ?? '';
+		}
+		blockBusy = new Set(blockBusy).add(key);
+		blockError = null;
+		try {
+			const url = isBlocked ? '/api/unblockRoomForSlot' : '/api/blockRoomForSlot';
+			const body = isBlocked ? { room, day, slot } : { room, day, slot, reason };
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(body)
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				blockError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			if (isBlocked) blockedMap.delete(key);
+			else blockedMap.set(key, reason ?? '');
+			blockedMap = blockedMap;
+			needsRegen = true;
+		} catch (e) {
+			blockError = e instanceof Error ? e.message : String(e);
+		} finally {
+			const s = new Set(blockBusy);
+			s.delete(key);
+			blockBusy = s;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -104,6 +154,14 @@
 	<!-- Generierung -->
 	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
 		<div class="text-sm font-medium">Generierung</div>
+		{#if needsRegen}
+			<div class="alert alert-warning py-2 text-sm">
+				<span>
+					Raum-Sperren geändert — bitte „Räume für Prüfungen generieren", damit sie berücksichtigt
+					werden.
+				</span>
+			</div>
+		{/if}
 		<SubscriptionTerminal
 			actions={[
 				{ field: 'generateRoomsForExams', label: 'Räume für Prüfungen generieren', primary: true },
@@ -112,6 +170,10 @@
 			on:done={onGenerated}
 		/>
 	</div>
+
+	{#if blockError}
+		<div class="alert alert-error py-2 text-sm"><span>{blockError}</span></div>
+	{/if}
 
 	<!-- Große Warnung, wenn irgendwo „No Room" verwendet wird -->
 	{#if data.noRoomExams.length}
@@ -230,7 +292,8 @@
 		<!-- ============== nach Räumen ============== -->
 	{:else}
 		<p class="text-xs text-base-content/50">
-			Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer).
+			Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer). Klick auf eine Zelle
+			sperrt/entsperrt den Raum für diesen Slot (durchgestrichen = gesperrt); danach neu generieren.
 		</p>
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-zebra table-sm">
@@ -255,14 +318,21 @@
 									<div class="flex gap-0.5">
 										{#each data.semesterConfig.starttimes as slot}
 											{@const planned = isPlanned(day.number, slot.number, roomName)}
-											<div
-												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {planned
-													? 'bg-primary font-semibold text-primary-content'
-													: 'bg-base-200 text-base-content/30'}"
-												title="Tag {day.number} · Slot {slot.number}{planned ? ' · geplant' : ''}"
+											{@const blockedReason = blockedMap.get(`${day.number}-${slot.number}-${roomName}`)}
+											{@const isBlocked = blockedReason !== undefined}
+											<button
+												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {isBlocked
+													? 'bg-base-300 text-base-content/40 line-through'
+													: planned
+														? 'bg-primary font-semibold text-primary-content'
+														: 'bg-base-200 text-base-content/30 hover:bg-base-300'}"
+												title={isBlocked
+													? `gesperrt${blockedReason ? ': ' + blockedReason : ''} — klicken zum Entsperren`
+													: `Tag ${day.number} · Slot ${slot.number}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
+												on:click={() => toggleBlock(day.number, slot.number, roomName)}
 											>
 												{slot.number}
-											</div>
+											</button>
 										{/each}
 									</div>
 								</td>

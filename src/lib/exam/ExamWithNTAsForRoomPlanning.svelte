@@ -60,6 +60,20 @@
 			headers: { 'content-type': 'application/json' }
 		});
 	}
+
+	/** aus der Vorplanung entfernen (mtknr leer = Raum der normalen Studierenden,
+	 * mtknr gesetzt = NTA-Raum). @param {number} ancode @param {any} room */
+	async function removePrePlan(ancode, room) {
+		const roomName = room.room.name;
+		const mtknr = room.ntaMtknr;
+		room.prePlanned = false;
+		plannedExam = plannedExam;
+		await fetch('/api/removePrePlannedRoom', {
+			method: 'POST',
+			body: JSON.stringify({ ancode, roomName, mtknr }),
+			headers: { 'content-type': 'application/json' }
+		});
+	}
 </script>
 
 {#if visible}
@@ -107,6 +121,13 @@
 					>
 						{#if room.prePlanned}
 							<span title="vorgeplant">📌</span>
+							<button
+								class="btn btn-ghost btn-xs px-1"
+								title="aus Vorplanung entfernen"
+								on:click={() => removePrePlan(exam.ancode, room)}
+							>
+								✕
+							</button>
 						{:else}
 							<button
 								class="btn btn-outline btn-xs"

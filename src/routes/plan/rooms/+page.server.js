@@ -38,6 +38,12 @@ export async function load() {
 					studentsInRoom
 				}
 			}
+			blockedRooms {
+				room
+				day
+				slot
+				reason
+			}
 		}
 	`;
 
@@ -84,6 +90,7 @@ export async function load() {
 		plannedRoomNames: data.plannedRoomNames,
 		plannedRooms,
 		roomCounts,
-		noRoomExams
+		noRoomExams,
+		blockedRooms: data.blockedRooms ?? []
 	};
 }
