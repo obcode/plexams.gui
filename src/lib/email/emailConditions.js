@@ -6,6 +6,7 @@ export const EMAIL_CONDITION = {
 	sendEmailConstraints: 'constraintsRequested',
 	sendEmailPrepared: 'examsPrepared',
 	sendEmailDraft: 'draftSent',
+	sendEmailCoverPages: 'coverPagesSent',
 	sendEmailPublishedExams: 'examPlanPublished',
 	sendEmailPublishedRooms: 'roomPlanPublished',
 	sendEmailPublishedInvigilations: 'invigilationPlanPublished',
