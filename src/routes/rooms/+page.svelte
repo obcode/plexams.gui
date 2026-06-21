@@ -30,9 +30,19 @@
 		{ key: 'lab', label: 'Labor' },
 		{ key: 'placesWithSocket', label: 'Steckdosen' },
 		{ key: 'exahm', label: 'EXaHM' },
-		{ key: 'seb', label: 'SEB' },
-		{ key: 'needsRequest', label: 'Anforderung' }
+		{ key: 'seb', label: 'SEB' }
 	];
+
+	// Anforderungstyp (requestWith): Anzeige-Label + Filter
+	/** @type {Record<string, string>} */
+	const REQUEST_LABEL = { ANNY: 'Anny', MANAGEMENT: 'Gebäudemanagement' };
+	const REQUEST_OPTIONS = [
+		{ value: 'all', label: 'alle Anforderungen' },
+		{ value: 'NONE', label: 'ohne Request' },
+		{ value: 'ANNY', label: 'Anny' },
+		{ value: 'MANAGEMENT', label: 'Gebäudemanagement' }
+	];
+	let requestFilter = 'all';
 
 	/** aktive Eigenschafts-Filter (UND-Verknüpfung)
 	 * @type {Set<string>} */
@@ -53,6 +63,7 @@
 		.filter((/** @type {any} */ r) => {
 			if (activeFilter === 'active' && r.deactivated) return false;
 			if (activeFilter === 'inactive' && !r.deactivated) return false;
+			if (requestFilter !== 'all' && r.requestWith !== requestFilter) return false;
 			for (const k of activeFlags) if (!r[k]) return false;
 			return true;
 		})
@@ -129,6 +140,14 @@
 				Filter zurücksetzen
 			</button>
 		{/if}
+
+		<div class="h-6 w-px bg-base-300"></div>
+
+		<select class="select select-bordered select-sm" bind:value={requestFilter}>
+			{#each REQUEST_OPTIONS as opt}
+				<option value={opt.value}>{opt.label}</option>
+			{/each}
+		</select>
 	</div>
 
 	<p class="text-xs text-base-content/50">
@@ -182,7 +201,8 @@
 											>{room.hmebSeats} HMEB</span
 										>{/if}
 								{/if}
-								{#if room.needsRequest}<span class="badge badge-warning badge-sm">Anforderung</span
+								{#if REQUEST_LABEL[room.requestWith]}<span class="badge badge-warning badge-sm"
+										>{REQUEST_LABEL[room.requestWith]}</span
 									>{/if}
 							</div>
 						</td>

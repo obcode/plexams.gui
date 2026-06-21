@@ -20,7 +20,7 @@
 		handicap: false,
 		lab: false,
 		placesWithSocket: false,
-		needsRequest: false,
+		requestWith: 'NONE',
 		exahm: false,
 		seb: false,
 		sebSeats: 0,
@@ -35,7 +35,7 @@
 			handicap: !!r.handicap,
 			lab: !!r.lab,
 			placesWithSocket: !!r.placesWithSocket,
-			needsRequest: !!r.needsRequest,
+			requestWith: r.requestWith ?? 'NONE',
 			exahm: !!r.exahm,
 			seb: !!r.seb,
 			sebSeats: r.sebSeats ?? 0,
@@ -57,9 +57,14 @@
 		{ key: 'handicap', label: 'NTA (Handicap)' },
 		{ key: 'lab', label: 'Labor' },
 		{ key: 'placesWithSocket', label: 'Steckdosen' },
-		{ key: 'needsRequest', label: 'Anforderung nötig' },
 		{ key: 'exahm', label: 'EXaHM' },
 		{ key: 'seb', label: 'SEB' }
+	];
+
+	const REQUEST_OPTIONS = [
+		{ value: 'NONE', label: 'kein Request' },
+		{ value: 'ANNY', label: 'Anny' },
+		{ value: 'MANAGEMENT', label: 'Gebäudemanagement' }
 	];
 
 	async function submit() {
@@ -74,7 +79,7 @@
 			handicap: form.handicap,
 			lab: form.lab,
 			placesWithSocket: form.placesWithSocket,
-			needsRequest: form.needsRequest,
+			requestWith: form.requestWith,
 			exahm: form.exahm,
 			seb: form.seb
 		};
@@ -134,6 +139,15 @@
 				bind:value={form.seats}
 			/>
 			{#if seatsError}<span class="text-xs text-error">{seatsError}</span>{/if}
+		</label>
+
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Anforderung über</span>
+			<select class="select select-bordered select-sm" bind:value={form.requestWith}>
+				{#each REQUEST_OPTIONS as opt}
+					<option value={opt.value}>{opt.label}</option>
+				{/each}
+			</select>
 		</label>
 	</div>
 

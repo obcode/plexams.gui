@@ -308,6 +308,7 @@ type Mutation {
 	setRoomActive(name: String!, active: Boolean!): Room!
 	addRoom(input: RoomInput!): Room!
 	updateRoom(input: RoomInput!): Room!
+	migrateRoomsRequestWith: Int!
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
 	rmExamFromSlot(ancode: Int!): Boolean!
 	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
@@ -544,7 +545,14 @@ type Room {
 	seb: Boolean!
 	sebSeats: Int
 	hmebSeats: Int
+	requestWith: RoomRequestType!
 	deactivated: Boolean!
+}
+
+enum RoomRequestType {
+	NONE
+	ANNY
+	MANAGEMENT
 }
 
 input RoomInput {
@@ -553,7 +561,7 @@ input RoomInput {
 	handicap: Boolean!
 	lab: Boolean!
 	placesWithSocket: Boolean!
-	needsRequest: Boolean!
+	requestWith: RoomRequestType!
 	exahm: Boolean!
 	seb: Boolean!
 	sebSeats: Int
