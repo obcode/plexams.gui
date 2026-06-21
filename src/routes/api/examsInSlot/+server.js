@@ -112,6 +112,7 @@ export async function POST({ request }) {
 						lab
 						placesWithSocket
 						needsRequest
+						requestWith
 						exahm
 						seb
 					}

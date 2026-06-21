@@ -1,4 +1,6 @@
 <script>
+	import { classifyRoom } from '$lib/room/roomCategories';
+
 	/** @type {any} */
 	export let plannedExam;
 	export let showOnlyExamsWithNTAs;
@@ -42,16 +44,6 @@
 	const seb = constraints?.roomConstraints?.seb;
 	const placesWithSocket = constraints?.roomConstraints?.placesWithSocket;
 	const lab = constraints?.roomConstraints?.lab;
-
-	/** Hintergrund/Rahmen je Raumtyp (Theme-Tokens statt fester Farben). @param {any} room */
-	function roomClass(room) {
-		if (room.name == 'No Room') return 'border-error/40 bg-error/10';
-		if (room.name == 'ONLINE') return 'border-success/40 bg-success/10';
-		if (room.exahm) return 'border-info/40 bg-info/10';
-		if (room.lab) return 'border-warning/40 bg-warning/10';
-		if (room.handicap) return 'border-secondary/40 bg-secondary/10';
-		return 'border-base-300 bg-base-200';
-	}
 
 	/** @param {any} exam @param {string} mtknr */
 	function ntaName(exam, mtknr) {
@@ -111,8 +103,8 @@
 			<div class="flex flex-col gap-1">
 				{#each plannedExam.plannedRooms as room}
 					<div
-						class="flex items-center gap-2 rounded-lg border px-2 py-1 text-sm {roomClass(room.room)}
-							{room.handicap ? 'border-dashed' : ''}"
+						class="flex items-center gap-2 rounded-lg border px-2 py-1 text-sm {classifyRoom(room)
+							.chip} {room.handicap ? 'border-dashed' : ''}"
 					>
 						{#if room.prePlanned}
 							<span title="vorgeplant">📌</span>

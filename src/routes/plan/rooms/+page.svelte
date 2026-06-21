@@ -3,7 +3,10 @@
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
+	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
 	import { slide } from 'svelte/transition';
+
+	$: totalNoRoom = data.noRoomExams.reduce((/** @type {number} */ s, /** @type {any} */ n) => s + n.students, 0);
 
 	/** @type {'exams' | 'rooms'} */
 	let view = 'exams';
@@ -44,6 +47,26 @@
 		</div>
 	</div>
 
+	<!-- Große Warnung, wenn irgendwo „No Room" verwendet wird -->
+	{#if data.noRoomExams.length}
+		<div class="alert alert-error shadow">
+			<div class="flex flex-col gap-1">
+				<div class="text-base font-semibold">
+					⚠ {data.noRoomExams.length} Prüfung(en) ohne Raum — {totalNoRoom} Studierende noch nicht
+					verplant
+				</div>
+				<div class="flex flex-wrap gap-1">
+					{#each data.noRoomExams as n}
+						<span class="badge badge-sm border-error-content/30">
+							{n.ancode}
+							{n.module} · Tag {n.day}/Slot {n.slot} · {n.students}
+						</span>
+					{/each}
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Toolbar -->
 	<div class="flex flex-wrap items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<select class="select select-bordered select-sm w-56" bind:value={showRooms}>
@@ -70,6 +93,15 @@
 
 	<!-- ============== nach Prüfungen ============== -->
 	{#if view === 'exams'}
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
+			<span class="font-medium">Legende:</span>
+			{#each ROOM_CATEGORIES as c}
+				<span class="inline-flex items-center gap-1">
+					<span class="inline-block h-3 w-3 rounded border border-base-content/20 {c.swatch}"></span>
+					{c.label}
+				</span>
+			{/each}
+		</div>
 		<div class="flex flex-col gap-2">
 			{#each data.semesterConfig.days as day}
 				<div class="overflow-hidden rounded-lg border border-base-300 bg-base-100">
