@@ -3,41 +3,38 @@
 
 	export let data;
 
-	const FLAGS = ['nta', 'lab', 'placesWithSocket', 'exahm', 'seb', 'needsRequest'];
+	// Eigenschaften eines Raums (Feldname → Anzeige); dienen als Badges UND als
+	// Filter-Chips.
+	const FEATURES = [
+		{ key: 'handicap', label: 'NTA' },
+		{ key: 'lab', label: 'Labor' },
+		{ key: 'placesWithSocket', label: 'Steckdosen' },
+		{ key: 'exahm', label: 'EXaHM' },
+		{ key: 'seb', label: 'SEB' },
+		{ key: 'needsRequest', label: 'Anforderung' }
+	];
 
-	/** @type {string | null} aktiver Bool-Filter */
-	let filterCol = null;
+	/** aktive Eigenschafts-Filter (UND-Verknüpfung)
+	 * @type {Set<string>} */
+	let activeFlags = new Set();
+	/** @param {string} key */
+	function toggleFlag(key) {
+		if (activeFlags.has(key)) activeFlags.delete(key);
+		else activeFlags.add(key);
+		activeFlags = new Set(activeFlags); // neue Referenz → Reaktivität
+	}
+
+	/** @type {'active' | 'all' | 'inactive'} */
+	let activeFilter = 'active';
 	/** @type {'name' | 'seats'} */
 	let sortCol = 'name';
-	/** Aktiv-Status-Filter; Default: nur aktive
-	 * @type {'active' | 'all' | 'inactive'} */
-	let activeFilter = 'active';
 
-	function cycleActive() {
-		activeFilter =
-			activeFilter === 'active' ? 'all' : activeFilter === 'all' ? 'inactive' : 'active';
-	}
-	$: activeLabel =
-		activeFilter === 'active' ? 'nur aktive' : activeFilter === 'inactive' ? 'nur inaktive' : 'alle';
-
-	/** @param {string} col */
-	function onHeader(col) {
-		if (FLAGS.includes(col)) {
-			filterCol = filterCol === col ? null : col;
-		} else {
-			sortCol = /** @type {'name' | 'seats'} */ (col);
-		}
-	}
-
-	// filterCol/sortCol direkt hier referenzieren, damit Svelte sie als
-	// Abhängigkeiten erkennt und die Liste bei jedem Klick neu berechnet.
 	$: rooms = [...data.rooms]
 		.filter((/** @type {any} */ r) => {
 			if (activeFilter === 'active' && r.deactivated) return false;
 			if (activeFilter === 'inactive' && !r.deactivated) return false;
-			if (!filterCol) return true;
-			if (filterCol === 'nta') return r.handicap;
-			return r[filterCol];
+			for (const k of activeFlags) if (!r[k]) return false;
+			return true;
 		})
 		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
 			sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
@@ -52,7 +49,6 @@
 			const res = await fetch('/api/setRoomActive', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				// aktiv umschalten: neuer active-Wert = aktueller deactivated-Wert
 				body: JSON.stringify({ name: room.name, active: !!room.deactivated })
 			});
 			const result = await res.json().catch(() => ({}));
@@ -65,6 +61,12 @@
 			toggleError = err instanceof Error ? err.message : String(err);
 		}
 	}
+
+	const ACTIVE_OPTIONS = [
+		{ key: 'active', label: 'nur aktive' },
+		{ key: 'all', label: 'alle' },
+		{ key: 'inactive', label: 'nur inaktive' }
+	];
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -76,10 +78,40 @@
 		{/if}
 	</div>
 
+	<!-- Filter-Toolbar -->
+	<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div class="join">
+			{#each ACTIVE_OPTIONS as opt}
+				<button
+					class="btn btn-sm join-item {activeFilter === opt.key ? 'btn-primary' : 'btn-ghost'}"
+					on:click={() => (activeFilter = /** @type {any} */ (opt.key))}
+				>
+					{opt.label}
+				</button>
+			{/each}
+		</div>
+
+		<div class="h-6 w-px bg-base-300"></div>
+
+		<span class="text-xs text-base-content/50">Eigenschaften:</span>
+		{#each FEATURES as f}
+			<button
+				class="btn btn-sm {activeFlags.has(f.key) ? 'btn-primary' : 'btn-outline'}"
+				on:click={() => toggleFlag(f.key)}
+			>
+				{f.label}
+			</button>
+		{/each}
+		{#if activeFlags.size}
+			<button class="btn btn-ghost btn-sm" on:click={() => (activeFlags = new Set())}>
+				Filter zurücksetzen
+			</button>
+		{/if}
+	</div>
+
 	<p class="text-xs text-base-content/50">
-		Spaltenköpfe sind klickbar: Name/Plätze sortieren, die übrigen filtern (erneut klicken hebt den
-		Filter auf). Eine Deaktivierung wirkt erst beim nächsten Vorbereiten der Räume-für-Slots; bereits
-		verplante Räume bleiben.
+		Eine Deaktivierung wirkt erst beim nächsten Vorbereiten der Räume-für-Slots; bereits verplante
+		Räume bleiben.
 	</p>
 
 	{#if toggleError}
@@ -91,44 +123,19 @@
 			<thead>
 				<tr>
 					<th
-						class="cursor-pointer {sortCol === 'name' ? 'text-primary' : ''}"
-						on:click={() => onHeader('name')}>Name</th
+						class="cursor-pointer select-none {sortCol === 'name' ? 'text-primary' : ''}"
+						on:click={() => (sortCol = 'name')}
 					>
-					<th
-						class="cursor-pointer text-right {sortCol === 'seats' ? 'text-primary' : ''}"
-						on:click={() => onHeader('seats')}>Plätze</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'nta' ? 'text-primary' : ''}"
-						on:click={() => onHeader('nta')}>NTA</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'lab' ? 'text-primary' : ''}"
-						on:click={() => onHeader('lab')}>Labor</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'placesWithSocket' ? 'text-primary' : ''}"
-						on:click={() => onHeader('placesWithSocket')}>Steckdosen</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'exahm' ? 'text-primary' : ''}"
-						on:click={() => onHeader('exahm')}>EXaHM</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'seb' ? 'text-primary' : ''}"
-						on:click={() => onHeader('seb')}>SEB</th
-					>
-					<th
-						class="cursor-pointer {filterCol === 'needsRequest' ? 'text-primary' : ''}"
-						on:click={() => onHeader('needsRequest')}>Anforderung</th
-					>
-					<th
-						class="cursor-pointer whitespace-nowrap {activeFilter !== 'active' ? 'text-primary' : ''}"
-						title="Klicken: nur aktive → alle → nur inaktive"
-						on:click={cycleActive}
-					>
-						aktiv <span class="font-normal text-base-content/50">({activeLabel})</span>
+						Name {sortCol === 'name' ? '▲' : ''}
 					</th>
+					<th
+						class="cursor-pointer select-none text-right {sortCol === 'seats' ? 'text-primary' : ''}"
+						on:click={() => (sortCol = 'seats')}
+					>
+						Plätze {sortCol === 'seats' ? '▼' : ''}
+					</th>
+					<th>Eigenschaften</th>
+					<th>aktiv</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -136,22 +143,25 @@
 					<tr class={room.deactivated ? 'opacity-50' : ''}>
 						<td class="font-medium">{room.name}</td>
 						<td class="text-right tabular-nums">{room.seats}</td>
-						<td>{#if room.handicap}<span class="badge badge-info badge-sm">NTA</span>{/if}</td>
-						<td>{#if room.lab}<span class="badge badge-info badge-sm">Labor</span>{/if}</td>
 						<td>
-							{#if room.placesWithSocket}<span class="badge badge-info badge-sm">Steckdosen</span
-								>{/if}
-						</td>
-						<td>{#if room.exahm}<span class="badge badge-info badge-sm">EXaHM</span>{/if}</td>
-						<td>
-							{#if room.seb}
-								<span class="badge badge-info badge-sm">SEB</span>
-								{#if room.sebSeats > 0}<span class="badge badge-sm">{room.sebSeats} SEB</span>{/if}
-								{#if room.hmebSeats > 0}<span class="badge badge-sm">{room.hmebSeats} HMEB</span>{/if}
-							{/if}
-						</td>
-						<td>
-							{#if room.needsRequest}<span class="badge badge-warning badge-sm">Request</span>{/if}
+							<div class="flex flex-wrap gap-1">
+								{#if room.handicap}<span class="badge badge-info badge-sm">NTA</span>{/if}
+								{#if room.lab}<span class="badge badge-info badge-sm">Labor</span>{/if}
+								{#if room.placesWithSocket}<span class="badge badge-info badge-sm">Steckdosen</span
+									>{/if}
+								{#if room.exahm}<span class="badge badge-info badge-sm">EXaHM</span>{/if}
+								{#if room.seb}
+									<span class="badge badge-info badge-sm">SEB</span>
+									{#if room.sebSeats > 0}<span class="badge badge-ghost badge-sm"
+											>{room.sebSeats} SEB</span
+										>{/if}
+									{#if room.hmebSeats > 0}<span class="badge badge-ghost badge-sm"
+											>{room.hmebSeats} HMEB</span
+										>{/if}
+								{/if}
+								{#if room.needsRequest}<span class="badge badge-warning badge-sm">Anforderung</span
+									>{/if}
+							</div>
 						</td>
 						<td>
 							<label
