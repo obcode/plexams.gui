@@ -10,9 +10,11 @@
 		selected = true;
 	}
 
-	const selectedAncodes = new Set([]);
+	/** @type {Set<number>} */
+	const selectedAncodes = new Set();
 	let size = selectedAncodes.size;
 
+	/** @param {any} event */
 	function handleSelect(event) {
 		selectedAncodes.add(event.detail.ancode);
 		size = selectedAncodes.size;
@@ -20,6 +22,7 @@
 			ancode: event.detail.ancode
 		});
 	}
+	/** @param {any} event */
 	function handleUnselect(event) {
 		selectedAncodes.delete(event.detail.ancode);
 		size = selectedAncodes.size;
@@ -27,22 +30,22 @@
 			ancode: event.detail.ancode
 		});
 	}
-	let color;
-	$: if (size > 0) {
-		color = 'text-green-700';
-	} else {
-		color = 'text-gray-500';
-	}
 </script>
 
-<div tabindex="-1" class="collapse border border-base-300 bg-base-100 rounded-box">
+<div tabindex="-1" class="collapse-arrow collapse rounded-lg border border-base-300 bg-base-100">
 	<input type="checkbox" />
-	<div class="collapse-title text-xl font-medium {color}">
-		{zpaExamsType.type} ({size}/{zpaExamsType.exams.length})
+	<div class="collapse-title flex items-center gap-2 font-medium">
+		<span>{zpaExamsType.type}</span>
+		<span class="badge {size > 0 ? 'badge-success' : 'badge-ghost'} badge-sm tabular-nums">
+			{size}/{zpaExamsType.exams.length}
+		</span>
 	</div>
 	<div class="collapse-content">
-		<input type="checkbox" bind:checked={selected} class="checkbox mr-2" /> Alle auswählen.
-		<div class="py-4 grid gap-4 md:grid-cols-6 grid-cols-2">
+		<label class="label mb-2 w-fit cursor-pointer justify-start gap-2 px-0">
+			<input type="checkbox" bind:checked={selected} class="checkbox checkbox-sm" />
+			<span class="label-text">Alle auswählen</span>
+		</label>
+		<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
 			{#each zpaExamsType.exams as zpaexam}
 				<ExamCard
 					exam={zpaexam}

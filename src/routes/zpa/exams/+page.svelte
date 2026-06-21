@@ -1,35 +1,31 @@
 <script>
 	export let data;
 	import { onMount } from 'svelte';
-
-	let zpaExams = data.zpaExamsByType;
-
-	let zpaExamsToPlan = [];
-	async function getZpaExamsToPlan() {
-		const response = await fetch('/api/zpaexams/toplan', {
-			method: 'GET'
-		});
-
-		zpaExamsToPlan = await response.json();
-	}
-
-	onMount(() => {
-		getZpaExamsToPlan();
-	});
-
 	import { env } from '$env/dynamic/public';
 	import { fade } from 'svelte/transition';
 	import { request, gql } from 'graphql-request';
 	import { goto } from '$app/navigation';
 	import ExamTypeCard from '$lib/exam/ExamTypeCard.svelte';
 
-	const selectedAncodes = new Set([]);
+	let zpaExams = data.zpaExamsByType;
+
+	let zpaExamsToPlan = [];
+	async function getZpaExamsToPlan() {
+		const response = await fetch('/api/zpaexams/toplan', { method: 'GET' });
+		zpaExamsToPlan = await response.json();
+	}
+	onMount(getZpaExamsToPlan);
+
+	/** @type {Set<number>} */
+	const selectedAncodes = new Set();
 	let size = selectedAncodes.size;
 
+	/** @param {any} event */
 	function handleSelect(event) {
 		selectedAncodes.add(event.detail.ancode);
 		size = selectedAncodes.size;
 	}
+	/** @param {any} event */
 	function handleUnselect(event) {
 		selectedAncodes.delete(event.detail.ancode);
 		size = selectedAncodes.size;
@@ -47,105 +43,91 @@
 				}
 			}
 		`;
-
-		const variables = {
-			input: Array.from(selectedAncodes)
-		};
-
-		request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then((data) => {
+		const variables = { input: Array.from(selectedAncodes) };
+		request(env.PUBLIC_PLEXAMS_SERVER, mutation, variables).then(() => {
 			goto('/exam/examsToPlan');
 		});
 	}
 
 	let searchTermTeachers = '';
 	let searchTermModule = '';
+	/** @type {any[]} */
 	let filteredExams = [];
 
 	$: {
 		if (searchTermTeachers) {
-			filteredExams = zpaExams.map((examsWithType) => {
-				const newEntry = {
-					type: examsWithType.type,
-					exams: examsWithType.exams.filter((exam) =>
-						exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
-					)
-				};
-				return newEntry;
-			});
+			filteredExams = zpaExams.map((/** @type {any} */ examsWithType) => ({
+				type: examsWithType.type,
+				exams: examsWithType.exams.filter((/** @type {any} */ exam) =>
+					exam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
+				)
+			}));
 		} else if (searchTermModule) {
-			filteredExams = zpaExams.map((examsWithType) => {
-				const newEntry = {
-					type: examsWithType.type,
-					exams: examsWithType.exams.filter((exam) =>
-						exam.module.toLowerCase().includes(searchTermModule.toLowerCase())
-					)
-				};
-				return newEntry;
-			});
+			filteredExams = zpaExams.map((/** @type {any} */ examsWithType) => ({
+				type: examsWithType.type,
+				exams: examsWithType.exams.filter((/** @type {any} */ exam) =>
+					exam.module.toLowerCase().includes(searchTermModule.toLowerCase())
+				)
+			}));
 		} else {
 			filteredExams = [...zpaExams];
 		}
 	}
 </script>
 
-<div transition:fade>
+<div class="mx-2 mt-4 flex flex-col gap-4" transition:fade>
 	{#if zpaExamsToPlan.length > 0}
-		<a href="/exam/examsToPlan">
-			<div class="alert alert-warning shadow-lg m-2">
-				<div>
-					<span class="text-xl">⚠️</span>
-					<span
-						>Es wurden bereits {zpaExamsToPlan.length} Prüfungen für die Planung ausgewählt. Sie können
-						nur noch einzelne Prüfungen hinzufügen und entfernen. Durch Löschen der Collections in der
-						DB können Sie zur Einteilung hier zurück gehen.</span
-					>
-				</div>
-			</div></a
-		>
+		<a href="/exam/examsToPlan" class="alert alert-warning text-sm">
+			<span>
+				⚠️ Es wurden bereits {zpaExamsToPlan.length} Prüfungen für die Planung ausgewählt. Du kannst
+				nur noch einzelne Prüfungen hinzufügen und entfernen. Durch Löschen der Collections in der DB
+				kommst du zur Einteilung hier zurück.
+			</span>
+		</a>
 	{:else if filteredExams.length > 0}
-		<div class="text-center m-2 text-4xl">
-			<span class="uppercase">Prüfungsliste aus dem ZPA</span>
+		<div class="flex flex-wrap items-center gap-3">
+			<h1 class="text-2xl font-semibold">Prüfungsliste aus dem ZPA</h1>
 			{#if size > 0}
-				<span class="badge badge-success badge-lg">{size} ausgewählt</span>
+				<span class="badge badge-success badge-lg tabular-nums">{size} ausgewählt</span>
 			{/if}
 		</div>
 
-		<div class="flex ">
+		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
 			<input
-				class="input input-bordered w-full max-w-x mr-2"
+				class="input input-bordered input-sm flex-1"
 				type="text"
 				bind:value={searchTermTeachers}
-				placeholder="Dozierender"
+				placeholder="Dozierende:r"
 			/>
-
 			<input
-				class="input input-bordered w-full max-w-x mr-2"
+				class="input input-bordered input-sm flex-1"
 				type="text"
 				bind:value={searchTermModule}
 				placeholder="Modulname"
 			/>
 		</div>
 
-		<div class="py-4 grid gap-4 grid-cols-1">
+		<div class="flex flex-col gap-3">
 			{#each filteredExams as zpaExamsType}
 				{#if zpaExamsType.exams.length > 0}
 					<ExamTypeCard {zpaExamsType} on:selected={handleSelect} on:unselected={handleUnselect} />
 				{/if}
 			{/each}
 		</div>
+
 		{#if zpaExamsToPlan.length == 0}
-			<div class="text-center m-2 text-4xl">
-				<button class="btn btn-lg" on:click={setSelectedZpaExams}
-					>{size} ausgewählte ZPA-Prüfungen für die Planung übernehmen</button
-				>
+			<div
+				class="sticky bottom-2 flex items-center justify-end gap-3 rounded-lg border border-base-300 bg-base-100/90 p-3 backdrop-blur"
+			>
+				<span class="text-sm text-base-content/60">{size} ausgewählt</span>
+				<button class="btn btn-primary btn-sm" disabled={size === 0} on:click={setSelectedZpaExams}>
+					Auswahl für die Planung übernehmen
+				</button>
 			</div>
 		{/if}
 	{:else}
-		<div class="alert alert-info shadow-lg">
-			<div>
-				<span class="text-xl">ℹ️</span>
-				<span>Keine Prüfungen im ZPA für das ausgewählte Semester gefunden.</span>
-			</div>
+		<div class="alert alert-info">
+			<span>ℹ️ Keine Prüfungen im ZPA für das ausgewählte Semester gefunden.</span>
 		</div>
 	{/if}
 </div>

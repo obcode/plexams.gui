@@ -26,18 +26,19 @@
 	}
 </script>
 
-<div class="card bg-base-100 shadow-xl" transition:fade>
-	<div class="card-body">
-		<div class="flex justify-between">
-			<input type="checkbox" bind:checked={selected} class="checkbox mr-2" />
-			<span class="text-red-900">
-				{exam.ancode}.
-			</span>
-			<span class="text-green-900">{exam.groups}</span>
+<label
+	class="flex cursor-pointer flex-col gap-1 rounded-lg border bg-base-100 p-3 transition-colors {selected
+		? 'border-primary bg-primary/5'
+		: 'border-base-300 hover:border-base-content/30'}"
+	transition:fade
+>
+	<div class="flex items-center justify-between gap-2">
+		<div class="flex items-center gap-2">
+			<input type="checkbox" bind:checked={selected} class="checkbox checkbox-sm" />
+			<span class="font-semibold tabular-nums">{exam.ancode}</span>
 		</div>
-		{exam.module}
-		<span class="text-blue-900">
-			{exam.mainExamer}
-		</span>
+		<span class="badge badge-ghost badge-sm">{exam.groups}</span>
 	</div>
-</div>
+	<div class="text-sm font-medium">{exam.module}</div>
+	<div class="text-xs text-base-content/60">{exam.mainExamer}</div>
+</label>
