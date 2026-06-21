@@ -67,12 +67,6 @@ export async function load({ params }) {
 						from
 						until
 						lastSemester
-						exams {
-							semester
-							ancode
-							module
-							mainExamer
-						}
 					}
 				}
 				constraints {
@@ -111,12 +105,6 @@ export async function load({ params }) {
 					from
 					until
 					lastSemester
-					exams {
-						semester
-						ancode
-						module
-						mainExamer
-					}
 				}
 				maxDuration
 				planEntry {

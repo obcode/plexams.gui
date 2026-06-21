@@ -57,12 +57,6 @@ export async function POST({ request }) {
 						from
 						until
 						lastSemester
-						exams {
-							semester
-							ancode
-							module
-							mainExamer
-						}
 					}
 				}
 				constraints {
@@ -101,12 +95,6 @@ export async function POST({ request }) {
 					from
 					until
 					lastSemester
-					exams {
-						semester
-						ancode
-						module
-						mainExamer
-					}
 				}
 				maxDuration
 				planEntry {
