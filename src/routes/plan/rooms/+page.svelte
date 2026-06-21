@@ -14,6 +14,14 @@
 	// Slots mit „No Room" (aus der Warnung) — für die „nach Räumen"-Zeile.
 	$: noRoomSet = new Set(data.noRoomExams.map((/** @type {any} */ n) => `${n.day}-${n.slot}`));
 
+	// Tag → Datum, Slot → Startzeit (für die No-Room-Warnung).
+	$: dayDateById = Object.fromEntries(
+		data.semesterConfig.days.map((/** @type {any} */ d) => [d.number, d.date])
+	);
+	$: slotStartById = Object.fromEntries(
+		data.semesterConfig.starttimes.map((/** @type {any} */ s) => [s.number, s.start])
+	);
+
 	/** @type {'exams' | 'rooms'} */
 	let view = 'exams';
 
@@ -94,11 +102,12 @@
 					{#each data.noRoomExams as n}
 						<button
 							class="badge badge-sm cursor-pointer border-error-content/30 hover:underline"
-							title="zum Tag/Slot springen"
+							title="zum Tag/Slot springen (Tag {n.day} · Slot {n.slot})"
 							on:click={() => jumpTo(n.day, n.slot)}
 						>
 							{n.ancode}
-							{n.module} · Tag {n.day}/Slot {n.slot} · {n.students}
+							{n.module} · {dayDateById[n.day] ? mkDateShort(dayDateById[n.day]) : `Tag ${n.day}`}
+							{slotStartById[n.slot] ?? `Slot ${n.slot}`} · {n.students}
 						</button>
 					{/each}
 				</div>
