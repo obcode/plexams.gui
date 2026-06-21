@@ -62,6 +62,11 @@ export const roomValidators = [
 		key: 'validateRoomsTimeDistance',
 		title: 'Zeitabstände',
 		description: 'Abstände zwischen Räumen'
+	},
+	{
+		key: 'validateRoomsBlocked',
+		title: 'Blockierte Räume',
+		description: 'gesperrter Raum noch verplant → neu generieren'
 	}
 ];
 
