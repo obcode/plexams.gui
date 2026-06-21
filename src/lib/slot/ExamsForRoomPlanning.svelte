@@ -1,12 +1,16 @@
 <script>
+	/** @type {number} */
 	export let day;
+	/** @type {number} */
 	export let time;
 	export let showOnlyExamsWithNTAs;
 	export let details;
 	export let showRooms;
+	export let dimOthers = false;
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
 
+	/** @type {any[]} */
 	let examsInSlot = [];
 
 	async function fetchExamsInSlot() {
@@ -28,6 +32,12 @@
 
 {#each examsInSlot as plannedExam}
 	{#if !plannedExam.constraints || !plannedExam.constraints.notPlannedByMe}
-		<ExamWithNTAsForRoomPlanning {plannedExam} {showOnlyExamsWithNTAs} {details} {showRooms} />
+		<ExamWithNTAsForRoomPlanning
+			{plannedExam}
+			{showOnlyExamsWithNTAs}
+			{details}
+			{showRooms}
+			{dimOthers}
+		/>
 	{/if}
 {/each}

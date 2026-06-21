@@ -20,6 +20,7 @@
 	let showOnlyExamsWithNTAs = false;
 	let details = false;
 	let showRooms = 'all';
+	let dimOthers = false;
 
 	/** @param {number} day @param {number} slot @param {string} roomName */
 	const isPlanned = (day, slot, roomName) => data.plannedRooms.has(`${day}-${slot}-${roomName}`);
@@ -116,6 +117,12 @@
 			{/each}
 		</select>
 		{#if view === 'exams'}
+			{#if showRooms !== 'all'}
+				<label class="label cursor-pointer gap-2">
+					<input type="checkbox" class="toggle toggle-sm" bind:checked={dimOthers} />
+					<span class="label-text">andere Räume gedimmt</span>
+				</label>
+			{/if}
 			<label class="label cursor-pointer gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={showAllDays} />
 				<span class="label-text">alle Tage</span>
@@ -175,6 +182,7 @@
 												{showOnlyExamsWithNTAs}
 												{details}
 												{showRooms}
+												{dimOthers}
 											/>
 										</div>
 									</div>

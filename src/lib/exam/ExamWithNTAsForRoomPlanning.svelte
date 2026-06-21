@@ -6,27 +6,22 @@
 	export let showOnlyExamsWithNTAs;
 	export let details;
 	export let showRooms;
+	/** bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen */
+	export let dimOthers = false;
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
 	let ntas = plannedExam.ntas;
 
-	let showRoom = true;
-	$: if (showRooms != 'all') {
-		showRoom = false;
-		for (const room of plannedExam.plannedRooms) {
-			if (showRooms == room.room.name) showRoom = true;
-		}
-	} else {
-		showRoom = true;
-	}
-
-	let show = true;
-	$: if (showOnlyExamsWithNTAs) {
-		show = ntas && ntas.length > 0;
-	} else {
-		show = true;
-	}
+	// enthält diese Prüfung den ausgewählten Raum?
+	$: matchesRoom =
+		showRooms === 'all' ||
+		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms);
+	$: passNta = !showOnlyExamsWithNTAs || (ntas && ntas.length > 0);
+	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
+	$: visible = passNta && (showRooms === 'all' || matchesRoom || dimOthers);
+	// ganze Karte dimmen, wenn sie den ausgewählten Raum nicht enthält
+	$: dimmed = showRooms !== 'all' && !matchesRoom;
 
 	$: hasNtas = ntas && ntas.length > 0;
 
@@ -67,11 +62,11 @@
 	}
 </script>
 
-{#if show && showRoom}
+{#if visible}
 	<div
 		class="flex w-72 flex-col gap-2 rounded-lg border bg-base-100 p-3 {hasNtas
 			? 'border-warning/50'
-			: 'border-base-300'}"
+			: 'border-base-300'} {dimmed ? 'opacity-40' : ''}"
 	>
 		<!-- Raum-Constraints -->
 		{#if exahm || seb || placesWithSocket || lab}
@@ -104,7 +99,11 @@
 				{#each plannedExam.plannedRooms as room}
 					<div
 						class="flex items-center gap-2 rounded-lg border px-2 py-1 text-sm {classifyRoom(room)
-							.chip} {room.handicap ? 'border-dashed' : ''}"
+							.chip} {room.handicap ? 'border-dashed' : ''} {showRooms !== 'all' &&
+						!dimmed &&
+						room.room.name !== showRooms
+							? 'opacity-40'
+							: ''}"
 					>
 						{#if room.prePlanned}
 							<span title="vorgeplant">📌</span>
