@@ -39,4 +39,12 @@
 			>{req.active ? 'aktiv' : 'inaktiv'}</span
 		>
 	</label>
+	<button
+		class="btn btn-ghost btn-xs"
+		disabled={busy}
+		title="Zeit bearbeiten / verlängern"
+		on:click={() => dispatch('edittime')}
+	>
+		✎ Zeit
+	</button>
 </div>

@@ -312,6 +312,15 @@ type Mutation {
 	migrateRoomRequestsFromConfig: Int!
 	setRoomRequestApproved(room: String!, day: Int!, slot: Int!, approved: Boolean!): RoomRequest!
 	setRoomRequestActive(room: String!, day: Int!, slot: Int!, active: Boolean!): RoomRequest!
+	applyRoomRequestsPreview(force: Boolean!): Int!
+	addRoomRequest(room: String!, day: Int!, slot: Int!, from: Time!, until: Time!): RoomRequest!
+	updateRoomRequestTime(
+		room: String!
+		day: Int!
+		slot: Int!
+		from: Time!
+		until: Time!
+	): RoomRequest!
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
 	rmExamFromSlot(ancode: Int!): Boolean!
 	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
@@ -464,6 +473,7 @@ type PrimussExamWithCount {
 type Query {
 	allSemesterNames: [Semester!]!
 	roomRequests: [RoomRequest!]!
+	roomRequestsPreview: [RoomRequestPreview!]!
 	semester: Semester!
 	semesterConfig: SemesterConfig!
 	annyBookings(room: String): [AnnyBooking!]!
@@ -567,6 +577,18 @@ type RoomRequest {
 	until: Time!
 	approved: Boolean!
 	active: Boolean!
+}
+
+type RoomRequestPreview {
+	room: String!
+	day: Int!
+	slot: Int!
+	from: Time!
+	until: Time!
+	students: Int!
+	seats: Int!
+	exam: PlannedExam!
+	simultaneousExams: [PlannedExam!]!
 }
 
 input RoomInput {
