@@ -8,8 +8,11 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<div class="flex items-center gap-4">
-	<label class="label cursor-pointer justify-start gap-2 px-0" title="genehmigt">
+<div class="flex items-center gap-3">
+	<label
+		class="label w-28 cursor-pointer justify-start gap-2 px-0"
+		title="genehmigt"
+	>
 		<input
 			type="checkbox"
 			class="toggle toggle-sm toggle-success"
@@ -17,12 +20,12 @@
 			disabled={busy}
 			on:change={() => dispatch('approve')}
 		/>
-		<span class="text-xs {req.approved ? 'text-success' : 'text-base-content/50'}">
+		<span class="whitespace-nowrap text-xs {req.approved ? 'text-success' : 'text-base-content/50'}">
 			{req.approved ? 'genehmigt' : 'offen'}
 		</span>
 	</label>
 	<label
-		class="label cursor-pointer justify-start gap-2 px-0"
+		class="label w-24 cursor-pointer justify-start gap-2 px-0"
 		title="aktiv (inaktiv = beim nächsten Vorbereiten der Räume-für-Slots ignoriert)"
 	>
 		<input
@@ -32,6 +35,8 @@
 			disabled={busy}
 			on:change={() => dispatch('active')}
 		/>
-		<span class="text-xs {req.active ? '' : 'text-error'}">{req.active ? 'aktiv' : 'inaktiv'}</span>
+		<span class="whitespace-nowrap text-xs {req.active ? '' : 'text-error'}"
+			>{req.active ? 'aktiv' : 'inaktiv'}</span
+		>
 	</label>
 </div>

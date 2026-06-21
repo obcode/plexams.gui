@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import RoomRequestToggles from '$lib/room/RoomRequestToggles.svelte';
+	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
 
 	export let data;
 
@@ -152,6 +153,7 @@
 						<th>Zeit</th>
 						<th>Raum</th>
 						<th>Tag/Slot</th>
+						<th>Belegung</th>
 						<th>Status</th>
 					</tr>
 				</thead>
@@ -162,6 +164,7 @@
 							<td class="tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td>
 							<td class="font-medium">{r.room}</td>
 							<td class="text-base-content/60">Tag {r.day} · Slot {r.slot}</td>
+							<td><RoomRequestPlanned planned={r.planned} /></td>
 							<td>
 								<RoomRequestToggles
 									req={r}
@@ -192,6 +195,7 @@
 										<td class="whitespace-nowrap tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td
 										>
 										<td class="whitespace-nowrap text-base-content/60">Tag {r.day} · Slot {r.slot}</td>
+										<td><RoomRequestPlanned planned={r.planned} /></td>
 										<td>
 											<RoomRequestToggles
 												req={r}
@@ -225,6 +229,7 @@
 										<td class="whitespace-nowrap font-medium">{r.room}</td>
 										<td class="whitespace-nowrap tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td
 										>
+										<td><RoomRequestPlanned planned={r.planned} /></td>
 										<td>
 											<RoomRequestToggles
 												req={r}
