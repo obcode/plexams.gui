@@ -45,6 +45,9 @@ export async function load() {
 				slot
 				reason
 			}
+			planningState {
+				blockedAreas
+			}
 		}
 	`;
 
@@ -100,6 +103,7 @@ export async function load() {
 		prePlannedRooms,
 		roomCounts,
 		noRoomExams,
-		blockedRooms: data.blockedRooms ?? []
+		blockedRooms: data.blockedRooms ?? [],
+		roomsBlocked: (data.planningState?.blockedAreas ?? []).includes('ROOMS')
 	};
 }

@@ -8,7 +8,7 @@
 	// teilen sich ein Terminal. Exklusive Aktionen werden serverseitig
 	// blockiert (ERROR + DONE) — das zeigen wir als Hinweis.
 
-	/** @type {{ field: string, label: string, primary?: boolean }[]} */
+	/** @type {{ field: string, label: string, primary?: boolean, disabled?: boolean }[]} */
 	export let actions = [];
 
 	const dispatch = createEventDispatcher();
@@ -37,7 +37,7 @@
 
 	/** @param {string} t */
 	const isBlockedMessage = (t) =>
-		/running, cannot start now|a validation or another|writes? (are |is )?(not allowed|blocked)|exclusive|already running/i.test(
+		/running, cannot start now|a validation or another|writes? (are |is )?(not allowed|blocked)|exclusive|already running|is published|locked|gesperrt/i.test(
 			t
 		);
 
@@ -135,7 +135,8 @@
 		{#each actions as a}
 			<button
 				class="btn btn-sm gap-2 {a.primary ? 'btn-primary' : 'btn-outline'}"
-				disabled={running}
+				disabled={running || a.disabled}
+				title={a.disabled ? 'gesperrt' : ''}
 				on:click={() => start(a.field)}
 			>
 				{#if running && runningField === a.field}

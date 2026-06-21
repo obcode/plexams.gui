@@ -1,18 +1,33 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 
-export async function load({ params }) {
-	const semesterQuery = gql`
-		query {
-			semester {
-				id
+export async function load() {
+	const data = await request(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				semester {
+					id
+				}
+				planningState {
+					blockedAreas
+					phases {
+						key
+						title
+						conditions {
+							key
+							title
+							done
+							gate
+						}
+					}
+				}
 			}
-		}
-	`;
-
-	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+		`
+	);
 
 	return {
-		semester: semesterData.semester.id
+		semester: data.semester.id,
+		planningState: data.planningState
 	};
 }

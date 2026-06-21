@@ -205,6 +205,14 @@
 	<!-- Generierung -->
 	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
 		<div class="text-sm font-medium">Generierung & Import</div>
+		{#if data.roomsBlocked}
+			<div class="alert alert-warning py-2 text-sm">
+				<span>
+					🔒 Raumgenerierung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das Häkchen
+					„Raumplan veröffentlicht" auf der Startseite kurz lösen.
+				</span>
+			</div>
+		{/if}
 		{#if needsRegen}
 			<div class="alert alert-warning py-2 text-sm">
 				<span>
@@ -215,8 +223,17 @@
 		{/if}
 		<SubscriptionTerminal
 			actions={[
-				{ field: 'generateRoomsForExams', label: 'Räume für Prüfungen generieren', primary: true },
-				{ field: 'generateRoomsForSlots', label: 'Erlaubte Räume pro Slot neu berechnen' },
+				{
+					field: 'generateRoomsForExams',
+					label: 'Räume für Prüfungen generieren',
+					primary: true,
+					disabled: data.roomsBlocked
+				},
+				{
+					field: 'generateRoomsForSlots',
+					label: 'Erlaubte Räume pro Slot neu berechnen',
+					disabled: data.roomsBlocked
+				},
 				{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }
 			]}
 			on:done={onGenerated}
