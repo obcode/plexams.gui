@@ -89,8 +89,8 @@
 		{
 			label: 'Raumplanung',
 			items: [
-				{ href: '/plan/kdprooms', label: 'Anny-Anforderungen (KDP)' },
 				{ href: '/plan/rooms', label: 'Raumplanung' },
+				{ href: '/plan/kdprooms', label: 'Anny-Anforderungen (KDP)' },
 				{ href: '/plan/roomRequests', label: 'Gebäudemanagement-Anforderungen' },
 				{ href: '/rooms', label: 'Vorhandene Räume' },
 				{ href: '/plan/rooms/validate', label: 'Validierung' }
