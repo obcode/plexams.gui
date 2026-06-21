@@ -27,6 +27,20 @@
 		until: ''
 	};
 
+	// „Bescheid vom" wird als DD.MM.YYYY gespeichert, das <input type="date">
+	// braucht aber YYYY-MM-DD — daher beim Vorbefüllen/Speichern konvertieren
+	// (Speicherformat bleibt DD.MM.YYYY, damit nichts anderes bricht).
+	/** @param {string} d */
+	function toISO(d) {
+		const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(d ?? '');
+		return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+	}
+	/** @param {string} d */
+	function fromISO(d) {
+		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d ?? '');
+		return m ? `${m[3]}.${m[2]}.${m[1]}` : (d ?? '');
+	}
+
 	/** @param {any} n */
 	function pick(n) {
 		return {
@@ -38,7 +52,7 @@
 			needsRoomAlone: !!n.needsRoomAlone,
 			needsHardware: !!n.needsHardware,
 			program: n.program ?? '',
-			from: n.from ?? '',
+			from: toISO(n.from),
 			until: n.until ?? ''
 		};
 	}
@@ -49,11 +63,27 @@
 	/** @type {string | null} */
 	let errorMsg = null;
 
+	// Clientseitige Validierung. E-Mail nur prüfen, wenn ausgefüllt (optional).
+	// Die mtknr ist der Schlüssel: nur Ziffern, aber als String übertragen
+	// (führende Nullen müssen erhalten bleiben → kein type="number").
+	const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	$: emailError = form.email && !emailRe.test(form.email) ? 'Ungültige E-Mail-Adresse.' : '';
+	$: mtknrError = form.mtknr && !/^\d+$/.test(form.mtknr) ? 'Nur Ziffern erlaubt.' : '';
+	$: formValid = form.name.trim() !== '' && /^\d+$/.test(form.mtknr) && !emailError;
+
 	async function submit() {
+		if (!formValid) {
+			errorMsg = 'Bitte die markierten Eingaben prüfen.';
+			return;
+		}
 		saving = true;
 		errorMsg = null;
 		const url = mode === 'edit' ? '/api/updateNTA' : '/api/addNTA';
-		const input = { ...form, deltaDurationPercent: Number(form.deltaDurationPercent) };
+		const input = {
+			...form,
+			deltaDurationPercent: Number(form.deltaDurationPercent),
+			from: fromISO(form.from)
+		};
 		let data;
 		try {
 			const res = await fetch(url, {
@@ -91,11 +121,12 @@
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">E-Mail</span>
 			<input
-				type="text"
+				type="email"
 				placeholder="username@hm.edu"
-				class="input input-bordered input-sm"
+				class="input input-bordered input-sm {emailError ? 'input-error' : ''}"
 				bind:value={form.email}
 			/>
+			{#if emailError}<span class="text-xs text-error">{emailError}</span>{/if}
 		</label>
 
 		<label class="flex flex-col gap-1">
@@ -104,12 +135,14 @@
 			</span>
 			<input
 				type="text"
+				inputmode="numeric"
 				placeholder="MtkNr"
-				class="input input-bordered input-sm"
+				class="input input-bordered input-sm {mtknrError ? 'input-error' : ''}"
 				bind:value={form.mtknr}
 				readonly={mode === 'edit'}
 				class:input-disabled={mode === 'edit'}
 			/>
+			{#if mtknrError}<span class="text-xs text-error">{mtknrError}</span>{/if}
 		</label>
 
 		<label class="flex flex-col gap-1">
@@ -153,12 +186,7 @@
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">mit Bescheid vom</span>
-			<input
-				type="text"
-				placeholder="Datum"
-				class="input input-bordered input-sm"
-				bind:value={form.from}
-			/>
+			<input type="date" class="input input-bordered input-sm" bind:value={form.from} />
 		</label>
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">NTA gilt bis</span>
@@ -179,7 +207,7 @@
 		<button class="btn btn-ghost btn-sm" on:click={() => dispatch('cancel')} disabled={saving}>
 			Abbrechen
 		</button>
-		<button class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving}>
+		<button class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
 		</button>
