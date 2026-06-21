@@ -18,6 +18,7 @@ export async function load() {
 			plannedRooms {
 				day
 				slot
+				prePlanned
 				room {
 					name
 				}
@@ -75,6 +76,13 @@ export async function load() {
 		(data.plannedRooms ?? []).map((/** @type {any} */ r) => `${r.day}-${r.slot}-${r.room.name}`)
 	);
 
+	// vorgeplante (gepinnte) Räume je Slot — für den Hinweis beim Sperren.
+	const prePlannedRooms = new Set(
+		(data.plannedRooms ?? [])
+			.filter((/** @type {any} */ r) => r.prePlanned)
+			.map((/** @type {any} */ r) => `${r.day}-${r.slot}-${r.room.name}`)
+	);
+
 	// Wie oft (in wie vielen Slots) ist jeder Raum geplant?
 	/** @type {Record<string, Set<string>>} */
 	const roomSlotSets = {};
@@ -89,6 +97,7 @@ export async function load() {
 		semesterConfig: data.semesterConfig,
 		plannedRoomNames: data.plannedRoomNames,
 		plannedRooms,
+		prePlannedRooms,
 		roomCounts,
 		noRoomExams,
 		blockedRooms: data.blockedRooms ?? []

@@ -94,6 +94,10 @@
 	let blockError = null;
 	let needsRegen = false;
 
+	/** @param {number} n */
+	const prePlanWarn = (n) =>
+		`${n === 1 ? 'In diesem Slot ist dieser Raum' : `${n} betroffene Slots haben diesen Raum`} vorgeplant (📌). Beim Generieren wird er dort übersprungen. Trotzdem sperren?`;
+
 	/** @param {number} day @param {number} slot @param {string} room */
 	async function toggleBlock(day, slot, room) {
 		const key = `${day}-${slot}-${room}`;
@@ -102,6 +106,7 @@
 		/** @type {string | null} */
 		let reason = '';
 		if (!isBlocked) {
+			if (data.prePlannedRooms.has(key) && !confirm(prePlanWarn(1))) return;
 			reason = window.prompt('Grund (optional), z. B. „anderweitig belegt 12–17":', '') ?? '';
 		}
 		blockBusy = new Set(blockBusy).add(key);
@@ -131,6 +136,52 @@
 			blockBusy = s;
 		}
 	}
+
+	// ganzen Tag für einen Raum sperren/freigeben (Mehrfach-Mutation).
+	/** @param {number} day @param {string} room */
+	async function toggleBlockDay(day, room) {
+		const dayKey = `day-${day}-${room}`;
+		if (blockBusy.has(dayKey)) return;
+		const allSlots = data.semesterConfig.starttimes.map((/** @type {any} */ t) => t.number);
+		const keys = allSlots.map((/** @type {number} */ s) => `${day}-${s}-${room}`);
+		const allBlocked = keys.every((/** @type {string} */ k) => blockedMap.has(k));
+		/** @type {string | null} */
+		let reason = '';
+		if (!allBlocked) {
+			const pre = keys.filter((/** @type {string} */ k) => data.prePlannedRooms.has(k)).length;
+			if (pre > 0 && !confirm(prePlanWarn(pre))) return;
+			reason = window.prompt(`Ganzen Tag sperren – Grund (optional):`, '') ?? '';
+		}
+		blockBusy = new Set(blockBusy).add(dayKey);
+		blockError = null;
+		try {
+			const slots = allSlots.map((/** @type {number} */ s) => ({ day, slot: s }));
+			const url = allBlocked ? '/api/unblockRoomForSlots' : '/api/blockRoomForSlots';
+			const body = allBlocked ? { room, slots } : { room, slots, reason };
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(body)
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				blockError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			for (const k of keys) {
+				if (allBlocked) blockedMap.delete(k);
+				else blockedMap.set(k, reason ?? '');
+			}
+			blockedMap = blockedMap;
+			needsRegen = true;
+		} catch (e) {
+			blockError = e instanceof Error ? e.message : String(e);
+		} finally {
+			const s = new Set(blockBusy);
+			s.delete(dayKey);
+			blockBusy = s;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -153,7 +204,7 @@
 
 	<!-- Generierung -->
 	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
-		<div class="text-sm font-medium">Generierung</div>
+		<div class="text-sm font-medium">Generierung & Import</div>
 		{#if needsRegen}
 			<div class="alert alert-warning py-2 text-sm">
 				<span>
@@ -165,10 +216,14 @@
 		<SubscriptionTerminal
 			actions={[
 				{ field: 'generateRoomsForExams', label: 'Räume für Prüfungen generieren', primary: true },
-				{ field: 'generateRoomsForSlots', label: 'Erlaubte Räume pro Slot neu berechnen' }
+				{ field: 'generateRoomsForSlots', label: 'Erlaubte Räume pro Slot neu berechnen' },
+				{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }
 			]}
 			on:done={onGenerated}
 		/>
+		<p class="text-xs text-base-content/50">
+			EXaHM-Raum-Slots kommen ausschließlich aus dem Anny-Import — ohne Import keine EXaHM-Belegung.
+		</p>
 	</div>
 
 	{#if blockError}
@@ -321,8 +376,11 @@
 						<tr>
 							<td class="sticky left-0 bg-base-100 font-medium">{roomName}</td>
 							{#each data.semesterConfig.days as day}
+								{@const dayAllBlocked = data.semesterConfig.starttimes.every((/** @type {any} */ t) =>
+									blockedMap.has(`${day.number}-${t.number}-${roomName}`)
+								)}
 								<td>
-									<div class="flex gap-0.5">
+									<div class="flex items-center gap-0.5">
 										{#each data.semesterConfig.starttimes as slot}
 											{@const planned = isPlanned(day.number, slot.number, roomName)}
 											{@const blockedReason = blockedMap.get(`${day.number}-${slot.number}-${roomName}`)}
@@ -341,6 +399,17 @@
 												{slot.number}
 											</button>
 										{/each}
+										<button
+											class="ml-0.5 text-[9px] {dayAllBlocked
+												? 'text-error'
+												: 'text-base-content/30 hover:text-error'}"
+											title={dayAllBlocked
+												? 'ganzen Tag freigeben'
+												: 'ganzen Tag für diesen Raum sperren'}
+											on:click={() => toggleBlockDay(day.number, roomName)}
+										>
+											Tag
+										</button>
 									</div>
 								</td>
 							{/each}

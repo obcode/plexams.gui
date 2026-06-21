@@ -327,6 +327,8 @@ type Mutation {
 	removePrePlannedRoom(ancode: Int!, roomName: String!, mtknr: String): Boolean!
 	blockRoomForSlot(room: String!, day: Int!, slot: Int!, reason: String): BlockedRoom!
 	unblockRoomForSlot(room: String!, day: Int!, slot: Int!): Boolean!
+	blockRoomForSlots(room: String!, slots: [SlotInput!]!, reason: String): [BlockedRoom!]!
+	unblockRoomForSlots(room: String!, slots: [SlotInput!]!): Int!
 	zpaExamsToPlan(input: [Int!]!): [ZPAExam!]!
 	addZpaExamToPlan(ancode: Int!): Boolean!
 	rmZpaExamFromPlan(ancode: Int!): Boolean!
@@ -578,6 +580,11 @@ type BlockedRoom {
 	day: Int!
 	slot: Int!
 	reason: String
+}
+
+input SlotInput {
+	day: Int!
+	slot: Int!
 }
 
 type RoomRequest {
