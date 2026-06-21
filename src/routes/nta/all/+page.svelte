@@ -21,6 +21,19 @@
 		return true;
 	});
 
+	// Die mtknr ist der Schlüssel und muss eindeutig sein. Doppelte mtknr als
+	// klare Fehlermeldung anzeigen (statt die Seite per each-Key abstürzen zu
+	// lassen) — muss serverseitig bereinigt werden.
+	$: duplicateMtknr = (() => {
+		const seen = new Set();
+		const dup = new Set();
+		for (const nta of data.ntas) {
+			if (seen.has(nta.mtknr)) dup.add(nta.mtknr);
+			else seen.add(nta.mtknr);
+		}
+		return [...dup];
+	})();
+
 	// Modal zum Anlegen/Bearbeiten
 	let showModal = false;
 	/** @type {any} */
@@ -98,6 +111,16 @@
 
 	{#if toggleError}
 		<div class="alert alert-error py-2 text-sm"><span>{toggleError}</span></div>
+	{/if}
+
+	{#if duplicateMtknr.length}
+		<div class="alert alert-error text-sm">
+			<span>
+				Doppelte Matrikelnummer(n) in den Stammdaten:
+				<span class="font-mono">{duplicateMtknr.join(', ')}</span>. Die mtknr ist der Schlüssel und
+				muss eindeutig sein — bitte serverseitig bereinigen.
+			</span>
+		</div>
 	{/if}
 
 	<p class="text-xs text-base-content/50">
