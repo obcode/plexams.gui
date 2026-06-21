@@ -121,7 +121,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each filteredNTAs as nta (nta.mtknr)}
+					{#each filteredNTAs as nta}
 						<NtaTr {nta} on:edit={openEdit} on:toggle={onToggle} />
 					{/each}
 				</tbody>

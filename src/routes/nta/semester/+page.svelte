@@ -63,7 +63,7 @@
 			<div class="text-base-content/50">Keine NTAs mit Anmeldungen im aktuellen Semester.</div>
 		{:else}
 			<div class="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-				{#each filteredNtas as nta (nta.mtknr)}
+				{#each filteredNtas as nta}
 					<NtaCard {nta} />
 				{/each}
 			</div>
@@ -108,7 +108,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each filteredExams as exam (exam.ancode)}
+					{#each filteredExams as exam}
 						<tr>
 							<td>
 								{#if exam.planEntry != null}
