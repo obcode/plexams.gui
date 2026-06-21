@@ -1,8 +1,11 @@
 <script>
+	/** @type {number} */
 	export let day;
+	/** @type {number} */
 	export let time;
 	import { onMount } from 'svelte';
 
+	/** @type {string[]} */
 	let roomNames = [];
 
 	async function fetchRoomNames() {
@@ -23,16 +26,12 @@
 </script>
 
 {#if roomNames.length > 0}
-	<div class="border-solid border-2 border-black m-2 p-2 rounded-lg shadow-xl text-center">
-		<div class="badge badge-primary">
+	<div class="rounded-lg border border-base-300 bg-base-100 p-2 text-center text-sm">
+		<div class="badge badge-primary badge-sm">
 			{roomNames.length}
-			{#if roomNames.length == 1}
-				Raum
-			{:else}
-				Räume
-			{/if}
+			{roomNames.length == 1 ? 'Raum' : 'Räume'}
 		</div>
-		<ul>
+		<ul class="mt-1 text-base-content/70">
 			{#each roomNames as roomName}
 				<li>{roomName}</li>
 			{/each}
