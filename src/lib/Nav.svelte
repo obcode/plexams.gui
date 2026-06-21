@@ -92,6 +92,7 @@
 				{ href: '/plan/kdprooms', label: 'Raumplanung KDP' },
 				{ href: '/plan/rooms', label: 'Raumplanung' },
 				{ href: '/plan/plannedRooms', label: 'Geplante Räume' },
+				{ href: '/plan/roomRequests', label: 'Gebäudemanagement-Anforderungen' },
 				{ href: '/rooms', label: 'Vorhandene Räume' },
 				{ href: '/plan/rooms/validate', label: 'Validierung' }
 			]
