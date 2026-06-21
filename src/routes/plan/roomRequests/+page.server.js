@@ -141,13 +141,14 @@ export async function load() {
 				rooms {
 					name
 					requestWith
+					deactivated
 				}
 			}
 		`
 	);
 
 	const managementRooms = (cfg.rooms ?? [])
-		.filter((/** @type {any} */ r) => r.requestWith === 'MANAGEMENT')
+		.filter((/** @type {any} */ r) => r.requestWith === 'MANAGEMENT' && !r.deactivated)
 		.map((/** @type {any} */ r) => r.name)
 		.sort();
 
