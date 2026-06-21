@@ -8,7 +8,16 @@ export async function load({ params }) {
 				nta {
 					mtknr
 					name
+					email
 					compensation
+					deltaDurationPercent
+					needsRoomAlone
+					needsHardware
+					program
+					from
+					until
+					lastSemester
+					deactivated
 				}
 				regs {
 					ancodes

@@ -1,85 +1,81 @@
 <script>
-	export let nta;
 	import { mkStarttime } from '$lib/jshelper/misc.js';
+
+	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
+	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).
+	/** @type {any} */
+	export let nta;
 </script>
 
-<div class="card bg-base-100 shadow-xl m-2">
-	<div class="card-body">
-		<div class="flex justify-between">
-			<span class="text-xl">
-				<span class="text-green-900">
-					{nta.nta.name} ({nta.nta.program} / {nta.nta.mtknr})<br />
-					<span class=" text-blue-900">
-						<a href="mailto:{nta.nta.email}">&lt;{nta.nta.email}&gt;</a>
-					</span>
-				</span>
-			</span>
-			{#if nta.nta.needsHardware}
-				<div class="badge badge-info">spezielle Hardware</div>
+<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
+	<!-- Kopf -->
+	<div class="flex items-start justify-between gap-2">
+		<div class="min-w-0">
+			<div class="font-medium">{nta.nta.name}</div>
+			<div class="text-xs text-base-content/50">
+				{nta.nta.program} · <span class="font-mono">{nta.nta.mtknr}</span>
+			</div>
+			{#if nta.nta.email}
+				<a class="link text-xs text-base-content/60" href="mailto:{nta.nta.email}">
+					{nta.nta.email}
+				</a>
 			{/if}
+		</div>
+		<div class="flex shrink-0 flex-col items-end gap-1">
 			{#if nta.nta.needsRoomAlone}
-				<div class="badge badge-warning">eigener Raum</div>
+				<span class="badge badge-warning badge-sm">eigener Raum</span>
+			{/if}
+			{#if nta.nta.needsHardware}
+				<span class="badge badge-info badge-sm">Hardware</span>
 			{/if}
 		</div>
-		<div>
-			<span class="text-blue-900">
-				{nta.nta.compensation}
-			</span>
-			<span class="text-red-500">
-				gültig bis {nta.nta.until}
-			</span>
-		</div>
-		<div>
-			<span class="text-black-900">
-				<ul>
-					<table>
-						<tbody>
-							{#each nta.exams as exam}
-								<tr class="m-2">
-									{#if exam.constraints && exam.constraints.notPlannedByMe}
-										<td class="text-slate-400">
-											{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
-										</td>
-									{:else}
-										<td class="pr-4 pb-2">
-											{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
-										</td>
-										<td class="pr-4">
-											{#if exam.roomName}
-												<div class="badge badge-success">{exam.roomName}</div>
-											{:else}
-												<div class="badge badge-warning">noch nicht geplant</div>
-											{/if}
-										</td>
-										<td class="pr-4">
-											{#if exam.starttime}
-												{mkStarttime(exam.starttime)}
-											{:else}
-												<div class="badge badge-warning">noch nicht geplant</div>
-											{/if}
-										</td>
-										<td class="pr-4">
-											{#if exam.invigilator}
-												{exam.invigilator}
-											{:else}
-												<div class="badge badge-warning">noch nicht geplant</div>
-											{/if}
-										</td>
-										<td class="pr-4">
-											{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
-												<div class="badge badge-error">SEB</div>
-											{/if}
-											{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
-												<div class="badge badge-error">EXaHM</div>
-											{/if}
-										</td>
-									{/if}
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</ul>
-			</span>
-		</div>
+	</div>
+
+	<!-- Kompensation -->
+	<div class="flex flex-wrap items-baseline gap-2 text-sm">
+		<span>{nta.nta.compensation}</span>
+		{#if nta.nta.until}
+			<span class="text-xs text-base-content/50">gültig bis {nta.nta.until}</span>
+		{/if}
+	</div>
+
+	<!-- Prüfungen -->
+	<div class="flex flex-col gap-1.5">
+		{#each nta.exams as exam}
+			{#if exam.constraints && exam.constraints.notPlannedByMe}
+				<div class="rounded border border-base-300 bg-base-200/40 px-3 py-1.5 text-sm text-base-content/40">
+					{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
+					<span class="text-xs">(nicht von mir geplant)</span>
+				</div>
+			{:else}
+				<div class="rounded border border-base-300 px-3 py-1.5 text-sm">
+					<div class="font-medium">
+						{exam.ancode}. {exam.zpaExam.module}
+						<span class="font-normal text-base-content/50">· {exam.zpaExam.mainExamer}</span>
+					</div>
+					<div class="mt-1 flex flex-wrap items-center gap-1.5">
+						{#if exam.roomName}
+							<span class="badge badge-success badge-sm">{exam.roomName}</span>
+						{:else}
+							<span class="badge badge-warning badge-sm">Raum offen</span>
+						{/if}
+						{#if exam.starttime}
+							<span class="badge badge-ghost badge-sm">{mkStarttime(exam.starttime)}</span>
+						{:else}
+							<span class="badge badge-warning badge-sm">Termin offen</span>
+						{/if}
+						{#if exam.invigilator}
+							<span class="badge badge-outline badge-sm">Aufsicht {exam.invigilator}</span>
+						{/if}
+						{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
+							<span class="badge badge-error badge-sm">SEB</span>
+						{/if}
+						{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
+							<span class="badge badge-error badge-sm">EXaHM</span>
+						{/if}
+					</div>
+				</div>
+			{/if}
+		{/each}
 	</div>
 </div>
