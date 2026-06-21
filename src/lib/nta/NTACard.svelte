@@ -147,7 +147,7 @@
 			<h3 class="text-lg font-semibold">E-Mail an {nta.nta.name}</h3>
 			<EmailSender
 				emailKey="sendEmailNewNTA"
-				title="„Neuer NTA" an Prüfende"
+				title="„Neuer NTA“ an Prüfende"
 				description="Info an die betroffenen Prüfenden über den neuen NTA-Bescheid von {nta.nta.name}."
 				extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
 			/>

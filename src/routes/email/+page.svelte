@@ -133,7 +133,7 @@
 				</label>
 				<EmailSender
 					emailKey="sendEmailNewNTA"
-					title="„Neuer NTA" an Prüfende"
+					title="„Neuer NTA“ an Prüfende"
 					description="Info an die betroffenen Prüfenden über einen nachträglich eingegangenen NTA-Bescheid (mtknr)."
 					extraArgs={{ mtknr: { type: 'String!', value: newNtaMtknr } }}
 					disabled={!newNtaMtknr}
