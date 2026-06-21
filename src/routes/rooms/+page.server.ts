@@ -15,6 +15,7 @@ export async function load() {
 				needsRequest
 				sebSeats
 				hmebSeats
+				deactivated
 			}
 		}
 	`;

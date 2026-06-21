@@ -305,6 +305,7 @@ type Mutation {
 	addNTA(input: NTAInput!): NTA!
 	updateNTA(input: NTAInput!): NTA!
 	setNTAActive(mtknr: String!, active: Boolean!): NTA!
+	setRoomActive(name: String!, active: Boolean!): Room!
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
 	rmExamFromSlot(ancode: Int!): Boolean!
 	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
@@ -541,6 +542,7 @@ type Room {
 	seb: Boolean!
 	sebSeats: Int
 	hmebSeats: Int
+	deactivated: Boolean!
 }
 
 type RoomAndExam {

@@ -1,93 +1,156 @@
 <script>
+	import { invalidateAll } from '$app/navigation';
+
 	export let data;
 
-	let rooms = data.rooms;
+	const FLAGS = ['nta', 'lab', 'placesWithSocket', 'exahm', 'seb', 'needsRequest'];
 
-	function onClick(column) {
-		if (column === 'nta') {
-			rooms = data.rooms.filter((r) => r.handicap);
-		} else if (column === 'lab') {
-			rooms = data.rooms.filter((r) => r.lab);
-		} else if (column === 'placesWithSocket') {
-			rooms = data.rooms.filter((r) => r.placesWithSocket);
-		} else if (column === 'exahm') {
-			rooms = data.rooms.filter((r) => r.exahm);
-		} else if (column === 'seb') {
-			rooms = data.rooms.filter((r) => r.seb);
-		} else if (column === 'needsRequest') {
-			rooms = data.rooms.filter((r) => r.needsRequest);
-		} else if (column === 'seats') {
-			rooms = data.rooms;
-			rooms.sort((r1, r2) => r2.seats - r1.seats);
-		} else if (column === 'name') {
-			rooms = data.rooms;
-			rooms.sort((r1, r2) => r1.name.localeCompare(r2.name));
+	/** @type {string | null} aktiver Bool-Filter */
+	let filterCol = null;
+	/** @type {'name' | 'seats'} */
+	let sortCol = 'name';
+
+	/** @param {string} col */
+	function onHeader(col) {
+		if (FLAGS.includes(col)) {
+			filterCol = filterCol === col ? null : col;
+		} else {
+			sortCol = /** @type {'name' | 'seats'} */ (col);
+		}
+	}
+
+	/** @param {any} r */
+	function passesFilter(r) {
+		if (!filterCol) return true;
+		if (filterCol === 'nta') return r.handicap;
+		return r[filterCol];
+	}
+
+	$: rooms = [...data.rooms]
+		.filter(passesFilter)
+		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
+			sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
+		);
+
+	/** @type {string | null} */
+	let toggleError = null;
+	/** @param {any} room */
+	async function toggleRoom(room) {
+		toggleError = null;
+		try {
+			const res = await fetch('/api/setRoomActive', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				// aktiv umschalten: neuer active-Wert = aktueller deactivated-Wert
+				body: JSON.stringify({ name: room.name, active: !!room.deactivated })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				toggleError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+		} catch (err) {
+			toggleError = err instanceof Error ? err.message : String(err);
 		}
 	}
 </script>
 
-<div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">
-		{data.rooms.length} Räume
+<div class="mx-2 mt-4 flex flex-col gap-4">
+	<div class="flex flex-wrap items-center gap-3">
+		<h1 class="text-2xl font-semibold">Räume</h1>
+		<span class="badge badge-primary badge-lg tabular-nums">{data.rooms.length}</span>
+		{#if filterCol}
+			<span class="text-sm text-base-content/60">{rooms.length} gefiltert</span>
+		{/if}
 	</div>
-</div>
 
-<div class="grid grid-cols-1 justify-items-center">
-	<div class="overflow-x-auto">
-		<table class="table table-zebra">
-			<!-- head -->
+	<p class="text-xs text-base-content/50">
+		Spaltenköpfe sind klickbar: Name/Plätze sortieren, die übrigen filtern (erneut klicken hebt den
+		Filter auf). Eine Deaktivierung wirkt erst beim nächsten Vorbereiten der Räume-für-Slots; bereits
+		verplante Räume bleiben.
+	</p>
+
+	{#if toggleError}
+		<div class="alert alert-error py-2 text-sm"><span>{toggleError}</span></div>
+	{/if}
+
+	<div class="overflow-x-auto rounded-lg border border-base-300">
+		<table class="table table-zebra table-sm">
 			<thead>
 				<tr>
-					<th on:click={() => onClick('name')}>Name</th>
-					<th on:click={() => onClick('seats')}>Plätze</th>
-					<th on:click={() => onClick('nta')}>NTA</th>
-					<th on:click={() => onClick('lab')}>Labor</th>
-					<th on:click={() => onClick('placesWithSocket')}>Steckdosen</th>
-					<th on:click={() => onClick('exahm')}>EXaHM</th>
-					<th on:click={() => onClick('seb')}>SEB</th>
-					<th on:click={() => onClick('needsRequest')}>Anforderung</th>
+					<th
+						class="cursor-pointer {sortCol === 'name' ? 'text-primary' : ''}"
+						on:click={() => onHeader('name')}>Name</th
+					>
+					<th
+						class="cursor-pointer text-right {sortCol === 'seats' ? 'text-primary' : ''}"
+						on:click={() => onHeader('seats')}>Plätze</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'nta' ? 'text-primary' : ''}"
+						on:click={() => onHeader('nta')}>NTA</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'lab' ? 'text-primary' : ''}"
+						on:click={() => onHeader('lab')}>Labor</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'placesWithSocket' ? 'text-primary' : ''}"
+						on:click={() => onHeader('placesWithSocket')}>Steckdosen</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'exahm' ? 'text-primary' : ''}"
+						on:click={() => onHeader('exahm')}>EXaHM</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'seb' ? 'text-primary' : ''}"
+						on:click={() => onHeader('seb')}>SEB</th
+					>
+					<th
+						class="cursor-pointer {filterCol === 'needsRequest' ? 'text-primary' : ''}"
+						on:click={() => onHeader('needsRequest')}>Anforderung</th
+					>
+					<th>aktiv</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each rooms as room}
-					<tr>
-						<td class="font-bold"> {room.name} </td>
-						<td class="text-right"> {room.seats} Plätze </td>
+					<tr class={room.deactivated ? 'opacity-50' : ''}>
+						<td class="font-medium">{room.name}</td>
+						<td class="text-right tabular-nums">{room.seats}</td>
+						<td>{#if room.handicap}<span class="badge badge-info badge-sm">NTA</span>{/if}</td>
+						<td>{#if room.lab}<span class="badge badge-info badge-sm">Labor</span>{/if}</td>
 						<td>
-							{#if room.handicap}
-								<div class="badge badge-info">NTA</div>
-							{/if}
+							{#if room.placesWithSocket}<span class="badge badge-info badge-sm">Steckdosen</span
+								>{/if}
 						</td>
-						<td>
-							{#if room.lab}
-								<div class="badge badge-info">Labor</div>
-							{/if}
-						</td>
-						<td>
-							{#if room.placesWithSocket}
-								<div class="badge badge-info">Steckdosen</div>
-							{/if}
-						</td>
-						<td>
-							{#if room.exahm}
-								<div class="badge badge-info">EXaHM</div>
-							{/if}
-						</td>
+						<td>{#if room.exahm}<span class="badge badge-info badge-sm">EXaHM</span>{/if}</td>
 						<td>
 							{#if room.seb}
-								<div class="badge badge-info">SEB</div>
-								{#if room.sebSeats > 0}
-									<div class="badge">{room.sebSeats} SEB</div>
-								{/if}
-								{#if room.hmebSeats > 0}
-									<div class="badge">{room.hmebSeats} HMEB</div>
-								{/if}
+								<span class="badge badge-info badge-sm">SEB</span>
+								{#if room.sebSeats > 0}<span class="badge badge-sm">{room.sebSeats} SEB</span>{/if}
+								{#if room.hmebSeats > 0}<span class="badge badge-sm">{room.hmebSeats} HMEB</span>{/if}
 							{/if}
 						</td>
 						<td>
-							{#if room.needsRequest}
-								<div class="badge badge-info">Request</div>
-							{/if}
+							{#if room.needsRequest}<span class="badge badge-warning badge-sm">Request</span>{/if}
+						</td>
+						<td>
+							<label
+								class="label cursor-pointer justify-start gap-2 px-0"
+								title="Deaktivierung wirkt erst beim nächsten Vorbereiten der Räume-für-Slots"
+							>
+								<input
+									type="checkbox"
+									class="toggle toggle-sm toggle-success"
+									checked={!room.deactivated}
+									on:change={() => toggleRoom(room)}
+								/>
+								<span class="text-xs {room.deactivated ? 'text-error' : 'text-success'}">
+									{room.deactivated ? 'inaktiv' : 'aktiv'}
+								</span>
+							</label>
 						</td>
 					</tr>
 				{/each}
