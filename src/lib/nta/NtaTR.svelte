@@ -1,35 +1,45 @@
 <script>
+	import { createEventDispatcher } from 'svelte';
+
+	/** @type {any} */
 	export let nta;
-	let maybeColor = '';
-	if (nta.needsRoomAlone) {
-		maybeColor = 'text-red-800';
-	}
+
+	const dispatch = createEventDispatcher();
+
+	$: maybeColor = nta.needsRoomAlone ? 'text-error' : '';
 </script>
 
-<tr>
+<tr class={nta.deactivated ? 'opacity-50' : ''}>
 	<td>{nta.name}</td>
 	<td>
 		{#if nta.email}
 			{nta.email}
 		{:else}
-			<i class="text-slate-400">fehlt</i>
+			<i class="text-base-content/40">fehlt</i>
 		{/if}
 	</td>
-	<td><a href="/nta/{nta.mtknr}"><span class="font-mono">{nta.mtknr}</span></a></td>
+	<td><a class="link font-mono" href="/nta/{nta.mtknr}">{nta.mtknr}</a></td>
 	<td class={maybeColor}>{nta.compensation}</td>
 	<td>{nta.from}</td>
+	<td>{nta.until}</td>
+	<td>{nta.lastSemester ? nta.lastSemester : '-'}</td>
 	<td>
-		{#if nta.deactivated}
-			<i class="text-red-800">deaktiviert</i>
-		{:else}
-			{nta.until}
-		{/if}
+		<label
+			class="label cursor-pointer justify-start gap-2 px-0"
+			title="Deaktivierung wirkt erst bei der nächsten Aufbereitung/Generierung"
+		>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm toggle-success"
+				checked={!nta.deactivated}
+				on:change={() => dispatch('toggle', nta)}
+			/>
+			<span class="text-xs {nta.deactivated ? 'text-error' : 'text-success'}">
+				{nta.deactivated ? 'inaktiv' : 'aktiv'}
+			</span>
+		</label>
 	</td>
 	<td>
-		{#if nta.lastSemester}
-			{nta.lastSemester}
-		{:else}
-			-
-		{/if}
+		<button class="btn btn-ghost btn-xs" on:click={() => dispatch('edit', nta)}>✎ Bearbeiten</button>
 	</td>
 </tr>

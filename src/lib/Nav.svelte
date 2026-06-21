@@ -108,10 +108,8 @@
 		{
 			label: 'NTA',
 			items: [
-				{ href: '/nta/add', label: 'NTA hinzufügen' },
-				{ href: '/nta/ntaWithRegs', label: 'NTAs mit Anmeldungen' },
-				{ href: '/nta/examsWithNtas', label: 'Prüfungen mit NTAs' },
-				{ href: '/nta/all', label: 'Bekannte NTAs' }
+				{ href: '/nta/all', label: 'NTA-Stammdaten' },
+				{ href: '/nta/semester', label: 'NTA im Semester' }
 			]
 		},
 		{

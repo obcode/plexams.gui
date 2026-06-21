@@ -12,7 +12,7 @@
 				<span class="text-green-900">
 					{nta.nta.name}
 				</span>
-				<span class="text-green-900" />
+				<span class="text-green-900"></span>
 			</div>
 			<div>
 				<span class="text-red-900">
