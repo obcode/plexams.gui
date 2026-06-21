@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { conditionsDoneMap } from '$lib/email/emailConditions';
 
 // Erwartete keys für den Abgleich:
 //  - Deckblätter (cover-page): Prüfende mit von mir geplanten Prüfungen
@@ -17,6 +18,14 @@ export async function load() {
 					teacher {
 						id
 						shortname
+					}
+				}
+			}
+			planningState {
+				phases {
+					conditions {
+						key
+						done
 					}
 				}
 			}
@@ -46,5 +55,9 @@ export async function load() {
 		}))
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label));
 
-	return { expectedExamers, expectedInvigilators };
+	return {
+		expectedExamers,
+		expectedInvigilators,
+		conditionsDone: conditionsDoneMap(data.planningState)
+	};
 }

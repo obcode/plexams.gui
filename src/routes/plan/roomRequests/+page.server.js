@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { conditionsDoneMap } from '$lib/email/emailConditions';
 
 // Gebäudemanagement-Raumanforderungen (nur diese; Anny/T-Räume haben eine
 // eigene Quelle). Schlüssel je Anforderung: room + day + slot.
@@ -143,6 +144,14 @@ export async function load() {
 					requestWith
 					deactivated
 				}
+				planningState {
+					phases {
+						conditions {
+							key
+							done
+						}
+					}
+				}
 			}
 		`
 	);
@@ -156,6 +165,7 @@ export async function load() {
 		roomRequests: enriched,
 		days: cfg.semesterConfig?.days ?? [],
 		starttimes: cfg.semesterConfig?.starttimes ?? [],
-		managementRooms
+		managementRooms,
+		conditionsDone: conditionsDoneMap(cfg.planningState)
 	};
 }

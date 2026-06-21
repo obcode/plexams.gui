@@ -82,6 +82,7 @@
 			title="Veröffentlichte Aufsichten versenden"
 			description="Je Aufsicht eine Mail mit ihrem Aufsichtskalender."
 			disabled={!hasInvigImages}
+			conditionsDone={data.conditionsDone}
 		/>
 	</section>
 
@@ -120,6 +121,7 @@
 			title="Alle Deckblätter versenden"
 			description="An alle Prüfenden mit von mir geplanten Prüfungen."
 			disabled={!hasCovers}
+			conditionsDone={data.conditionsDone}
 		/>
 
 		<!-- Einzelversand -->
@@ -147,6 +149,7 @@
 				description="Sendet nur das Deckblatt der oben gewählten Person."
 				extraArgs={{ teacherID: { type: 'Int!', value: Number(selectedExamer?.key ?? 0) } }}
 				disabled={!selectedExamer}
+				conditionsDone={data.conditionsDone}
 			/>
 		</div>
 	</section>

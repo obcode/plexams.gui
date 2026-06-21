@@ -2,6 +2,7 @@
 	import { onDestroy, tick } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
+	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
 
 	// Wiederverwendbare Komponente für genau EINEN E-Mail-Versand-Typ. Kann auf
 	// der Übersichtsseite /email oder einzeln auf anderen Seiten eingebunden
@@ -22,6 +23,14 @@
 	export let extraArgs = {};
 	/** Buttons deaktivieren (z. B. solange keine Auswahl getroffen ist) */
 	export let disabled = false;
+	/** planningState-Bedingungen (conditionKey → done); steuert „bereits gesendet"
+	 * @type {Record<string, boolean>} */
+	export let conditionsDone = {};
+
+	// „bereits gesendet": zugehörige Bedingung ist done (oder gerade real
+	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
+	let sentOverride = false;
+	$: alreadySent = sentOverride || conditionsDone[EMAIL_CONDITION[emailKey]] === true;
 
 	// --- Laufzeit-Status ---
 	let running = false;
@@ -34,6 +43,8 @@
 	let blocked = false;
 	/** @type {string | null} */
 	let errorMsg = null;
+	/** gab es eine ERROR-Zeile im aktuellen Lauf? */
+	let hadError = false;
 
 	// Terminal: alle Zeilen ausser PROGRESS werden angehängt; die jeweils letzte
 	// PROGRESS-Zeile wird in-place aktualisiert.
@@ -74,6 +85,7 @@
 		errorMsg = null;
 		blocked = false;
 		done = false;
+		hadError = false;
 		running = true;
 		lastReal = run;
 
@@ -118,8 +130,16 @@
 							current = null;
 						}
 						lines = [...lines, { level: line.level, html }];
-						if (line.level === 'ERROR' && isBlockedMessage(text)) blocked = true;
-						if (line.level === 'DONE') done = true;
+						if (line.level === 'ERROR') {
+							hadError = true;
+							if (isBlockedMessage(text)) blocked = true;
+							if (/already sent/i.test(text)) sentOverride = true;
+						}
+						if (line.level === 'DONE') {
+							done = true;
+							// echter Versand erfolgreich → Bedingung ist jetzt gesetzt
+							if (lastReal && !blocked && !hadError) sentOverride = true;
+						}
 					}
 					scrollToBottom();
 				},
@@ -203,7 +223,13 @@
 
 		<div class="mx-1 h-6 w-px bg-base-300"></div>
 
-		{#if confirming}
+		{#if alreadySent}
+			<span class="text-xs text-base-content/60">
+				bereits gesendet — zum erneuten Senden das Häkchen auf der <a class="link" href="/"
+					>Startseite</a
+				> zurücksetzen
+			</span>
+		{:else if confirming}
 			<div class="flex items-center gap-2 rounded-lg bg-error/10 px-2 py-1" transition:slide>
 				<span class="text-xs font-medium text-error">Wirklich an alle Empfänger senden?</span>
 				<button class="btn btn-error btn-xs" disabled={running} on:click={() => start(true)}>

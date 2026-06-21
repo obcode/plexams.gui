@@ -584,6 +584,7 @@
 			emailKey="sendEmailRoomRequests"
 			title="Anfrage ans Gebäudemanagement senden"
 			description="Verschickt alle aktiven Anforderungen (nach Raum gruppiert). Probelauf geht an die Testadresse."
+			conditionsDone={data.conditionsDone}
 		/>
 	{/if}
 </div>
