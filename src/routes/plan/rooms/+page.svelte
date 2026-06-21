@@ -329,7 +329,7 @@
 											{@const isBlocked = blockedReason !== undefined}
 											<button
 												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {isBlocked
-													? 'bg-base-300 text-base-content/40 line-through'
+													? 'bg-error/20 text-error line-through'
 													: planned
 														? 'bg-primary font-semibold text-primary-content'
 														: 'bg-base-200 text-base-content/30 hover:bg-base-300'}"
