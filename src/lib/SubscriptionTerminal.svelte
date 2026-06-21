@@ -117,6 +117,14 @@
 		);
 	}
 
+	function close() {
+		lines = [];
+		current = null;
+		errorMsg = null;
+		blocked = false;
+		done = false;
+	}
+
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
 	});
@@ -138,6 +146,9 @@
 		{/each}
 		{#if done && !errorMsg && !blocked}
 			<span class="badge badge-success">fertig</span>
+		{/if}
+		{#if !running && (lines.length || current || errorMsg || blocked)}
+			<button class="btn btn-ghost btn-xs gap-1" on:click={close}>✕ schließen</button>
 		{/if}
 	</div>
 
