@@ -7,6 +7,8 @@ export const EMAIL_CONDITION = {
 	sendEmailPrepared: 'examsPrepared',
 	sendEmailDraft: 'draftSent',
 	sendEmailCoverPages: 'coverPagesSent',
+	sendEmailPrimussDataAll: 'primussDataAllSent',
+	sendEmailNTAPlanned: 'ntaPlannedSent',
 	sendEmailPublishedExams: 'examPlanPublished',
 	sendEmailPublishedRooms: 'roomPlanPublished',
 	sendEmailPublishedInvigilations: 'invigilationPlanPublished',

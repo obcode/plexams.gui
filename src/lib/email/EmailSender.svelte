@@ -26,11 +26,15 @@
 	/** planningState-Bedingungen (conditionKey → done); steuert „bereits gesendet"
 	 * @type {Record<string, boolean>} */
 	export let conditionsDone = {};
+	/** überschreibt die Bedingung aus dem Mapping (z. B. wenn derselbe
+	 * Subscription-Key gegated und ungegated verwendet wird) */
+	export let conditionKey = '';
 
 	// „bereits gesendet": zugehörige Bedingung ist done (oder gerade real
 	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
 	let sentOverride = false;
-	$: alreadySent = sentOverride || conditionsDone[EMAIL_CONDITION[emailKey]] === true;
+	$: condKey = conditionKey || EMAIL_CONDITION[emailKey];
+	$: alreadySent = sentOverride || (condKey ? conditionsDone[condKey] === true : false);
 
 	// --- Laufzeit-Status ---
 	let running = false;

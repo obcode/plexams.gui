@@ -10,7 +10,7 @@
 
 /**
  * @typedef {{ href: string, label: string, primary?: boolean }} EmailLink
- * @typedef {{ key: string, title: string, description: string, links?: EmailLink[] }} EmailDef
+ * @typedef {{ key: string, title: string, description: string, links?: EmailLink[], extraArgs?: Record<string, { type: string, value: any }>, conditionKey?: string }} EmailDef
  * @typedef {{ id: string, title: string, emails: EmailDef[] }} EmailGroup
  */
 
@@ -81,6 +81,31 @@ export const invigilationEmails = [
 ];
 
 /** @type {EmailDef[]} */
+export const primussEmails = [
+	{
+		key: 'sendEmailPrimussDataAll',
+		title: 'Primuss-Daten (alle)',
+		description: 'Primuss-Prüfungsdaten an alle zuständigen Stellen. Einzelversand siehe unten.'
+	}
+];
+
+/** @type {EmailDef[]} */
+export const ntaEmails = [
+	{
+		key: 'sendEmailNTAPlanned',
+		title: 'NTA verplant',
+		description: 'Info an die Prüfenden, dass die NTAs eingeplant sind.'
+	},
+	{
+		key: 'sendEmailNTARoomAlone',
+		title: 'NTA Einzelraum (alle)',
+		description: 'Info zu allen NTAs mit eigenem Raum. Einzelversand siehe unten.',
+		extraArgs: { mtknr: { type: 'String!', value: 'all' } },
+		conditionKey: 'ntaRoomAloneSent'
+	}
+];
+
+/** @type {EmailDef[]} */
 export const coverPageEmails = [
 	{
 		key: 'sendEmailCoverPages',
@@ -100,6 +125,8 @@ export const emailGroups = [
 	{ id: 'constraints', title: 'Vorbereitung', emails: constraintEmails },
 	{ id: 'planning', title: 'Planung', emails: planningEmails },
 	{ id: 'rooms', title: 'Räume', emails: roomEmails },
+	{ id: 'primuss', title: 'Primuss', emails: primussEmails },
 	{ id: 'invigilation', title: 'Aufsichten', emails: invigilationEmails },
+	{ id: 'nta', title: 'NTA', emails: ntaEmails },
 	{ id: 'coverpages', title: 'Deckblätter', emails: coverPageEmails }
 ];
