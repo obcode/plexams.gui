@@ -9,6 +9,16 @@
 	let filterCol = null;
 	/** @type {'name' | 'seats'} */
 	let sortCol = 'name';
+	/** Aktiv-Status-Filter; Default: nur aktive
+	 * @type {'active' | 'all' | 'inactive'} */
+	let activeFilter = 'active';
+
+	function cycleActive() {
+		activeFilter =
+			activeFilter === 'active' ? 'all' : activeFilter === 'all' ? 'inactive' : 'active';
+	}
+	$: activeLabel =
+		activeFilter === 'active' ? 'nur aktive' : activeFilter === 'inactive' ? 'nur inaktive' : 'alle';
 
 	/** @param {string} col */
 	function onHeader(col) {
@@ -23,6 +33,8 @@
 	// Abhängigkeiten erkennt und die Liste bei jedem Klick neu berechnet.
 	$: rooms = [...data.rooms]
 		.filter((/** @type {any} */ r) => {
+			if (activeFilter === 'active' && r.deactivated) return false;
+			if (activeFilter === 'inactive' && !r.deactivated) return false;
 			if (!filterCol) return true;
 			if (filterCol === 'nta') return r.handicap;
 			return r[filterCol];
@@ -59,8 +71,8 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Räume</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.rooms.length}</span>
-		{#if filterCol}
-			<span class="text-sm text-base-content/60">{rooms.length} gefiltert</span>
+		{#if rooms.length !== data.rooms.length}
+			<span class="text-sm text-base-content/60">{rooms.length} angezeigt</span>
 		{/if}
 	</div>
 
@@ -110,7 +122,13 @@
 						class="cursor-pointer {filterCol === 'needsRequest' ? 'text-primary' : ''}"
 						on:click={() => onHeader('needsRequest')}>Anforderung</th
 					>
-					<th>aktiv</th>
+					<th
+						class="cursor-pointer whitespace-nowrap {activeFilter !== 'active' ? 'text-primary' : ''}"
+						title="Klicken: nur aktive → alle → nur inaktive"
+						on:click={cycleActive}
+					>
+						aktiv <span class="font-normal text-base-content/50">({activeLabel})</span>
+					</th>
 				</tr>
 			</thead>
 			<tbody>
