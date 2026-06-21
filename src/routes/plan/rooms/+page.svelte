@@ -5,8 +5,14 @@
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
 	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
 	import { slide } from 'svelte/transition';
+	import { tick } from 'svelte';
 
-	$: totalNoRoom = data.noRoomExams.reduce((/** @type {number} */ s, /** @type {any} */ n) => s + n.students, 0);
+	$: totalNoRoom = data.noRoomExams.reduce(
+		(/** @type {number} */ s, /** @type {any} */ n) => s + n.students,
+		0
+	);
+	// Slots mit „No Room" (aus der Warnung) — für die „nach Räumen"-Zeile.
+	$: noRoomSet = new Set(data.noRoomExams.map((/** @type {any} */ n) => `${n.day}-${n.slot}`));
 
 	/** @type {'exams' | 'rooms'} */
 	let view = 'exams';
@@ -15,18 +21,46 @@
 	let details = false;
 	let showRooms = 'all';
 
-	// aufgeklappte Tage (Sicht „nach Prüfungen")
+	/** @param {number} day @param {number} slot @param {string} roomName */
+	const isPlanned = (day, slot, roomName) => data.plannedRooms.has(`${day}-${slot}-${roomName}`);
+
+	/** ist der Raum an diesem Tag in irgendeinem Slot geplant? @param {number} day @param {string} room */
+	const roomUsedOnDay = (day, room) =>
+		data.semesterConfig.starttimes.some((/** @type {any} */ t) => isPlanned(day, t.number, room));
+
+	// aufgeklappte Tage (Sicht „nach Prüfungen"). Bei Raumauswahl nur die Tage
+	// offen, an denen der Raum geplant ist; ohne Auswahl folgt es „alle Tage".
 	/** @type {Record<number, boolean>} */
 	let showDays = {};
 	let showAllDays = false;
-	$: for (const day of data.semesterConfig.days) showDays[day.number] = showAllDays;
+	/** @param {string} rooms @param {boolean} allDays */
+	function applyDayDefaults(rooms, allDays) {
+		for (const day of data.semesterConfig.days) {
+			showDays[day.number] = rooms === 'all' ? allDays : roomUsedOnDay(day.number, rooms);
+		}
+		showDays = showDays;
+	}
+	$: applyDayDefaults(showRooms, showAllDays);
 
-	/** @param {number} day @param {number} slot @param {string} roomName */
-	const isPlanned = (day, slot, roomName) =>
-		data.plannedRooms.has(`${day}-${slot}-${roomName}`);
+	// Sprung aus der „No Room"-Warnung zum passenden Tag/Slot.
+	/** @param {number} day @param {number} slot */
+	async function jumpTo(day, slot) {
+		view = 'exams';
+		showRooms = 'all';
+		await tick(); // applyDayDefaults laufen lassen
+		showDays[day] = true;
+		showDays = showDays;
+		await tick();
+		document
+			.getElementById(`slot-${day}-${slot}`)
+			?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
 
+	$: baseRooms = data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room');
 	$: gridRooms =
-		showRooms === 'all' ? data.plannedRoomNames : data.plannedRoomNames.filter((/** @type {string} */ r) => r === showRooms);
+		showRooms === 'all' ? baseRooms : baseRooms.filter((/** @type {string} */ r) => r === showRooms);
+	$: showNoRoomRow =
+		noRoomSet.size > 0 && (showRooms === 'all' || showRooms === 'No Room');
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -57,10 +91,14 @@
 				</div>
 				<div class="flex flex-wrap gap-1">
 					{#each data.noRoomExams as n}
-						<span class="badge badge-sm border-error-content/30">
+						<button
+							class="badge badge-sm cursor-pointer border-error-content/30 hover:underline"
+							title="zum Tag/Slot springen"
+							on:click={() => jumpTo(n.day, n.slot)}
+						>
 							{n.ancode}
 							{n.module} · Tag {n.day}/Slot {n.slot} · {n.students}
-						</span>
+						</button>
 					{/each}
 				</div>
 			</div>
@@ -116,7 +154,8 @@
 					{#if showDays[day.number]}
 						<div class="flex flex-col gap-3 border-t border-base-300 p-3" transition:slide>
 							{#each data.semesterConfig.starttimes as time}
-								<div class="grid grid-cols-12 gap-3">
+								<div class="grid grid-cols-12 gap-3" id="slot-{day.number}-{time.number}">
+
 									<div class="col-span-12 flex flex-col gap-2 sm:col-span-2">
 										<div class="rounded-lg border border-base-300 bg-base-200 px-3 py-2 text-sm">
 											<div class="font-semibold">Slot {time.number}</div>
@@ -187,6 +226,29 @@
 							{/each}
 						</tr>
 					{/each}
+
+					{#if showNoRoomRow}
+						<tr class="bg-error/10">
+							<td class="sticky left-0 bg-error/10 font-semibold text-error">No Room</td>
+							{#each data.semesterConfig.days as day}
+								<td>
+									<div class="flex gap-0.5">
+										{#each data.semesterConfig.starttimes as slot}
+											{@const planned = noRoomSet.has(`${day.number}-${slot.number}`)}
+											<div
+												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {planned
+													? 'bg-error font-semibold text-error-content'
+													: 'bg-base-200 text-base-content/30'}"
+												title="Tag {day.number} · Slot {slot.number}{planned ? ' · ohne Raum!' : ''}"
+											>
+												{slot.number}
+											</div>
+										{/each}
+									</div>
+								</td>
+							{/each}
+						</tr>
+					{/if}
 				</tbody>
 			</table>
 		</div>

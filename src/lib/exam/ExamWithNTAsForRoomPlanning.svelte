@@ -141,8 +141,8 @@
 			<div class="text-sm text-error">kein Raum!</div>
 		{/if}
 
-		<!-- NTAs -->
-		{#if hasNtas}
+		<!-- NTAs (nur bei aktiviertem „NTA-Details"-Toggle) -->
+		{#if hasNtas && details}
 			<div class="flex flex-col gap-1">
 				{#each ntas as nta}
 					<div class="rounded border border-base-300 px-2 py-1 text-xs">
@@ -151,9 +151,7 @@
 							<span class="font-mono text-base-content/50">{nta.mtknr}</span>
 							{#if nta.needsRoomAlone}<span class="badge badge-error badge-sm">eigener Raum</span>{/if}
 						</div>
-						{#if details}
-							<div class="text-base-content/60">{nta.compensation}</div>
-						{/if}
+						<div class="text-base-content/60">{nta.compensation}</div>
 						<div class="mt-1 flex items-center gap-2">
 							<span class="tabular-nums">+{nta.deltaDurationPercent}%</span>
 							<progress
