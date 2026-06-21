@@ -132,7 +132,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each rooms as room}
+				{#each rooms as room (room.name)}
 					<tr class={room.deactivated ? 'opacity-50' : ''}>
 						<td class="font-medium">{room.name}</td>
 						<td class="text-right tabular-nums">{room.seats}</td>
