@@ -1,6 +1,7 @@
 <script>
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 	import { slide } from 'svelte/transition';
+	import EmailSender from '$lib/email/EmailSender.svelte';
 
 	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
 	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).
@@ -127,4 +128,22 @@
 			{/if}
 		</div>
 	{/if}
+
+	<!-- Einzelversand für diese Person (mtknr vorbelegt, wiederholbar) -->
+	<div class="flex flex-col gap-2 border-t border-base-300 pt-2">
+		<EmailSender
+			emailKey="sendEmailNewNTA"
+			title="NTA-Bestätigung senden"
+			description="Bestätigung an {nta.nta.name}."
+			extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
+		/>
+		{#if nta.nta.needsRoomAlone}
+			<EmailSender
+				emailKey="sendEmailNTARoomAlone"
+				title="Einzelraum-Info senden"
+				description="Info zum eigenen Raum für {nta.nta.name}."
+				extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
+			/>
+		{/if}
+	</div>
 </div>
