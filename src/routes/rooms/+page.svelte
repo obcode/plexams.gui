@@ -19,15 +19,14 @@
 		}
 	}
 
-	/** @param {any} r */
-	function passesFilter(r) {
-		if (!filterCol) return true;
-		if (filterCol === 'nta') return r.handicap;
-		return r[filterCol];
-	}
-
+	// filterCol/sortCol direkt hier referenzieren, damit Svelte sie als
+	// Abhängigkeiten erkennt und die Liste bei jedem Klick neu berechnet.
 	$: rooms = [...data.rooms]
-		.filter(passesFilter)
+		.filter((/** @type {any} */ r) => {
+			if (!filterCol) return true;
+			if (filterCol === 'nta') return r.handicap;
+			return r[filterCol];
+		})
 		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
 			sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
 		);
