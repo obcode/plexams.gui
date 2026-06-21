@@ -596,7 +596,7 @@
 				{modalMode === 'edit' ? 'Zeit bearbeiten' : 'Anfrage hinzufügen'}
 			</h3>
 			<div class="flex flex-col gap-3">
-				<div class="grid grid-cols-3 gap-3">
+				<div class="grid grid-cols-2 gap-3">
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Raum</span>
 						{#if modalMode === 'edit'}
@@ -610,28 +610,20 @@
 						{/if}
 					</label>
 					<label class="flex flex-col gap-1">
-						<span class="text-xs font-medium text-base-content/60">Tag</span>
+						<span class="text-xs font-medium text-base-content/60">Datum</span>
 						{#if modalMode === 'edit'}
-							<input type="text" class="input input-disabled input-sm" value={mDay} readonly />
-						{:else}
-							<select class="select select-bordered select-sm" bind:value={mDay}>
-								{#each data.days as d}
-									<option value={String(d.number)}>{d.number} ({fmtDate(d.date)})</option>
-								{/each}
-							</select>
-						{/if}
-					</label>
-					<label class="flex flex-col gap-1">
-						<span class="text-xs font-medium text-base-content/60">Slot</span>
-						{#if modalMode === 'edit'}
-							<input type="text" class="input input-disabled input-sm" value={mSlot} readonly />
-						{:else}
 							<input
 								type="text"
 								class="input input-disabled input-sm"
-								value={derivedSlot ? `Slot ${derivedSlot}` : '—'}
+								value={mEditReq ? fmtDate(mEditReq.from) : ''}
 								readonly
 							/>
+						{:else}
+							<select class="select select-bordered select-sm" bind:value={mDay}>
+								{#each data.days as d}
+									<option value={String(d.number)}>{fmtDate(d.date)}</option>
+								{/each}
+							</select>
 						{/if}
 					</label>
 				</div>
