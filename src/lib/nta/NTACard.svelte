@@ -1,10 +1,25 @@
 <script>
 	import { mkStarttime } from '$lib/jshelper/misc.js';
+	import { slide } from 'svelte/transition';
 
 	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
 	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).
 	/** @type {any} */
 	export let nta;
+
+	let showFullComp = false;
+	let showOther = false;
+
+	$: comp = nta.nta.compensation ?? '';
+	$: longComp = comp.length > 70;
+	$: compShort = longComp ? comp.slice(0, 70).trimEnd() + '…' : comp;
+
+	$: plannedExams = nta.exams.filter(
+		(/** @type {any} */ e) => !(e.constraints && e.constraints.notPlannedByMe)
+	);
+	$: otherExams = nta.exams.filter(
+		(/** @type {any} */ e) => e.constraints && e.constraints.notPlannedByMe
+	);
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -22,6 +37,9 @@
 			{/if}
 		</div>
 		<div class="flex shrink-0 flex-col items-end gap-1">
+			{#if nta.nta.deltaDurationPercent}
+				<span class="badge badge-primary">+{nta.nta.deltaDurationPercent}% Zeit</span>
+			{/if}
 			{#if nta.nta.needsRoomAlone}
 				<span class="badge badge-warning badge-sm">eigener Raum</span>
 			{/if}
@@ -31,23 +49,28 @@
 		</div>
 	</div>
 
-	<!-- Kompensation -->
-	<div class="flex flex-wrap items-baseline gap-2 text-sm">
-		<span>{nta.nta.compensation}</span>
-		{#if nta.nta.until}
-			<span class="text-xs text-base-content/50">gültig bis {nta.nta.until}</span>
-		{/if}
-	</div>
+	<!-- Kompensation (gekürzt mit „mehr") -->
+	{#if comp}
+		<div class="text-sm">
+			{showFullComp || !longComp ? comp : compShort}
+			{#if longComp}
+				<button
+					class="align-baseline text-xs font-medium text-primary"
+					on:click={() => (showFullComp = !showFullComp)}
+				>
+					{showFullComp ? 'weniger' : 'mehr'}
+				</button>
+			{/if}
+		</div>
+	{/if}
+	{#if nta.nta.until}
+		<div class="-mt-1 text-xs text-base-content/50">gültig bis {nta.nta.until}</div>
+	{/if}
 
-	<!-- Prüfungen -->
-	<div class="flex flex-col gap-1.5">
-		{#each nta.exams as exam}
-			{#if exam.constraints && exam.constraints.notPlannedByMe}
-				<div class="rounded border border-base-300 bg-base-200/40 px-3 py-1.5 text-sm text-base-content/40">
-					{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
-					<span class="text-xs">(nicht von mir geplant)</span>
-				</div>
-			{:else}
+	<!-- Von mir geplante Prüfungen -->
+	{#if plannedExams.length}
+		<div class="flex flex-col gap-1.5">
+			{#each plannedExams as exam}
 				<div class="rounded border border-base-300 px-3 py-1.5 text-sm">
 					<div class="font-medium">
 						{exam.ancode}. {exam.zpaExam.module}
@@ -75,7 +98,33 @@
 						{/if}
 					</div>
 				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<!-- Nicht von mir geplante Prüfungen (eingeklappt) -->
+	{#if otherExams.length}
+		<div>
+			<button
+				class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
+				on:click={() => (showOther = !showOther)}
+			>
+				{showOther ? '▾' : '▸'}
+				{otherExams.length} nicht von mir geplante {otherExams.length === 1
+					? 'Prüfung'
+					: 'Prüfungen'}
+			</button>
+			{#if showOther}
+				<div class="mt-1 flex flex-col gap-1.5" transition:slide>
+					{#each otherExams as exam}
+						<div
+							class="rounded border border-base-300 bg-base-200/40 px-3 py-1.5 text-sm text-base-content/40"
+						>
+							{exam.ancode}. {exam.zpaExam.mainExamer}: {exam.zpaExam.module}
+						</div>
+					{/each}
+				</div>
 			{/if}
-		{/each}
-	</div>
+		</div>
+	{/if}
 </div>
