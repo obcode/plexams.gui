@@ -59,6 +59,11 @@ export const roomValidators = [
 		description: 'Sitzplätze, Raum-Constraints, NTA-allein'
 	},
 	{
+		key: 'validateRoomsEnoughSeats',
+		title: 'Genügend freie Plätze',
+		description: 'genug freie Plätze in den Slots'
+	},
+	{
 		key: 'validateRoomsTimeDistance',
 		title: 'Zeitabstände',
 		description: 'Abstände zwischen Räumen'
