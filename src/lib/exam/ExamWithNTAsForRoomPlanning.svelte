@@ -144,16 +144,18 @@
 		}
 	}
 
-	// Grund, warum ein Raum für diese Prüfung nicht passt (gesperrt im Picker):
-	// Sonderraum-Merkmal, das die Prüfung nicht fordert, oder umgekehrt.
+	// Hinweis (Warnung, keine Sperre), warum ein Raum für diese Prüfung untypisch
+	// ist: Sonderraum-Merkmal, das die Prüfung nicht fordert, oder umgekehrt.
+	// EXaHM/SEB dürfen gemischt werden: eine SEB-Prüfung darf auch in EXaHM-Räume
+	// (EXaHM bleibt strikt: nur EXaHM-Räume).
 	/** @param {any} r */
 	function mismatchReason(r) {
-		if (r.exahm && !exahm) return 'nur EXaHM-Prüfungen';
-		if (r.seb && !seb) return 'nur SEB-Prüfungen';
-		if (r.lab && !lab) return 'nur Labor-Prüfungen';
 		if (exahm && !r.exahm) return 'kein EXaHM-Raum';
-		if (seb && !r.seb) return 'kein SEB-Raum';
+		if (seb && !r.seb && !r.exahm) return 'kein SEB-/EXaHM-Raum';
 		if (lab && !r.lab) return 'kein Labor-Raum';
+		if (r.exahm && !exahm && !seb) return 'EXaHM-Raum';
+		if (r.seb && !seb) return 'SEB-Raum';
+		if (r.lab && !lab) return 'Labor-Raum';
 		return null;
 	}
 
@@ -171,12 +173,17 @@
 
 	/** @param {any} c */
 	async function addRoom(c) {
-		if (c.dimReason) return;
 		pickError = '';
+		// nicht hart sperren — die Vorplanung ist eine bewusste Entscheidung; nur
+		// bei untypischer Eignung bzw. fehlenden Plätzen rückfragen.
+		/** @type {string[]} */
+		const warns = [];
+		if (c.dimReason) warns.push(c.dimReason);
+		if (c.full) warns.push(`keine freien Plätze (${c.usedSeats}/${c.seats} belegt)`);
 		if (
-			c.full &&
+			warns.length &&
 			!confirm(
-				`${c.roomName} hat keine freien Plätze (${c.usedSeats}/${c.seats} belegt). Trotzdem ${pickReserve ? 'als Reserve ' : ''}vorplanen?`
+				`${c.roomName}: ${warns.join(', ')}. Trotzdem ${pickReserve ? 'als Reserve ' : ''}vorplanen?`
 			)
 		)
 			return;
@@ -336,11 +343,10 @@
 							<div class="flex max-h-56 flex-col gap-1 overflow-y-auto">
 								{#each pickerCandidates as c}
 									<button
-										class="flex flex-col items-start gap-0.5 rounded border border-base-300 px-2 py-1 text-left text-xs {c.dimReason
-											? 'cursor-not-allowed opacity-40'
-											: 'hover:bg-base-200'}"
-										disabled={!!c.dimReason}
-										title={c.dimReason ?? 'vorplanen'}
+										class="flex flex-col items-start gap-0.5 rounded border border-base-300 px-2 py-1 text-left text-xs hover:bg-base-200 {c.dimReason
+											? 'opacity-70'
+											: ''}"
+										title={c.dimReason ? `${c.dimReason} — trotzdem wählbar` : 'vorplanen'}
 										on:click={() => addRoom(c)}
 									>
 										<div class="flex w-full flex-wrap items-center gap-1">
@@ -352,7 +358,7 @@
 											{#if c.seb}<span class="badge badge-error badge-xs">SEB</span>{/if}
 											{#if c.lab}<span class="badge badge-warning badge-xs">Labor</span>{/if}
 											{#if c.dimReason}
-												<span class="ml-auto text-base-content/50">{c.dimReason}</span>
+												<span class="ml-auto text-warning">⚠ {c.dimReason}</span>
 											{:else if c.full}
 												<span class="ml-auto text-error">kein Platz frei</span>
 											{/if}
