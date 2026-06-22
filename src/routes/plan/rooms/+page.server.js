@@ -15,6 +15,16 @@ export async function load() {
 				}
 			}
 			plannedRoomNames
+			rooms {
+				name
+				seats
+				handicap
+				lab
+				placesWithSocket
+				exahm
+				seb
+				deactivated
+			}
 			plannedRooms {
 				day
 				slot
@@ -99,6 +109,7 @@ export async function load() {
 	return {
 		semesterConfig: data.semesterConfig,
 		plannedRoomNames: data.plannedRoomNames,
+		rooms: (data.rooms ?? []).filter((/** @type {any} */ r) => !r.deactivated),
 		plannedRooms,
 		prePlannedRooms,
 		roomCounts,

@@ -8,6 +8,10 @@
 	export let showRooms;
 	/** bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen */
 	export let dimOthers = false;
+	/** für den Raum-Picker (Vorplanung): alle aktiven Räume @type {any[]} */
+	export let rooms = [];
+	/** nur Prüfungen anzeigen, die (noch) keinen Raum haben */
+	export let showOnlyWithoutRoom = false;
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
@@ -18,8 +22,14 @@
 		showRooms === 'all' ||
 		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms);
 	$: passNta = !showOnlyExamsWithNTAs || (ntas && ntas.length > 0);
+	// „kein Raum": keine geplanten Räume oder ein „No Room"-Eintrag vorhanden
+	$: hasNoRoom =
+		!plannedExam.plannedRooms ||
+		plannedExam.plannedRooms.length === 0 ||
+		plannedExam.plannedRooms.some((/** @type {any} */ r) => r.room.name === 'No Room');
+	$: passNoRoom = !showOnlyWithoutRoom || hasNoRoom;
 	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
-	$: visible = passNta && (showRooms === 'all' || matchesRoom || dimOthers);
+	$: visible = passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers);
 	// ganze Karte dimmen, wenn sie den ausgewählten Raum nicht enthält
 	$: dimmed = showRooms !== 'all' && !matchesRoom;
 
@@ -73,6 +83,68 @@
 			body: JSON.stringify({ ancode, roomName, mtknr }),
 			headers: { 'content-type': 'application/json' }
 		});
+	}
+
+	// ----- Raum-Picker: einen Raum von Hand vorplanen (vor jeglicher Generierung) -----
+	let showPicker = false;
+	let pickRoom = '';
+	let allRoomsInPicker = false;
+	let pickError = '';
+
+	$: hasConstraintFilter = exahm || seb || placesWithSocket || lab;
+	$: plannedNames = new Set(
+		(plannedExam.plannedRooms || []).map((/** @type {any} */ r) => r.room.name)
+	);
+	/** @param {any} r */
+	function roomMatchesConstraints(r) {
+		if (exahm && !r.exahm) return false;
+		if (seb && !r.seb) return false;
+		if (placesWithSocket && !r.placesWithSocket) return false;
+		if (lab && !r.lab) return false;
+		return true;
+	}
+	// auswählbare Räume: aktiv, nicht „No Room", nicht schon verplant,
+	// per Constraints gefiltert (außer „alle Räume" ist aktiv)
+	$: candidates = (rooms || [])
+		.filter((/** @type {any} */ r) => r.name !== 'No Room' && !plannedNames.has(r.name))
+		.filter((/** @type {any} */ r) => allRoomsInPicker || roomMatchesConstraints(r))
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.name.localeCompare(b.name));
+
+	async function addRoom() {
+		const r = (rooms || []).find((/** @type {any} */ x) => x.name === pickRoom);
+		if (!r) return;
+		pickError = '';
+		// optimistisch als gepinnten Raum anzeigen (rendert über die bestehende Liste,
+		// das 📌 löst die Vorplanung wieder)
+		const newRoom = {
+			room: r,
+			studentsInRoom: [],
+			reserve: false,
+			handicap: false,
+			handicapRoomAlone: false,
+			duration: exam.duration,
+			ntaMtknr: null,
+			prePlanned: true
+		};
+		plannedExam.plannedRooms = [...(plannedExam.plannedRooms || []), newRoom];
+		const roomName = r.name;
+		pickRoom = '';
+		showPicker = false;
+		try {
+			const res = await fetch('/api/prePlanRoom', {
+				method: 'POST',
+				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve: false, mtknr: null }),
+				headers: { 'content-type': 'application/json' }
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) throw new Error(result?.error || `Fehler (HTTP ${res.status})`);
+		} catch (e) {
+			// bei Fehler die optimistische Zuordnung zurücknehmen
+			plannedExam.plannedRooms = (plannedExam.plannedRooms || []).filter(
+				(/** @type {any} */ x) => x !== newRoom
+			);
+			pickError = e instanceof Error ? e.message : String(e);
+		}
 	}
 </script>
 
@@ -141,7 +213,9 @@
 							<span class="flex flex-wrap items-center gap-1">
 								<span class="font-medium">{room.room.name}</span>
 								{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}
-									<span class="text-base-content/60">({room.studentsInRoom.length}/{room.room.seats})</span>
+									<span class="text-base-content/60"
+										>({room.studentsInRoom.length}/{room.room.seats})</span
+									>
 									{#if room.reserve}<span class="badge badge-info badge-sm">Reserve</span>{/if}
 								{/if}
 								{#if room.room.name == 'No Room'}
@@ -156,6 +230,47 @@
 			<div class="text-sm text-error">kein Raum!</div>
 		{/if}
 
+		<!-- Raum vorplanen (von Hand zuordnen, vor jeglicher Generierung) -->
+		{#if rooms && rooms.length}
+			<div class="flex flex-col gap-1">
+				{#if showPicker}
+					<div class="flex items-center gap-1">
+						<!-- svelte-ignore a11y-no-onchange -->
+						<select class="select select-bordered select-xs flex-1" bind:value={pickRoom}>
+							<option value="" disabled>Raum wählen…</option>
+							{#each candidates as r}
+								<option value={r.name}>{r.name} ({r.seats})</option>
+							{/each}
+						</select>
+						<button class="btn btn-primary btn-xs" disabled={!pickRoom} on:click={addRoom}>+</button
+						>
+						<button
+							class="btn btn-ghost btn-xs"
+							title="abbrechen"
+							on:click={() => {
+								showPicker = false;
+								pickRoom = '';
+							}}>✕</button
+						>
+					</div>
+					{#if hasConstraintFilter}
+						<label class="label cursor-pointer justify-start gap-1 py-0">
+							<input type="checkbox" class="checkbox checkbox-xs" bind:checked={allRoomsInPicker} />
+							<span class="label-text text-xs">alle Räume (Constraints ignorieren)</span>
+						</label>
+					{/if}
+				{:else}
+					<button
+						class="btn btn-ghost btn-xs self-start text-xs text-base-content/60"
+						on:click={() => (showPicker = true)}>➕ Raum vorplanen</button
+					>
+				{/if}
+				{#if pickError}
+					<div class="text-xs text-error">{pickError}</div>
+				{/if}
+			</div>
+		{/if}
+
 		<!-- NTAs (nur bei aktiviertem „NTA-Details"-Toggle) -->
 		{#if hasNtas && details}
 			<div class="flex flex-col gap-1">
@@ -164,7 +279,8 @@
 						<div class="flex items-center gap-1">
 							<span class="font-medium">{nta.name}</span>
 							<span class="font-mono text-base-content/50">{nta.mtknr}</span>
-							{#if nta.needsRoomAlone}<span class="badge badge-error badge-sm">eigener Raum</span>{/if}
+							{#if nta.needsRoomAlone}<span class="badge badge-error badge-sm">eigener Raum</span
+								>{/if}
 						</div>
 						<div class="text-base-content/60">{nta.compensation}</div>
 						<div class="mt-1 flex items-center gap-2">

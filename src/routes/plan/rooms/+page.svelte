@@ -41,6 +41,7 @@
 	let details = false;
 	let showRooms = 'all';
 	let dimOthers = false;
+	let showOnlyWithoutRoom = false;
 
 	/** @param {number} day @param {number} slot @param {string} roomName */
 	const isPlanned = (day, slot, roomName) => data.plannedRooms.has(`${day}-${slot}-${roomName}`);
@@ -79,14 +80,19 @@
 
 	$: baseRooms = data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room');
 	$: gridRooms =
-		showRooms === 'all' ? baseRooms : baseRooms.filter((/** @type {string} */ r) => r === showRooms);
+		showRooms === 'all'
+			? baseRooms
+			: baseRooms.filter((/** @type {string} */ r) => r === showRooms);
 	$: showNoRoomRow = noRoomSet.size > 0 && (showRooms === 'all' || showRooms === 'No Room');
 
 	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
 	// Generierung in planned_rooms wirken).
 	/** @type {Map<string, string>} */
 	let blockedMap = new Map(
-		data.blockedRooms.map((/** @type {any} */ b) => [`${b.day}-${b.slot}-${b.room}`, b.reason ?? ''])
+		data.blockedRooms.map((/** @type {any} */ b) => [
+			`${b.day}-${b.slot}-${b.room}`,
+			b.reason ?? ''
+		])
 	);
 	/** @type {Set<string>} */
 	let blockBusy = new Set();
@@ -252,8 +258,7 @@
 		<div class="alert alert-error shadow">
 			<div class="flex flex-col gap-1">
 				<div class="text-base font-semibold">
-					⚠ {data.noRoomExams.length} Prüfung(en) ohne Raum — {totalNoRoom} Studierende noch nicht
-					verplant
+					⚠ {data.noRoomExams.length} Prüfung(en) ohne Raum — {totalNoRoom} Studierende noch nicht verplant
 				</div>
 				<div class="flex flex-wrap gap-1">
 					{#each data.noRoomExams as n}
@@ -294,6 +299,10 @@
 				<span class="label-text">alle Tage</span>
 			</label>
 			<label class="label cursor-pointer gap-2">
+				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyWithoutRoom} />
+				<span class="label-text">nur ohne Raum</span>
+			</label>
+			<label class="label cursor-pointer gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyExamsWithNTAs} />
 				<span class="label-text">nur mit NTAs</span>
 			</label>
@@ -307,157 +316,165 @@
 	{#key reloadKey}
 		<!-- ============== nach Prüfungen ============== -->
 		{#if view === 'exams'}
-		<div class="flex flex-col gap-1 text-xs text-base-content/70">
-			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-				<span class="font-medium">Legende:</span>
-				{#each ROOM_CATEGORIES as c}
-					<span class="inline-flex items-center gap-1">
-						<span class="inline-block h-3 w-3 rounded border border-base-content/20 {c.swatch}"
-						></span>
-						{c.label}
-					</span>
+			<div class="flex flex-col gap-1 text-xs text-base-content/70">
+				<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+					<span class="font-medium">Legende:</span>
+					{#each ROOM_CATEGORIES as c}
+						<span class="inline-flex items-center gap-1">
+							<span class="inline-block h-3 w-3 rounded border border-base-content/20 {c.swatch}"
+							></span>
+							{c.label}
+						</span>
+					{/each}
+				</div>
+				<div>
+					📌 = in die Vorplanung fixiert (überlebt die Neugenerierung) — auf das Pin-Symbol am Raum
+					klicken zum Fixieren bzw. Lösen. „➕ Raum vorplanen" ordnet einer Prüfung von Hand einen
+					Raum zu (auch vor jeder Generierung); der Raum landet direkt fixiert in der Vorplanung.
+				</div>
+			</div>
+			<div class="flex flex-col gap-2">
+				{#each data.semesterConfig.days as day}
+					<div class="overflow-hidden rounded-lg border border-base-300 bg-base-100">
+						<button
+							class="flex w-full items-center gap-2 px-4 py-2 text-left font-medium hover:bg-base-200"
+							on:click={() => (showDays[day.number] = !showDays[day.number])}
+						>
+							<span class="text-base-content/50">{showDays[day.number] ? '▾' : '▸'}</span>
+							Tag {day.number}
+							<span class="text-sm font-normal text-base-content/50">{mkDate(day.date)}</span>
+						</button>
+						{#if showDays[day.number]}
+							<div class="flex flex-col gap-3 border-t border-base-300 p-3" transition:slide>
+								{#each data.semesterConfig.starttimes as time}
+									<div class="grid grid-cols-12 gap-3" id="slot-{day.number}-{time.number}">
+										<div class="col-span-12 flex flex-col gap-2 sm:col-span-2">
+											<div class="rounded-lg border border-base-300 bg-base-200 px-3 py-2 text-sm">
+												<div class="font-semibold">Slot {time.number}</div>
+												<div class="text-xs text-base-content/60">{time.start}</div>
+											</div>
+											{#if showRooms === 'all'}
+												<RoomNamesInSlot day={day.number} time={time.number} />
+											{/if}
+										</div>
+										<div class="col-span-12 sm:col-span-10">
+											<div class="flex flex-wrap gap-2">
+												<ExamsForRoomPlanning
+													day={day.number}
+													time={time.number}
+													{showOnlyExamsWithNTAs}
+													{details}
+													{showRooms}
+													{dimOthers}
+													rooms={data.rooms}
+													{showOnlyWithoutRoom}
+												/>
+											</div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
-			<div>
-				📌 = in die Vorplanung fixiert (überlebt die Neugenerierung) — auf das Pin-Symbol am Raum
-				klicken zum Fixieren bzw. Lösen.
-			</div>
-		</div>
-		<div class="flex flex-col gap-2">
-			{#each data.semesterConfig.days as day}
-				<div class="overflow-hidden rounded-lg border border-base-300 bg-base-100">
-					<button
-						class="flex w-full items-center gap-2 px-4 py-2 text-left font-medium hover:bg-base-200"
-						on:click={() => (showDays[day.number] = !showDays[day.number])}
-					>
-						<span class="text-base-content/50">{showDays[day.number] ? '▾' : '▸'}</span>
-						Tag {day.number}
-						<span class="text-sm font-normal text-base-content/50">{mkDate(day.date)}</span>
-					</button>
-					{#if showDays[day.number]}
-						<div class="flex flex-col gap-3 border-t border-base-300 p-3" transition:slide>
-							{#each data.semesterConfig.starttimes as time}
-								<div class="grid grid-cols-12 gap-3" id="slot-{day.number}-{time.number}">
 
-									<div class="col-span-12 flex flex-col gap-2 sm:col-span-2">
-										<div class="rounded-lg border border-base-300 bg-base-200 px-3 py-2 text-sm">
-											<div class="font-semibold">Slot {time.number}</div>
-											<div class="text-xs text-base-content/60">{time.start}</div>
-										</div>
-										{#if showRooms === 'all'}
-											<RoomNamesInSlot day={day.number} time={time.number} />
-										{/if}
-									</div>
-									<div class="col-span-12 sm:col-span-10">
-										<div class="flex flex-wrap gap-2">
-											<ExamsForRoomPlanning
-												day={day.number}
-												time={time.number}
-												{showOnlyExamsWithNTAs}
-												{details}
-												{showRooms}
-												{dimOthers}
-											/>
-										</div>
-									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
-
-		<!-- ============== nach Räumen ============== -->
-	{:else}
-		<p class="text-xs text-base-content/50">
-			Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer). Klick auf eine Zelle
-			sperrt/entsperrt den Raum für diesen Slot (durchgestrichen = gesperrt); danach neu generieren.
-		</p>
-		<div class="overflow-x-auto rounded-lg border border-base-300">
-			<table class="table table-zebra table-sm">
-				<thead>
-					<tr>
-						<th class="sticky left-0 bg-base-200">Raum</th>
-						{#each data.semesterConfig.days as day}
-							<th class="text-center whitespace-nowrap">
-								Tag {day.number}<br /><span class="font-normal text-base-content/50"
-									>{mkDateShort(day.date)}</span
-								>
-							</th>
-						{/each}
-					</tr>
-				</thead>
-				<tbody>
-					{#each gridRooms as roomName}
+			<!-- ============== nach Räumen ============== -->
+		{:else}
+			<p class="text-xs text-base-content/50">
+				Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer). Klick auf eine
+				Zelle sperrt/entsperrt den Raum für diesen Slot (durchgestrichen = gesperrt); danach neu
+				generieren.
+			</p>
+			<div class="overflow-x-auto rounded-lg border border-base-300">
+				<table class="table table-zebra table-sm">
+					<thead>
 						<tr>
-							<td class="sticky left-0 bg-base-100 font-medium">{roomName}</td>
+							<th class="sticky left-0 bg-base-200">Raum</th>
 							{#each data.semesterConfig.days as day}
-								{@const dayAllBlocked = data.semesterConfig.starttimes.every((/** @type {any} */ t) =>
-									blockedMap.has(`${day.number}-${t.number}-${roomName}`)
-								)}
-								<td>
-									<div class="flex items-center gap-0.5">
-										{#each data.semesterConfig.starttimes as slot}
-											{@const planned = isPlanned(day.number, slot.number, roomName)}
-											{@const blockedReason = blockedMap.get(`${day.number}-${slot.number}-${roomName}`)}
-											{@const isBlocked = blockedReason !== undefined}
+								<th class="text-center whitespace-nowrap">
+									Tag {day.number}<br /><span class="font-normal text-base-content/50"
+										>{mkDateShort(day.date)}</span
+									>
+								</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each gridRooms as roomName}
+							<tr>
+								<td class="sticky left-0 bg-base-100 font-medium">{roomName}</td>
+								{#each data.semesterConfig.days as day}
+									{@const dayAllBlocked = data.semesterConfig.starttimes.every(
+										(/** @type {any} */ t) =>
+											blockedMap.has(`${day.number}-${t.number}-${roomName}`)
+									)}
+									<td>
+										<div class="flex items-center gap-0.5">
+											{#each data.semesterConfig.starttimes as slot}
+												{@const planned = isPlanned(day.number, slot.number, roomName)}
+												{@const blockedReason = blockedMap.get(
+													`${day.number}-${slot.number}-${roomName}`
+												)}
+												{@const isBlocked = blockedReason !== undefined}
+												<button
+													class="flex h-5 w-5 items-center justify-center rounded text-[10px] {isBlocked
+														? 'bg-error/20 text-error line-through'
+														: planned
+															? 'bg-primary font-semibold text-primary-content'
+															: 'bg-base-200 text-base-content/30 hover:bg-base-300'}"
+													title={isBlocked
+														? `gesperrt${blockedReason ? ': ' + blockedReason : ''} — klicken zum Entsperren`
+														: `Tag ${day.number} · Slot ${slot.number}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
+													on:click={() => toggleBlock(day.number, slot.number, roomName)}
+												>
+													{slot.number}
+												</button>
+											{/each}
 											<button
-												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {isBlocked
-													? 'bg-error/20 text-error line-through'
-													: planned
-														? 'bg-primary font-semibold text-primary-content'
-														: 'bg-base-200 text-base-content/30 hover:bg-base-300'}"
-												title={isBlocked
-													? `gesperrt${blockedReason ? ': ' + blockedReason : ''} — klicken zum Entsperren`
-													: `Tag ${day.number} · Slot ${slot.number}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
-												on:click={() => toggleBlock(day.number, slot.number, roomName)}
+												class="ml-0.5 text-[9px] {dayAllBlocked
+													? 'text-error'
+													: 'text-base-content/30 hover:text-error'}"
+												title={dayAllBlocked
+													? 'ganzen Tag freigeben'
+													: 'ganzen Tag für diesen Raum sperren'}
+												on:click={() => toggleBlockDay(day.number, roomName)}
 											>
-												{slot.number}
+												Tag
 											</button>
-										{/each}
-										<button
-											class="ml-0.5 text-[9px] {dayAllBlocked
-												? 'text-error'
-												: 'text-base-content/30 hover:text-error'}"
-											title={dayAllBlocked
-												? 'ganzen Tag freigeben'
-												: 'ganzen Tag für diesen Raum sperren'}
-											on:click={() => toggleBlockDay(day.number, roomName)}
-										>
-											Tag
-										</button>
-									</div>
-								</td>
-							{/each}
-						</tr>
-					{/each}
+										</div>
+									</td>
+								{/each}
+							</tr>
+						{/each}
 
-					{#if showNoRoomRow}
-						<tr class="bg-error/10">
-							<td class="sticky left-0 bg-error/10 font-semibold text-error">No Room</td>
-							{#each data.semesterConfig.days as day}
-								<td>
-									<div class="flex gap-0.5">
-										{#each data.semesterConfig.starttimes as slot}
-											{@const planned = noRoomSet.has(`${day.number}-${slot.number}`)}
-											<div
-												class="flex h-5 w-5 items-center justify-center rounded text-[10px] {planned
-													? 'bg-error font-semibold text-error-content'
-													: 'bg-base-200 text-base-content/30'}"
-												title="Tag {day.number} · Slot {slot.number}{planned ? ' · ohne Raum!' : ''}"
-											>
-												{slot.number}
-											</div>
-										{/each}
-									</div>
-								</td>
-							{/each}
-						</tr>
-					{/if}
-				</tbody>
-			</table>
-		</div>
-	{/if}
+						{#if showNoRoomRow}
+							<tr class="bg-error/10">
+								<td class="sticky left-0 bg-error/10 font-semibold text-error">No Room</td>
+								{#each data.semesterConfig.days as day}
+									<td>
+										<div class="flex gap-0.5">
+											{#each data.semesterConfig.starttimes as slot}
+												{@const planned = noRoomSet.has(`${day.number}-${slot.number}`)}
+												<div
+													class="flex h-5 w-5 items-center justify-center rounded text-[10px] {planned
+														? 'bg-error font-semibold text-error-content'
+														: 'bg-base-200 text-base-content/30'}"
+													title="Tag {day.number} · Slot {slot.number}{planned
+														? ' · ohne Raum!'
+														: ''}"
+												>
+													{slot.number}
+												</div>
+											{/each}
+										</div>
+									</td>
+								{/each}
+							</tr>
+						{/if}
+					</tbody>
+				</table>
+			</div>
+		{/if}
 	{/key}
 </div>
