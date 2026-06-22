@@ -129,10 +129,6 @@
 	let slotRooms = null;
 	let loadingRooms = false;
 
-	$: plannedNames = new Set(
-		(plannedExam.plannedRooms || []).map((/** @type {any} */ r) => r.room.name)
-	);
-
 	async function openPicker() {
 		showPicker = true;
 		pickError = '';
@@ -171,11 +167,13 @@
 		return null;
 	}
 
-	// auswählbare Räume: nicht „No Room", keine NTA-Räume (handicap → nur für
-	// NTA-Vorplanung), nicht schon für diese Prüfung verplant.
+	// auswählbare Räume (für Reserve-/Mitnutzung): alle außer „No Room".
+	// Bewusst NICHT ausgeblendet werden Räume, die schon von einer anderen
+	// Prüfung belegt sind (usedBy) oder bereits (z. B. als NTA-Raum) für diese
+	// Prüfung vorgeplant sind — Mitnutzung ist gewollt. Verfügbarkeit zeigt sich
+	// an freeSeats; Constraint-Eignung bleibt als Hinweis (mismatchReason).
 	$: pickerCandidates = (slotRooms || [])
-		.filter((/** @type {any} */ r) => r.roomName !== 'No Room' && !r.handicap)
-		.filter((/** @type {any} */ r) => !plannedNames.has(r.roomName))
+		.filter((/** @type {any} */ r) => r.roomName !== 'No Room')
 		.map((/** @type {any} */ r) => ({
 			...r,
 			dimReason: mismatchReason(r),
@@ -401,6 +399,7 @@
 											{#if c.exahm}<span class="badge badge-info badge-xs">EXaHM</span>{/if}
 											{#if c.seb}<span class="badge badge-error badge-xs">SEB</span>{/if}
 											{#if c.lab}<span class="badge badge-warning badge-xs">Labor</span>{/if}
+											{#if c.handicap}<span class="badge badge-neutral badge-xs">NTA</span>{/if}
 											{#if c.dimReason}
 												<span class="ml-auto text-warning">⚠ {c.dimReason}</span>
 											{:else if c.full}
