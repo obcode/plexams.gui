@@ -19,6 +19,36 @@
 		await invalidateAll();
 	}
 
+	// Generierte Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.
+	let resetBusy = false;
+	async function resetRooms() {
+		if (resetBusy) return;
+		if (
+			!confirm(
+				'Alle generierten Räume zurücksetzen? Vorgeplante (📌) Räume bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+			)
+		)
+			return;
+		resetBusy = true;
+		blockError = null;
+		try {
+			const res = await fetch('/api/resetRoomsForExams', { method: 'POST' });
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				blockError = /published|locked|veröffentlicht/i.test(msg)
+					? 'Raumplan ist veröffentlicht und gesperrt — erst die Veröffentlichung auf der Startseite zurücknehmen (Häkchen „Raumplan veröffentlicht").'
+					: msg;
+				return;
+			}
+			await onGenerated();
+		} catch (e) {
+			blockError = e instanceof Error ? e.message : String(e);
+		} finally {
+			resetBusy = false;
+		}
+	}
+
 	$: totalNoRoom = data.noRoomExams.reduce(
 		(/** @type {number} */ s, /** @type {any} */ n) => s + n.students,
 		0
@@ -247,6 +277,18 @@
 		<p class="text-xs text-base-content/50">
 			EXaHM-Raum-Slots kommen ausschließlich aus dem Anny-Import — ohne Import keine EXaHM-Belegung.
 		</p>
+		<div class="flex flex-wrap items-center gap-2 border-t border-base-300 pt-2">
+			<button
+				class="btn btn-outline btn-error btn-sm"
+				disabled={data.roomsBlocked || resetBusy}
+				on:click={resetRooms}
+			>
+				{resetBusy ? 'Setzt zurück…' : 'Generierte Räume zurücksetzen'}
+			</button>
+			<span class="text-xs text-base-content/50">
+				entfernt die generierte Raumzuteilung; vorgeplante (📌) Räume bleiben erhalten.
+			</span>
+		</div>
 	</div>
 
 	{#if blockError}

@@ -14,10 +14,14 @@ export async function load({ url }) {
 					start
 				}
 			}
+			planningState {
+				blockedAreas
+			}
 		}
 	`;
 
-	const { semesterConfig } = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const { semesterConfig, planningState } = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const invigilationsBlocked = (planningState?.blockedAreas ?? []).includes('INVIGILATIONS');
 
 	const ntaQuery = gql`
 		query {
@@ -87,5 +91,11 @@ export async function load({ url }) {
 		)
 	]);
 
-	return { semesterConfig, days, ntas: ntaData.ntas ?? [], focus: url.searchParams.get('focus') };
+	return {
+		semesterConfig,
+		days,
+		ntas: ntaData.ntas ?? [],
+		invigilationsBlocked,
+		focus: url.searchParams.get('focus')
+	};
 }

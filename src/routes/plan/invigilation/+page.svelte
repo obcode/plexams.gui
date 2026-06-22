@@ -295,6 +295,37 @@
 		}
 	}
 
+	// Generierte Aufsichten verwerfen (destruktiv) — Vorplanung (📌) bleibt.
+	let resetBusy = false;
+	async function resetInvigilations() {
+		if (resetBusy) return;
+		if (
+			!confirm(
+				'Alle generierten Aufsichten zurücksetzen? Vorgeplante (📌) Aufsichten bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+			)
+		)
+			return;
+		resetBusy = true;
+		actionError = '';
+		try {
+			const res = await fetch('/api/resetInvigilations', { method: 'POST' });
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				actionError = /published|locked|veröffentlicht/i.test(msg)
+					? 'Aufsichtenplan ist veröffentlicht und gesperrt — erst die Veröffentlichung auf der Startseite zurücknehmen (Häkchen „Aufsichtenplan veröffentlicht").'
+					: msg;
+				resetBusy = false;
+				return;
+			}
+			// Plan-View neu abfragen (abgeleiteter Zustand wird einmalig beim Laden berechnet)
+			location.reload();
+		} catch (e) {
+			actionError = e instanceof Error ? e.message : String(e);
+			resetBusy = false;
+		}
+	}
+
 	// von der Anforderungen-Seite verlinkt: ?focus=<id> hebt diese Aufsicht direkt hervor
 	if (data.focus) {
 		const fid = Number(data.focus);
@@ -311,11 +342,27 @@
 				<button class="font-bold" on:click={clearSel}>✕</button>
 			</span>
 		{/if}
-		<div class="ml-auto flex gap-1">
+		<div class="ml-auto flex flex-wrap items-center gap-1">
+			<button
+				class="btn btn-outline btn-error btn-xs"
+				disabled={data.invigilationsBlocked || resetBusy}
+				on:click={resetInvigilations}
+			>
+				{resetBusy ? 'Setzt zurück…' : 'Generierte Aufsichten zurücksetzen'}
+			</button>
 			<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
 			<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>
 		</div>
 	</div>
+
+	{#if data.invigilationsBlocked}
+		<div class="alert alert-warning py-2 text-sm">
+			<span>
+				🔒 Aufsichtengenerierung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
+				Zurücksetzen/Ändern das Häkchen „Aufsichtenplan veröffentlicht" auf der Startseite lösen.
+			</span>
+		</div>
+	{/if}
 
 	<!-- Auswahl per Dropdown -->
 	<div class="flex flex-wrap items-center gap-2">
