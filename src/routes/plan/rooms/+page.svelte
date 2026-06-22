@@ -392,7 +392,16 @@
 							<span class="text-sm font-normal text-base-content/50">{mkDate(day.date)}</span>
 						</button>
 						{#if showDays[day.number]}
-							<div class="flex flex-col gap-3 border-t border-base-300 p-3" transition:slide>
+							<!-- Klick auf freie Fläche (nicht auf Karten/Slots) klappt den Tag zu -->
+							<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+							<div
+								class="flex flex-col gap-3 border-t border-base-300 p-3"
+								transition:slide
+								role="presentation"
+								on:click={(e) => {
+									if (e.target === e.currentTarget) showDays[day.number] = false;
+								}}
+							>
 								{#each data.semesterConfig.starttimes as time}
 									<div class="grid grid-cols-12 gap-3" id="slot-{day.number}-{time.number}">
 										<div class="col-span-12 flex flex-col gap-2 sm:col-span-2">
@@ -421,6 +430,14 @@
 										</div>
 									</div>
 								{/each}
+
+								<!-- Fuß-Leiste zum Zuklappen, ohne nach oben scrollen zu müssen -->
+								<button
+									class="-mx-3 -mb-3 mt-1 flex items-center justify-center gap-2 rounded-b-lg border-t border-base-300 px-4 py-2 text-sm font-medium text-base-content/50 hover:bg-base-200"
+									on:click={() => (showDays[day.number] = false)}
+								>
+									▴ Tag {day.number} zuklappen
+								</button>
 							</div>
 						{/if}
 					</div>
