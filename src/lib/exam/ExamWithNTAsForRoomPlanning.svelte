@@ -123,9 +123,12 @@
 	}
 
 	// ----- Raum-Picker: einen Raum von Hand vorplanen (auch belegte Räume als
-	// Reserve mitnutzen). Lädt die freien Plätze pro Slot bei Bedarf nach. -----
+	// Reserve mitnutzen oder als NTA-Raum). Lädt die freien Plätze pro Slot bei
+	// Bedarf nach. -----
 	let showPicker = false;
-	let pickReserve = false;
+	/** @type {'normal' | 'reserve' | 'nta'} */
+	let pickVariant = 'normal';
+	let pickMtknr = ''; // bei Variante „nta": gewählte Matrikelnummer
 	let pickSeats = '';
 	let pickError = '';
 	/** @type {any[] | null} */
@@ -136,6 +139,8 @@
 		showPicker = true;
 		pickError = '';
 		pickSeats = '';
+		pickVariant = 'normal';
+		pickMtknr = '';
 		if (slotRooms !== null || loadingRooms) return;
 		loadingRooms = true;
 		try {
@@ -187,10 +192,20 @@
 	/** @param {any} c */
 	async function addRoom(c) {
 		pickError = '';
-		// optionale feste Platzzahl (leer = Raum normal füllen); durch Raumkapazität begrenzt
+		const isNta = pickVariant === 'nta';
+		const reserve = pickVariant === 'reserve';
+		/** @type {string | null} */
+		let mtknr = null;
 		/** @type {number | null} */
 		let seats = null;
-		if (pickSeats.trim() !== '') {
+		if (isNta) {
+			if (!pickMtknr) {
+				pickError = 'Bitte NTA-Studierende/n wählen.';
+				return;
+			}
+			mtknr = pickMtknr;
+		} else if (pickSeats.trim() !== '') {
+			// optionale feste Platzzahl (leer = Raum normal füllen); durch Raumkapazität begrenzt
 			seats = Number(pickSeats);
 			if (!Number.isInteger(seats) || seats < 1) {
 				pickError = 'Plätze muss eine Zahl ≥ 1 sein.';
@@ -207,41 +222,39 @@
 		const warns = [];
 		if (c.dimReason) warns.push(c.dimReason);
 		if (c.full) warns.push(`keine freien Plätze (${c.usedSeats}/${c.seats} belegt)`);
+		const kindLabel = isNta ? 'als NTA-Raum ' : reserve ? 'als Reserve ' : '';
 		if (
 			warns.length &&
-			!confirm(
-				`${c.roomName}: ${warns.join(', ')}. Trotzdem ${pickReserve ? 'als Reserve ' : ''}vorplanen?`
-			)
+			!confirm(`${c.roomName}: ${warns.join(', ')}. Trotzdem ${kindLabel}vorplanen?`)
 		)
 			return;
 		// optimistisch als gepinnten Raum anzeigen (rendert über die bestehende Liste,
-		// das 📌 löst die Vorplanung wieder)
+		// das 📌 löst die Vorplanung wieder). NTA → Handicap-Eintrag mit Mtknr.
 		const newRoom = {
 			room: {
 				name: c.roomName,
 				seats: c.seats,
-				handicap: false,
+				handicap: isNta,
 				lab: c.lab,
 				exahm: c.exahm,
 				seb: c.seb
 			},
-			studentsInRoom: [],
-			reserve: pickReserve,
-			handicap: false,
+			studentsInRoom: isNta && mtknr ? [mtknr] : [],
+			reserve,
+			handicap: isNta,
 			handicapRoomAlone: false,
 			duration: exam.duration,
-			ntaMtknr: null,
+			ntaMtknr: mtknr,
 			prePlanned: true,
 			fixedSeats: seats
 		};
 		plannedExam.plannedRooms = [...(plannedExam.plannedRooms || []), newRoom];
 		const roomName = c.roomName;
-		const reserve = pickReserve;
 		showPicker = false;
 		try {
 			const res = await fetch('/api/prePlanRoom', {
 				method: 'POST',
-				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr: null, seats }),
+				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr, seats }),
 				headers: { 'content-type': 'application/json' }
 			});
 			const result = await res.json().catch(() => ({}));
@@ -317,6 +330,7 @@
 						</button>
 						{#if room.handicap}
 							<span class="flex flex-wrap items-center gap-1">
+								<span class="badge badge-neutral badge-sm">NTA</span>
 								<span>
 									{room.room.name} (
 									{#each room.studentsInRoom as student}{ntaName(plannedExam, student)};{/each})
@@ -359,20 +373,32 @@
 					<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200/40 p-2">
 						<div class="flex items-center justify-between gap-2">
 							<div class="flex flex-wrap items-center gap-2">
-								<label class="label cursor-pointer gap-1 py-0">
-									<input type="checkbox" class="checkbox checkbox-xs" bind:checked={pickReserve} />
-									<span class="label-text text-xs">als Reserve (Mitnutzung)</span>
-								</label>
-								<label class="flex items-center gap-1" title="leer = Raum normal füllen">
-									<span class="text-xs text-base-content/60">Plätze</span>
-									<input
-										type="text"
-										inputmode="numeric"
-										class="input input-bordered input-xs w-16"
-										placeholder="alle"
-										bind:value={pickSeats}
-									/>
-								</label>
+								<select class="select select-bordered select-xs" bind:value={pickVariant}>
+									<option value="normal">normaler Raum</option>
+									<option value="reserve">Reserveraum</option>
+									{#if ntas && ntas.length}
+										<option value="nta">Raum für NTA</option>
+									{/if}
+								</select>
+								{#if pickVariant === 'nta'}
+									<select class="select select-bordered select-xs" bind:value={pickMtknr}>
+										<option value="">NTA wählen…</option>
+										{#each ntas as n}
+											<option value={n.mtknr}>{n.name} ({n.mtknr})</option>
+										{/each}
+									</select>
+								{:else}
+									<label class="flex items-center gap-1" title="leer = Raum normal füllen">
+										<span class="text-xs text-base-content/60">Plätze</span>
+										<input
+											type="text"
+											inputmode="numeric"
+											class="input input-bordered input-xs w-16"
+											placeholder="alle"
+											bind:value={pickSeats}
+										/>
+									</label>
+								{/if}
 							</div>
 							<button
 								class="btn btn-ghost btn-xs"
