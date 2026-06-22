@@ -12,6 +12,8 @@
 	export let rooms = [];
 	/** nur Prüfungen anzeigen, die (noch) keinen Raum haben */
 	export let showOnlyWithoutRoom = false;
+	/** nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt */
+	export let highlightNotPrePlanned = false;
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
@@ -30,8 +32,14 @@
 	$: passNoRoom = !showOnlyWithoutRoom || hasNoRoom;
 	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
 	$: visible = passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers);
-	// ganze Karte dimmen, wenn sie den ausgewählten Raum nicht enthält
-	$: dimmed = showRooms !== 'all' && !matchesRoom;
+	// hat die Prüfung mindestens einen nicht fixierten (echten) Raum?
+	$: hasNotPrePlanned = (plannedExam.plannedRooms || []).some(
+		(/** @type {any} */ r) => !r.prePlanned && r.room.name !== 'No Room'
+	);
+	// ganze Karte dimmen: bei Raumauswahl ohne Treffer, oder im „nur nicht
+	// fixierte"-Modus, wenn die Karte keinen nicht fixierten Raum hat
+	$: dimmed =
+		(showRooms !== 'all' && !matchesRoom) || (highlightNotPrePlanned && !hasNotPrePlanned);
 
 	$: hasNtas = ntas && ntas.length > 0;
 
@@ -185,9 +193,9 @@
 				{#each plannedExam.plannedRooms as room}
 					<div
 						class="flex items-center gap-2 rounded-lg border px-2 py-1 text-sm {classifyRoom(room)
-							.chip} {room.handicap ? 'border-dashed' : ''} {showRooms !== 'all' &&
-						!dimmed &&
-						room.room.name !== showRooms
+							.chip} {room.handicap ? 'border-dashed' : ''} {(highlightNotPrePlanned &&
+							room.prePlanned) ||
+						(showRooms !== 'all' && !dimmed && room.room.name !== showRooms)
 							? 'opacity-40'
 							: ''}"
 					>

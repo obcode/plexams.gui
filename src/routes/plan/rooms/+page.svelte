@@ -72,6 +72,7 @@
 	let showRooms = 'all';
 	let dimOthers = false;
 	let showOnlyWithoutRoom = false;
+	let highlightNotPrePlanned = false;
 
 	/** @param {number} day @param {number} slot @param {string} roomName */
 	const isPlanned = (day, slot, roomName) => data.plannedRooms.has(`${day}-${slot}-${roomName}`);
@@ -345,6 +346,10 @@
 				<span class="label-text">nur ohne Raum</span>
 			</label>
 			<label class="label cursor-pointer gap-2">
+				<input type="checkbox" class="toggle toggle-sm" bind:checked={highlightNotPrePlanned} />
+				<span class="label-text">nicht fixierte hervorheben</span>
+			</label>
+			<label class="label cursor-pointer gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyExamsWithNTAs} />
 				<span class="label-text">nur mit NTAs</span>
 			</label>
@@ -410,6 +415,7 @@
 													{dimOthers}
 													rooms={data.rooms}
 													{showOnlyWithoutRoom}
+													{highlightNotPrePlanned}
 												/>
 											</div>
 										</div>
