@@ -16,9 +16,63 @@
 	 */
 	export let validator;
 
+	/**
+	 * Optionaler Callback, um für ein „NTA … not alone"-Finding einen Verzicht
+	 * „eigener Raum" zu akzeptieren. Nur gesetzt, zeigt den Button.
+	 * @type {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null}
+	 */
+	export let onAcceptWaiver = null;
+
 	const dispatch = createEventDispatcher();
 
 	let showTerminal = false;
+
+	// ---- Verzicht „eigener Raum" akzeptieren ----
+	/** @type {any} */
+	let waiveFor = null;
+	let waiveReason = '';
+	let waiveBusy = false;
+	let waiveError = '';
+
+	/** Finding ist ein noch offener „nicht allein"-Fehler mit mtknr/ancode? @param {any} f */
+	function canWaive(f) {
+		return (
+			!!onAcceptWaiver &&
+			!!f.studentMtknr &&
+			!!f.ancode &&
+			f.level === 'ERROR' &&
+			/alone/i.test(f.message ?? '')
+		);
+	}
+	/** @param {any} f */
+	function openWaive(f) {
+		waiveFor = f;
+		waiveReason = '';
+		waiveError = '';
+	}
+	function cancelWaive() {
+		waiveFor = null;
+		waiveReason = '';
+		waiveError = '';
+	}
+	/** @param {any} f */
+	async function submitWaive(f) {
+		const reason = waiveReason.trim();
+		if (!reason || !onAcceptWaiver) return;
+		waiveBusy = true;
+		waiveError = '';
+		try {
+			const r = await onAcceptWaiver(f.studentMtknr, f.ancode, reason);
+			if (r && r.ok) {
+				cancelWaive();
+				dispatch('restart'); // neu prüfen → Eintrag wird zur Warnung
+			} else {
+				waiveError = (r && r.error) || 'Fehler beim Speichern';
+			}
+		} finally {
+			waiveBusy = false;
+		}
+	}
 
 	/** @param {string} level */
 	function levelIcon(level) {
@@ -135,6 +189,33 @@
 										<span class="badge badge-outline badge-xs">MtkNr {f.studentMtknr}</span>
 									{/if}
 								</div>
+							{/if}
+
+							{#if canWaive(f)}
+								{#if waiveFor === f}
+									<div class="mt-2 flex flex-col gap-1">
+										<input
+											class="input input-bordered input-xs"
+											placeholder="Grund (Pflicht, wird in die NTA-Mail übernommen)"
+											bind:value={waiveReason}
+										/>
+										<div class="flex items-center gap-1">
+											<button
+												class="btn btn-primary btn-xs"
+												disabled={!waiveReason.trim() || waiveBusy}
+												on:click={() => submitWaive(f)}
+											>
+												{waiveBusy ? 'speichert…' : 'akzeptieren'}
+											</button>
+											<button class="btn btn-ghost btn-xs" on:click={cancelWaive}>abbrechen</button>
+										</div>
+										{#if waiveError}<div class="text-xs text-error">{waiveError}</div>{/if}
+									</div>
+								{:else}
+									<button class="btn btn-outline btn-xs mt-2" on:click={() => openWaive(f)}>
+										Verzicht akzeptieren
+									</button>
+								{/if}
 							{/if}
 						</div>
 					</div>

@@ -20,6 +20,9 @@
 	export let collapsible = false;
 	/** initial eingeklappt (nur relevant bei collapsible) */
 	export let collapsed = false;
+	/** an die ValidatorCard durchgereicht: „eigener Raum"-Verzicht akzeptieren
+	 * @type {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} */
+	export let onAcceptWaiver = null;
 
 	let open = !collapsed;
 
@@ -278,7 +281,7 @@
 	{#if !collapsible || open}
 		<div class="grid grid-cols-1 gap-3 xl:grid-cols-2" transition:slide>
 			{#each state as validator, i}
-				<ValidatorCard {validator} on:restart={() => runValidator(i)} />
+				<ValidatorCard {validator} {onAcceptWaiver} on:restart={() => runValidator(i)} />
 			{/each}
 		</div>
 	{/if}

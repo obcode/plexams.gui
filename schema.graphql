@@ -334,6 +334,8 @@ type Mutation {
 	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
 	removePrePlannedRoom(ancode: Int!, roomName: String!, mtknr: String): Boolean!
 	resetRoomsForExams: Boolean!
+	addNtaRoomAloneWaiver(mtknr: String!, ancode: Int!, reason: String!): NtaRoomAloneWaiver!
+	removeNtaRoomAloneWaiver(mtknr: String!, ancode: Int!): Boolean!
 	blockRoomForSlot(room: String!, day: Int!, slot: Int!, reason: String): BlockedRoom!
 	unblockRoomForSlot(room: String!, day: Int!, slot: Int!): Boolean!
 	blockRoomForSlots(room: String!, slots: [SlotInput!]!, reason: String): [BlockedRoom!]!
@@ -538,6 +540,7 @@ type Query {
 	plannedRoomNamesInSlot(day: Int!, time: Int!): [String!]
 	plannedRoomsInSlot(day: Int!, time: Int!): [PlannedRoom!]
 	roomsWithFreeSeatsForSlot(day: Int!, time: Int!): [RoomWithFreeSeats!]!
+	ntaRoomAloneWaivers: [NtaRoomAloneWaiver!]!
 	plannedRoomForStudent(ancode: Int!, mtknr: String!): PlannedRoom
 	studentByMtknr(mtknr: String!): Student
 	studentsByName(regex: String!): [Student!]!
@@ -700,6 +703,12 @@ type RoomUsage {
 	module: String!
 	examer: String!
 	studentCount: Int!
+}
+
+type NtaRoomAloneWaiver {
+	mtknr: String!
+	ancode: Int!
+	reason: String!
 }
 
 type Semester {
