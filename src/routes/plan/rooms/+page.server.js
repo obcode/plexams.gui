@@ -33,17 +33,15 @@ export async function load() {
 				ancode
 				zpaExam {
 					module
+					mainExamer
 				}
-				planEntry {
-					dayNumber
-					slotNumber
-				}
-				plannedRooms {
-					room {
-						name
-					}
-					studentsInRoom
-				}
+			}
+			unplacedExams {
+				ancode
+				day
+				slot
+				mtknrs
+				ntaMtknr
 			}
 			blockedRooms {
 				room
@@ -59,25 +57,34 @@ export async function load() {
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
-	// Prüfungen, bei denen Studierende ohne Raum sind („No Room") → große Warnung.
-	const noRoomExams = (data.plannedExams ?? [])
-		.map((/** @type {any} */ e) => {
-			const noRoom = (e.plannedRooms ?? []).find(
-				(/** @type {any} */ pr) => pr.room?.name === 'No Room'
-			);
-			const students = noRoom ? (noRoom.studentsInRoom ?? []).length : 0;
-			return students > 0
-				? {
-						ancode: e.ancode,
-						module: e.zpaExam.module,
-						day: e.planEntry?.dayNumber ?? null,
-						slot: e.planEntry?.slotNumber ?? null,
-						students
-					}
-				: null;
+	// Nicht zugeordnete Studierende (kommen nicht mehr als „No Room" aus
+	// plannedRooms, sondern aus unplacedExams). Modul/Prüfer per ancode joinen.
+	/** @type {Map<number, any>} */
+	const examByAncode = new Map(
+		(data.plannedExams ?? []).map((/** @type {any} */ e) => [e.ancode, e])
+	);
+	const unplaced = (data.unplacedExams ?? [])
+		.map((/** @type {any} */ u) => {
+			const ex = examByAncode.get(u.ancode);
+			return {
+				ancode: u.ancode,
+				module: ex?.zpaExam?.module ?? '',
+				mainExamer: ex?.zpaExam?.mainExamer ?? '',
+				day: u.day ?? null,
+				slot: u.slot ?? null,
+				count: (u.mtknrs ?? []).length,
+				nta: u.ntaMtknr != null
+			};
 		})
-		.filter(Boolean)
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.day - b.day || a.slot - b.slot);
+		.filter((/** @type {any} */ u) => u.count > 0)
+		.sort(
+			(/** @type {any} */ a, /** @type {any} */ b) =>
+				a.day - b.day || a.slot - b.slot || a.ancode - b.ancode
+		);
+	const totalUnplaced = unplaced.reduce(
+		(/** @type {number} */ s, /** @type {any} */ u) => s + u.count,
+		0
+	);
 
 	// Set für die „nach Räumen"-Übersicht: welcher Raum ist in welchem day-slot
 	// geplant. (devalue serialisiert Sets über die SvelteKit-Grenze.)
@@ -116,7 +123,8 @@ export async function load() {
 		plannedRooms,
 		prePlannedRooms,
 		roomCounts,
-		noRoomExams,
+		unplaced,
+		totalUnplaced,
 		blockedRooms: data.blockedRooms ?? [],
 		roomsBlocked: (data.planningState?.blockedAreas ?? []).includes('ROOMS')
 	};

@@ -512,6 +512,7 @@ type Query {
 	generatedExam(ancode: Int!): GeneratedExam
 	plannedExams: [PlannedExam!]!
 	plannedExam(ancode: Int!): PlannedExam
+	unplacedExams: [UnplacedExam!]!
 	mucdaiExams: [MucDaiExam!]!
 	conflictingAncodes(ancode: Int!): [Conflict!]
 	invigilatorTodos: InvigilationTodos
@@ -716,6 +717,14 @@ type NtaRoomAloneWaiver {
 	mtknr: String!
 	ancode: Int!
 	reason: String!
+}
+
+type UnplacedExam {
+	ancode: Int!
+	day: Int!
+	slot: Int!
+	mtknrs: [String!]!
+	ntaMtknr: String
 }
 
 type Semester {

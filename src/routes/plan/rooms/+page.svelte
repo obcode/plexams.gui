@@ -49,14 +49,7 @@
 		}
 	}
 
-	$: totalNoRoom = data.noRoomExams.reduce(
-		(/** @type {number} */ s, /** @type {any} */ n) => s + n.students,
-		0
-	);
-	// Slots mit „No Room" (aus der Warnung) — für die „nach Räumen"-Zeile.
-	$: noRoomSet = new Set(data.noRoomExams.map((/** @type {any} */ n) => `${n.day}-${n.slot}`));
-
-	// Tag → Datum, Slot → Startzeit (für die No-Room-Warnung).
+	// Tag → Datum, Slot → Startzeit (für die „ohne Raum"-Warnung).
 	$: dayDateById = Object.fromEntries(
 		data.semesterConfig.days.map((/** @type {any} */ d) => [d.number, d.date])
 	);
@@ -95,7 +88,7 @@
 	}
 	$: applyDayDefaults(showRooms, showAllDays);
 
-	// Sprung aus der „No Room"-Warnung zum passenden Tag/Slot.
+	// Sprung aus der „ohne Raum"-Warnung zum passenden Tag/Slot.
 	/** @param {number} day @param {number} slot */
 	async function jumpTo(day, slot) {
 		view = 'exams';
@@ -114,7 +107,6 @@
 		showRooms === 'all'
 			? baseRooms
 			: baseRooms.filter((/** @type {string} */ r) => r === showRooms);
-	$: showNoRoomRow = noRoomSet.size > 0 && (showRooms === 'all' || showRooms === 'No Room');
 
 	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
 	// Generierung in planned_rooms wirken).
@@ -296,23 +288,26 @@
 		<div class="alert alert-error py-2 text-sm"><span>{blockError}</span></div>
 	{/if}
 
-	<!-- Große Warnung, wenn irgendwo „No Room" verwendet wird -->
-	{#if data.noRoomExams.length}
+	<!-- Große Warnung: nicht zugeordnete Studierende (aus unplacedExams) -->
+	{#if data.unplaced.length}
 		<div class="alert alert-error shadow">
 			<div class="flex flex-col gap-1">
 				<div class="text-base font-semibold">
-					⚠ {data.noRoomExams.length} Prüfung(en) ohne Raum — {totalNoRoom} Studierende noch nicht verplant
+					⚠ {data.totalUnplaced} Studierende noch ohne Raum ({data.unplaced.length} Eintrag(e))
 				</div>
 				<div class="flex flex-wrap gap-1">
-					{#each data.noRoomExams as n}
+					{#each data.unplaced as n}
 						<button
-							class="badge badge-sm cursor-pointer border-error-content/30 hover:underline"
+							class="badge badge-sm cursor-pointer gap-1 border-error-content/30 hover:underline"
 							title="zum Tag/Slot springen (Tag {n.day} · Slot {n.slot})"
 							on:click={() => jumpTo(n.day, n.slot)}
 						>
+							{#if n.nta}<span class="font-semibold">NTA</span>{/if}
 							{n.ancode}
-							{n.module} · {dayDateById[n.day] ? mkDateShort(dayDateById[n.day]) : `Tag ${n.day}`}
-							{slotStartById[n.slot] ?? `Slot ${n.slot}`} · {n.students}
+							{n.module}{n.mainExamer ? ` · ${n.mainExamer}` : ''} · {dayDateById[n.day]
+								? mkDateShort(dayDateById[n.day])
+								: `Tag ${n.day}`}
+							{slotStartById[n.slot] ?? `Slot ${n.slot}`} · {n.count}
 						</button>
 					{/each}
 				</div>
@@ -324,7 +319,7 @@
 	<div class="flex flex-wrap items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<select class="select select-bordered select-sm w-56" bind:value={showRooms}>
 			<option value="all">Alle Räume</option>
-			{#each data.plannedRoomNames as plannedRoomName}
+			{#each baseRooms as plannedRoomName}
 				<option value={plannedRoomName}>
 					{plannedRoomName} ({data.roomCounts[plannedRoomName] ?? 0}×)
 				</option>
@@ -512,31 +507,6 @@
 								{/each}
 							</tr>
 						{/each}
-
-						{#if showNoRoomRow}
-							<tr class="bg-error/10">
-								<td class="sticky left-0 bg-error/10 font-semibold text-error">No Room</td>
-								{#each data.semesterConfig.days as day}
-									<td>
-										<div class="flex gap-0.5">
-											{#each data.semesterConfig.starttimes as slot}
-												{@const planned = noRoomSet.has(`${day.number}-${slot.number}`)}
-												<div
-													class="flex h-5 w-5 items-center justify-center rounded text-[10px] {planned
-														? 'bg-error font-semibold text-error-content'
-														: 'bg-base-200 text-base-content/30'}"
-													title="Tag {day.number} · Slot {slot.number}{planned
-														? ' · ohne Raum!'
-														: ''}"
-												>
-													{slot.number}
-												</div>
-											{/each}
-										</div>
-									</td>
-								{/each}
-							</tr>
-						{/if}
 					</tbody>
 				</table>
 			</div>
