@@ -39,10 +39,12 @@ export async function load({ url }) {
 					shortname
 					id
 				}
+				reservePrePlanned
 				roomsWithInvigilators {
 					name
 					maxDuration
 					studentCount
+					prePlanned
 					roomAndExams {
 						room {
 							duration

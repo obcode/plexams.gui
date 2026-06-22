@@ -2,7 +2,7 @@
 	export let data;
 	import { mkDateShort } from '$lib/jshelper/misc';
 
-	const days = data.days;
+	let days = data.days;
 	// mtknr -> NTA, to mark NTA students sitting in a room
 	const ntaMap = new Map((data.ntas ?? []).map((/** @type {any} */ n) => [n.mtknr, n]));
 
@@ -168,6 +168,133 @@
 		return n;
 	}
 
+	// ===== Aufsichten-Vorplanung (fixieren / Person vorplanen / entfernen) =====
+	// Kandidaten je Tag (aus invigilatorsForDay), bei Bedarf nachgeladen.
+	/** @type {Map<number, any[]>} */
+	let candidatesByDay = new Map();
+	// Key des Eintrags, dessen Personen-Picker offen ist ('' = keiner)
+	let pickerOpen = '';
+	let pickSel = 0;
+	/** @type {Set<string>} */
+	let busy = new Set();
+	let actionError = '';
+
+	/** @param {number} dayNumber @param {number} slotNumber @param {string | null} roomName */
+	const entryKey = (dayNumber, slotNumber, roomName) =>
+		`${dayNumber}-${slotNumber}-${roomName ?? 'reserve'}`;
+
+	/** @param {number} dayNumber */
+	async function ensureCandidates(dayNumber) {
+		if (candidatesByDay.has(dayNumber)) return;
+		const res = await fetch('/api/plan/invigilatorsForDay', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ day: dayNumber })
+		});
+		const d = await res.json().catch(() => ({}));
+		const ifd = d.invigilatorsForDay;
+		/** @type {Map<number, any>} */
+		const m = new Map();
+		for (const grp of [ifd?.want ?? [], ifd?.can ?? []])
+			for (const x of grp) if (x.teacher) m.set(x.teacher.id, x.teacher);
+		candidatesByDay.set(
+			dayNumber,
+			[...m.values()].sort((a, b) => a.shortname.localeCompare(b.shortname))
+		);
+		candidatesByDay = candidatesByDay;
+	}
+
+	/** @param {string} key @param {number} dayNumber */
+	async function togglePicker(key, dayNumber) {
+		actionError = '';
+		if (pickerOpen === key) {
+			pickerOpen = '';
+			return;
+		}
+		pickSel = 0;
+		await ensureCandidates(dayNumber);
+		pickerOpen = key;
+	}
+
+	/** @param {string} url @param {any} body @param {string} key */
+	async function post(url, body, key) {
+		busy = new Set(busy).add(key);
+		actionError = '';
+		try {
+			const res = await fetch(url, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify(body)
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			return true;
+		} catch (e) {
+			actionError = e instanceof Error ? e.message : String(e);
+			return false;
+		} finally {
+			const s = new Set(busy);
+			s.delete(key);
+			busy = s;
+		}
+	}
+
+	// Ziel kapselt Raum-Eintrag (r, roomName=r.name) bzw. Reserve (slot, roomName=null).
+	// setPrePlanned/setInvigilator mutieren das jeweils richtige Objekt.
+
+	/** @param {number} dayNumber @param {number} slotNumber @param {string | null} roomName
+	 * @param {(v: boolean) => void} setPrePlanned */
+	async function fixCurrent(dayNumber, slotNumber, roomName, setPrePlanned) {
+		const key = entryKey(dayNumber, slotNumber, roomName);
+		if (
+			await post(
+				'/api/plan/prePlanInvigilationInSlot',
+				{ day: dayNumber, slot: slotNumber, roomName },
+				key
+			)
+		) {
+			setPrePlanned(true);
+			days = days;
+		}
+	}
+
+	/** @param {number} dayNumber @param {number} slotNumber @param {string | null} roomName
+	 * @param {(v: boolean) => void} setPrePlanned */
+	async function removePre(dayNumber, slotNumber, roomName, setPrePlanned) {
+		const key = entryKey(dayNumber, slotNumber, roomName);
+		if (
+			await post(
+				'/api/plan/removePrePlannedInvigilation',
+				{ day: dayNumber, slot: slotNumber, roomName },
+				key
+			)
+		) {
+			setPrePlanned(false);
+			days = days;
+		}
+	}
+
+	/** @param {number} dayNumber @param {number} slotNumber @param {string | null} roomName
+	 * @param {(v: boolean) => void} setPrePlanned @param {(t: any) => void} setInvigilator */
+	async function assignPerson(dayNumber, slotNumber, roomName, setPrePlanned, setInvigilator) {
+		if (!pickSel) return;
+		const key = entryKey(dayNumber, slotNumber, roomName);
+		const cand = (candidatesByDay.get(dayNumber) ?? []).find((c) => c.id === pickSel);
+		if (
+			await post(
+				'/api/plan/prePlanInvigilation',
+				{ invigilatorID: pickSel, day: dayNumber, slot: slotNumber, roomName },
+				key
+			)
+		) {
+			if (cand) setInvigilator({ id: cand.id, shortname: cand.shortname });
+			setPrePlanned(true);
+			pickerOpen = '';
+			pickSel = 0;
+			days = days;
+		}
+	}
+
 	// von der Anforderungen-Seite verlinkt: ?focus=<id> hebt diese Aufsicht direkt hervor
 	if (data.focus) {
 		const fid = Number(data.focus);
@@ -226,7 +353,17 @@
 		<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content"
 			>keine Aufsicht / Reserve</span
 		>
+		<span class="text-base-content/60"
+			>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neugenerierung)</span
+		>
 	</div>
+
+	{#if actionError}
+		<div class="alert alert-error py-2 text-sm">
+			<span>{actionError}</span>
+			<button class="btn btn-ghost btn-xs" on:click={() => (actionError = '')}>✕</button>
+		</div>
+	{/if}
 
 	<div class="flex flex-col gap-5">
 		{#each days as day, i}
@@ -284,6 +421,69 @@
 											>keine Reserve</span
 										>
 									{/if}
+
+									<!-- Reserve vorplanen / fixieren -->
+									{@const rKey = entryKey(day.number, s.time.number, null)}
+									{#if slot.reservePrePlanned}
+										<button
+											class="badge badge-success badge-sm gap-1"
+											disabled={busy.has(rKey)}
+											title="Reserve aus der Vorplanung entfernen"
+											on:click={() =>
+												removePre(
+													day.number,
+													s.time.number,
+													null,
+													(v) => (slot.reservePrePlanned = v)
+												)}
+										>
+											🔒 fixiert ✕
+										</button>
+									{:else}
+										{#if slot.reserve}
+											<button
+												class="badge badge-ghost badge-sm"
+												disabled={busy.has(rKey)}
+												title="aktuelle Reserve in die Vorplanung übernehmen"
+												on:click={() =>
+													fixCurrent(
+														day.number,
+														s.time.number,
+														null,
+														(v) => (slot.reservePrePlanned = v)
+													)}
+											>
+												📌 fixieren
+											</button>
+										{/if}
+										<button
+											class="badge badge-ghost badge-sm"
+											title="Reserve vorplanen"
+											on:click={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
+										>
+									{/if}
+									{#if pickerOpen === rKey}
+										<div class="flex w-full items-center gap-1">
+											<select bind:value={pickSel} class="select select-bordered select-xs">
+												<option value={0} disabled>Person…</option>
+												{#each candidatesByDay.get(day.number) ?? [] as c}
+													<option value={c.id}>{c.shortname}</option>
+												{/each}
+											</select>
+											<button
+												class="btn btn-primary btn-xs"
+												disabled={!pickSel || busy.has(rKey)}
+												on:click={() =>
+													assignPerson(
+														day.number,
+														s.time.number,
+														null,
+														(v) => (slot.reservePrePlanned = v),
+														(t) => (slot.reserve = t)
+													)}>vorplanen</button
+											>
+										</div>
+									{/if}
 								{/if}
 							</div>
 
@@ -291,6 +491,7 @@
 								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 									{#each slot.roomsWithInvigilators as r}
 										{@const involved = roomInvolved(r, selKind, selectedId, selectedNta)}
+										{@const rKey = entryKey(day.number, s.time.number, r.name)}
 										<div
 											class="overflow-hidden rounded-lg border border-base-300 text-xs shadow-sm {selKind ===
 												'teacher' &&
@@ -392,6 +593,78 @@
 														</li>
 													{/each}
 												</ul>
+
+												<!-- Vorplanung: Aufsicht fixieren / Person vorplanen -->
+												{#if r.name !== 'No Room'}
+													<div
+														class="flex flex-wrap items-center gap-1 border-t border-base-300 pt-1.5"
+													>
+														{#if r.prePlanned}
+															<button
+																class="badge badge-success badge-sm gap-1"
+																disabled={busy.has(rKey)}
+																title="aus der Vorplanung entfernen"
+																on:click={() =>
+																	removePre(
+																		day.number,
+																		s.time.number,
+																		r.name,
+																		(v) => (r.prePlanned = v)
+																	)}
+															>
+																🔒 fixiert ✕
+															</button>
+														{:else}
+															{#if r.invigilator}
+																<button
+																	class="badge badge-ghost badge-sm"
+																	disabled={busy.has(rKey)}
+																	title="aktuelle Aufsicht in die Vorplanung übernehmen"
+																	on:click={() =>
+																		fixCurrent(
+																			day.number,
+																			s.time.number,
+																			r.name,
+																			(v) => (r.prePlanned = v)
+																		)}
+																>
+																	📌 fixieren
+																</button>
+															{/if}
+															<button
+																class="badge badge-ghost badge-sm"
+																title="andere Person vorplanen"
+																on:click={() => togglePicker(rKey, day.number)}
+																>Person vorplanen…</button
+															>
+														{/if}
+													</div>
+													{#if pickerOpen === rKey}
+														<div class="flex items-center gap-1">
+															<select
+																bind:value={pickSel}
+																class="select select-bordered select-xs flex-1"
+															>
+																<option value={0} disabled>Person…</option>
+																{#each candidatesByDay.get(day.number) ?? [] as c}
+																	<option value={c.id}>{c.shortname}</option>
+																{/each}
+															</select>
+															<button
+																class="btn btn-primary btn-xs"
+																disabled={!pickSel || busy.has(rKey)}
+																on:click={() =>
+																	assignPerson(
+																		day.number,
+																		s.time.number,
+																		r.name,
+																		(v) => (r.prePlanned = v),
+																		(t) => (r.invigilator = t)
+																	)}>✓</button
+															>
+														</div>
+													{/if}
+												{/if}
 											</div>
 										</div>
 									{/each}
