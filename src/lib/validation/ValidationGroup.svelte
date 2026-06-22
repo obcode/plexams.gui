@@ -78,7 +78,7 @@
 		const fields = `level
 			text
 			validation {
-				name ok errorCount warningCount
+				name ok errorCount warningCount infoCount
 				findings { level message ancode relatedAncodes room day slot invigilatorID studentMtknr }
 			}`;
 		if (!spec.length) {
@@ -200,6 +200,7 @@
 	$: anyRunning = state.some((v) => v.status === 'running');
 	$: totalErrors = state.reduce((s, v) => s + (v.report?.errorCount ?? 0), 0);
 	$: totalWarnings = state.reduce((s, v) => s + (v.report?.warningCount ?? 0), 0);
+	$: totalInfos = state.reduce((s, v) => s + (v.report?.infoCount ?? 0), 0);
 	$: allDone = state.every((v) => v.status === 'done' || v.status === 'error');
 	$: allOk = allDone && state.every((v) => v.report && v.report.ok);
 
@@ -261,6 +262,10 @@
 					{totalWarnings}
 				</div>
 				<div class="text-xs text-base-content/60">Warnungen</div>
+			</div>
+			<div class="rounded-lg border border-base-300 px-4 py-2 text-center">
+				<div class="text-2xl font-semibold tabular-nums text-base-content/60">{totalInfos}</div>
+				<div class="text-xs text-base-content/60">Infos</div>
 			</div>
 		</div>
 		<div class="flex-1"></div>

@@ -78,13 +78,13 @@
 	function levelIcon(level) {
 		if (level === 'ERROR') return '⛔';
 		if (level === 'WARNING') return '⚠️';
-		return 'ℹ️';
+		return '•'; // INFO: dezent
 	}
 	/** @param {string} level */
 	function levelClass(level) {
 		if (level === 'ERROR') return 'border-error/40 bg-error/5';
 		if (level === 'WARNING') return 'border-warning/40 bg-warning/5';
-		return 'border-info/40 bg-info/5';
+		return 'border-base-300 bg-base-200/40 text-base-content/60'; // INFO: neutral
 	}
 </script>
 
@@ -122,6 +122,9 @@
 				{#if validator.report.warningCount > 0}
 					<span class="badge badge-warning tabular-nums">{validator.report.warningCount} Warn.</span
 					>
+				{/if}
+				{#if validator.report.infoCount > 0}
+					<span class="badge badge-ghost tabular-nums">{validator.report.infoCount} Info</span>
 				{/if}
 			{:else}
 				<span class="badge badge-ghost">—</span>
