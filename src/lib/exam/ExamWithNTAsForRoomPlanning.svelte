@@ -193,10 +193,13 @@
 				{#each plannedExam.plannedRooms as room}
 					<div
 						class="flex items-center gap-2 rounded-lg border px-2 py-1 text-sm {classifyRoom(room)
-							.chip} {room.handicap ? 'border-dashed' : ''} {(highlightNotPrePlanned &&
-							room.prePlanned) ||
+							.chip} {room.handicap ? 'border-dashed' : ''} {highlightNotPrePlanned &&
+						!room.prePlanned &&
+						room.room.name !== 'No Room'
+							? 'font-semibold ring-2 ring-primary ring-offset-1'
+							: ''} {(highlightNotPrePlanned && room.prePlanned) ||
 						(showRooms !== 'all' && !dimmed && room.room.name !== showRooms)
-							? 'opacity-40'
+							? 'opacity-30'
 							: ''}"
 					>
 						<button
