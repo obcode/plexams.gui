@@ -422,7 +422,6 @@
 													{details}
 													{showRooms}
 													{dimOthers}
-													rooms={data.rooms}
 													{showOnlyWithoutRoom}
 													{highlightNotPrePlanned}
 												/>

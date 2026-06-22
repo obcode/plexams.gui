@@ -8,8 +8,10 @@
 	export let showRooms;
 	/** bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen */
 	export let dimOthers = false;
-	/** für den Raum-Picker (Vorplanung): alle aktiven Räume @type {any[]} */
-	export let rooms = [];
+	/** Tag dieser Karte — für die Raum-Vorplanung (freie Plätze pro Slot) @type {number | null} */
+	export let day = null;
+	/** Slot dieser Karte @type {number | null} */
+	export let time = null;
 	/** nur Prüfungen anzeigen, die (noch) keinen Raum haben */
 	export let showOnlyWithoutRoom = false;
 	/** nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt */
@@ -93,41 +95,90 @@
 		});
 	}
 
-	// ----- Raum-Picker: einen Raum von Hand vorplanen (vor jeglicher Generierung) -----
+	// ----- Raum-Picker: einen Raum von Hand vorplanen (auch belegte Räume als
+	// Reserve mitnutzen). Lädt die freien Plätze pro Slot bei Bedarf nach. -----
 	let showPicker = false;
-	let pickRoom = '';
-	let allRoomsInPicker = false;
+	let pickReserve = false;
 	let pickError = '';
+	/** @type {any[] | null} */
+	let slotRooms = null;
+	let loadingRooms = false;
 
-	$: hasConstraintFilter = exahm || seb || placesWithSocket || lab;
 	$: plannedNames = new Set(
 		(plannedExam.plannedRooms || []).map((/** @type {any} */ r) => r.room.name)
 	);
-	/** @param {any} r */
-	function roomMatchesConstraints(r) {
-		if (exahm && !r.exahm) return false;
-		if (seb && !r.seb) return false;
-		if (placesWithSocket && !r.placesWithSocket) return false;
-		if (lab && !r.lab) return false;
-		return true;
-	}
-	// auswählbare Räume: aktiv, nicht „No Room", nicht schon verplant,
-	// per Constraints gefiltert (außer „alle Räume" ist aktiv)
-	$: candidates = (rooms || [])
-		.filter((/** @type {any} */ r) => r.name !== 'No Room' && !plannedNames.has(r.name))
-		.filter((/** @type {any} */ r) => allRoomsInPicker || roomMatchesConstraints(r))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.name.localeCompare(b.name));
 
-	async function addRoom() {
-		const r = (rooms || []).find((/** @type {any} */ x) => x.name === pickRoom);
-		if (!r) return;
+	async function openPicker() {
+		showPicker = true;
 		pickError = '';
+		if (slotRooms !== null || loadingRooms) return;
+		loadingRooms = true;
+		try {
+			const res = await fetch('/api/plan/roomsWithFreeSeatsForSlot', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ day, time })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			slotRooms = d.roomsWithFreeSeatsForSlot ?? [];
+		} catch (e) {
+			pickError = e instanceof Error ? e.message : String(e);
+			slotRooms = [];
+		} finally {
+			loadingRooms = false;
+		}
+	}
+
+	// Grund, warum ein Raum für diese Prüfung nicht passt (gesperrt im Picker):
+	// Sonderraum-Merkmal, das die Prüfung nicht fordert, oder umgekehrt.
+	/** @param {any} r */
+	function mismatchReason(r) {
+		if (r.exahm && !exahm) return 'nur EXaHM-Prüfungen';
+		if (r.seb && !seb) return 'nur SEB-Prüfungen';
+		if (r.lab && !lab) return 'nur Labor-Prüfungen';
+		if (exahm && !r.exahm) return 'kein EXaHM-Raum';
+		if (seb && !r.seb) return 'kein SEB-Raum';
+		if (lab && !r.lab) return 'kein Labor-Raum';
+		return null;
+	}
+
+	// auswählbare Räume: nicht „No Room", keine NTA-Räume (handicap → nur für
+	// NTA-Vorplanung), nicht schon für diese Prüfung verplant.
+	$: pickerCandidates = (slotRooms || [])
+		.filter((/** @type {any} */ r) => r.roomName !== 'No Room' && !r.handicap)
+		.filter((/** @type {any} */ r) => !plannedNames.has(r.roomName))
+		.map((/** @type {any} */ r) => ({
+			...r,
+			dimReason: mismatchReason(r),
+			full: r.freeSeats <= 0
+		}))
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.roomName.localeCompare(b.roomName));
+
+	/** @param {any} c */
+	async function addRoom(c) {
+		if (c.dimReason) return;
+		pickError = '';
+		if (
+			c.full &&
+			!confirm(
+				`${c.roomName} hat keine freien Plätze (${c.usedSeats}/${c.seats} belegt). Trotzdem ${pickReserve ? 'als Reserve ' : ''}vorplanen?`
+			)
+		)
+			return;
 		// optimistisch als gepinnten Raum anzeigen (rendert über die bestehende Liste,
 		// das 📌 löst die Vorplanung wieder)
 		const newRoom = {
-			room: r,
+			room: {
+				name: c.roomName,
+				seats: c.seats,
+				handicap: false,
+				lab: c.lab,
+				exahm: c.exahm,
+				seb: c.seb
+			},
 			studentsInRoom: [],
-			reserve: false,
+			reserve: pickReserve,
 			handicap: false,
 			handicapRoomAlone: false,
 			duration: exam.duration,
@@ -135,13 +186,13 @@
 			prePlanned: true
 		};
 		plannedExam.plannedRooms = [...(plannedExam.plannedRooms || []), newRoom];
-		const roomName = r.name;
-		pickRoom = '';
+		const roomName = c.roomName;
+		const reserve = pickReserve;
 		showPicker = false;
 		try {
 			const res = await fetch('/api/prePlanRoom', {
 				method: 'POST',
-				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve: false, mtknr: null }),
+				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr: null }),
 				headers: { 'content-type': 'application/json' }
 			});
 			const result = await res.json().catch(() => ({}));
@@ -152,6 +203,7 @@
 				(/** @type {any} */ x) => x !== newRoom
 			);
 			pickError = e instanceof Error ? e.message : String(e);
+			showPicker = true;
 		}
 	}
 </script>
@@ -241,39 +293,69 @@
 			<div class="text-sm text-error">kein Raum!</div>
 		{/if}
 
-		<!-- Raum vorplanen (von Hand zuordnen, vor jeglicher Generierung) -->
-		{#if rooms && rooms.length}
+		<!-- Raum vorplanen (von Hand zuordnen; belegte Räume als Reserve mitnutzbar) -->
+		{#if day != null && time != null}
 			<div class="flex flex-col gap-1">
 				{#if showPicker}
-					<div class="flex items-center gap-1">
-						<!-- svelte-ignore a11y-no-onchange -->
-						<select class="select select-bordered select-xs flex-1" bind:value={pickRoom}>
-							<option value="" disabled>Raum wählen…</option>
-							{#each candidates as r}
-								<option value={r.name}>{r.name} ({r.seats})</option>
-							{/each}
-						</select>
-						<button class="btn btn-primary btn-xs" disabled={!pickRoom} on:click={addRoom}>+</button
-						>
-						<button
-							class="btn btn-ghost btn-xs"
-							title="abbrechen"
-							on:click={() => {
-								showPicker = false;
-								pickRoom = '';
-							}}>✕</button
-						>
+					<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200/40 p-2">
+						<div class="flex items-center justify-between">
+							<label class="label cursor-pointer gap-1 py-0">
+								<input type="checkbox" class="checkbox checkbox-xs" bind:checked={pickReserve} />
+								<span class="label-text text-xs">als Reserve (Mitnutzung)</span>
+							</label>
+							<button
+								class="btn btn-ghost btn-xs"
+								title="schließen"
+								on:click={() => (showPicker = false)}>✕</button
+							>
+						</div>
+						{#if loadingRooms}
+							<div class="text-xs text-base-content/50">lädt…</div>
+						{:else if pickerCandidates.length === 0}
+							<div class="text-xs text-base-content/50">keine passenden Räume im Slot</div>
+						{:else}
+							<div class="flex max-h-56 flex-col gap-1 overflow-y-auto">
+								{#each pickerCandidates as c}
+									<button
+										class="flex flex-col items-start gap-0.5 rounded border border-base-300 px-2 py-1 text-left text-xs {c.dimReason
+											? 'cursor-not-allowed opacity-40'
+											: 'hover:bg-base-200'}"
+										disabled={!!c.dimReason}
+										title={c.dimReason ?? 'vorplanen'}
+										on:click={() => addRoom(c)}
+									>
+										<div class="flex w-full flex-wrap items-center gap-1">
+											<span class="font-medium">{c.roomName}</span>
+											<span class={c.full ? 'text-error' : 'text-base-content/60'}>
+												{c.freeSeats} von {c.seats} frei
+											</span>
+											{#if c.exahm}<span class="badge badge-info badge-xs">EXaHM</span>{/if}
+											{#if c.seb}<span class="badge badge-error badge-xs">SEB</span>{/if}
+											{#if c.lab}<span class="badge badge-warning badge-xs">Labor</span>{/if}
+											{#if c.dimReason}
+												<span class="ml-auto text-base-content/50">{c.dimReason}</span>
+											{:else if c.full}
+												<span class="ml-auto text-error">kein Platz frei</span>
+											{/if}
+										</div>
+										{#if c.usedBy && c.usedBy.length}
+											<div class="text-base-content/50">
+												belegt von: {#each c.usedBy as u, i}{u.ancode}. {u.module} ({u.examer}), {u.studentCount}
+													Stud.{i < c.usedBy.length - 1 ? '; ' : ''}{/each}
+											</div>
+										{/if}
+									</button>
+								{/each}
+							</div>
+						{/if}
+						<div class="text-[10px] text-base-content/40">
+							Nach dem Vorplanen ggf. „Räume für Prüfungen generieren", damit es wirksam wird.
+						</div>
 					</div>
-					{#if hasConstraintFilter}
-						<label class="label cursor-pointer justify-start gap-1 py-0">
-							<input type="checkbox" class="checkbox checkbox-xs" bind:checked={allRoomsInPicker} />
-							<span class="label-text text-xs">alle Räume (Constraints ignorieren)</span>
-						</label>
-					{/if}
 				{:else}
 					<button
 						class="btn btn-ghost btn-xs self-start text-xs text-base-content/60"
-						on:click={() => (showPicker = true)}>➕ Raum vorplanen</button
+						on:click={openPicker}>➕ Raum vorplanen</button
 					>
 				{/if}
 				{#if pickError}

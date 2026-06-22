@@ -7,8 +7,6 @@
 	export let details;
 	export let showRooms;
 	export let dimOthers = false;
-	/** für den Raum-Picker (Vorplanung): alle aktiven Räume @type {any[]} */
-	export let rooms = [];
 	export let showOnlyWithoutRoom = false;
 	export let highlightNotPrePlanned = false;
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
@@ -42,7 +40,8 @@
 			{details}
 			{showRooms}
 			{dimOthers}
-			{rooms}
+			{day}
+			{time}
 			{showOnlyWithoutRoom}
 			{highlightNotPrePlanned}
 		/>
