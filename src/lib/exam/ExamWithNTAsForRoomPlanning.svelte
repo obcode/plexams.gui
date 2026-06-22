@@ -67,6 +67,20 @@
 		}
 	}
 
+	/** @param {any} exam @param {string} mtknr */
+	function ntaFor(exam, mtknr) {
+		return (exam.ntas || []).find((/** @type {any} */ n) => n.mtknr == mtknr);
+	}
+
+	// braucht (eine) NTA in diesem Raum einen eigenen Raum? — direkt am Raum zeigen
+	/** @param {any} room */
+	function roomNeedsAlone(room) {
+		if (room.handicapRoomAlone) return true;
+		return (room.studentsInRoom || []).some(
+			(/** @type {string} */ m) => ntaFor(plannedExam, m)?.needsRoomAlone
+		);
+	}
+
 	/** @param {number} ancode @param {any} room */
 	async function prePlanRoom(ancode, room) {
 		const roomName = room.room.name;
@@ -267,10 +281,15 @@
 							📌
 						</button>
 						{#if room.handicap}
-							<span>
-								{room.room.name} (
-								{#each room.studentsInRoom as student}{ntaName(plannedExam, student)};{/each}
-								<span class="badge badge-warning badge-sm">{room.duration} Min.</span>)
+							<span class="flex flex-wrap items-center gap-1">
+								<span>
+									{room.room.name} (
+									{#each room.studentsInRoom as student}{ntaName(plannedExam, student)};{/each})
+								</span>
+								{#if roomNeedsAlone(room)}
+									<span class="badge badge-error badge-sm">eigener Raum</span>
+								{/if}
+								<span class="badge badge-warning badge-sm">{room.duration} Min.</span>
 							</span>
 						{:else}
 							<span class="flex flex-wrap items-center gap-1">
