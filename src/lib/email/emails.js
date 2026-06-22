@@ -50,6 +50,11 @@ export const planningEmails = [
 /** @type {EmailDef[]} */
 export const roomEmails = [
 	{
+		key: 'sendEmailRoomsSecretariat',
+		title: 'Räume ans Sekretariat',
+		description: 'Die Raumplanung ans Sekretariat senden (vor der Veröffentlichung)'
+	},
+	{
 		key: 'sendEmailPublishedRooms',
 		title: 'Veröffentlichte Räume',
 		description: 'Die endgültig veröffentlichte Raumplanung'

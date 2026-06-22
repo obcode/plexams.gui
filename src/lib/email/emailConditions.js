@@ -13,6 +13,7 @@ export const EMAIL_CONDITION = {
 	sendEmailPublishedRooms: 'roomPlanPublished',
 	sendEmailPublishedInvigilations: 'invigilationPlanPublished',
 	sendEmailRoomRequests: 'roomRequestsSent',
+	sendEmailRoomsSecretariat: 'secretariatRoomsSent',
 	sendEmailInvigilations: 'invigilationsRequested'
 };
 
