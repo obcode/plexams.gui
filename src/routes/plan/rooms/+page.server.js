@@ -15,6 +15,12 @@ export async function load() {
 				}
 			}
 			plannedRoomNames
+			prePlannedRooms {
+				ancode
+				roomName
+				mtknr
+				seats
+			}
 			plannedRooms {
 				day
 				slot
@@ -96,9 +102,17 @@ export async function load() {
 	const roomCounts = {};
 	for (const [name, set] of Object.entries(roomSlotSets)) roomCounts[name] = set.size;
 
+	// fix vorgeplante Platzzahlen je (ancode|raum|mtknr) — für die Anzeige „N Plätze (fix)"
+	/** @type {Record<string, number>} */
+	const prePlannedSeats = {};
+	for (const p of data.prePlannedRooms ?? []) {
+		if (p.seats != null) prePlannedSeats[`${p.ancode}|${p.roomName}|${p.mtknr ?? ''}`] = p.seats;
+	}
+
 	return {
 		semesterConfig: data.semesterConfig,
 		plannedRoomNames: data.plannedRoomNames,
+		prePlannedSeats,
 		plannedRooms,
 		prePlannedRooms,
 		roomCounts,

@@ -424,6 +424,7 @@
 													{dimOthers}
 													{showOnlyWithoutRoom}
 													{highlightNotPrePlanned}
+													prePlannedSeats={data.prePlannedSeats}
 												/>
 											</div>
 										</div>

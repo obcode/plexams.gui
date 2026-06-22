@@ -6,18 +6,25 @@ import { request as gqlrequest, gql } from 'graphql-request';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	const mutation = gql`
-		mutation ($ancode: Int!, $roomName: String!, $reserve: Boolean!, $mtknr: String) {
-			prePlanRoom(ancode: $ancode, roomName: $roomName, reserve: $reserve, mtknr: $mtknr)
+		mutation ($ancode: Int!, $roomName: String!, $reserve: Boolean!, $mtknr: String, $seats: Int) {
+			prePlanRoom(
+				ancode: $ancode
+				roomName: $roomName
+				reserve: $reserve
+				mtknr: $mtknr
+				seats: $seats
+			)
 		}
 	`;
 
-	const { ancode, roomName, reserve, mtknr } = await request.json();
+	const { ancode, roomName, reserve, mtknr, seats } = await request.json();
 
 	const variables = {
 		ancode,
 		roomName,
 		reserve,
-		mtknr
+		mtknr,
+		seats
 	};
 
 	const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, variables);

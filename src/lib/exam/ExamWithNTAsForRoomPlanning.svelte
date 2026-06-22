@@ -16,6 +16,8 @@
 	export let showOnlyWithoutRoom = false;
 	/** nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt */
 	export let highlightNotPrePlanned = false;
+	/** fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>} */
+	export let prePlannedSeats = {};
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
@@ -72,6 +74,14 @@
 		return (exam.ntas || []).find((/** @type {any} */ n) => n.mtknr == mtknr);
 	}
 
+	// fix vorgeplante Platzzahl dieses Raums (lokal optimistisch oder aus dem
+	// Server-Datensatz), sonst undefined.
+	/** @param {any} room */
+	function fixedSeatsFor(room) {
+		if (room.fixedSeats != null) return room.fixedSeats;
+		return prePlannedSeats[`${exam.ancode}|${room.room.name}|${room.ntaMtknr ?? ''}`];
+	}
+
 	// braucht (eine) NTA in diesem Raum einen eigenen Raum? — direkt am Raum zeigen
 	/** @param {any} room */
 	function roomNeedsAlone(room) {
@@ -113,6 +123,7 @@
 	// Reserve mitnutzen). Lädt die freien Plätze pro Slot bei Bedarf nach. -----
 	let showPicker = false;
 	let pickReserve = false;
+	let pickSeats = '';
 	let pickError = '';
 	/** @type {any[] | null} */
 	let slotRooms = null;
@@ -125,6 +136,7 @@
 	async function openPicker() {
 		showPicker = true;
 		pickError = '';
+		pickSeats = '';
 		if (slotRooms !== null || loadingRooms) return;
 		loadingRooms = true;
 		try {
@@ -174,6 +186,20 @@
 	/** @param {any} c */
 	async function addRoom(c) {
 		pickError = '';
+		// optionale feste Platzzahl (leer = Raum normal füllen); durch Raumkapazität begrenzt
+		/** @type {number | null} */
+		let seats = null;
+		if (pickSeats.trim() !== '') {
+			seats = Number(pickSeats);
+			if (!Number.isInteger(seats) || seats < 1) {
+				pickError = 'Plätze muss eine Zahl ≥ 1 sein.';
+				return;
+			}
+			if (seats > c.seats) {
+				pickError = `${c.roomName} hat nur ${c.seats} Plätze.`;
+				return;
+			}
+		}
 		// nicht hart sperren — die Vorplanung ist eine bewusste Entscheidung; nur
 		// bei untypischer Eignung bzw. fehlenden Plätzen rückfragen.
 		/** @type {string[]} */
@@ -204,7 +230,8 @@
 			handicapRoomAlone: false,
 			duration: exam.duration,
 			ntaMtknr: null,
-			prePlanned: true
+			prePlanned: true,
+			fixedSeats: seats
 		};
 		plannedExam.plannedRooms = [...(plannedExam.plannedRooms || []), newRoom];
 		const roomName = c.roomName;
@@ -213,7 +240,7 @@
 		try {
 			const res = await fetch('/api/prePlanRoom', {
 				method: 'POST',
-				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr: null }),
+				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr: null, seats }),
 				headers: { 'content-type': 'application/json' }
 			});
 			const result = await res.json().catch(() => ({}));
@@ -306,6 +333,11 @@
 										>({room.studentsInRoom.length}/{room.room.seats})</span
 									>
 									{#if room.reserve}<span class="badge badge-info badge-sm">Reserve</span>{/if}
+									{#if fixedSeatsFor(room) != null}
+										<span class="badge badge-neutral badge-sm"
+											>{fixedSeatsFor(room)} Plätze (fix)</span
+										>
+									{/if}
 								{/if}
 								{#if room.room.name == 'No Room'}
 									<span class="text-base-content/60">({room.studentsInRoom.length})</span>
@@ -324,11 +356,23 @@
 			<div class="flex flex-col gap-1">
 				{#if showPicker}
 					<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-200/40 p-2">
-						<div class="flex items-center justify-between">
-							<label class="label cursor-pointer gap-1 py-0">
-								<input type="checkbox" class="checkbox checkbox-xs" bind:checked={pickReserve} />
-								<span class="label-text text-xs">als Reserve (Mitnutzung)</span>
-							</label>
+						<div class="flex items-center justify-between gap-2">
+							<div class="flex flex-wrap items-center gap-2">
+								<label class="label cursor-pointer gap-1 py-0">
+									<input type="checkbox" class="checkbox checkbox-xs" bind:checked={pickReserve} />
+									<span class="label-text text-xs">als Reserve (Mitnutzung)</span>
+								</label>
+								<label class="flex items-center gap-1" title="leer = Raum normal füllen">
+									<span class="text-xs text-base-content/60">Plätze</span>
+									<input
+										type="text"
+										inputmode="numeric"
+										class="input input-bordered input-xs w-16"
+										placeholder="alle"
+										bind:value={pickSeats}
+									/>
+								</label>
+							</div>
 							<button
 								class="btn btn-ghost btn-xs"
 								title="schließen"

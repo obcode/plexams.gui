@@ -331,7 +331,13 @@ type Mutation {
 	): RoomRequest!
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
 	rmExamFromSlot(ancode: Int!): Boolean!
-	prePlanRoom(ancode: Int!, roomName: String!, reserve: Boolean!, mtknr: String): Boolean!
+	prePlanRoom(
+		ancode: Int!
+		roomName: String!
+		reserve: Boolean!
+		mtknr: String
+		seats: Int
+	): Boolean!
 	removePrePlannedRoom(ancode: Int!, roomName: String!, mtknr: String): Boolean!
 	resetRoomsForExams: Boolean!
 	addNtaRoomAloneWaiver(mtknr: String!, ancode: Int!, reason: String!): NtaRoomAloneWaiver!
@@ -450,6 +456,7 @@ type PrePlannedRoom {
 	roomName: String!
 	mtknr: String
 	reserve: Boolean!
+	seats: Int
 }
 
 type PrimussExam {
