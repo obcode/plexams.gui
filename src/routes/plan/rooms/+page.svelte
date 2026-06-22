@@ -420,6 +420,7 @@
 													{showOnlyWithoutRoom}
 													{highlightNotPrePlanned}
 													prePlannedSeats={data.prePlannedSeats}
+													unplacedAncodes={data.unplacedAncodes}
 												/>
 											</div>
 										</div>

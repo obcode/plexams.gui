@@ -11,6 +11,8 @@
 	export let highlightNotPrePlanned = false;
 	/** fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>} */
 	export let prePlannedSeats = {};
+	/** Ancodes mit nicht zugeordneten Studierenden @type {Set<number>} */
+	export let unplacedAncodes = new Set();
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
 
@@ -47,6 +49,7 @@
 			{showOnlyWithoutRoom}
 			{highlightNotPrePlanned}
 			{prePlannedSeats}
+			{unplacedAncodes}
 		/>
 	{/if}
 {/each}

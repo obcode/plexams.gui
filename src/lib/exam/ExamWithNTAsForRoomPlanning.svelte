@@ -18,6 +18,8 @@
 	export let highlightNotPrePlanned = false;
 	/** fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>} */
 	export let prePlannedSeats = {};
+	/** Ancodes mit nicht zugeordneten Studierenden (für „nur ohne Raum") @type {Set<number>} */
+	export let unplacedAncodes = new Set();
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
@@ -28,11 +30,12 @@
 		showRooms === 'all' ||
 		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms);
 	$: passNta = !showOnlyExamsWithNTAs || (ntas && ntas.length > 0);
-	// „kein Raum": keine geplanten Räume oder ein „No Room"-Eintrag vorhanden
+	// „ohne Raum": nicht zugeordnete Studierende (autoritativ aus unplacedExams)
+	// oder gar keine geplanten Räume.
 	$: hasNoRoom =
+		unplacedAncodes.has(exam.ancode) ||
 		!plannedExam.plannedRooms ||
-		plannedExam.plannedRooms.length === 0 ||
-		plannedExam.plannedRooms.some((/** @type {any} */ r) => r.room.name === 'No Room');
+		plannedExam.plannedRooms.length === 0;
 	$: passNoRoom = !showOnlyWithoutRoom || hasNoRoom;
 	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
 	$: visible = passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers);

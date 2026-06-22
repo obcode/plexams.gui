@@ -85,6 +85,8 @@ export async function load() {
 		(/** @type {number} */ s, /** @type {any} */ u) => s + u.count,
 		0
 	);
+	// Ancodes mit nicht zugeordneten Studierenden — für den „nur ohne Raum"-Filter.
+	const unplacedAncodes = new Set(unplaced.map((/** @type {any} */ u) => u.ancode));
 
 	// Set für die „nach Räumen"-Übersicht: welcher Raum ist in welchem day-slot
 	// geplant. (devalue serialisiert Sets über die SvelteKit-Grenze.)
@@ -125,6 +127,7 @@ export async function load() {
 		roomCounts,
 		unplaced,
 		totalUnplaced,
+		unplacedAncodes,
 		blockedRooms: data.blockedRooms ?? [],
 		roomsBlocked: (data.planningState?.blockedAreas ?? []).includes('ROOMS')
 	};
