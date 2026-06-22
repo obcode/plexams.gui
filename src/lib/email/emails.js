@@ -86,6 +86,13 @@ export const primussEmails = [
 		key: 'sendEmailPrimussDataAll',
 		title: 'Primuss-Daten (alle)',
 		description: 'Primuss-Prüfungsdaten an alle zuständigen Stellen. Einzelversand siehe unten.'
+	},
+	{
+		key: 'sendEmailNTARoomAlone',
+		title: 'NTA Einzelraum (alle)',
+		description: 'Info zu allen NTAs mit eigenem Raum. Einzelversand siehe unten.',
+		extraArgs: { mtknr: { type: 'String!', value: 'all' } },
+		conditionKey: 'ntaRoomAloneSent'
 	}
 ];
 
@@ -95,13 +102,6 @@ export const ntaEmails = [
 		key: 'sendEmailNTAPlanned',
 		title: 'NTA verplant',
 		description: 'Info an die Prüfenden, dass die NTAs eingeplant sind.'
-	},
-	{
-		key: 'sendEmailNTARoomAlone',
-		title: 'NTA Einzelraum (alle)',
-		description: 'Info zu allen NTAs mit eigenem Raum. Einzelversand siehe unten.',
-		extraArgs: { mtknr: { type: 'String!', value: 'all' } },
-		conditionKey: 'ntaRoomAloneSent'
 	}
 ];
 
@@ -123,9 +123,9 @@ export const coverPageEmails = [
 /** @type {EmailGroup[]} */
 export const emailGroups = [
 	{ id: 'constraints', title: 'Vorbereitung', emails: constraintEmails },
+	{ id: 'primuss', title: 'Primuss', emails: primussEmails },
 	{ id: 'planning', title: 'Planung', emails: planningEmails },
 	{ id: 'rooms', title: 'Räume', emails: roomEmails },
-	{ id: 'primuss', title: 'Primuss', emails: primussEmails },
 	{ id: 'invigilation', title: 'Aufsichten', emails: invigilationEmails },
 	{ id: 'nta', title: 'NTA', emails: ntaEmails },
 	{ id: 'coverpages', title: 'Deckblätter', emails: coverPageEmails }
