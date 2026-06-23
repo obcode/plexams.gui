@@ -1,8 +1,48 @@
 <script>
 	import AttachmentManager from '$lib/email/AttachmentManager.svelte';
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import { backendBase } from '$lib/email/attachments';
 
 	export let data;
+
+	// Download „Planned-Rooms-JSON" (für Deckblätter). REST direkt am Backend
+	// (gleicher Host/Port wie /query, NICHT über GraphQL); credentials wegen der
+	// CORS-Config (AllowCredentials). Dateiname kommt aus Content-Disposition.
+	let prDownloading = false;
+	let prError = '';
+	/** @param {string} cd @param {string} fallback */
+	function filenameFromCD(cd, fallback) {
+		let m = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
+		if (m) return decodeURIComponent(m[1].trim().replace(/^"|"$/g, ''));
+		m = /filename="?([^";]+)"?/i.exec(cd);
+		return m ? m[1].trim() : fallback;
+	}
+	async function downloadPlannedRooms() {
+		if (prDownloading) return;
+		prDownloading = true;
+		prError = '';
+		try {
+			const res = await fetch(`${backendBase()}/download/planned-rooms.json`, {
+				credentials: 'include'
+			});
+			if (!res.ok) throw new Error(`Fehler (HTTP ${res.status})`);
+			const filename = filenameFromCD(
+				res.headers.get('content-disposition') ?? '',
+				'planned-rooms.json'
+			);
+			const blob = await res.blob();
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = filename;
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (e) {
+			prError = e instanceof Error ? e.message : String(e);
+		} finally {
+			prDownloading = false;
+		}
+	}
 
 	// Hochgeladene Aufsichtskalender (vom AttachmentManager gemeldet) → steuert,
 	// ob „Veröffentlichte Aufsichten“ versendet werden kann.
@@ -90,6 +130,29 @@
 
 	<section class="flex flex-col gap-3">
 		<h2 class="text-lg font-semibold text-base-content/80">Deckblätter (cover-page)</h2>
+
+		<!-- Planned-Rooms-JSON als Input für die Deckblatt-Erzeugung -->
+		<div
+			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
+		>
+			<button
+				class="btn btn-outline btn-sm gap-2"
+				disabled={prDownloading}
+				on:click={downloadPlannedRooms}
+			>
+				{#if prDownloading}<span class="loading loading-spinner loading-xs"></span>{/if}
+				⬇ Planned-Rooms-JSON (für Deckblätter)
+			</button>
+			<span class="text-xs text-base-content/50">
+				Export der geplanten Räume (<span class="font-mono"
+					>&lt;semester&gt;_planned-rooms.json</span
+				>) — Eingabe für die Deckblatt-Erzeugung.
+			</span>
+			{#if prError}
+				<span class="text-xs text-error">{prError}</span>
+			{/if}
+		</div>
+
 		<AttachmentManager
 			kind="cover-page"
 			title="Deckblätter"
