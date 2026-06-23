@@ -89,6 +89,11 @@ export const invigilationEmails = [
 		]
 	},
 	{
+		key: 'sendEmailInvigilationsSecretariat',
+		title: 'Aufsichten ans Sekretariat',
+		description: 'Die veröffentlichte Aufsichtenplanung ans Sekretariat'
+	},
+	{
 		key: 'sendEmailLbaRepeaters',
 		title: 'LBA-Wiederholungsprüfungen',
 		description: 'Info zu den Wiederholungsprüfungen der Lehrbeauftragten (an emails.lbaba)'
