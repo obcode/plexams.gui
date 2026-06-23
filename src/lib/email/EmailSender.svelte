@@ -29,6 +29,10 @@
 	/** überschreibt die Bedingung aus dem Mapping (z. B. wenn derselbe
 	 * Subscription-Key gegated und ungegated verwendet wird) */
 	export let conditionKey = '';
+	/** „Wirklich senden" ausblenden (Probelauf bleibt), z. B. wenn nichts zu
+	 * versenden ist; optionaler Hinweistext dazu */
+	export let hideRealSend = false;
+	export let hideRealSendHint = 'kein Versand nötig';
 
 	// „bereits gesendet": zugehörige Bedingung ist done (oder gerade real
 	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
@@ -227,7 +231,9 @@
 
 		<div class="mx-1 h-6 w-px bg-base-300"></div>
 
-		{#if alreadySent}
+		{#if hideRealSend}
+			<span class="text-xs text-base-content/60">{hideRealSendHint}</span>
+		{:else if alreadySent}
 			<span class="text-xs text-base-content/60">
 				bereits gesendet — zum erneuten Senden das Häkchen auf der <a class="link" href="/"
 					>Startseite</a

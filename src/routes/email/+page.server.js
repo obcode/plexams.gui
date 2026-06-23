@@ -15,8 +15,21 @@ export async function load() {
 						}
 					}
 				}
+				invigilators {
+					hasSubmittedRequirements
+				}
 			}
 		`
 	);
-	return { conditionsDone: conditionsDoneMap(data.planningState) };
+	// „alle Anforderungen da": jede Aufsicht hat ihre Anforderungen eingetragen
+	// → für „Fehlende Anforderungen" ist dann kein echter Versand nötig.
+	const invigilators = data.invigilators ?? [];
+	const allRequirementsPresent =
+		invigilators.length > 0 &&
+		invigilators.every((/** @type {any} */ i) => i.hasSubmittedRequirements);
+
+	return {
+		conditionsDone: conditionsDoneMap(data.planningState),
+		allRequirementsPresent
+	};
 }

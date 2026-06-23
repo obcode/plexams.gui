@@ -18,10 +18,10 @@
 	<div class="flex flex-col gap-2">
 		<h1 class="text-2xl font-semibold">E-Mails versenden</h1>
 		<p class="max-w-3xl text-sm text-base-content/60">
-			Jeder Versand ist standardmäßig ein <strong>Probelauf</strong> — die E-Mail geht dann nur an
-			dich (den Planer). Über „Wirklich senden …" wird nach einer Bestätigung an alle Empfänger
-			versendet. Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der Server den Versand
-			ab; das wird hier nur als Hinweis angezeigt.
+			Jeder Versand ist standardmäßig ein <strong>Probelauf</strong> — die E-Mail geht dann nur an dich
+			(den Planer). Über „Wirklich senden …" wird nach einer Bestätigung an alle Empfänger versendet.
+			Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der Server den Versand ab; das wird
+			hier nur als Hinweis angezeigt.
 		</p>
 	</div>
 
@@ -38,6 +38,9 @@
 							extraArgs={email.extraArgs ?? {}}
 							conditionKey={email.conditionKey ?? ''}
 							conditionsDone={data.conditionsDone}
+							hideRealSend={email.key === 'sendEmailInvigilationsMissing' &&
+								data.allRequirementsPresent}
+							hideRealSendHint="alle Anforderungen vorhanden — kein Versand nötig"
 						/>
 						{#if email.links}
 							<div class="flex flex-wrap gap-2 px-1">
@@ -66,11 +69,7 @@
 				<div class="flex flex-wrap items-end gap-3">
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">AnCode</span>
-						<input
-							type="number"
-							class="input input-bordered input-sm w-28"
-							bind:value={pdAncode}
-						/>
+						<input type="number" class="input input-bordered input-sm w-28" bind:value={pdAncode} />
 					</label>
 					<label class="label cursor-pointer gap-2">
 						<input type="checkbox" class="checkbox checkbox-sm" bind:checked={pdUpdated} />
