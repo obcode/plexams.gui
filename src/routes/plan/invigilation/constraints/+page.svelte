@@ -259,60 +259,6 @@
 		nur dieses Semester.
 	</p>
 
-	<!-- Permanente Nicht-Aufsichten (global, semesterübergreifend) -->
-	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
-		<div class="flex items-center gap-2">
-			<span class="font-medium">Permanente Nicht-Aufsichten</span>
-			<span class="badge badge-neutral badge-sm">{data.permanent.length}</span>
-			<span class="text-xs text-base-content/50">semesterübergreifend — z. B. pensioniert</span>
-		</div>
-		<div class="flex flex-wrap items-end gap-2">
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Person</span>
-				<select class="select select-bordered select-sm w-64" bind:value={permTeacherID}>
-					<option value={0}>Person wählen…</option>
-					{#each addablePermanent as t}
-						<option value={t.id}>{t.shortname} ({t.fullname})</option>
-					{/each}
-				</select>
-			</label>
-			<label class="flex flex-1 flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Grund (Pflicht)</span>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-full"
-					placeholder="z. B. pensioniert"
-					bind:value={permReason}
-				/>
-			</label>
-			<button
-				class="btn btn-neutral btn-sm"
-				disabled={!permTeacherID || !permReason.trim() || permBusy}
-				on:click={addPermanent}
-			>
-				{permBusy ? 'speichert…' : 'permanent ausschließen'}
-			</button>
-		</div>
-		{#if permError}
-			<div class="alert alert-error py-2 text-sm"><span>{permError}</span></div>
-		{/if}
-		{#if data.permanent.length}
-			<div class="flex flex-col gap-1">
-				{#each data.permanent as p (p.teacherID)}
-					<div class="flex items-center gap-2 rounded border border-base-300 px-3 py-1.5 text-sm">
-						<span class="font-medium">{p.name}</span>
-						<span class="min-w-0 flex-1 truncate text-base-content/70">{p.reason}</span>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => removePermanent(p)}>
-							aufheben
-						</button>
-					</div>
-				{/each}
-			</div>
-		{:else}
-			<div class="text-xs text-base-content/50">keine</div>
-		{/if}
-	</div>
-
 	<!-- Semesterspezifisch: Hinzufügen + Anzeige-Toggle -->
 	<div class="text-sm font-medium">Semesterspezifische Constraints</div>
 	<div class="flex flex-wrap items-end gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
@@ -423,6 +369,60 @@
 			</table>
 		</div>
 	{/if}
+
+	<!-- Permanente Nicht-Aufsichten (global, semesterübergreifend) -->
+	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div class="flex items-center gap-2">
+			<span class="font-medium">Permanente Nicht-Aufsichten</span>
+			<span class="badge badge-neutral badge-sm">{data.permanent.length}</span>
+			<span class="text-xs text-base-content/50">semesterübergreifend — z. B. pensioniert</span>
+		</div>
+		<div class="flex flex-wrap items-end gap-2">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Person</span>
+				<select class="select select-bordered select-sm w-64" bind:value={permTeacherID}>
+					<option value={0}>Person wählen…</option>
+					{#each addablePermanent as t}
+						<option value={t.id}>{t.shortname} ({t.fullname})</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-1 flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Grund (Pflicht)</span>
+				<input
+					type="text"
+					class="input input-bordered input-sm w-full"
+					placeholder="z. B. pensioniert"
+					bind:value={permReason}
+				/>
+			</label>
+			<button
+				class="btn btn-neutral btn-sm"
+				disabled={!permTeacherID || !permReason.trim() || permBusy}
+				on:click={addPermanent}
+			>
+				{permBusy ? 'speichert…' : 'permanent ausschließen'}
+			</button>
+		</div>
+		{#if permError}
+			<div class="alert alert-error py-2 text-sm"><span>{permError}</span></div>
+		{/if}
+		{#if data.permanent.length}
+			<div class="flex flex-col gap-1">
+				{#each data.permanent as p (p.teacherID)}
+					<div class="flex items-center gap-2 rounded border border-base-300 px-3 py-1.5 text-sm">
+						<span class="font-medium">{p.name}</span>
+						<span class="min-w-0 flex-1 truncate text-base-content/70">{p.reason}</span>
+						<button class="btn btn-ghost btn-xs text-error" on:click={() => removePermanent(p)}>
+							aufheben
+						</button>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<div class="text-xs text-base-content/50">keine</div>
+		{/if}
+	</div>
 </div>
 
 <!-- Editor -->
