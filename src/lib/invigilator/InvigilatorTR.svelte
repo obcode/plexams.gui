@@ -86,10 +86,14 @@
 	// Anwesenheitstage = Tage, an denen die Person da ist: eigene Prüfungstage
 	// (requirements.examDays) UND Aufsichtstage (slot.dayNumber). Nur Aufsichts-
 	// tage zu nehmen verliert Prüfungstage mit Fremdaufsicht (dann keine eigene
-	// Aufsicht), die im Kalender aber als Prüfung erscheinen.
+	// Aufsicht), die im Kalender aber als Prüfung erscheinen. Selbst ausge-
+	// schlossene Tage (excludedDays, im Kalender gelb) zählen nicht als anwesend.
+	const excludedDayNums = new Set(invigilator.requirements?.excludedDays ?? []);
 	const presenceDates = [
 		...new Set([
-			...(invigilator.requirements?.examDays ?? []),
+			...(invigilator.requirements?.examDays ?? []).filter(
+				(/** @type {number} */ n) => !excludedDayNums.has(n)
+			),
 			...(invigilator.todos?.invigilations ?? [])
 				.map((/** @type {{ slot?: { dayNumber: number } }} */ inv) => inv.slot?.dayNumber)
 				.filter((/** @type {number | undefined} */ n) => n != null)
