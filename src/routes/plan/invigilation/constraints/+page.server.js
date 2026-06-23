@@ -21,6 +21,7 @@ export async function load() {
 			}
 			permanentNonInvigilators {
 				teacherID
+				name
 				reason
 			}
 			semesterConfig {
@@ -51,10 +52,13 @@ export async function load() {
 		.map((/** @type {any} */ c) => ({ ...c, ...nameOf(c.teacherID) }))
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 
-	// Permanente Nicht-Aufsichten (global, semesterübergreifend).
+	// Permanente Nicht-Aufsichten (global, semesterübergreifend). Name kommt aus
+	// dem Datensatz selbst — so bleiben auch Ehemalige (nicht mehr im Pool) lesbar.
 	const permanent = (data.permanentNonInvigilators ?? [])
-		.map((/** @type {any} */ p) => ({ ...p, ...nameOf(p.teacherID) }))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
+		.slice()
+		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
+			(a.name ?? '').localeCompare(b.name ?? '')
+		);
 
 	return {
 		constraints,

@@ -5,19 +5,20 @@ import { gqlErrorMessage } from '$lib/gqlError';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const { teacherID, reason } = await request.json();
+	const { teacherID, name, reason } = await request.json();
 
 	const mutation = gql`
-		mutation ($teacherID: Int!, $reason: String!) {
-			setPermanentNonInvigilator(teacherID: $teacherID, reason: $reason) {
+		mutation ($teacherID: Int!, $name: String!, $reason: String!) {
+			setPermanentNonInvigilator(teacherID: $teacherID, name: $name, reason: $reason) {
 				teacherID
+				name
 				reason
 			}
 		}
 	`;
 
 	try {
-		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, { teacherID, reason });
+		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, { teacherID, name, reason });
 		return json(data);
 	} catch (e) {
 		return json({ error: gqlErrorMessage(e) }, { status: 400 });

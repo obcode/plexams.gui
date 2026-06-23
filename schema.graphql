@@ -317,6 +317,7 @@ semesters (collection permanent_non_invigilators). reason is a required note.
 """
 type PermanentNonInvigilator {
   teacherID: Int!
+  name: String!
   reason: String!
 }
 
@@ -473,7 +474,7 @@ type Mutation {
   prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
   setInvigilatorConstraints(input: InvigilatorConstraintsInput!): InvigilatorConstraint!
   deleteInvigilatorConstraints(teacherID: Int!): Boolean!
-  setPermanentNonInvigilator(teacherID: Int!, reason: String!): PermanentNonInvigilator!
+  setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
   removePermanentNonInvigilator(teacherID: Int!): Boolean!
 
   """

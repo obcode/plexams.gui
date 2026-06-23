@@ -64,13 +64,16 @@
 		const teacherID = Number(permTeacherID);
 		const reason = permReason.trim();
 		if (!teacherID || !reason) return;
+		// Namen des gewählten Kandidaten mitschicken (Backend ergänzt ihn, falls leer)
+		const t = data.candidates.find((/** @type {any} */ x) => x.id === teacherID);
+		const name = t ? t.fullname || t.shortname : '';
 		permBusy = true;
 		permError = '';
 		try {
 			const res = await fetch('/api/setPermanentNonInvigilator', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ teacherID, reason })
+				body: JSON.stringify({ teacherID, name, reason })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -89,7 +92,7 @@
 
 	/** @param {any} p */
 	async function removePermanent(p) {
-		if (!confirm(`Permanente Nicht-Aufsicht für ${p.shortname} aufheben?`)) return;
+		if (!confirm(`Permanente Nicht-Aufsicht für ${p.name} aufheben?`)) return;
 		permError = '';
 		try {
 			const res = await fetch('/api/removePermanentNonInvigilator', {
@@ -297,8 +300,7 @@
 			<div class="flex flex-col gap-1">
 				{#each data.permanent as p (p.teacherID)}
 					<div class="flex items-center gap-2 rounded border border-base-300 px-3 py-1.5 text-sm">
-						<span class="font-medium">{p.shortname}</span>
-						{#if p.fullname}<span class="text-xs text-base-content/50">{p.fullname}</span>{/if}
+						<span class="font-medium">{p.name}</span>
 						<span class="min-w-0 flex-1 truncate text-base-content/70">{p.reason}</span>
 						<button class="btn btn-ghost btn-xs text-error" on:click={() => removePermanent(p)}>
 							aufheben
