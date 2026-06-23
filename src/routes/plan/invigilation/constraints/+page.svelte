@@ -26,7 +26,11 @@
 		data.days.find((/** @type {any} */ d) => datePart(d.date) === dp)?.date ?? '';
 
 	$: existingIds = new Set(data.constraints.map((/** @type {any} */ c) => c.teacherID));
-	$: addableTeachers = data.invigilators.filter((/** @type {any} */ t) => !existingIds.has(t.id));
+	$: permByTeacher = new Map(data.permanent.map((/** @type {any} */ p) => [p.teacherID, p]));
+	// per-Semester-Dropdown: Kandidaten ohne Semester-Eintrag und nicht permanent
+	$: addableTeachers = data.candidates.filter(
+		(/** @type {any} */ t) => !existingIds.has(t.id) && !permByTeacher.has(t.id)
+	);
 	$: firstDayPart = data.days.length ? datePart(data.days[0].date) : '';
 
 	// alle Aufsichten anzeigen (auch ohne Constraints) — Zeilen entsprechend ableiten
@@ -35,7 +39,7 @@
 		data.constraints.map((/** @type {any} */ c) => [c.teacherID, c])
 	);
 	$: rows = showAll
-		? data.invigilators.map(
+		? data.candidates.map(
 				(/** @type {any} */ t) =>
 					constraintByTeacher.get(t.id) ?? {
 						teacherID: t.id,
@@ -48,6 +52,61 @@
 					}
 			)
 		: data.constraints;
+
+	// ---- Permanente Nicht-Aufsichten (global) ----
+	$: addablePermanent = data.candidates.filter((/** @type {any} */ t) => !permByTeacher.has(t.id));
+	let permTeacherID = 0;
+	let permReason = '';
+	let permBusy = false;
+	let permError = '';
+
+	async function addPermanent() {
+		const teacherID = Number(permTeacherID);
+		const reason = permReason.trim();
+		if (!teacherID || !reason) return;
+		permBusy = true;
+		permError = '';
+		try {
+			const res = await fetch('/api/setPermanentNonInvigilator', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ teacherID, reason })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				permError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			permTeacherID = 0;
+			permReason = '';
+			await invalidateAll();
+		} catch (e) {
+			permError = e instanceof Error ? e.message : String(e);
+		} finally {
+			permBusy = false;
+		}
+	}
+
+	/** @param {any} p */
+	async function removePermanent(p) {
+		if (!confirm(`Permanente Nicht-Aufsicht für ${p.shortname} aufheben?`)) return;
+		permError = '';
+		try {
+			const res = await fetch('/api/removePermanentNonInvigilator', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ teacherID: p.teacherID })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				permError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+		} catch (e) {
+			permError = e instanceof Error ? e.message : String(e);
+		}
+	}
 
 	// ---- Editor-Zustand ----
 	/** @type {number | null} */
@@ -83,7 +142,7 @@
 	function openAdd() {
 		const id = Number(addTeacherID);
 		if (!id) return;
-		const t = data.invigilators.find((/** @type {any} */ x) => x.id === id);
+		const t = data.candidates.find((/** @type {any} */ x) => x.id === id);
 		editing = id;
 		editName = t ? `${t.shortname}${t.fullname ? ` (${t.fullname})` : ''}` : `#${id}`;
 		editIsNot = false;
@@ -192,11 +251,68 @@
 	</div>
 	<p class="max-w-3xl text-sm text-base-content/60">
 		Vom Planer gepflegte Constraints je Aufsicht — <strong>zusätzlich</strong> zu den ZPA-Sperrtagen
-		(„Anforderungen und Planung“), getrennt davon. „macht keine Aufsichten“ schließt eine Person ganz
-		aus.
+		(„Anforderungen und Planung“), getrennt davon. <strong>Permanente</strong> Nicht-Aufsichten (z.
+		B. pensioniert) gelten semesterübergreifend; <strong>semesterspezifische</strong> (z. B. Mutterschutz)
+		nur dieses Semester.
 	</p>
 
-	<!-- Hinzufügen + Anzeige-Toggle -->
+	<!-- Permanente Nicht-Aufsichten (global, semesterübergreifend) -->
+	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div class="flex items-center gap-2">
+			<span class="font-medium">Permanente Nicht-Aufsichten</span>
+			<span class="badge badge-neutral badge-sm">{data.permanent.length}</span>
+			<span class="text-xs text-base-content/50">semesterübergreifend — z. B. pensioniert</span>
+		</div>
+		<div class="flex flex-wrap items-end gap-2">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Person</span>
+				<select class="select select-bordered select-sm w-64" bind:value={permTeacherID}>
+					<option value={0}>Person wählen…</option>
+					{#each addablePermanent as t}
+						<option value={t.id}>{t.shortname} ({t.fullname})</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex flex-1 flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Grund (Pflicht)</span>
+				<input
+					type="text"
+					class="input input-bordered input-sm w-full"
+					placeholder="z. B. pensioniert"
+					bind:value={permReason}
+				/>
+			</label>
+			<button
+				class="btn btn-neutral btn-sm"
+				disabled={!permTeacherID || !permReason.trim() || permBusy}
+				on:click={addPermanent}
+			>
+				{permBusy ? 'speichert…' : 'permanent ausschließen'}
+			</button>
+		</div>
+		{#if permError}
+			<div class="alert alert-error py-2 text-sm"><span>{permError}</span></div>
+		{/if}
+		{#if data.permanent.length}
+			<div class="flex flex-col gap-1">
+				{#each data.permanent as p (p.teacherID)}
+					<div class="flex items-center gap-2 rounded border border-base-300 px-3 py-1.5 text-sm">
+						<span class="font-medium">{p.shortname}</span>
+						{#if p.fullname}<span class="text-xs text-base-content/50">{p.fullname}</span>{/if}
+						<span class="min-w-0 flex-1 truncate text-base-content/70">{p.reason}</span>
+						<button class="btn btn-ghost btn-xs text-error" on:click={() => removePermanent(p)}>
+							aufheben
+						</button>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<div class="text-xs text-base-content/50">keine</div>
+		{/if}
+	</div>
+
+	<!-- Semesterspezifisch: Hinzufügen + Anzeige-Toggle -->
+	<div class="text-sm font-medium">Semesterspezifische Constraints</div>
 	<div class="flex flex-wrap items-end gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">Aufsicht</span>
@@ -240,14 +356,18 @@
 				</thead>
 				<tbody>
 					{#each rows as c (c.teacherID)}
-						<tr class="hover {c._empty ? 'opacity-60' : ''}">
+						{@const perm = permByTeacher.get(c.teacherID)}
+						<tr class="hover {c._empty && !perm ? 'opacity-60' : ''}">
 							<td>
 								<div class="font-medium">{c.shortname}</div>
 								{#if c.fullname}<div class="text-xs text-base-content/50">{c.fullname}</div>{/if}
 							</td>
 							<td>
-								{#if c.isNotInvigilator}
-									<span class="badge badge-error badge-sm">keine Aufsichten</span>
+								{#if perm}
+									<span class="badge badge-neutral badge-sm">keine Aufsichten (permanent)</span>
+									<div class="text-xs text-base-content/50">{perm.reason}</div>
+								{:else if c.isNotInvigilator}
+									<span class="badge badge-error badge-sm">keine Aufsichten (Semester)</span>
 								{:else if c._empty}
 									<span class="text-base-content/40">ohne Constraints</span>
 								{:else}
@@ -280,13 +400,19 @@
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(c)}>
-									{c._empty ? 'Anlegen' : 'Bearbeiten'}
-								</button>
-								{#if !c._empty}
-									<button class="btn btn-ghost btn-xs text-error" on:click={() => del(c)}
-										>Löschen</button
+								{#if perm}
+									<span class="text-xs text-base-content/40"
+										>permanent — kein Semester-Eintrag nötig</span
 									>
+								{:else}
+									<button class="btn btn-ghost btn-xs" on:click={() => openEdit(c)}>
+										{c._empty ? 'Anlegen' : 'Bearbeiten'}
+									</button>
+									{#if !c._empty}
+										<button class="btn btn-ghost btn-xs text-error" on:click={() => del(c)}
+											>Löschen</button
+										>
+									{/if}
 								{/if}
 							</td>
 						</tr>

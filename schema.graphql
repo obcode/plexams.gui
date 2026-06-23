@@ -304,11 +304,20 @@ type InvigilatorConstraint {
   timeWindows: [InvigilationTimeWindow!]!
 }
 
-input InvigilatorConstraintInput {
+input InvigilatorConstraintsInput {
   teacherID: Int!
   isNotInvigilator: Boolean!
   excludedDates: [Time!]!
   timeWindows: [InvigilationTimeWindowInput!]!
+}
+
+"""
+PermanentNonInvigilator marks a teacher who never does invigilations, across
+semesters (collection permanent_non_invigilators). reason is a required note.
+"""
+type PermanentNonInvigilator {
+  teacherID: Int!
+  reason: String!
 }
 
 input InvigilationTimeWindowInput {
@@ -462,8 +471,10 @@ type Mutation {
   fixed assignment, so it survives a re-run of the automatic planning.
   """
   prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
-  setInvigilatorConstraints(input: InvigilatorConstraintInput!): InvigilatorConstraint!
+  setInvigilatorConstraints(input: InvigilatorConstraintsInput!): InvigilatorConstraint!
   deleteInvigilatorConstraints(teacherID: Int!): Boolean!
+  setPermanentNonInvigilator(teacherID: Int!, reason: String!): PermanentNonInvigilator!
+  removePermanentNonInvigilator(teacherID: Int!): Boolean!
 
   """
   Reset the generated invigilations (invigilations_other) so only the
@@ -823,7 +834,9 @@ type Query {
   is set in the semester config. People who are out anyway are not listed.
   """
   invigilatorsExcludedByConfig: [Invigilator!]!
+  invigilatorCandidates: [Teacher!]!
   invigilatorConstraints: [InvigilatorConstraint!]!
+  permanentNonInvigilators: [PermanentNonInvigilator!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   invigilatorsForDay(day: Int!): InvigilatorsForDay
   invigilator(room: String!, day: Int!, time: Int!): Teacher

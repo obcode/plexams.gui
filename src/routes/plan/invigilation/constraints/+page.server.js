@@ -14,12 +14,14 @@ export async function load() {
 					until
 				}
 			}
-			invigilators {
-				teacher {
-					id
-					shortname
-					fullname
-				}
+			invigilatorCandidates {
+				id
+				shortname
+				fullname
+			}
+			permanentNonInvigilators {
+				teacherID
+				reason
 			}
 			semesterConfig {
 				days {
@@ -32,22 +34,32 @@ export async function load() {
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
-	// Aufsichten (nur diese sind wählbar); Name je teacherID joinen.
-	const invigilators = (data.invigilators ?? [])
-		.map((/** @type {any} */ i) => i.teacher)
+	// Kandidaten-Pool (enthält auch Ausgeschlossene — nötig für die Pflege).
+	const candidates = (data.invigilatorCandidates ?? [])
+		.slice()
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 	/** @type {Map<number, any>} */
-	const teacherById = new Map(invigilators.map((/** @type {any} */ t) => [t.id, t]));
+	const teacherById = new Map(candidates.map((/** @type {any} */ t) => [t.id, t]));
+
+	/** @param {number} id */
+	const nameOf = (id) => {
+		const t = teacherById.get(id);
+		return { shortname: t?.shortname ?? `#${id}`, fullname: t?.fullname ?? '' };
+	};
+
 	const constraints = (data.invigilatorConstraints ?? [])
-		.map((/** @type {any} */ c) => {
-			const t = teacherById.get(c.teacherID);
-			return { ...c, shortname: t?.shortname ?? `#${c.teacherID}`, fullname: t?.fullname ?? '' };
-		})
+		.map((/** @type {any} */ c) => ({ ...c, ...nameOf(c.teacherID) }))
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
+
+	// Permanente Nicht-Aufsichten (global, semesterübergreifend).
+	const permanent = (data.permanentNonInvigilators ?? [])
+		.map((/** @type {any} */ p) => ({ ...p, ...nameOf(p.teacherID) }))
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 
 	return {
 		constraints,
-		invigilators,
+		candidates,
+		permanent,
 		days: data.semesterConfig?.days ?? []
 	};
 }
