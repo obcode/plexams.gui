@@ -125,8 +125,13 @@
 		let filteredInvigilatorsTmp = [];
 		filteredInvigilators = filteredInvigilatorsTmp;
 		if (searchTerm) {
-			filteredInvigilatorsTmp = invigilators.filter((invig) =>
-				invig.teacher.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+			const term = searchTerm.trim().toLowerCase();
+			// nach Name, Kürzel oder Aufsichts-Nummer (teacher.id) suchen
+			filteredInvigilatorsTmp = invigilators.filter(
+				(/** @type {any} */ invig) =>
+					invig.teacher.fullname.toLowerCase().includes(term) ||
+					(invig.teacher.shortname ?? '').toLowerCase().includes(term) ||
+					String(invig.teacher.id).includes(term)
 			);
 		} else {
 			filteredInvigilatorsTmp = [...invigilators];
@@ -366,7 +371,9 @@
 		<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
 			<div class="mb-3 flex items-baseline justify-between">
 				<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>
-				<span class="text-[10px] text-base-content/50">{data.excludedByConfig.length} Person(en)</span>
+				<span class="text-[10px] text-base-content/50"
+					>{data.excludedByConfig.length} Person(en)</span
+				>
 			</div>
 			{#if data.excludedByConfig.length}
 				<div class="flex flex-col gap-1">
@@ -397,7 +404,7 @@
 		class="input input-bordered input-sm flex-1"
 		type="text"
 		bind:value={searchTerm}
-		placeholder="Suche Aufsichten"
+		placeholder="Suche Aufsichten (Name, Kürzel oder Nummer)"
 	/>
 	{#if dotFilter}
 		<span class="badge badge-primary gap-2 whitespace-nowrap">
