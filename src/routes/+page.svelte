@@ -70,8 +70,34 @@
 
 	<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
 		{#each state.phases as phase}
+			{@const total = phase.conditions.length}
+			{@const done = phase.conditions.filter((/** @type {any} */ c) => c.done).length}
+			{@const complete = total > 0 && done === total}
 			<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">
-				<div class="font-semibold">{phase.title}</div>
+				<div class="flex items-start justify-between gap-2">
+					<div class="font-semibold">{phase.title}</div>
+					<!-- Fortschritts-Ring (Things3-Stil): füllt im Uhrzeigersinn; fertig = grün + Haken -->
+					<div
+						class="radial-progress shrink-0 text-xs font-semibold {complete
+							? 'text-success'
+							: 'text-primary'}"
+						style="--value:{complete
+							? 100
+							: total
+								? Math.round((done / total) * 100)
+								: 0}; --size:2.4rem; --thickness:3px"
+						role="progressbar"
+						aria-valuenow={done}
+						aria-valuemax={total}
+						title="{done}/{total} erledigt"
+					>
+						{#if complete}
+							<span class="text-base">✓</span>
+						{:else}
+							<span class="tabular-nums text-base-content/70">{done}/{total}</span>
+						{/if}
+					</div>
+				</div>
 				<div class="flex flex-col gap-1">
 					{#each phase.conditions as cond}
 						<label class="flex cursor-pointer items-start gap-2 rounded p-1 hover:bg-base-200">
@@ -82,7 +108,9 @@
 								disabled={busy.has(cond.key)}
 								on:change={() => toggle(cond)}
 							/>
-							<span class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}">
+							<span
+								class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
+							>
 								{cond.title}
 							</span>
 							{#if cond.gate}
