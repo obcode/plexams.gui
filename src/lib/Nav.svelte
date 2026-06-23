@@ -99,7 +99,7 @@
 		{
 			label: 'Aufsichtenplanung',
 			items: [
-				{ href: '/zpa/invigilator_requirements', label: 'Anforderungen und Planung' },
+				{ href: '/plan/invigilation/planning', label: 'Anforderungen und Planung' },
 				{ href: '/plan/invigilation/constraints', label: 'Aufsichts-Constraints' },
 				{ href: '/plan/invigilation', label: 'Zeitplan' },
 				{ href: '/plan/invigilation/generate', label: 'Generierung' },

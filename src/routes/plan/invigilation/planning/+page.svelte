@@ -362,12 +362,10 @@
 			</div>
 		</div>
 
-		<!-- Manuell per semester.yaml ausgeschlossene Aufsichten -->
+		<!-- Manuell ausgeschlossene Aufsichten (Aufsichts-Constraints) -->
 		<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
 			<div class="mb-3 flex items-baseline justify-between">
-				<span class="text-xs font-medium text-base-content/60">
-					Manuell ausgeschlossen — <span class="font-mono">isNotInvigilator</span> in semester.yaml
-				</span>
+				<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>
 				<span class="text-[10px] text-base-content/50">{data.excludedByConfig.length} Person(en)</span>
 			</div>
 			{#if data.excludedByConfig.length}

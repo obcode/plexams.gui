@@ -80,7 +80,7 @@ export const invigilationEmails = [
 			'Je Aufsicht eine Mail mit ihrem Aufsichtskalender (PNG); fehlende erscheinen als WARN-Zeile. Die Kalender werden auf „Aufsichten mit Anforderungen“ erzeugt & hochgeladen.',
 		links: [
 			{ href: '/email/attachments', label: '→ Anhänge: Kalender' },
-			{ href: '/zpa/invigilator_requirements', label: '→ Aufsichten mit Anforderungen' }
+			{ href: '/plan/invigilation/planning', label: '→ Aufsichten mit Anforderungen' }
 		]
 	}
 ];

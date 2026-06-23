@@ -39,7 +39,9 @@
 	</div>
 
 	<section class="flex flex-col gap-3">
-		<h2 class="text-lg font-semibold text-base-content/80">Aufsichtskalender (invigilation-image)</h2>
+		<h2 class="text-lg font-semibold text-base-content/80">
+			Aufsichtskalender (invigilation-image)
+		</h2>
 		<AttachmentManager
 			kind="invigilation-image"
 			title="Aufsichtskalender"
@@ -50,7 +52,7 @@
 		>
 			<a
 				slot="actions"
-				href="/zpa/invigilator_requirements"
+				href="/plan/invigilation/planning"
 				class="btn btn-primary btn-sm gap-2"
 				title="Wechselt auf „Aufsichten mit Anforderungen“ — dort nochmal „Kalender auf Server hochladen“ klicken"
 			>
@@ -58,8 +60,8 @@
 			</a>
 		</AttachmentManager>
 		<p class="text-xs text-base-content/50">
-			Hinweis: Dieser Button wechselt auf die Seite „Aufsichten mit Anforderungen“. Dort musst du den
-			Upload mit „Kalender auf Server hochladen“ noch einmal auslösen.
+			Hinweis: Dieser Button wechselt auf die Seite „Aufsichten mit Anforderungen“. Dort musst du
+			den Upload mit „Kalender auf Server hochladen“ noch einmal auslösen.
 		</p>
 
 		<!-- Versand der veröffentlichten Aufsichten -->
@@ -105,8 +107,8 @@
 			<h3 class="text-sm font-semibold text-base-content/70">Versenden</h3>
 			<p class="text-xs text-base-content/50">
 				Probelauf mailt nur an dich. Findet der Server für einen Prüfer kein PDF (weder Upload noch
-				<span class="font-mono">coverPages.dir</span>), kommt dafür eine ERROR-Zeile — der Rest läuft
-				weiter.
+				<span class="font-mono">coverPages.dir</span>), kommt dafür eine ERROR-Zeile — der Rest
+				läuft weiter.
 			</p>
 		</div>
 
