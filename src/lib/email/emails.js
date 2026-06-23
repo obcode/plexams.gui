@@ -44,11 +44,6 @@ export const planningEmails = [
 		key: 'sendEmailPublishedExams',
 		title: 'Veröffentlichte Termine',
 		description: 'Die endgültig veröffentlichten Prüfungstermine'
-	},
-	{
-		key: 'sendEmailLbaRepeaters',
-		title: 'LBA-Wiederholungsprüfungen',
-		description: 'Info zu den Wiederholungsprüfungen der Lehrbeauftragten (an emails.lbaba)'
 	}
 ];
 
@@ -92,6 +87,11 @@ export const invigilationEmails = [
 			{ href: '/email/attachments', label: '→ Anhänge: Kalender' },
 			{ href: '/plan/invigilation/planning', label: '→ Aufsichten mit Anforderungen' }
 		]
+	},
+	{
+		key: 'sendEmailLbaRepeaters',
+		title: 'LBA-Wiederholungsprüfungen',
+		description: 'Info zu den Wiederholungsprüfungen der Lehrbeauftragten (an emails.lbaba)'
 	}
 ];
 
