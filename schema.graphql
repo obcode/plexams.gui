@@ -291,6 +291,32 @@ type InvigilationTimeWindow {
   until: Time
 }
 
+"""
+InvigilatorConstraint holds the planner-defined constraints for one invigilator
+(by teacher id), kept separately from the ZPA requirements: whether the person
+does no invigilations at all, additional excluded dates, and additional time
+windows. These are added on top of the ZPA excluded dates.
+"""
+type InvigilatorConstraint {
+  teacherID: Int!
+  isNotInvigilator: Boolean!
+  excludedDates: [Time!]!
+  timeWindows: [InvigilationTimeWindow!]!
+}
+
+input InvigilatorConstraintInput {
+  teacherID: Int!
+  isNotInvigilator: Boolean!
+  excludedDates: [Time!]!
+  timeWindows: [InvigilationTimeWindowInput!]!
+}
+
+input InvigilationTimeWindowInput {
+  date: Time!
+  from: Time
+  until: Time
+}
+
 type InvigilationTodos {
   sumExamRooms: Int!
   sumReserve: Int!
@@ -436,6 +462,8 @@ type Mutation {
   fixed assignment, so it survives a re-run of the automatic planning.
   """
   prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
+  setInvigilatorConstraints(input: InvigilatorConstraintInput!): InvigilatorConstraint!
+  deleteInvigilatorConstraints(teacherID: Int!): Boolean!
 
   """
   Reset the generated invigilations (invigilations_other) so only the
@@ -795,6 +823,7 @@ type Query {
   is set in the semester config. People who are out anyway are not listed.
   """
   invigilatorsExcludedByConfig: [Invigilator!]!
+  invigilatorConstraints: [InvigilatorConstraint!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   invigilatorsForDay(day: Int!): InvigilatorsForDay
   invigilator(room: String!, day: Int!, time: Int!): Teacher
