@@ -83,16 +83,20 @@
 	}
 	const factorDetails = factorParts.join(' · ');
 
-	// the distinct days the person actually invigilates, as dates (not day numbers)
-	const invigilationDates = [
-		...new Set(
-			(invigilator.todos?.invigilations ?? [])
+	// Anwesenheitstage = Tage, an denen die Person da ist: eigene Prüfungstage
+	// (requirements.examDays) UND Aufsichtstage (slot.dayNumber). Nur Aufsichts-
+	// tage zu nehmen verliert Prüfungstage mit Fremdaufsicht (dann keine eigene
+	// Aufsicht), die im Kalender aber als Prüfung erscheinen.
+	const presenceDates = [
+		...new Set([
+			...(invigilator.requirements?.examDays ?? []),
+			...(invigilator.todos?.invigilations ?? [])
 				.map((/** @type {{ slot?: { dayNumber: number } }} */ inv) => inv.slot?.dayNumber)
 				.filter((/** @type {number | undefined} */ n) => n != null)
-		)
+		])
 	]
-		.sort((a, b) => a - b)
-		.map((n) => {
+		.sort((/** @type {number} */ a, /** @type {number} */ b) => a - b)
+		.map((/** @type {number} */ n) => {
 			const day = semesterConfig.days.find((/** @type {{ number: number }} */ d) => d.number === n);
 			return day ? mkDateShort(day.date) : String(n);
 		});
@@ -179,10 +183,10 @@
 					{/if}
 				{/if}
 
-				{#if invigilationDates.length}
+				{#if presenceDates.length}
 					<div class="flex justify-between gap-2">
 						<span class="shrink-0 text-gray-500">Anwesenheitstage</span>
-						<span class="text-right">{invigilationDates.join(', ')}</span>
+						<span class="text-right">{presenceDates.join(', ')}</span>
 					</div>
 				{/if}
 
