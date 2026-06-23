@@ -14,6 +14,7 @@ export const EMAIL_CONDITION = {
 	sendEmailPublishedInvigilations: 'invigilationPlanPublished',
 	sendEmailRoomRequests: 'roomRequestsSent',
 	sendEmailRoomsSecretariat: 'secretariatRoomsSent',
+	sendEmailKdpExahm: 'kdpRoomsSent',
 	sendEmailInvigilations: 'invigilationsRequested'
 };
 

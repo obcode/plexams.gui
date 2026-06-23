@@ -58,6 +58,11 @@ export const roomEmails = [
 		key: 'sendEmailPublishedRooms',
 		title: 'Veröffentlichte Räume',
 		description: 'Die endgültig veröffentlichte Raumplanung'
+	},
+	{
+		key: 'sendEmailKdpExahm',
+		title: 'KDP / EXaHM',
+		description: 'CSV der Computer-Prüfungen (EXaHM/SEB) ans KDP — Anhang serverseitig erzeugt'
 	}
 ];
 
