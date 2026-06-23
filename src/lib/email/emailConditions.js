@@ -6,6 +6,7 @@ export const EMAIL_CONDITION = {
 	sendEmailConstraints: 'constraintsRequested',
 	sendEmailPrepared: 'examsPrepared',
 	sendEmailDraft: 'draftSent',
+	sendEmailLbaRepeaters: 'lbaRepeatersSent',
 	sendEmailCoverPages: 'coverPagesSent',
 	sendEmailPrimussDataAll: 'primussDataAllSent',
 	sendEmailNTAPlanned: 'ntaPlannedSent',
