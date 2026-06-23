@@ -14,10 +14,12 @@ export async function load() {
 					until
 				}
 			}
-			teachers(fromZPA: false) {
-				id
-				shortname
-				fullname
+			invigilators {
+				teacher {
+					id
+					shortname
+					fullname
+				}
 			}
 			semesterConfig {
 				days {
@@ -30,9 +32,12 @@ export async function load() {
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
-	// Lehrendenname je teacherID joinen.
+	// Aufsichten (nur diese sind wählbar); Name je teacherID joinen.
+	const invigilators = (data.invigilators ?? [])
+		.map((/** @type {any} */ i) => i.teacher)
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 	/** @type {Map<number, any>} */
-	const teacherById = new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t]));
+	const teacherById = new Map(invigilators.map((/** @type {any} */ t) => [t.id, t]));
 	const constraints = (data.invigilatorConstraints ?? [])
 		.map((/** @type {any} */ c) => {
 			const t = teacherById.get(c.teacherID);
@@ -42,9 +47,7 @@ export async function load() {
 
 	return {
 		constraints,
-		teachers: (data.teachers ?? []).sort((/** @type {any} */ a, /** @type {any} */ b) =>
-			a.shortname.localeCompare(b.shortname)
-		),
+		invigilators,
 		days: data.semesterConfig?.days ?? []
 	};
 }

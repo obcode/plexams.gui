@@ -26,8 +26,28 @@
 		data.days.find((/** @type {any} */ d) => datePart(d.date) === dp)?.date ?? '';
 
 	$: existingIds = new Set(data.constraints.map((/** @type {any} */ c) => c.teacherID));
-	$: addableTeachers = data.teachers.filter((/** @type {any} */ t) => !existingIds.has(t.id));
+	$: addableTeachers = data.invigilators.filter((/** @type {any} */ t) => !existingIds.has(t.id));
 	$: firstDayPart = data.days.length ? datePart(data.days[0].date) : '';
+
+	// alle Aufsichten anzeigen (auch ohne Constraints) — Zeilen entsprechend ableiten
+	let showAll = false;
+	$: constraintByTeacher = new Map(
+		data.constraints.map((/** @type {any} */ c) => [c.teacherID, c])
+	);
+	$: rows = showAll
+		? data.invigilators.map(
+				(/** @type {any} */ t) =>
+					constraintByTeacher.get(t.id) ?? {
+						teacherID: t.id,
+						shortname: t.shortname,
+						fullname: t.fullname,
+						isNotInvigilator: false,
+						excludedDates: [],
+						timeWindows: [],
+						_empty: true
+					}
+			)
+		: data.constraints;
 
 	// ---- Editor-Zustand ----
 	/** @type {number | null} */
@@ -56,14 +76,14 @@
 			from: fmtTime(w.from),
 			until: fmtTime(w.until)
 		}));
-		isNew = false;
+		isNew = !!c._empty;
 		editError = '';
 	}
 
 	function openAdd() {
 		const id = Number(addTeacherID);
 		if (!id) return;
-		const t = data.teachers.find((/** @type {any} */ x) => x.id === id);
+		const t = data.invigilators.find((/** @type {any} */ x) => x.id === id);
 		editing = id;
 		editName = t ? `${t.shortname}${t.fullname ? ` (${t.fullname})` : ''}` : `#${id}`;
 		editIsNot = false;
@@ -176,12 +196,12 @@
 		aus.
 	</p>
 
-	<!-- Hinzufügen -->
-	<div class="flex flex-wrap items-end gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
+	<!-- Hinzufügen + Anzeige-Toggle -->
+	<div class="flex flex-wrap items-end gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Person</span>
+			<span class="text-xs font-medium text-base-content/60">Aufsicht</span>
 			<select class="select select-bordered select-sm w-72" bind:value={addTeacherID}>
-				<option value={0}>Lehrende/n wählen…</option>
+				<option value={0}>Aufsicht wählen…</option>
 				{#each addableTeachers as t}
 					<option value={t.id}>{t.shortname} ({t.fullname})</option>
 				{/each}
@@ -190,6 +210,11 @@
 		<button class="btn btn-primary btn-sm" disabled={!addTeacherID} on:click={openAdd}>
 			Constraints anlegen
 		</button>
+		<div class="flex-1"></div>
+		<label class="label cursor-pointer gap-2">
+			<input type="checkbox" class="toggle toggle-sm" bind:checked={showAll} />
+			<span class="label-text">alle Aufsichten anzeigen</span>
+		</label>
 	</div>
 
 	{#if listError}
@@ -197,14 +222,16 @@
 	{/if}
 
 	<!-- Liste -->
-	{#if data.constraints.length === 0}
-		<div class="text-sm text-base-content/50">Noch keine Aufsichts-Constraints angelegt.</div>
+	{#if rows.length === 0}
+		<div class="text-sm text-base-content/50">
+			{showAll ? 'Keine Aufsichten vorhanden.' : 'Noch keine Aufsichts-Constraints angelegt.'}
+		</div>
 	{:else}
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
 				<thead>
 					<tr>
-						<th>Person</th>
+						<th>Aufsicht</th>
 						<th>Status</th>
 						<th>Sperrtage</th>
 						<th>Sperrfenster</th>
@@ -212,8 +239,8 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.constraints as c}
-						<tr class="hover">
+					{#each rows as c (c.teacherID)}
+						<tr class="hover {c._empty ? 'opacity-60' : ''}">
 							<td>
 								<div class="font-medium">{c.shortname}</div>
 								{#if c.fullname}<div class="text-xs text-base-content/50">{c.fullname}</div>{/if}
@@ -221,6 +248,8 @@
 							<td>
 								{#if c.isNotInvigilator}
 									<span class="badge badge-error badge-sm">keine Aufsichten</span>
+								{:else if c._empty}
+									<span class="text-base-content/40">ohne Constraints</span>
 								{:else}
 									<span class="text-base-content/50">—</span>
 								{/if}
@@ -251,11 +280,14 @@
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(c)}>Bearbeiten</button
-								>
-								<button class="btn btn-ghost btn-xs text-error" on:click={() => del(c)}
-									>Löschen</button
-								>
+								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(c)}>
+									{c._empty ? 'Anlegen' : 'Bearbeiten'}
+								</button>
+								{#if !c._empty}
+									<button class="btn btn-ghost btn-xs text-error" on:click={() => del(c)}
+										>Löschen</button
+									>
+								{/if}
 							</td>
 						</tr>
 					{/each}
