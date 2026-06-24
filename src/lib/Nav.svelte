@@ -117,8 +117,7 @@
 			label: 'Externe Daten',
 			items: [
 				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
-				{ href: '/zpa/teacher', label: 'Dozierende (ZPA)' },
-				{ href: '/zpa/invigilators', label: 'Aufsichten (ZPA)' },
+				{ href: '/zpa/teacher', label: 'Dozierende & Aufsichten (ZPA)' },
 				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
 				{ href: '/primuss/mucdai', label: 'MUC.DAI-Prüfungen (CSV)' },
 				{ href: '/primuss/exams', label: 'Prüfungslisten (Primuss)' }
