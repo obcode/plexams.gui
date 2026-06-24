@@ -4,6 +4,13 @@
 
 	export let data;
 
+	// Gestreamte Load-Daten: Seite rendert sofort, diese füllen sich nach.
+	/** @type {Record<string, boolean>} */
+	let conditionsDone = {};
+	let allRequirementsPresent = false;
+	$: data.conditionsDone.then((/** @type {Record<string, boolean>} */ v) => (conditionsDone = v));
+	$: data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
+
 	// Einzelversand mit Argumenten (wiederholbar, kein Gate)
 	let pdAncode = '';
 	let pdUpdated = false;
@@ -37,9 +44,8 @@
 							description={email.description}
 							extraArgs={email.extraArgs ?? {}}
 							conditionKey={email.conditionKey ?? ''}
-							conditionsDone={data.conditionsDone}
-							hideRealSend={email.key === 'sendEmailInvigilationsMissing' &&
-								data.allRequirementsPresent}
+							{conditionsDone}
+							hideRealSend={email.key === 'sendEmailInvigilationsMissing' && allRequirementsPresent}
 							hideRealSendHint="alle Anforderungen vorhanden — kein Versand nötig"
 						/>
 						{#if email.links}
@@ -85,7 +91,7 @@
 						updated: { type: 'Boolean!', value: pdUpdated }
 					}}
 					disabled={!pdAncode}
-					conditionsDone={data.conditionsDone}
+					{conditionsDone}
 				/>
 			</div>
 
@@ -115,7 +121,7 @@
 						email: { type: 'String!', value: puEmail }
 					}}
 					disabled={!(puProgram && puAncode && puEmail)}
-					conditionsDone={data.conditionsDone}
+					{conditionsDone}
 				/>
 			</div>
 
@@ -136,7 +142,7 @@
 					description="Info an die betroffenen Prüfenden über einen nachträglich eingegangenen NTA-Bescheid (mtknr)."
 					extraArgs={{ mtknr: { type: 'String!', value: newNtaMtknr } }}
 					disabled={!newNtaMtknr}
-					conditionsDone={data.conditionsDone}
+					{conditionsDone}
 				/>
 			</div>
 
@@ -157,7 +163,7 @@
 					description="Info zum eigenen Raum für eine/n NTA-Studierende/n."
 					extraArgs={{ mtknr: { type: 'String!', value: roomAloneMtknr } }}
 					disabled={!roomAloneMtknr}
-					conditionsDone={data.conditionsDone}
+					{conditionsDone}
 				/>
 			</div>
 		</div>
