@@ -1,6 +1,22 @@
 <script>
 	export let data;
 
+	// Gestreamte Load-Daten: Seite rendert sofort, Tabelle füllt sich nach.
+	/** @type {any[]} */
+	let teachers = [];
+	/** @type {Record<number, boolean>} */
+	let invigById = {};
+	let invigilatorCount = 0;
+	let missingReqCount = 0;
+	let loading = true;
+	$: data.people.then((/** @type {any} */ p) => {
+		teachers = p.teachers;
+		invigById = p.invigById;
+		invigilatorCount = p.invigilatorCount;
+		missingReqCount = p.missingReqCount;
+		loading = false;
+	});
+
 	let searchTerm = '';
 	let onlyInvigilators = false;
 	let onlyMissingReq = false;
@@ -19,12 +35,12 @@
 	// Aufsichts-Status je Person: present in invigById = ist Aufsicht, Wert = Anforderungen abgegeben?
 	/** @param {any} t */
 	const invigStatus = (t) =>
-		Object.prototype.hasOwnProperty.call(data.invigById, t.id)
-			? { isInvig: true, submitted: data.invigById[t.id] }
+		Object.prototype.hasOwnProperty.call(invigById, t.id)
+			? { isInvig: true, submitted: invigById[t.id] }
 			: { isInvig: false, submitted: false };
 
 	$: term = searchTerm.trim().toLowerCase();
-	$: rows = data.teachers.filter((/** @type {any} */ t) => {
+	$: rows = teachers.filter((/** @type {any} */ t) => {
 		if (term) {
 			const hit =
 				t.fullname.toLowerCase().includes(term) ||
@@ -42,16 +58,20 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Dozierende &amp; Aufsichten</h1>
-		<span class="badge badge-primary badge-lg tabular-nums" title="Dozierende gesamt">
-			{data.teachers.length}
-		</span>
-		<span class="badge badge-neutral badge-lg tabular-nums" title="davon Aufsichten">
-			{data.invigilatorCount} Aufsichten
-		</span>
-		{#if data.missingReqCount > 0}
-			<span class="badge badge-warning badge-lg tabular-nums">
-				{data.missingReqCount} ohne Anforderungen
+		{#if loading}
+			<span class="loading loading-spinner loading-sm text-base-content/50"></span>
+		{:else}
+			<span class="badge badge-primary badge-lg tabular-nums" title="Dozierende gesamt">
+				{teachers.length}
 			</span>
+			<span class="badge badge-neutral badge-lg tabular-nums" title="davon Aufsichten">
+				{invigilatorCount} Aufsichten
+			</span>
+			{#if missingReqCount > 0}
+				<span class="badge badge-warning badge-lg tabular-nums">
+					{missingReqCount} ohne Anforderungen
+				</span>
+			{/if}
 		{/if}
 	</div>
 
@@ -72,10 +92,16 @@
 			<span class="label-text">nur ohne Anforderungen</span>
 		</label>
 		<div class="flex-1"></div>
-		<span class="tabular-nums text-sm text-base-content/50">{rows.length} angezeigt</span>
+		{#if !loading}
+			<span class="tabular-nums text-sm text-base-content/50">{rows.length} angezeigt</span>
+		{/if}
 	</div>
 
-	{#if rows.length === 0}
+	{#if loading}
+		<div class="flex items-center gap-2 text-sm text-base-content/50">
+			<span class="loading loading-spinner loading-sm"></span> lädt …
+		</div>
+	{:else if rows.length === 0}
 		<div class="text-sm text-base-content/50">Keine Treffer.</div>
 	{:else}
 		<div class="overflow-x-auto rounded-lg border border-base-300">
