@@ -116,6 +116,7 @@
 		{
 			label: 'Externe Daten',
 			items: [
+				{ href: '/zpa/publish', label: 'ZPA-Import & Veröffentlichung' },
 				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
 				{ href: '/zpa/teacher', label: 'Dozierende & Aufsichten (ZPA)' },
 				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
