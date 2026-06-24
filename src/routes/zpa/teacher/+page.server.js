@@ -8,6 +8,9 @@ export function load() {
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
+				semester {
+					id
+				}
 				teachers(fromZPA: false) {
 					fullname
 					shortname
@@ -43,10 +46,17 @@ export function load() {
 				teachers,
 				invigById,
 				invigilatorCount: Object.keys(invigById).length,
-				missingReqCount: Object.values(invigById).filter((/** @type {boolean} */ v) => !v).length
+				missingReqCount: Object.values(invigById).filter((/** @type {boolean} */ v) => !v).length,
+				currentSemester: data.semester?.id ?? null
 			};
 		})
-		.catch(() => ({ teachers: [], invigById: {}, invigilatorCount: 0, missingReqCount: 0 }));
+		.catch(() => ({
+			teachers: [],
+			invigById: {},
+			invigilatorCount: 0,
+			missingReqCount: 0,
+			currentSemester: null
+		}));
 
 	return { people };
 }

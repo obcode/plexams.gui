@@ -8,12 +8,15 @@
 	let invigById = {};
 	let invigilatorCount = 0;
 	let missingReqCount = 0;
+	/** @type {string | null} */
+	let currentSemester = null;
 	let loading = true;
 	$: data.people.then((/** @type {any} */ p) => {
 		teachers = p.teachers;
 		invigById = p.invigById;
 		invigilatorCount = p.invigilatorCount;
 		missingReqCount = p.missingReqCount;
+		currentSemester = p.currentSemester;
 		loading = false;
 	});
 
@@ -55,25 +58,76 @@
 		return true;
 	});
 
-	// In Abschnitte nach letztem Semester aufteilen (absteigend, „—" zuletzt).
-	// Ohne Gruppierung: ein Abschnitt ohne Kopfzeile.
-	/** @param {any[]} items @param {boolean} grouped
-	 * @returns {{ semester: string | null, items: any[] }[]} */
-	function buildSections(items, grouped) {
-		if (!grouped) return [{ semester: null, items }];
-		/** @type {Map<string, any[]>} */
+	// Chronologischer Schlüssel für „YYYY SS"/„YYYY WS" (SS vor WS); null = unbekannt.
+	/** @param {string | null | undefined} s */
+	function semKey(s) {
+		const m = /^(\d{4})\s*(SS|WS)$/i.exec((s ?? '').trim());
+		if (!m) return null;
+		return Number(m[1]) * 2 + (m[2].toUpperCase() === 'SS' ? 0 : 1);
+	}
+
+	// In Abschnitte nach letztem Semester aufteilen. Absteigend (neueste zuerst),
+	// unbekannte (z. B. „unknown") ganz unten. Einträge, die NEUER als das aktuelle
+	// Semester sind, werden ins aktuelle gefaltet und pro Person markiert (_newer).
+	/** @param {any[]} items @param {boolean} grouped @param {string | null} current
+	 * @returns {{ key: string, label: string | null, sortKey: number, items: any[] }[]} */
+	function buildSections(items, grouped, current) {
+		if (!grouped) return [{ key: '__all__', label: null, sortKey: 0, items }];
+		const cur = semKey(current);
+		/** @type {Map<string, { key: string, label: string, sortKey: number, items: any[] }>} */
 		const m = new Map();
 		for (const t of items) {
-			const key = t.lastSemester || '—';
-			if (!m.has(key)) m.set(key, []);
-			m.get(key)?.push(t);
+			const k = semKey(t.lastSemester);
+			let key, label, sortKey;
+			let entry = t;
+			if (k != null && cur != null && k > cur && current) {
+				// neuer als aktuell → ins aktuelle Semester falten, markieren
+				key = current;
+				label = current;
+				sortKey = cur;
+				entry = { ...t, _newer: t.lastSemester };
+			} else if (k == null) {
+				const raw = (t.lastSemester ?? '').trim();
+				key = raw || '__none__';
+				label = raw || 'unbekannt';
+				sortKey = Number.NEGATIVE_INFINITY;
+			} else {
+				key = t.lastSemester;
+				label = t.lastSemester;
+				sortKey = k;
+			}
+			let g = m.get(key);
+			if (!g) {
+				g = { key, label, sortKey, items: [] };
+				m.set(key, g);
+			}
+			g.items.push(entry);
 		}
-		const keys = [...m.keys()].sort((a, b) =>
-			a === '—' ? 1 : b === '—' ? -1 : b.localeCompare(a)
+		return [...m.values()].sort((a, b) =>
+			a.sortKey !== b.sortKey ? b.sortKey - a.sortKey : a.label.localeCompare(b.label)
 		);
-		return keys.map((k) => ({ semester: k, items: m.get(k) ?? [] }));
 	}
-	$: sections = buildSections(rows, groupBySemester);
+	$: sections = buildSections(rows, groupBySemester, currentSemester);
+
+	// Einklappen: nur die neueste Sektion offen; bei aktiver Suche alles offen.
+	/** @type {Set<string>} */
+	let openSections = new Set();
+	let openInit = false;
+	$: if (!loading && groupBySemester && !openInit && sections.length) {
+		openSections = new Set([sections[0].key]);
+		openInit = true;
+	}
+	/** @param {{ key: string, label: string | null }} sec */
+	const isOpen = (sec) => sec.label === null || !!term || openSections.has(sec.key);
+	/** @param {string} key */
+	function toggleSection(key) {
+		const s = new Set(openSections);
+		if (s.has(key)) s.delete(key);
+		else s.add(key);
+		openSections = s;
+	}
+	const expandAll = () => (openSections = new Set(sections.map((s) => s.key)));
+	const collapseAll = () => (openSections = new Set());
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -92,6 +146,9 @@
 				<span class="badge badge-warning badge-lg tabular-nums">
 					{missingReqCount} ohne Anforderungen
 				</span>
+			{/if}
+			{#if currentSemester}
+				<span class="text-sm text-base-content/50">aktuelles Semester: {currentSemester}</span>
 			{/if}
 		{/if}
 	</div>
@@ -116,6 +173,12 @@
 			<input type="checkbox" class="toggle toggle-sm" bind:checked={groupBySemester} />
 			<span class="label-text">nach letztem Semester</span>
 		</label>
+		{#if groupBySemester && !term}
+			<div class="flex gap-1">
+				<button class="btn btn-ghost btn-xs" on:click={expandAll}>alle ausklappen</button>
+				<button class="btn btn-ghost btn-xs" on:click={collapseAll}>alle einklappen</button>
+			</div>
+		{/if}
 		<div class="flex-1"></div>
 		{#if !loading}
 			<span class="tabular-nums text-sm text-base-content/50">{rows.length} angezeigt</span>
@@ -143,55 +206,72 @@
 				</thead>
 				<tbody>
 					{#each sections as sec}
-						{#if sec.semester !== null}
+						{#if sec.label !== null}
 							<tr class="bg-base-200/60">
-								<td colspan="6" class="text-sm font-semibold">
-									{sec.semester === '—'
-										? 'ohne „letztes Semester“'
-										: `letztes Semester: ${sec.semester}`}
-									<span class="badge badge-ghost badge-sm ml-2 tabular-nums"
-										>{sec.items.length}</span
+								<td colspan="6" class="p-0">
+									<button
+										class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold hover:bg-base-200"
+										on:click={() => toggleSection(sec.key)}
 									>
+										<span class="text-base-content/50">{isOpen(sec) ? '▾' : '▸'}</span>
+										letztes Semester: {sec.label}
+										<span class="badge badge-ghost badge-sm tabular-nums">{sec.items.length}</span>
+										{#if sec.items.some((/** @type {any} */ i) => i._newer)}
+											<span class="badge badge-info badge-xs" title="enthält neuere Semester">
+												inkl. neuere
+											</span>
+										{/if}
+									</button>
 								</td>
 							</tr>
 						{/if}
-						{#each sec.items as t (t.id)}
-							{@const s = invigStatus(t)}
-							<tr class="hover">
-								<td>
-									<div class="font-medium">{t.shortname}</div>
-									<div class="text-xs text-base-content/50">{t.fullname}</div>
-								</td>
-								<td class="text-sm text-base-content/70">{t.fk || '—'}</td>
-								<td>
-									<div class="flex flex-wrap gap-1">
-										{#each roles(t) as role}
-											<span class="badge badge-ghost badge-sm">{role}</span>
+						{#if isOpen(sec)}
+							{#each sec.items as t (t.id)}
+								{@const s = invigStatus(t)}
+								<tr class="hover">
+									<td>
+										<div class="flex items-center gap-2">
+											<span class="font-medium">{t.shortname}</span>
+											{#if t._newer}
+												<span class="badge badge-info badge-xs" title="letztes Semester laut ZPA">
+													{t._newer}
+												</span>
+											{/if}
+										</div>
+										<div class="text-xs text-base-content/50">{t.fullname}</div>
+									</td>
+									<td class="text-sm text-base-content/70">{t.fk || '—'}</td>
+									<td>
+										<div class="flex flex-wrap gap-1">
+											{#each roles(t) as role}
+												<span class="badge badge-ghost badge-sm">{role}</span>
+											{:else}
+												<span class="text-base-content/40">—</span>
+											{/each}
+										</div>
+									</td>
+									<td>
+										{#if !s.isInvig}
+											<span class="text-base-content/40">—</span>
+										{:else if s.submitted}
+											<span class="badge badge-success badge-sm">Aufsicht ✓</span>
+										{:else}
+											<span class="badge badge-warning badge-sm"
+												>Aufsicht · Anforderungen fehlen</span
+											>
+										{/if}
+									</td>
+									<td>
+										{#if t.email}
+											<a class="link link-hover text-sm" href="mailto:{t.email}">{t.email}</a>
 										{:else}
 											<span class="text-base-content/40">—</span>
-										{/each}
-									</div>
-								</td>
-								<td>
-									{#if !s.isInvig}
-										<span class="text-base-content/40">—</span>
-									{:else if s.submitted}
-										<span class="badge badge-success badge-sm">Aufsicht ✓</span>
-									{:else}
-										<span class="badge badge-warning badge-sm">Aufsicht · Anforderungen fehlen</span
-										>
-									{/if}
-								</td>
-								<td>
-									{#if t.email}
-										<a class="link link-hover text-sm" href="mailto:{t.email}">{t.email}</a>
-									{:else}
-										<span class="text-base-content/40">—</span>
-									{/if}
-								</td>
-								<td class="text-right font-mono text-xs text-base-content/50">{t.id}</td>
-							</tr>
-						{/each}
+										{/if}
+									</td>
+									<td class="text-right font-mono text-xs text-base-content/50">{t.id}</td>
+								</tr>
+							{/each}
+						{/if}
 					{/each}
 				</tbody>
 			</table>
