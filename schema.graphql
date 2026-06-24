@@ -167,6 +167,14 @@ type Emails {
 
   """Recipient for building-management room requests (Gebäudemanagement)."""
   roomManagement: String!
+
+  """Recipient for the EXaHM/SEB room overview (KDP)."""
+  kdp: String!
+
+  """
+  Recipient for the overview of LBAs' repeat exams (Lehrbeauftragten-Beauftragte:r).
+  """
+  lbaba: String!
 }
 
 type EnhancedPrimussExam {
@@ -292,66 +300,8 @@ type InvigilationTimeWindow {
 }
 
 """
-InvigilatorConstraint holds the planner-defined constraints for one invigilator
-(by teacher id), kept separately from the ZPA requirements: whether the person
-does no invigilations at all, additional excluded dates, and additional time
-windows. These are added on top of the ZPA excluded dates.
+date is the calendar day; from/until are clock times on that day (at least one of from/until must be set).
 """
-type InvigilatorConstraint {
-  teacherID: Int!
-  isNotInvigilator: Boolean!
-  excludedDates: [Time!]!
-  timeWindows: [InvigilationTimeWindow!]!
-}
-
-input InvigilatorConstraintsInput {
-  teacherID: Int!
-  isNotInvigilator: Boolean!
-  excludedDates: [Time!]!
-  timeWindows: [InvigilationTimeWindowInput!]!
-}
-
-"""
-PermanentNonInvigilator marks a teacher who never does invigilations, across
-semesters (collection permanent_non_invigilators). reason is a required note.
-"""
-type PermanentNonInvigilator {
-  teacherID: Int!
-  name: String!
-  reason: String!
-}
-
-"""
-SyncLogEntry is one timestamped transfer (collection sync_log, newest first):
-a ZPA/Anny import or upload, with a summary and — for imports — the per-item
-changes.
-"""
-type SyncLogEntry {
-  time: Time!
-  operation: String!
-  label: String!
-  direction: String!
-  system: String!
-  ok: Boolean!
-  summary: String!
-  added: Int!
-  changed: Int!
-  removed: Int!
-  entries: [SyncLogChange!]!
-}
-
-type SyncLogChange {
-  type: String!
-  name: String!
-  fields: [SyncLogChangeField!]!
-}
-
-type SyncLogChangeField {
-  field: String!
-  old: String!
-  new: String!
-}
-
 input InvigilationTimeWindowInput {
   date: Time!
   from: Time
@@ -373,6 +323,27 @@ type Invigilator {
   teacher: Teacher!
   requirements: InvigilatorRequirements
   todos: InvigilatorTodos
+}
+
+"""
+InvigilatorConstraints are the per-invigilator constraints kept in the DB and
+edited via the GUI (separate from the ZPA-sourced invigilator_requirements,
+which is overwritten on every ZPA pull). They are merged on top of the ZPA
+requirements: isNotInvigilator removes the person from invigilation duty,
+excludedDates add whole blocked days, and timeWindows block parts of a day.
+"""
+type InvigilatorConstraints {
+  teacherID: Int!
+  isNotInvigilator: Boolean!
+  excludedDates: [Time!]!
+  timeWindows: [InvigilationTimeWindow!]!
+}
+
+input InvigilatorConstraintsInput {
+  teacherID: Int!
+  isNotInvigilator: Boolean!
+  excludedDates: [Time!]!
+  timeWindows: [InvigilationTimeWindowInput!]!
 }
 
 """
@@ -503,10 +474,6 @@ type Mutation {
   fixed assignment, so it survives a re-run of the automatic planning.
   """
   prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
-  setInvigilatorConstraints(input: InvigilatorConstraintsInput!): InvigilatorConstraint!
-  deleteInvigilatorConstraints(teacherID: Int!): Boolean!
-  setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
-  removePermanentNonInvigilator(teacherID: Int!): Boolean!
 
   """
   Reset the generated invigilations (invigilations_other) so only the
@@ -514,6 +481,34 @@ type Mutation {
   Blocked while the invigilation plan is published.
   """
   resetInvigilations: Boolean!
+
+  """
+  Create or replace the whole constraints record of one invigilator (key: teacherID).
+  """
+  setInvigilatorConstraints(input: InvigilatorConstraintsInput!): InvigilatorConstraints!
+
+  """
+  Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none.
+  """
+  deleteInvigilatorConstraints(teacherID: Int!): Boolean!
+
+  """
+  One-time migration: copy the invigilatorConstraints from the semester config
+  (viper) into the DB. Returns the number of records written.
+  """
+  migrateInvigilatorConstraints: Int!
+
+  """
+  Add or update a permanent (cross-semester) non-invigilator (key: teacherID),
+  e.g. someone retired. name is the display name (pass the candidate's name; if
+  empty the backend tries to resolve it).
+  """
+  setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
+
+  """
+  Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
+  """
+  removePermanentNonInvigilator(teacherID: Int!): Boolean!
   addNTA(input: NTAInput!): NTA!
 
   """
@@ -702,6 +697,21 @@ type OptimizerProgress {
   unfilled: Int!
 }
 
+"""
+PermanentNonInvigilator is a teacher who never does invigilation duty again
+(e.g. retired). It lives in the global plexams database and therefore carries
+over between semesters; it always implies isNotInvigilator.
+"""
+type PermanentNonInvigilator {
+  teacherID: Int!
+
+  """
+  Denormalized display name, kept so the entry stays readable even after the teacher has left the FK07 invigilator pool.
+  """
+  name: String!
+  reason: String!
+}
+
 type PlanEntry {
   dayNumber: Int!
   slotNumber: Int!
@@ -862,18 +872,35 @@ type Query {
 
   """
   invigilatorsExcludedByConfig returns the invigilators who would do invigilation
-  duty (factor > 0) but are excluded only because invigilatorConstraints.<id>.isNotInvigilator
-  is set in the semester config. People who are out anyway are not listed.
+  duty (factor > 0) but are excluded only because isNotInvigilator is set in their
+  DB constraints (see invigilatorConstraints). People who are out anyway are not
+  listed. (The field name is kept for backwards compatibility.)
   """
   invigilatorsExcludedByConfig: [Invigilator!]!
-  invigilatorCandidates: [Teacher!]!
-  invigilatorConstraints: [InvigilatorConstraint!]!
-  permanentNonInvigilators: [PermanentNonInvigilator!]!
-  syncLog(limit: Int): [SyncLogEntry!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   invigilatorsForDay(day: Int!): InvigilatorsForDay
   invigilator(room: String!, day: Int!, time: Int!): Teacher
   prePlannedInvigilations: [PrePlannedInvigilation!]!
+
+  """
+  Per-invigilator constraints stored in the DB (managed via the GUI): whether
+  they do no invigilation at all, additional excluded whole days and time
+  windows when they cannot invigilate. These are merged on top of the ZPA requirements.
+  """
+  invigilatorConstraints: [InvigilatorConstraints!]!
+
+  """
+  Teachers who never do invigilation duty again (e.g. retired). Global (plexams
+  DB), carries over between semesters; always implies isNotInvigilator.
+  """
+  permanentNonInvigilators: [PermanentNonInvigilator!]!
+
+  """
+  All teachers in the invigilator pool, including the ones currently excluded
+  (isNotInvigilator / permanent). Use this to manage constraints for everyone —
+  invigilatorsWithReq only returns the ones who actually invigilate.
+  """
+  invigilatorCandidates: [Teacher!]!
   ntas: [NTA!]
   ntasWithRegs: [Student!]
   nta(mtknr: String!): NTAWithRegs
@@ -951,6 +978,12 @@ type Query {
   zpaExam(ancode: Int!): ZPAExam
   zpaAnCodes: [AnCode]
   studentRegsImportErrors: [RegWithError!]!
+
+  """
+  Transfer history (imports from / uploads to ZPA, Anny, …), newest first.
+  The whole history since the start of the semester is kept; pass limit to cap it.
+  """
+  syncLog(limit: Int): [SyncLogEntry!]!
 }
 
 type RegWithError {
@@ -1225,6 +1258,33 @@ type Subscription {
   """
   sendEmailRoomRequests(run: Boolean!): LogLine!
 
+  """
+  Send the secretariat the room occupancy (per non-request room, when it is used
+  by an exam; overlapping NTA times merged) with a request to check it against
+  ZPA. Send before publishing the room plan.
+  """
+  sendEmailRoomsSecretariat(run: Boolean!): LogLine!
+
+  """
+  Send the KDP the overview of the EXaHM/SEB room planning (by day/time and
+  room, with per-exam seat counts and a room-oriented CSV attachment). Send
+  after publishing the room plan.
+  """
+  sendEmailKdpExahm(run: Boolean!): LogLine!
+
+  """
+  Send the Lehrbeauftragten-Beauftragte:r (lbaba) an overview of all repeat
+  exams of LBAs I planned (dates and invigilations only).
+  """
+  sendEmailLbaRepeaters(run: Boolean!): LogLine!
+
+  """
+  Send the secretariat a short note that the invigilation planning is finished,
+  everything is in ZPA and the plan may be posted. Send after publishing the
+  invigilation plan.
+  """
+  sendEmailInvigilationsSecretariat(run: Boolean!): LogLine!
+
   """Send the primuss-data email to every examer with exams planned by me."""
   sendEmailPrimussDataAll(run: Boolean!): LogLine!
 
@@ -1311,6 +1371,51 @@ type Subscription {
 
   """Fetch the ZPA infos of students with registrations and cache them."""
   importStudentsFromZPA: LogLine!
+}
+
+type SyncChangeEntry {
+  """added | removed | changed"""
+  type: String!
+  name: String!
+
+  """set only for changed entries"""
+  fields: [SyncFieldChange!]
+}
+
+type SyncFieldChange {
+  field: String!
+  old: String!
+  new: String!
+}
+
+"""
+SyncLogEntry records one external transfer (import from / upload to ZPA, Anny, …).
+For imports it also carries the diff against the DB state right before it.
+"""
+type SyncLogEntry {
+  time: Time!
+
+  """
+  stable key, e.g. zpa-import-exams, zpa-upload-plan-exams-rooms, anny-import-bookings
+  """
+  operation: String!
+
+  """human-readable label"""
+  label: String!
+
+  """import | upload"""
+  direction: String!
+
+  """ZPA | Anny | …"""
+  system: String!
+  ok: Boolean!
+  summary: String!
+  added: Int!
+  changed: Int!
+  removed: Int!
+
+  """per-entry detail (imports only)"""
+  entries: [SyncChangeEntry!]
 }
 
 type Teacher {

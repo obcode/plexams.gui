@@ -167,6 +167,10 @@ export type Emails = {
   __typename?: 'Emails';
   additionalExamer: Array<Scalars['String']['output']>;
   fs: Scalars['String']['output'];
+  /** Recipient for the EXaHM/SEB room overview (KDP). */
+  kdp: Scalars['String']['output'];
+  /** Recipient for the overview of LBAs' repeat exams (Lehrbeauftragten-Beauftragte:r). */
+  lbaba: Scalars['String']['output'];
   lbas: Scalars['String']['output'];
   lbasLastSemester: Scalars['String']['output'];
   profs: Scalars['String']['output'];
@@ -309,6 +313,13 @@ export type InvigilationTimeWindow = {
   until?: Maybe<Scalars['Time']['output']>;
 };
 
+/** date is the calendar day; from/until are clock times on that day (at least one of from/until must be set). */
+export type InvigilationTimeWindowInput = {
+  date: Scalars['Time']['input'];
+  from?: InputMaybe<Scalars['Time']['input']>;
+  until?: InputMaybe<Scalars['Time']['input']>;
+};
+
 export type InvigilationTodos = {
   __typename?: 'InvigilationTodos';
   invigilatorCount: Scalars['Int']['output'];
@@ -326,6 +337,28 @@ export type Invigilator = {
   requirements?: Maybe<InvigilatorRequirements>;
   teacher: Teacher;
   todos?: Maybe<InvigilatorTodos>;
+};
+
+/**
+ * InvigilatorConstraints are the per-invigilator constraints kept in the DB and
+ * edited via the GUI (separate from the ZPA-sourced invigilator_requirements,
+ * which is overwritten on every ZPA pull). They are merged on top of the ZPA
+ * requirements: isNotInvigilator removes the person from invigilation duty,
+ * excludedDates add whole blocked days, and timeWindows block parts of a day.
+ */
+export type InvigilatorConstraints = {
+  __typename?: 'InvigilatorConstraints';
+  excludedDates: Array<Scalars['Time']['output']>;
+  isNotInvigilator: Scalars['Boolean']['output'];
+  teacherID: Scalars['Int']['output'];
+  timeWindows: Array<InvigilationTimeWindow>;
+};
+
+export type InvigilatorConstraintsInput = {
+  excludedDates: Array<Scalars['Time']['input']>;
+  isNotInvigilator: Scalars['Boolean']['input'];
+  teacherID: Scalars['Int']['input'];
+  timeWindows: Array<InvigilationTimeWindowInput>;
 };
 
 /** InvigilatorOutlier: a person whose assigned minutes are furthest from target. */
@@ -447,9 +480,13 @@ export type Mutation = {
   /** Block a room for several slots at once (e.g. a whole day or a time range). Returns the stored blocks. */
   blockRoomForSlots: Array<BlockedRoom>;
   clearEmailAttachments: Scalars['Int']['output'];
+  /** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
+  deleteInvigilatorConstraints: Scalars['Boolean']['output'];
   exahm: Scalars['Boolean']['output'];
   excludeDays: Scalars['Boolean']['output'];
   lab: Scalars['Boolean']['output'];
+  /** One-time migration: copy the invigilatorConstraints from the semester config (viper) into the DB. Returns the number of records written. */
+  migrateInvigilatorConstraints: Scalars['Int']['output'];
   /** One-time import of roomConstraints.<room>.reservations from the semester config into the DB. Returns the number imported. */
   migrateRoomRequestsFromConfig: Scalars['Int']['output'];
   /** One-time backfill: derive requestWith for all rooms (ANNY for request-rooms with a T name, MANAGEMENT for other request-rooms, NONE otherwise). Returns the number of rooms updated. */
@@ -469,6 +506,8 @@ export type Mutation = {
   prePlanRoom: Scalars['Boolean']['output'];
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
+  /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
+  removePermanentNonInvigilator: Scalars['Boolean']['output'];
   /** Remove a pre-planned invigilation (key: day/slot/roomName; roomName null = the reserve). */
   removePrePlannedInvigilation: Scalars['Boolean']['output'];
   /** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
@@ -482,8 +521,12 @@ export type Mutation = {
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
   sameSlot: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
+  /** Create or replace the whole constraints record of one invigilator (key: teacherID). */
+  setInvigilatorConstraints: InvigilatorConstraints;
   /** Activate/deactivate an NTA (key: mtknr). A deactivated NTA is not applied to exams. */
   setNTAActive: Nta;
+  /** Add or update a permanent (cross-semester) non-invigilator (key: teacherID), e.g. someone retired. name is the display name (pass the candidate's name; if empty the backend tries to resolve it). */
+  setPermanentNonInvigilator: PermanentNonInvigilator;
   /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
   setPlanningCondition: PlanningState;
   /** Activate/deactivate a room (key: name). A deactivated room is not used for planning. */
@@ -575,6 +618,11 @@ export type MutationClearEmailAttachmentsArgs = {
 };
 
 
+export type MutationDeleteInvigilatorConstraintsArgs = {
+  teacherID: Scalars['Int']['input'];
+};
+
+
 export type MutationExahmArgs = {
   ancode: Scalars['Int']['input'];
 };
@@ -642,6 +690,11 @@ export type MutationRemoveNtaRoomAloneWaiverArgs = {
 };
 
 
+export type MutationRemovePermanentNonInvigilatorArgs = {
+  teacherID: Scalars['Int']['input'];
+};
+
+
 export type MutationRemovePrePlannedInvigilationArgs = {
   day: Scalars['Int']['input'];
   roomName?: InputMaybe<Scalars['String']['input']>;
@@ -682,9 +735,21 @@ export type MutationSebArgs = {
 };
 
 
+export type MutationSetInvigilatorConstraintsArgs = {
+  input: InvigilatorConstraintsInput;
+};
+
+
 export type MutationSetNtaActiveArgs = {
   active: Scalars['Boolean']['input'];
   mtknr: Scalars['String']['input'];
+};
+
+
+export type MutationSetPermanentNonInvigilatorArgs = {
+  name: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
+  teacherID: Scalars['Int']['input'];
 };
 
 
@@ -817,6 +882,19 @@ export type OptimizerProgress = {
   iteration: Scalars['Int']['output'];
   total: Scalars['Int']['output'];
   unfilled: Scalars['Int']['output'];
+};
+
+/**
+ * PermanentNonInvigilator is a teacher who never does invigilation duty again
+ * (e.g. retired). It lives in the global plexams database and therefore carries
+ * over between semesters; it always implies isNotInvigilator.
+ */
+export type PermanentNonInvigilator = {
+  __typename?: 'PermanentNonInvigilator';
+  /** Denormalized display name, kept so the entry stays readable even after the teacher has left the FK07 invigilator pool. */
+  name: Scalars['String']['output'];
+  reason: Scalars['String']['output'];
+  teacherID: Scalars['Int']['output'];
 };
 
 export type PlanEntry = {
@@ -989,12 +1067,17 @@ export type Query = {
   generatedExam?: Maybe<GeneratedExam>;
   generatedExams: Array<GeneratedExam>;
   invigilator?: Maybe<Teacher>;
+  /** All teachers in the invigilator pool, including the ones currently excluded (isNotInvigilator / permanent). Use this to manage constraints for everyone — invigilatorsWithReq only returns the ones who actually invigilate. */
+  invigilatorCandidates: Array<Teacher>;
+  /** Per-invigilator constraints stored in the DB (managed via the GUI): whether they do no invigilation at all, additional excluded whole days and time windows when they cannot invigilate. These are merged on top of the ZPA requirements. */
+  invigilatorConstraints: Array<InvigilatorConstraints>;
   invigilatorTodos?: Maybe<InvigilationTodos>;
   invigilators: Array<ZpaInvigilator>;
   /**
    * invigilatorsExcludedByConfig returns the invigilators who would do invigilation
-   * duty (factor > 0) but are excluded only because invigilatorConstraints.<id>.isNotInvigilator
-   * is set in the semester config. People who are out anyway are not listed.
+   * duty (factor > 0) but are excluded only because isNotInvigilator is set in their
+   * DB constraints (see invigilatorConstraints). People who are out anyway are not
+   * listed. (The field name is kept for backwards compatibility.)
    */
   invigilatorsExcludedByConfig: Array<Invigilator>;
   invigilatorsForDay?: Maybe<InvigilatorsForDay>;
@@ -1005,6 +1088,8 @@ export type Query = {
   ntaRoomAloneWaivers: Array<NtaRoomAloneWaiver>;
   ntas?: Maybe<Array<Nta>>;
   ntasWithRegs?: Maybe<Array<Student>>;
+  /** Teachers who never do invigilation duty again (e.g. retired). Global (plexams DB), carries over between semesters; always implies isNotInvigilator. */
+  permanentNonInvigilators: Array<PermanentNonInvigilator>;
   plannedExam?: Maybe<PlannedExam>;
   plannedExams: Array<PlannedExam>;
   plannedRoomForStudent?: Maybe<PlannedRoom>;
@@ -1037,6 +1122,11 @@ export type Query = {
   studentRegsImportErrors: Array<RegWithError>;
   students: Array<Student>;
   studentsByName: Array<Student>;
+  /**
+   * Transfer history (imports from / uploads to ZPA, Anny, …), newest first.
+   * The whole history since the start of the semester is kept; pass limit to cap it.
+   */
+  syncLog: Array<SyncLogEntry>;
   teacher?: Maybe<Teacher>;
   teachers: Array<Teacher>;
   /** Students that could not be assigned a real room in their slot during the last room generation (the replacement for the old 'No Room' placeholder). */
@@ -1185,6 +1275,11 @@ export type QueryStudentRegsForProgramArgs = {
 
 export type QueryStudentsByNameArgs = {
   regex: Scalars['String']['input'];
+};
+
+
+export type QuerySyncLogArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -1480,6 +1575,12 @@ export type Subscription = {
   sendEmailExaHM: LogLine;
   sendEmailInvigilations: LogLine;
   sendEmailInvigilationsMissing: LogLine;
+  /** Send the secretariat a short note that the invigilation planning is finished, everything is in ZPA and the plan may be posted. Send after publishing the invigilation plan. */
+  sendEmailInvigilationsSecretariat: LogLine;
+  /** Send the KDP the overview of the EXaHM/SEB room planning (by day/time and room, with per-exam seat counts and a room-oriented CSV attachment). Send after publishing the room plan. */
+  sendEmailKdpExahm: LogLine;
+  /** Send the Lehrbeauftragten-Beauftragte:r (lbaba) an overview of all repeat exams of LBAs I planned (dates and invigilations only). */
+  sendEmailLbaRepeaters: LogLine;
   /** Email all NTAs their planned rooms after room planning. */
   sendEmailNTAPlanned: LogLine;
   /** Email NTAs with a claim to a room of their own (mtknr, or "all"). */
@@ -1499,6 +1600,8 @@ export type Subscription = {
   sendEmailPublishedRooms: LogLine;
   /** Send the request for the active building-management rooms to the Gebäudemanagement. */
   sendEmailRoomRequests: LogLine;
+  /** Send the secretariat the room occupancy (per non-request room, when it is used by an exam; overlapping NTA times merged) with a request to check it against ZPA. Send before publishing the room plan. */
+  sendEmailRoomsSecretariat: LogLine;
   /** Upload the planned exams to ZPA without rooms or invigilators (dryRun = build only, do not post). */
   uploadExamsToZPA: LogLine;
   /** Upload the planned exams to ZPA including planned rooms and invigilators. */
@@ -1573,6 +1676,21 @@ export type SubscriptionSendEmailInvigilationsMissingArgs = {
 };
 
 
+export type SubscriptionSendEmailInvigilationsSecretariatArgs = {
+  run: Scalars['Boolean']['input'];
+};
+
+
+export type SubscriptionSendEmailKdpExahmArgs = {
+  run: Scalars['Boolean']['input'];
+};
+
+
+export type SubscriptionSendEmailLbaRepeatersArgs = {
+  run: Scalars['Boolean']['input'];
+};
+
+
 export type SubscriptionSendEmailNtaPlannedArgs = {
   run: Scalars['Boolean']['input'];
 };
@@ -1635,6 +1753,11 @@ export type SubscriptionSendEmailRoomRequestsArgs = {
 };
 
 
+export type SubscriptionSendEmailRoomsSecretariatArgs = {
+  run: Scalars['Boolean']['input'];
+};
+
+
 export type SubscriptionUploadExamsToZpaArgs = {
   dryRun: Scalars['Boolean']['input'];
 };
@@ -1653,6 +1776,46 @@ export type SubscriptionUploadExamsWithRoomsToZpaArgs = {
 export type SubscriptionValidateConflictsArgs = {
   ancode: Scalars['Int']['input'];
   onlyPlannedByMe: Scalars['Boolean']['input'];
+};
+
+export type SyncChangeEntry = {
+  __typename?: 'SyncChangeEntry';
+  /** set only for changed entries */
+  fields?: Maybe<Array<SyncFieldChange>>;
+  name: Scalars['String']['output'];
+  /** added | removed | changed */
+  type: Scalars['String']['output'];
+};
+
+export type SyncFieldChange = {
+  __typename?: 'SyncFieldChange';
+  field: Scalars['String']['output'];
+  new: Scalars['String']['output'];
+  old: Scalars['String']['output'];
+};
+
+/**
+ * SyncLogEntry records one external transfer (import from / upload to ZPA, Anny, …).
+ * For imports it also carries the diff against the DB state right before it.
+ */
+export type SyncLogEntry = {
+  __typename?: 'SyncLogEntry';
+  added: Scalars['Int']['output'];
+  changed: Scalars['Int']['output'];
+  /** import | upload */
+  direction: Scalars['String']['output'];
+  /** per-entry detail (imports only) */
+  entries?: Maybe<Array<SyncChangeEntry>>;
+  /** human-readable label */
+  label: Scalars['String']['output'];
+  ok: Scalars['Boolean']['output'];
+  /** stable key, e.g. zpa-import-exams, zpa-upload-plan-exams-rooms, anny-import-bookings */
+  operation: Scalars['String']['output'];
+  removed: Scalars['Int']['output'];
+  summary: Scalars['String']['output'];
+  /** ZPA | Anny | … */
+  system: Scalars['String']['output'];
+  time: Scalars['Time']['output'];
 };
 
 export type Teacher = {
