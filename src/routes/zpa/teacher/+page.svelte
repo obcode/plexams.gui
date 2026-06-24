@@ -117,8 +117,9 @@
 		openSections = new Set([sections[0].key]);
 		openInit = true;
 	}
-	/** @param {{ key: string, label: string | null }} sec */
-	const isOpen = (sec) => sec.label === null || !!term || openSections.has(sec.key);
+	// open/t als Argumente, damit das Template auf openSections/term reagiert.
+	/** @param {{ key: string, label: string | null }} sec @param {Set<string>} open @param {string} t */
+	const isOpen = (sec, open, t) => sec.label === null || !!t || open.has(sec.key);
 	/** @param {string} key */
 	function toggleSection(key) {
 		const s = new Set(openSections);
@@ -213,7 +214,9 @@
 										class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold hover:bg-base-200"
 										on:click={() => toggleSection(sec.key)}
 									>
-										<span class="text-base-content/50">{isOpen(sec) ? '▾' : '▸'}</span>
+										<span class="text-base-content/50"
+											>{isOpen(sec, openSections, term) ? '▾' : '▸'}</span
+										>
 										letztes Semester: {sec.label}
 										<span class="badge badge-ghost badge-sm tabular-nums">{sec.items.length}</span>
 										{#if sec.items.some((/** @type {any} */ i) => i._newer)}
@@ -225,7 +228,7 @@
 								</td>
 							</tr>
 						{/if}
-						{#if isOpen(sec)}
+						{#if isOpen(sec, openSections, term)}
 							{#each sec.items as t (t.id)}
 								{@const s = invigStatus(t)}
 								<tr class="hover">
