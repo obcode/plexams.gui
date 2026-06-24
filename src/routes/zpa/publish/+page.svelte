@@ -1,7 +1,14 @@
 <script>
 	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
 	import StreamAction from '$lib/zpa/StreamAction.svelte';
+	import SyncLog from '$lib/zpa/SyncLog.svelte';
 	import { zpaValidators } from '$lib/validation/validators';
+	import { invalidateAll } from '$app/navigation';
+
+	export let data;
+
+	// nach einem Im-/Export den Sync-Verlauf neu laden
+	const refreshLog = () => invalidateAll();
 
 	// Downloads (Import aus ZPA) — ohne Argumente.
 	/** @type {{ field: string, title: string, desc: string }[]} */
@@ -95,6 +102,7 @@
 					description={d.desc}
 					accent="info"
 					actionLabel="Laden"
+					on:done={refreshLog}
 				/>
 			{/each}
 		</div>
@@ -126,8 +134,29 @@
 					hasDryRun={u.hasDryRun}
 					accent="success"
 					actionLabel="Übertragen"
+					on:done={refreshLog}
 				/>
 			{/each}
 		</div>
+	</div>
+
+	<!-- Sync-Verlauf (zeitgestempelte Historie aller Transfers) -->
+	<div class="flex flex-col gap-3">
+		<div class="flex flex-wrap items-baseline gap-2">
+			<h2 class="text-xl font-semibold">Sync-Verlauf</h2>
+			<span class="text-sm text-base-content/60">letzte Im-/Exporte mit Zeitstempel</span>
+			<button class="btn btn-ghost btn-xs" on:click={refreshLog}>↻ neu laden</button>
+		</div>
+		{#await data.syncLog}
+			<div class="flex items-center gap-2 text-sm text-base-content/50">
+				<span class="loading loading-spinner loading-sm"></span> lädt …
+			</div>
+		{:then entries}
+			<SyncLog {entries} />
+		{:catch}
+			<div class="alert alert-error py-2 text-sm">
+				<span>Sync-Verlauf konnte nicht geladen werden.</span>
+			</div>
+		{/await}
 	</div>
 </div>

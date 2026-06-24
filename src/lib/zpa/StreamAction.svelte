@@ -1,9 +1,11 @@
 <script>
-	import { onDestroy, tick } from 'svelte';
+	import { onDestroy, tick, createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 
-	/** Subscription-Feldname */
+	const dispatch = createEventDispatcher();
+
+	/** Subscription-Feldname @type {string} */
 	export let field;
 	export let title;
 	export let description = '';
@@ -118,6 +120,7 @@
 						current = null;
 					}
 					if (status === 'running') status = 'done';
+					dispatch('done', { field });
 				}
 			}
 		);

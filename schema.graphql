@@ -321,6 +321,37 @@ type PermanentNonInvigilator {
   reason: String!
 }
 
+"""
+SyncLogEntry is one timestamped transfer (collection sync_log, newest first):
+a ZPA/Anny import or upload, with a summary and — for imports — the per-item
+changes.
+"""
+type SyncLogEntry {
+  time: Time!
+  operation: String!
+  label: String!
+  direction: String!
+  system: String!
+  ok: Boolean!
+  summary: String!
+  added: Int!
+  changed: Int!
+  removed: Int!
+  entries: [SyncLogChange!]!
+}
+
+type SyncLogChange {
+  type: String!
+  name: String!
+  fields: [SyncLogChangeField!]!
+}
+
+type SyncLogChangeField {
+  field: String!
+  old: String!
+  new: String!
+}
+
 input InvigilationTimeWindowInput {
   date: Time!
   from: Time
@@ -838,6 +869,7 @@ type Query {
   invigilatorCandidates: [Teacher!]!
   invigilatorConstraints: [InvigilatorConstraint!]!
   permanentNonInvigilators: [PermanentNonInvigilator!]!
+  syncLog(limit: Int): [SyncLogEntry!]!
   roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
   invigilatorsForDay(day: Int!): InvigilatorsForDay
   invigilator(room: String!, day: Int!, time: Int!): Teacher
