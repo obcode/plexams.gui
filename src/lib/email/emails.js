@@ -2,7 +2,8 @@
 // GraphQL-Subscription des Backends (Feldname = `key`), die LogLines streamt
 // und mit einer DONE-Zeile endet — exakt wie die Validierungs-/Generierungs-
 // Subscriptions. Argument jeder Subscription: `run: Boolean!`
-// (false = Probelauf, mailt nur an den Planer; true = wirklich versenden).
+// (false = Probelauf: alle Mails gebündelt als .eml-Anhänge an die Testadresse;
+// true = wirklich versenden).
 //
 // Versände mit Anhängen (Deckblätter, Aufsichtskalender) tragen zusätzlich
 // `links` auf die Seiten, wo Upload/Einzelversand/Erzeugung passieren.

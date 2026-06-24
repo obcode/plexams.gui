@@ -108,8 +108,9 @@
 		<div class="flex flex-col gap-1">
 			<h3 class="text-sm font-semibold text-base-content/70">Versenden</h3>
 			<p class="text-xs text-base-content/50">
-				Probelauf mailt nur an die Testadresse. Je Aufsicht eine Mail mit ihrem Kalender; fehlt ein
-				PNG, kommt dafür eine WARN-Zeile — der Rest läuft weiter.
+				Probelauf bündelt alle Mails als <span class="font-mono">.eml</span>-Anhänge an die
+				Testadresse (kein Einzelversand). Beim echten Versand bekommt jede Aufsicht eine Mail mit
+				ihrem Kalender; fehlt ein PNG, kommt dafür eine WARN-Zeile — der Rest läuft weiter.
 			</p>
 		</div>
 
@@ -169,7 +170,8 @@
 		<div class="flex flex-col gap-1">
 			<h3 class="text-sm font-semibold text-base-content/70">Versenden</h3>
 			<p class="text-xs text-base-content/50">
-				Probelauf mailt nur an dich. Findet der Server für einen Prüfer kein PDF (weder Upload noch
+				Probelauf bündelt alle Mails als <span class="font-mono">.eml</span>-Anhänge an die
+				Testadresse. Findet der Server für einen Prüfer kein PDF (weder Upload noch
 				<span class="font-mono">coverPages.dir</span>), kommt dafür eine ERROR-Zeile — der Rest
 				läuft weiter.
 			</p>

@@ -25,10 +25,11 @@
 	<div class="flex flex-col gap-2">
 		<h1 class="text-2xl font-semibold">E-Mails versenden</h1>
 		<p class="max-w-3xl text-sm text-base-content/60">
-			Jeder Versand ist standardmäßig ein <strong>Probelauf</strong> — die E-Mail geht dann nur an dich
-			(den Planer). Über „Wirklich senden …" wird nach einer Bestätigung an alle Empfänger versendet.
-			Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der Server den Versand ab; das wird
-			hier nur als Hinweis angezeigt.
+			Jeder Versand ist standardmäßig ein <strong>Probelauf</strong> — die Mails gehen dann nicht an
+			die Empfänger, sondern werden als <span class="font-mono">.eml</span>-Anhänge gebündelt an die
+			Testadresse (dich als Planer) geschickt. Über „Wirklich senden …" wird nach einer Bestätigung
+			an alle Empfänger versendet. Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der
+			Server den Versand ab; das wird hier nur als Hinweis angezeigt.
 		</p>
 	</div>
 
