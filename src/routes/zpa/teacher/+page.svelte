@@ -20,6 +20,7 @@
 	let searchTerm = '';
 	let onlyInvigilators = false;
 	let onlyMissingReq = false;
+	let groupBySemester = true;
 
 	/** @param {any} t */
 	function roles(t) {
@@ -53,6 +54,26 @@
 		if (onlyInvigilators) return s.isInvig;
 		return true;
 	});
+
+	// In Abschnitte nach letztem Semester aufteilen (absteigend, „—" zuletzt).
+	// Ohne Gruppierung: ein Abschnitt ohne Kopfzeile.
+	/** @param {any[]} items @param {boolean} grouped
+	 * @returns {{ semester: string | null, items: any[] }[]} */
+	function buildSections(items, grouped) {
+		if (!grouped) return [{ semester: null, items }];
+		/** @type {Map<string, any[]>} */
+		const m = new Map();
+		for (const t of items) {
+			const key = t.lastSemester || '—';
+			if (!m.has(key)) m.set(key, []);
+			m.get(key)?.push(t);
+		}
+		const keys = [...m.keys()].sort((a, b) =>
+			a === '—' ? 1 : b === '—' ? -1 : b.localeCompare(a)
+		);
+		return keys.map((k) => ({ semester: k, items: m.get(k) ?? [] }));
+	}
+	$: sections = buildSections(rows, groupBySemester);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -91,6 +112,10 @@
 			<input type="checkbox" class="toggle toggle-sm" bind:checked={onlyMissingReq} />
 			<span class="label-text">nur ohne Anforderungen</span>
 		</label>
+		<label class="label cursor-pointer gap-2">
+			<input type="checkbox" class="toggle toggle-sm" bind:checked={groupBySemester} />
+			<span class="label-text">nach letztem Semester</span>
+		</label>
 		<div class="flex-1"></div>
 		{#if !loading}
 			<span class="tabular-nums text-sm text-base-content/50">{rows.length} angezeigt</span>
@@ -117,41 +142,56 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each rows as t (t.id)}
-						{@const s = invigStatus(t)}
-						<tr class="hover">
-							<td>
-								<div class="font-medium">{t.shortname}</div>
-								<div class="text-xs text-base-content/50">{t.fullname}</div>
-							</td>
-							<td class="text-sm text-base-content/70">{t.fk || '—'}</td>
-							<td>
-								<div class="flex flex-wrap gap-1">
-									{#each roles(t) as role}
-										<span class="badge badge-ghost badge-sm">{role}</span>
+					{#each sections as sec}
+						{#if sec.semester !== null}
+							<tr class="bg-base-200/60">
+								<td colspan="6" class="text-sm font-semibold">
+									{sec.semester === '—'
+										? 'ohne „letztes Semester“'
+										: `letztes Semester: ${sec.semester}`}
+									<span class="badge badge-ghost badge-sm ml-2 tabular-nums"
+										>{sec.items.length}</span
+									>
+								</td>
+							</tr>
+						{/if}
+						{#each sec.items as t (t.id)}
+							{@const s = invigStatus(t)}
+							<tr class="hover">
+								<td>
+									<div class="font-medium">{t.shortname}</div>
+									<div class="text-xs text-base-content/50">{t.fullname}</div>
+								</td>
+								<td class="text-sm text-base-content/70">{t.fk || '—'}</td>
+								<td>
+									<div class="flex flex-wrap gap-1">
+										{#each roles(t) as role}
+											<span class="badge badge-ghost badge-sm">{role}</span>
+										{:else}
+											<span class="text-base-content/40">—</span>
+										{/each}
+									</div>
+								</td>
+								<td>
+									{#if !s.isInvig}
+										<span class="text-base-content/40">—</span>
+									{:else if s.submitted}
+										<span class="badge badge-success badge-sm">Aufsicht ✓</span>
+									{:else}
+										<span class="badge badge-warning badge-sm">Aufsicht · Anforderungen fehlen</span
+										>
+									{/if}
+								</td>
+								<td>
+									{#if t.email}
+										<a class="link link-hover text-sm" href="mailto:{t.email}">{t.email}</a>
 									{:else}
 										<span class="text-base-content/40">—</span>
-									{/each}
-								</div>
-							</td>
-							<td>
-								{#if !s.isInvig}
-									<span class="text-base-content/40">—</span>
-								{:else if s.submitted}
-									<span class="badge badge-success badge-sm">Aufsicht ✓</span>
-								{:else}
-									<span class="badge badge-warning badge-sm">Aufsicht · Anforderungen fehlen</span>
-								{/if}
-							</td>
-							<td>
-								{#if t.email}
-									<a class="link link-hover text-sm" href="mailto:{t.email}">{t.email}</a>
-								{:else}
-									<span class="text-base-content/40">—</span>
-								{/if}
-							</td>
-							<td class="text-right font-mono text-xs text-base-content/50">{t.id}</td>
-						</tr>
+									{/if}
+								</td>
+								<td class="text-right font-mono text-xs text-base-content/50">{t.id}</td>
+							</tr>
+						{/each}
 					{/each}
 				</tbody>
 			</table>
