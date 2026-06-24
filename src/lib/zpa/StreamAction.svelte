@@ -17,10 +17,21 @@
 
 	/** @type {'idle' | 'running' | 'done' | 'error'} */
 	let status = 'idle';
-	/** @type {{ html: string }[]} */
+	/** @type {{ html: string, text?: string }[]} */
 	let lines = [];
 	/** @type {{ html: string } | null} */
 	let current = null;
+
+	// Änderungszeilen der ZPA-Importe hervorheben: „+ neu", „- entfällt",
+	// „~ alt → neu". Klassifiziert über den Rohtext (evtl. ANSI vorher entfernt).
+	/** @param {string} [text] */
+	function changeClass(text) {
+		const t = (text ?? '').replace(/\[[0-9;]*m/g, '');
+		if (/^\s*\+\s/.test(t)) return 'text-green-400';
+		if (/^\s*-\s/.test(t)) return 'text-red-400';
+		if (/^\s*~\s/.test(t)) return 'text-amber-300';
+		return '';
+	}
 	/** @type {string | null} */
 	let errorMsg = null;
 
@@ -82,7 +93,8 @@
 					}
 					const line = msg.data && msg.data[field];
 					if (!line) return;
-					const html = convert.toHtml(line.text ?? '');
+					const text = line.text ?? '';
+					const html = convert.toHtml(text);
 					if (line.level === 'PROGRESS') {
 						current = { html };
 					} else {
@@ -90,7 +102,7 @@
 							lines = [...lines, { html: current.html }];
 							current = null;
 						}
-						lines = [...lines, { html }];
+						lines = [...lines, { html, text }];
 						if (line.level === 'DONE') status = 'done';
 					}
 					scrollToBottom();
@@ -192,7 +204,9 @@
 			transition:slide
 		>
 			{#each lines as line}
-				<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
+				<div class="whitespace-pre-wrap break-words {changeClass(line.text)}">
+					{@html line.html}
+				</div>
 			{/each}
 			{#if current}
 				<div class="flex items-start gap-2 whitespace-pre-wrap break-words" style="color:#f9e2af">
