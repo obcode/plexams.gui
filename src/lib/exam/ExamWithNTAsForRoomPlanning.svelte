@@ -343,7 +343,7 @@
 						{:else}
 							<span class="flex flex-wrap items-center gap-1">
 								<span class="font-medium">{room.room.name}</span>
-								{#if room.room.name != 'ONLINE' && room.room.name != 'No Room'}
+								{#if room.room.name != 'ONLINE'}
 									<span class="text-base-content/60"
 										>({room.studentsInRoom.length}/{room.room.seats})</span
 									>
@@ -353,9 +353,6 @@
 											>{fixedSeatsFor(room)} Plätze (fix)</span
 										>
 									{/if}
-								{/if}
-								{#if room.room.name == 'No Room'}
-									<span class="text-base-content/60">({room.studentsInRoom.length})</span>
 								{/if}
 							</span>
 						{/if}

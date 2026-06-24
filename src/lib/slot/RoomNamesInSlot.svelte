@@ -17,7 +17,7 @@
 			}
 		});
 		let data = await response.json();
-		roomNames = data.plannedRoomNamesInSlot.filter((name) => name != 'ONLINE' && name != 'No Room');
+		roomNames = data.plannedRoomNamesInSlot.filter((name) => name != 'ONLINE');
 	}
 
 	onMount(() => {

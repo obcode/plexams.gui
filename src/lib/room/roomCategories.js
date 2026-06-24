@@ -11,12 +11,6 @@
 /** @type {RoomCategory[]} */
 export const ROOM_CATEGORIES = [
 	{
-		key: 'noroom',
-		label: 'kein Raum!',
-		chip: 'border-error bg-error text-error-content',
-		swatch: 'bg-error'
-	},
-	{
 		key: 'red',
 		label: 'R1.046 (roter Würfel)',
 		chip: 'border-red-400 bg-red-200 text-red-900',
@@ -76,7 +70,6 @@ const byKey = Object.fromEntries(ROOM_CATEGORIES.map((c) => [c.key, c]));
  */
 export function classifyRoom(pr) {
 	const r = pr.room || {};
-	if (r.name === 'No Room') return byKey.noroom;
 	if (r.name === 'ONLINE') return byKey.online;
 	if (r.name === 'R1.046') return byKey.red;
 	if (r.name === 'R1.049') return byKey.blue;
