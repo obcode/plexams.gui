@@ -73,7 +73,7 @@
 			{saving ? 'speichert …' : 'Speichern'}
 		</button>
 		<span class="text-xs text-base-content/50">
-			Validierungsfehler (z. B. von &gt; von FK07) meldet der Server.
+			Validierungsfehler (z. B. ungültiger Zeitraum oder Slot) meldet der Server.
 		</span>
 	</div>
 </div>
