@@ -60,23 +60,30 @@
 		getSemester();
 	});
 
-	type MenuItem = { href: string; label: string };
+	type MenuLink = { href: string; label: string };
+	// Ein Menüeintrag ist entweder ein Link oder eine Abschnittsüberschrift (Trenner).
+	type MenuItem = MenuLink | { section: string };
 	type Menu = { label: string; items: MenuItem[] };
+
+	const isLink = (i: MenuItem): i is MenuLink => 'href' in i;
 
 	const menus: Menu[] = [
 		{
 			label: 'Vorbereitung',
 			items: [
+				{ section: 'Konfiguration' },
 				{ href: '/config', label: 'Semester-Konfiguration' },
 				{ href: '/config/new', label: 'Neues Semester anlegen' },
+				{ section: 'ZPA-Prüfungen' },
 				{ href: '/exam/examsToPlan', label: 'Zu planende ZPA-Prüfungen' },
 				{ href: '/exam/examsNotToPlan', label: 'Nicht zu planende ZPA-Prüfungen' },
 				{ href: '/exam/examsPlaningStatusUnknown', label: 'Nicht zugeordnete ZPA-Prüfungen' },
 				{ href: '/exam/examersToPlan', label: 'Zu planende Prüfende' },
+				{ section: 'Constraints & Computer-Prüfungen' },
 				{ href: '/exam/constraints', label: 'Constraints' },
 				{ href: '/exam/kdp', label: 'EXaHM/SEB' },
 				{ href: '/preplan', label: 'SEB/EXaHM-Vorplanung' },
-				{ href: '/plan/annyBookings', label: 'Anny-Buchungen' },
+				{ section: 'Anmeldungen' },
 				{ href: '/exam/connected', label: 'Anmeldungszuordnung (ZPA/Primuss)' }
 			]
 		},
@@ -109,25 +116,26 @@
 			]
 		},
 		{
-			label: 'NTA',
-			items: [{ href: '/nta/semester', label: 'NTA im Semester' }]
-		},
-		{
-			label: 'Externe Daten',
-			items: [
-				{ href: '/zpa/publish', label: 'ZPA-Import & Veröffentlichung' },
-				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
-				{ href: '/zpa/teacher', label: 'Dozierende & Aufsichten (ZPA)' },
-				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
-				{ href: '/primuss/mucdai', label: 'MUC.DAI-Prüfungen (CSV)' },
-				{ href: '/primuss/exams', label: 'Prüfungslisten (Primuss)' }
-			]
-		},
-		{
 			label: 'E-Mails',
 			items: [
 				{ href: '/email', label: 'E-Mails versenden' },
 				{ href: '/email/attachments', label: 'Anhänge (Deckblätter, Bilder)' }
+			]
+		},
+		{
+			label: 'Semesterdaten',
+			items: [
+				{ section: 'ZPA' },
+				{ href: '/zpa/publish', label: 'ZPA-Import & Veröffentlichung' },
+				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
+				{ href: '/zpa/teacher', label: 'Dozierende & Aufsichten (ZPA)' },
+				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
+				{ section: 'Primuss' },
+				{ href: '/primuss/mucdai', label: 'MUC.DAI' },
+				{ href: '/primuss/exams', label: 'Primuss' },
+				{ section: 'Weitere' },
+				{ href: '/plan/annyBookings', label: 'Anny-Buchungen' },
+				{ href: '/nta/semester', label: 'NTA' }
 			]
 		},
 		{
@@ -151,12 +159,13 @@
 
 	$: pathname = $page.url.pathname;
 	$: activeHref = menus
-		.flatMap((m) => m.items.map((i) => i.href))
+		.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
 		.reduce(
 			(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
 			''
 		);
-	$: activeMenu = menus.find((m) => m.items.some((i) => i.href === activeHref))?.label ?? '';
+	$: activeMenu =
+		menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? '';
 
 	const themes = [
 		'light',
@@ -241,14 +250,18 @@
 						class="menu dropdown-content z-50 mt-3 w-64 gap-0.5 rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
 					>
 						{#each menu.items as item}
-							<li>
-								<a
-									class="rounded-lg {item.href === activeHref
-										? 'bg-primary/15 font-medium text-primary'
-										: ''}"
-									href={item.href}>{item.label}</a
-								>
-							</li>
+							{#if isLink(item)}
+								<li>
+									<a
+										class="rounded-lg {item.href === activeHref
+											? 'bg-primary/15 font-medium text-primary'
+											: ''}"
+										href={item.href}>{item.label}</a
+									>
+								</li>
+							{:else}
+								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{item.section}</li>
+							{/if}
 						{/each}
 					</ul>
 				</div>
@@ -391,14 +404,18 @@
 							>
 							<ul>
 								{#each menu.items as item}
-									<li>
-										<a
-											class={item.href === activeHref
-												? 'bg-primary/15 font-medium text-primary'
-												: ''}
-											href={item.href}>{item.label}</a
-										>
-									</li>
+									{#if isLink(item)}
+										<li>
+											<a
+												class={item.href === activeHref
+													? 'bg-primary/15 font-medium text-primary'
+													: ''}
+												href={item.href}>{item.label}</a
+											>
+										</li>
+									{:else}
+										<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{item.section}</li>
+									{/if}
 								{/each}
 							</ul>
 						</details>
