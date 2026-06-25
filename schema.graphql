@@ -517,6 +517,12 @@ type Mutation {
   disconnectPreplanExam(id: Int!): PreplanExam!
 
   """
+  Generate (and persist) slot assignments for the SEB/EXaHM preplan exams.
+  keepAssigned: true keeps manually set slots fixed, only places unassigned ones.
+  """
+  generatePreplanAssignment(keepAssigned: Boolean!): PreplanValidation!
+
+  """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
   """
   removePermanentNonInvigilator(teacherID: Int!): Boolean!
@@ -872,6 +878,7 @@ type Query {
   preplanExam(id: Int!): PreplanExam
   preplanExamAncodeSuggestions(id: Int!): [PreplanAncodeSuggestion!]!
   preplanOverview: PreplanOverview!
+  validatePreplanAssignment: PreplanValidation!
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1256,6 +1263,14 @@ input PreplanExamInput {
 
 type PreplanOverview {
   slots: [PreplanSlotNeed!]!
+}
+
+"""Result of validating or generating the SEB/EXaHM preplan slot assignment."""
+type PreplanValidation {
+  ok: Boolean!
+  assignedCount: Int!
+  unassignedIDs: [Int!]!
+  messages: [String!]!
 }
 
 """

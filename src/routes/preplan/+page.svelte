@@ -243,6 +243,72 @@
 			listError = err instanceof Error ? err.message : String(err);
 		}
 	}
+
+	// Zuordnung generieren & validieren
+	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[]}|null} */
+	let validation = null;
+	let validationKind = '';
+	let validating = false;
+	let generating = false;
+	let keepAssigned = true;
+
+	$: unassignedSet = new Set(validation?.unassignedIDs ?? []);
+
+	async function validate() {
+		if (validating || generating) return;
+		validating = true;
+		listError = '';
+		try {
+			const res = await fetch('/api/validatePreplanAssignment', {
+				method: 'POST',
+				headers: jsonHeaders
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			validation = result.validatePreplanAssignment;
+			validationKind = 'validate';
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		} finally {
+			validating = false;
+		}
+	}
+
+	async function generate() {
+		if (validating || generating) return;
+		if (
+			!confirm(
+				keepAssigned
+					? 'Zuordnung generieren? Manuell gesetzte Slots bleiben fix, nur unzugeordnete werden platziert.'
+					: 'Zuordnung komplett neu generieren? Bestehende Slot-Zuordnungen werden überschrieben.'
+			)
+		)
+			return;
+		generating = true;
+		listError = '';
+		try {
+			const res = await fetch('/api/generatePreplanAssignment', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ keepAssigned })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			validation = result.generatePreplanAssignment;
+			validationKind = 'generate';
+			await invalidateAll();
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		} finally {
+			generating = false;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -250,6 +316,23 @@
 		<h1 class="text-2xl font-semibold">SEB/EXaHM-Vorplanung</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.exams.length}</span>
 		<div class="flex-1"></div>
+		<label
+			class="flex cursor-pointer items-center gap-1 text-sm"
+			title="Manuell gesetzte Slots fix lassen, nur unzugeordnete platzieren"
+		>
+			<input type="checkbox" class="checkbox checkbox-xs" bind:checked={keepAssigned} />
+			<span>gesetzte behalten</span>
+		</label>
+		<button class="btn btn-outline btn-sm" on:click={validate} disabled={validating || generating}>
+			{validating ? 'validiert …' : 'Validieren'}
+		</button>
+		<button
+			class="btn btn-secondary btn-sm"
+			on:click={generate}
+			disabled={validating || generating}
+		>
+			{generating ? 'generiert …' : 'Zuordnung generieren'}
+		</button>
 		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
 	</div>
 
@@ -262,6 +345,37 @@
 
 	{#if listError}
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
+	{/if}
+
+	<!-- Befunde aus Validieren / Generieren -->
+	{#if validation}
+		{@const head =
+			validationKind === 'generate'
+				? `Zuordnung generiert: ${validation.assignedCount} Prüfung(en) platziert`
+				: `Validierung: ${validation.assignedCount} zugeordnet`}
+		<div
+			class="alert {validation.ok ? 'alert-success' : 'alert-warning'} flex-col items-start py-3"
+		>
+			<div class="flex w-full items-center gap-2">
+				<span class="font-medium">{head}</span>
+				{#if validation.unassignedIDs.length}
+					<span class="badge badge-error badge-sm">
+						{validation.unassignedIDs.length} nicht zugeordnet
+					</span>
+				{:else}
+					<span class="badge badge-success badge-sm">vollständig</span>
+				{/if}
+				<div class="flex-1"></div>
+				<button class="btn btn-ghost btn-xs" on:click={() => (validation = null)}>schließen</button>
+			</div>
+			{#if validation.messages.length}
+				<ul class="mt-1 list-inside list-disc text-sm">
+					{#each validation.messages as m}
+						<li>{m}</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
 	{/if}
 
 	<!-- Vorplanungs-Übersicht: Raumbedarf + Überschneidungen je Slot -->
@@ -352,8 +466,17 @@
 				</thead>
 				<tbody>
 					{#each data.exams as e (e.id)}
-						<tr class="hover {data.zpaPresent && !e.ancode ? 'bg-warning/5' : ''}">
+						<tr
+							class="hover {unassignedSet.has(e.id)
+								? 'bg-error/10'
+								: data.zpaPresent && !e.ancode
+									? 'bg-warning/5'
+									: ''}"
+						>
 							<td>
+								{#if unassignedSet.has(e.id)}
+									<span class="mr-1" title="konnte nicht zugeordnet werden">⚠</span>
+								{/if}
 								{#if e.examKind === 'SEB'}
 									<span class="badge badge-error badge-sm">SEB</span>
 								{:else}
