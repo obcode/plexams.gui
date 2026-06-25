@@ -18,6 +18,14 @@
 
 	/** @param {string} iso */
 	const dayPart = (iso) => (iso ?? '').slice(0, 10);
+	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	/** @param {string} iso → „Mo, 06.07." */
+	const fmtDay = (iso) => {
+		const [y, m, d] = dayPart(iso).split('-').map(Number);
+		if (!y) return dayPart(iso);
+		const dt = new Date(Date.UTC(y, m - 1, d));
+		return `${WD[dt.getUTCDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
+	};
 
 	// Formularzustand
 	let form = {
@@ -207,7 +215,7 @@
 									checked={form.excludeDays.has(dayPart(d.date))}
 									on:change={() => toggleDay(dayPart(d.date))}
 								/>
-								<span class="tabular-nums">{dayPart(d.date)}</span>
+								<span class="tabular-nums">{fmtDay(d.date)}</span>
 							</label>
 						{/each}
 					</div>

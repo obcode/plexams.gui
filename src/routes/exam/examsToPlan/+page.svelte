@@ -13,7 +13,13 @@
 	$: if (data.items !== lastData) {
 		items = data.items.map((/** @type {any} */ e) => ({ ...e }));
 		lastData = data.items;
+		// beim Laden: gibt es „nicht zugeordnete", nur die zeigen, sonst „zu planen"
+		filterStatus = items.some((/** @type {any} */ e) => e.status === 'unknown')
+			? 'unknown'
+			: 'toPlan';
 	}
+
+	$: byAncode = new Map(items.map((/** @type {any} */ e) => [e.ancode, e]));
 
 	/** @type {Set<number>} */
 	let busy = new Set();
@@ -47,8 +53,15 @@
 			(c.possibleDays ?? []).length ||
 			(c.sameSlot ?? []).length ||
 			roomSet(c.roomConstraints));
-	/** @param {string} iso */
-	const day = (iso) => (iso ?? '').slice(0, 10);
+	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	/** @param {string} iso → „Mo, 06.07." */
+	const day = (iso) => {
+		const p = (iso ?? '').slice(0, 10);
+		const [y, m, d] = p.split('-').map(Number);
+		if (!y) return p;
+		const dt = new Date(Date.UTC(y, m - 1, d));
+		return `${WD[dt.getUTCDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
+	};
 
 	// --- Filter ---
 	// Status: beim Laden nur „zu planen"
@@ -72,6 +85,8 @@
 				return !!rc?.exahm;
 			case 'seb':
 				return !!rc?.seb;
+			case 'exahmseb':
+				return !!rc?.exahm && !!rc?.seb;
 			case 'lab':
 				return !!rc?.lab;
 			case 'socket':
@@ -153,7 +168,8 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">ZPA-Prüfungen planen</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{counts.total}</span>
+		<span class="badge badge-primary badge-lg tabular-nums">{filtered.length} / {counts.total}</span
+		>
 	</div>
 
 	<!-- Banner: nicht zugeordnete Prüfungen -->
@@ -208,6 +224,7 @@
 				<option value="ohne">ohne Constraints</option>
 				<option value="exahm">EXaHM</option>
 				<option value="seb">SEB</option>
+				<option value="exahmseb">EXaHM und SEB</option>
 				<option value="lab">Labor</option>
 				<option value="socket">Steckdosen</option>
 				<option value="notme">nicht von mir geplant</option>
@@ -230,7 +247,10 @@
 					? 'border-l-warning bg-warning/5'
 					: e.status === 'toPlan'
 						? 'border-l-success/40'
-						: 'border-l-base-300 opacity-60'}"
+						: 'border-l-base-300 opacity-60'} {e.status === 'toPlan' &&
+				e.constraints?.notPlannedByMe
+					? 'opacity-50'
+					: ''}"
 			>
 				<!-- Status -->
 				<div class="flex w-40 shrink-0 items-center gap-2">
@@ -268,6 +288,9 @@
 						>
 						<span class="font-medium">{e.module}</span>
 						{#if e.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
+						{#if e.slot}<span
+								title="schon vorgeplant: Tag {e.slot.dayNumber} · Slot {e.slot.slotNumber}">📌</span
+							>{/if}
 					</div>
 					<div class="text-sm text-base-content/70">
 						{e.mainExamer} · <span class="text-base-content/50">{e.examTypeFull}</span>
@@ -275,15 +298,6 @@
 					<div class="mt-1 flex flex-wrap items-center gap-1">
 						{#each e.groups ?? [] as g}
 							<span class="badge badge-ghost badge-xs">{g}</span>
-						{/each}
-						{#each e.primussAncodes ?? [] as p}
-							{#if p.ancode === -1 || p.ancode === 0}
-								<span class="badge badge-error badge-xs">{p.program}/{p.ancode}</span>
-							{:else if p.ancode === e.ancode}
-								<span class="badge badge-outline badge-xs">{p.program}</span>
-							{:else}
-								<span class="badge badge-warning badge-xs">{p.program}/{p.ancode}</span>
-							{/if}
 						{/each}
 					</div>
 				</div>
@@ -304,18 +318,25 @@
 							{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm"
 									>Steckdosen</span
 								>{/if}
-							{#if (c?.excludeDays ?? []).length}<span
-									class="badge badge-ghost badge-sm"
-									title={c.excludeDays.map(day).join(', ')}>Sperrtage {c.excludeDays.length}</span
+							{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm"
+									>🚫 {c.excludeDays.map(day).join(', ')}</span
 								>{/if}
-							{#if (c?.possibleDays ?? []).length}<span
-									class="badge badge-ghost badge-sm"
-									title={c.possibleDays.map(day).join(', ')}>nur {c.possibleDays.length}</span
+							{#if (c?.possibleDays ?? []).length}<span class="badge badge-ghost badge-sm"
+									>nur {c.possibleDays.map(day).join(', ')}</span
 								>{/if}
-							{#if (c?.sameSlot ?? []).length}<span
-									class="badge badge-ghost badge-sm"
-									title={c.sameSlot.join(', ')}>=Slot {c.sameSlot.length}</span
-								>{/if}
+							{#each c?.sameSlot ?? [] as a}
+								<button
+									class="badge badge-outline badge-sm tabular-nums hover:badge-primary"
+									title={byAncode.get(a)
+										? `gleicher Slot wie ${a} — ${byAncode.get(a).module} (${
+												byAncode.get(a).mainExamer
+											})`
+										: `gleicher Slot wie ${a}`}
+									on:click={() => byAncode.get(a) && openEdit(byAncode.get(a))}
+								>
+									↔ {a}
+								</button>
+							{/each}
 							{#if c?.roomConstraints?.maxStudents}<span class="badge badge-ghost badge-sm"
 									>max {c.roomConstraints.maxStudents}</span
 								>{/if}
