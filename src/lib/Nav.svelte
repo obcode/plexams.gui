@@ -71,80 +71,80 @@
 		{
 			label: 'Vorbereitung',
 			items: [
-				{ section: 'Konfiguration' },
-				{ href: '/config', label: 'Semester-Konfiguration' },
-				{ href: '/config/new', label: 'Neues Semester anlegen' },
 				{ section: 'ZPA-Prüfungen' },
-				{ href: '/exam/examsToPlan', label: 'Zu planende ZPA-Prüfungen' },
-				{ href: '/exam/examsNotToPlan', label: 'Nicht zu planende ZPA-Prüfungen' },
-				{ href: '/exam/examsPlaningStatusUnknown', label: 'Nicht zugeordnete ZPA-Prüfungen' },
-				{ href: '/exam/examersToPlan', label: 'Zu planende Prüfende' },
+				{ href: '/exam/examsToPlan', label: '📝 Zu planende ZPA-Prüfungen' },
+				{ href: '/exam/examsNotToPlan', label: '🚫 Nicht zu planende ZPA-Prüfungen' },
+				{ href: '/exam/examsPlaningStatusUnknown', label: '❓ Nicht zugeordnete ZPA-Prüfungen' },
+				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
 				{ section: 'Constraints & Computer-Prüfungen' },
-				{ href: '/exam/constraints', label: 'Constraints' },
-				{ href: '/exam/kdp', label: 'EXaHM/SEB' },
-				{ href: '/preplan', label: 'SEB/EXaHM-Vorplanung' },
+				{ href: '/exam/constraints', label: '📌 Constraints' },
+				{ href: '/exam/kdp', label: '💻 EXaHM/SEB' },
+				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
 				{ section: 'Anmeldungen' },
-				{ href: '/exam/connected', label: 'Anmeldungszuordnung (ZPA/Primuss)' }
+				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' }
 			]
 		},
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/exam/generatedExams', label: 'generierte Prüfungen mit Anmeldungen, etc.' },
-				{ href: '/plan/pre', label: 'Vorab-Planung (ohne Primuss-Daten)' },
-				{ href: '/plan/exams', label: 'Prüfungen planen' },
-				{ href: '/plan/exams/validate', label: 'Validierung' }
+				{ href: '/exam/generatedExams', label: '📋 generierte Prüfungen mit Anmeldungen, etc.' },
+				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
+				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
+				{ href: '/plan/exams/validate', label: '✅ Validierung' }
 			]
 		},
 		{
 			label: 'Raumplanung',
 			items: [
-				{ href: '/plan/rooms', label: 'Raumplanung' },
-				{ href: '/plan/kdprooms', label: 'Anny-Anforderungen (KDP)' },
-				{ href: '/plan/roomRequests', label: 'Gebäudemanagement-Anforderungen' },
-				{ href: '/plan/rooms/validate', label: 'Validierung' }
+				{ href: '/plan/rooms', label: '🏢 Raumplanung' },
+				{ href: '/plan/kdprooms', label: '💻 Anny-Anforderungen (KDP)' },
+				{ href: '/plan/roomRequests', label: '🛠️ Gebäudemanagement-Anforderungen' },
+				{ href: '/plan/rooms/validate', label: '✅ Validierung' }
 			]
 		},
 		{
 			label: 'Aufsichtenplanung',
 			items: [
-				{ href: '/plan/invigilation/planning', label: 'Anforderungen und Planung' },
-				{ href: '/plan/invigilation/constraints', label: 'Aufsichts-Constraints' },
-				{ href: '/plan/invigilation', label: 'Zeitplan' },
-				{ href: '/plan/invigilation/generate', label: 'Generierung' },
-				{ href: '/plan/invigilation/validate', label: 'Validierung' }
+				{ href: '/plan/invigilation/planning', label: '👀 Anforderungen und Planung' },
+				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
+				{ href: '/plan/invigilation', label: '⏰ Zeitplan' },
+				{ href: '/plan/invigilation/generate', label: '✨ Generierung' },
+				{ href: '/plan/invigilation/validate', label: '✅ Validierung' }
 			]
 		},
 		{
 			label: 'E-Mails',
 			items: [
-				{ href: '/email', label: 'E-Mails versenden' },
-				{ href: '/email/attachments', label: 'Anhänge (Deckblätter, Bilder)' }
+				{ href: '/email', label: '📧 E-Mails versenden' },
+				{ href: '/email/attachments', label: '📎 Anhänge (Deckblätter, Bilder)' }
 			]
 		},
 		{
 			label: 'Semesterdaten',
 			items: [
 				{ section: 'ZPA' },
-				{ href: '/zpa/publish', label: 'ZPA-Import & Veröffentlichung' },
-				{ href: '/zpa/exams', label: 'Prüfungsliste (ZPA)' },
-				{ href: '/zpa/teacher', label: 'Dozierende & Aufsichten (ZPA)' },
-				{ href: '/zpa/studentregs', label: 'Importfehler Anmeldungen (ZPA)' },
+				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
+				{ href: '/zpa/exams', label: '📋 Prüfungsliste (ZPA)' },
+				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
+				{ href: '/zpa/studentregs', label: '⚠️ Importfehler Anmeldungen (ZPA)' },
 				{ section: 'Primuss' },
-				{ href: '/primuss/mucdai', label: 'MUC.DAI' },
-				{ href: '/primuss/exams', label: 'Primuss' },
+				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
+				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
 				{ section: 'Weitere' },
-				{ href: '/plan/annyBookings', label: 'Anny-Buchungen' },
-				{ href: '/nta/semester', label: 'NTA' }
+				{ href: '/plan/annyBookings', label: '📅 Anny-Buchungen' },
+				{ href: '/nta/semester', label: '♿ NTA' },
+				{ section: 'Konfiguration' },
+				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
+				{ href: '/config/new', label: '➕ Neues Semester anlegen' }
 			]
 		},
 		{
 			label: 'Stammdaten',
 			items: [
-				{ href: '/studyprograms', label: 'Studiengänge' },
-				{ href: '/rooms', label: 'Räume' },
-				{ href: '/nta/all', label: 'NTAs' },
-				{ href: '/invigilators', label: 'Aufsichten' }
+				{ href: '/studyprograms', label: '🎓 Studiengänge' },
+				{ href: '/rooms', label: '🚪 Räume' },
+				{ href: '/nta/all', label: '♿ NTAs' },
+				{ href: '/invigilators', label: '👀 Aufsichten' }
 			]
 		}
 	];
