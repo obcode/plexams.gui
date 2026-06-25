@@ -203,13 +203,13 @@
 					{/each}
 				</select>
 				<select
-					class="select select-bordered select-xs w-56"
+					class="select select-bordered select-xs w-72"
 					bind:value={addAncode}
 					disabled={!addProgram}
 				>
 					<option value="">Ancode wählen …</option>
 					{#each primussByProgram[addProgram] ?? [] as e}
-						<option value={e.ancode}>{e.ancode} — {e.module}</option>
+						<option value={e.ancode}>{e.ancode} — {e.module} ({e.mainExamer})</option>
 					{/each}
 				</select>
 				<button
