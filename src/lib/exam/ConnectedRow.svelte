@@ -1,14 +1,67 @@
 <script>
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
+	// Aktionen (add/remove/fix/rebuild) liefern das aktualisierte ConnectedExam,
+	// das per `updated`-Event nach oben gereicht und im State ersetzt wird.
+	import { createEventDispatcher } from 'svelte';
 	import { LEVEL, warningsOf } from '$lib/exam/connected.js';
 
 	/** @type {any} */
 	export let exam;
 
+	const dispatch = createEventDispatcher();
+
 	$: lvl = LEVEL[exam.level];
 	$: errs = warningsOf(exam, 'error');
 	$: warns = warningsOf(exam, 'warning');
 	$: infos = warningsOf(exam, 'info');
+	$: connectedProgs = new Set((exam.primussExams ?? []).map((/** @type {any} */ p) => p.program));
+
+	let editing = false;
+	let busy = false;
+	let actionError = '';
+	/** @type {Record<string, number>} Zielnummer je Studiengang fürs Umnummerieren */
+	let fixTo = {};
+
+	function startEdit() {
+		fixTo = Object.fromEntries(
+			(exam.primussExams ?? []).map((/** @type {any} */ p) => [p.program, p.ancode])
+		);
+		actionError = '';
+		editing = true;
+	}
+
+	/** @param {string} path @param {any} body */
+	async function call(path, body) {
+		if (busy) return;
+		busy = true;
+		actionError = '';
+		try {
+			const res = await fetch(`/api/${path}`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ zpaAncode: exam.zpaExam.ancode, ...body })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				actionError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			dispatch('updated', result[path]);
+		} catch (e) {
+			actionError = e instanceof Error ? e.message : String(e);
+		} finally {
+			busy = false;
+		}
+	}
+
+	/** @param {string} program @param {number} primussAncode */
+	const add = (program, primussAncode) => call('addPrimussAncode', { program, primussAncode });
+	/** @param {string} program */
+	const remove = (program) => call('removePrimussAncode', { program });
+	/** @param {string} program @param {number} fromAncode @param {number} toAncode */
+	const fix = (program, fromAncode, toAncode) =>
+		call('fixPrimussAncode', { program, fromAncode, toAncode });
+	const rebuild = () => call('rebuildConnectedExam', {});
 </script>
 
 <div
@@ -41,36 +94,106 @@
 	</div>
 
 	<!-- Primuss (Anmeldedaten, vom Server zugeordnet) -->
-	<div class="flex flex-col gap-1">
-		{#each exam.primussExams ?? [] as p}
-			<div class="flex flex-wrap items-baseline gap-x-2 text-sm">
-				<span class="badge badge-neutral badge-sm">{p.program}</span>
-				<span class="font-mono tabular-nums text-base-content/50">{p.ancode}</span>
-				<span>{p.module}</span>
-				<span class="text-base-content/50">· {p.mainExamer}</span>
+	<div class="flex min-w-0 flex-col gap-1">
+		<div class="flex items-start justify-between gap-2">
+			<div class="flex min-w-0 flex-col gap-1">
+				{#each exam.primussExams ?? [] as p}
+					<div class="flex flex-wrap items-center gap-x-2 text-sm">
+						<span class="badge badge-neutral badge-sm">{p.program}</span>
+						{#if editing}
+							<input
+								type="number"
+								class="input input-bordered input-xs w-20 tabular-nums"
+								bind:value={fixTo[p.program]}
+							/>
+							<button
+								class="btn btn-ghost btn-xs"
+								disabled={busy || Number(fixTo[p.program]) === p.ancode}
+								title="umnummerieren {p.ancode} → {fixTo[p.program]}"
+								on:click={() => fix(p.program, p.ancode, Number(fixTo[p.program]))}
+							>
+								↻ Nr.
+							</button>
+							<button
+								class="btn btn-ghost btn-xs text-error"
+								disabled={busy}
+								title="entfernen"
+								on:click={() => remove(p.program)}
+							>
+								✕
+							</button>
+						{:else}
+							<span class="font-mono tabular-nums text-base-content/50">{p.ancode}</span>
+						{/if}
+						<span>{p.module}</span>
+						<span class="text-base-content/50">· {p.mainExamer}</span>
+					</div>
+				{:else}
+					<div class="text-sm font-medium text-error">— keine Primuss-Prüfung zugeordnet</div>
+				{/each}
 			</div>
-		{:else}
-			<div class="text-sm font-medium text-error">— keine Primuss-Prüfung zugeordnet</div>
-		{/each}
+
+			<!-- Zeilen-Aktionen -->
+			<div class="flex shrink-0 items-center gap-1">
+				{#if busy}<span class="loading loading-spinner loading-xs"></span>{/if}
+				<button
+					class="btn btn-ghost btn-xs"
+					disabled={busy}
+					title="Zuordnung neu berechnen"
+					on:click={rebuild}
+				>
+					↻ neu bauen
+				</button>
+				<button
+					class="btn btn-ghost btn-xs"
+					class:btn-active={editing}
+					on:click={() => (editing ? (editing = false) : startEdit())}
+				>
+					{editing ? 'fertig' : '✎ bearbeiten'}
+				</button>
+			</div>
+		</div>
 
 		{#if (exam.otherPrimussExams ?? []).length}
 			<div class="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-base-content/50">
 				<span>gleiche Nummer auch in:</span>
 				{#each exam.otherPrimussExams as o}
 					<span class="badge badge-outline badge-xs">{o.program}/{o.ancode}</span>
+					{#if editing && !connectedProgs.has(o.program)}
+						<button
+							class="btn btn-ghost btn-xs"
+							disabled={busy}
+							title="{o.program}/{o.ancode} hinzufügen"
+							on:click={() => add(o.program, o.ancode)}
+						>
+							＋
+						</button>
+					{/if}
 				{/each}
 			</div>
 		{/if}
 	</div>
 
+	{#if actionError}
+		<div class="alert alert-error py-1.5 text-sm md:col-span-2"><span>{actionError}</span></div>
+	{/if}
+
 	<!-- echte Probleme prominent, über die volle Breite -->
 	{#if errs.length || warns.length}
 		<div class="flex flex-col gap-1 md:col-span-2">
-			{#each errs as w}
-				<div class="alert alert-error py-1.5 text-sm"><span>{w.message}</span></div>
-			{/each}
-			{#each warns as w}
-				<div class="alert alert-warning py-1.5 text-sm"><span>{w.message}</span></div>
+			{#each [...errs, ...warns] as w}
+				<div
+					class="alert {w.level === 'error'
+						? 'alert-error'
+						: 'alert-warning'} flex-wrap gap-2 py-1.5 text-sm"
+				>
+					<span>{w.message}</span>
+					{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
+						<button class="btn btn-xs" disabled={busy} on:click={() => add(w.program, w.ancode)}>
+							＋ {w.program}/{w.ancode} hinzufügen
+						</button>
+					{/if}
+				</div>
 			{/each}
 		</div>
 	{/if}
@@ -87,7 +210,19 @@
 				class="mt-1 ml-1 flex list-inside list-disc flex-col gap-0.5 text-xs text-base-content/50"
 			>
 				{#each infos as w}
-					<li>{w.message}</li>
+					<li class="flex flex-wrap items-center gap-2">
+						<span>{w.message}</span>
+						{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
+							<button
+								class="btn btn-ghost btn-xs"
+								disabled={busy}
+								title="{w.program}/{w.ancode} hinzufügen"
+								on:click={() => add(w.program, w.ancode)}
+							>
+								＋ hinzufügen
+							</button>
+						{/if}
+					</li>
 				{/each}
 			</ul>
 		</details>

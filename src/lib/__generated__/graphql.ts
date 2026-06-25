@@ -97,10 +97,21 @@ export type ConflictsPerProgramAncode = {
 
 export type ConnectedExam = {
   __typename?: 'ConnectedExam';
-  errors: Array<Scalars['String']['output']>;
   otherPrimussExams: Array<PrimussExam>;
   primussExams: Array<PrimussExam>;
+  warnings: Array<ConnectedExamWarning>;
   zpaExam: ZpaExam;
+};
+
+/** A structured note on a ZPA↔Primuss connection. level ∈ info | warning | error. */
+export type ConnectedExamWarning = {
+  __typename?: 'ConnectedExamWarning';
+  ancode?: Maybe<Scalars['Int']['output']>;
+  examer?: Maybe<Scalars['String']['output']>;
+  level: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  module?: Maybe<Scalars['String']['output']>;
+  program?: Maybe<Scalars['String']['output']>;
 };
 
 export type Constraints = {
@@ -485,6 +496,8 @@ export type Mutation = {
    */
   addNtaRoomAloneWaiver: NtaRoomAloneWaiver;
   addPreplanExam: PreplanExam;
+  /** ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam. */
+  addPrimussAncode: ConnectedExam;
   /** Create a new room (key: name). Errors if a room with that name already exists. */
   addRoom: Room;
   /** Manually add a single room request (key: room/day/slot). Errors if one already exists. Starts active and not approved. */
@@ -511,6 +524,7 @@ export type Mutation = {
   disconnectPreplanExam: PreplanExam;
   exahm: Scalars['Boolean']['output'];
   excludeDays: Scalars['Boolean']['output'];
+  fixPrimussAncode: ConnectedExam;
   /**
    * Generate (and persist) slot assignments for the SEB/EXaHM preplan exams.
    * keepAssigned: true keeps manually set slots fixed, only places unassigned ones.
@@ -543,6 +557,7 @@ export type Mutation = {
    */
   prePlanInvigilationInSlot: Scalars['Boolean']['output'];
   prePlanRoom: Scalars['Boolean']['output'];
+  rebuildConnectedExam: ConnectedExam;
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
@@ -551,6 +566,7 @@ export type Mutation = {
   removePrePlannedInvigilation: Scalars['Boolean']['output'];
   /** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
   removePrePlannedRoom: Scalars['Boolean']['output'];
+  removePrimussAncode: ConnectedExam;
   /**
    * Reset the generated invigilations (invigilations_other) so only the
    * pre-planning remains; self-invigilations are refreshed on the next generation.
@@ -635,6 +651,13 @@ export type MutationAddNtaRoomAloneWaiverArgs = {
 
 export type MutationAddPreplanExamArgs = {
   input: PreplanExamInput;
+};
+
+
+export type MutationAddPrimussAncodeArgs = {
+  primussAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
 
 
@@ -725,6 +748,14 @@ export type MutationExcludeDaysArgs = {
 };
 
 
+export type MutationFixPrimussAncodeArgs = {
+  fromAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  toAncode: Scalars['Int']['input'];
+  zpaAncode: Scalars['Int']['input'];
+};
+
+
 export type MutationGeneratePreplanAssignmentArgs = {
   keepAssigned: Scalars['Boolean']['input'];
 };
@@ -780,6 +811,11 @@ export type MutationPrePlanRoomArgs = {
 };
 
 
+export type MutationRebuildConnectedExamArgs = {
+  zpaAncode: Scalars['Int']['input'];
+};
+
+
 export type MutationRemoveNtaRoomAloneWaiverArgs = {
   ancode: Scalars['Int']['input'];
   mtknr: Scalars['String']['input'];
@@ -802,6 +838,12 @@ export type MutationRemovePrePlannedRoomArgs = {
   ancode: Scalars['Int']['input'];
   mtknr?: InputMaybe<Scalars['String']['input']>;
   roomName: Scalars['String']['input'];
+};
+
+
+export type MutationRemovePrimussAncodeArgs = {
+  program: Scalars['String']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
 
 

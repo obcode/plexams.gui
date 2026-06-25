@@ -4,10 +4,30 @@
 
 	export let data;
 
-	$: rows = (data.connectedExams ?? []).map((/** @type {any} */ e) => ({
-		...e,
-		level: levelOf(e)
-	}));
+	// lokaler, bearbeitbarer State — Mutationen ersetzen nur den betroffenen
+	// Eintrag (kein Voll-Reload).
+	/** @type {any[]} */
+	let exams = [];
+	/** @type {any} */
+	let lastData;
+	$: if (data.connectedExams !== lastData) {
+		exams = [...(data.connectedExams ?? [])];
+		lastData = data.connectedExams;
+	}
+
+	/** @param {CustomEvent<any>} ev → aktualisiertes ConnectedExam einsetzen */
+	function onUpdated(ev) {
+		const updated = ev.detail;
+		if (!updated) return;
+		const i = exams.findIndex(
+			(/** @type {any} */ e) => e.zpaExam.ancode === updated.zpaExam.ancode
+		);
+		if (i >= 0) exams[i] = updated;
+		else exams = [...exams, updated];
+		exams = exams;
+	}
+
+	$: rows = exams.map((/** @type {any} */ e) => ({ ...e, level: levelOf(e) }));
 
 	/** @param {(e: any) => Set<string>} fn */
 	const sortedPrograms = (fn) =>
@@ -146,7 +166,7 @@
 
 		<div class="flex flex-col gap-1.5">
 			{#each filtered as exam (exam.zpaExam.ancode)}
-				<ConnectedRow {exam} />
+				<ConnectedRow {exam} on:updated={onUpdated} />
 			{:else}
 				<div class="p-6 text-center text-sm text-base-content/50">
 					Keine Prüfungen entsprechen dem Filter.

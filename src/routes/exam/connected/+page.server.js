@@ -1,34 +1,12 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
 
 export async function load() {
 	const query = gql`
 		query {
 			connectedExams {
-				zpaExam {
-					ancode
-					module
-					mainExamer
-					examType
-					groups
-				}
-				primussExams {
-					ancode
-					module
-					mainExamer
-					program
-					examType
-				}
-				otherPrimussExams {
-					ancode
-					module
-					mainExamer
-					program
-				}
-				warnings {
-					level
-					message
-				}
+				${CONNECTED_EXAM_FIELDS}
 			}
 		}
 	`;

@@ -105,6 +105,10 @@ type ConnectedExam {
 type ConnectedExamWarning {
   level: String!
   message: String!
+  program: String
+  ancode: Int
+  module: String
+  examer: String
 }
 
 type Constraints {
@@ -512,6 +516,12 @@ type Mutation {
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
   setPlaner(name: String!, email: String!): Planer!
+
+  """ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam."""
+  addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
+  removePrimussAncode(zpaAncode: Int!, program: String!): ConnectedExam!
+  fixPrimussAncode(zpaAncode: Int!, program: String!, fromAncode: Int!, toAncode: Int!): ConnectedExam!
+  rebuildConnectedExam(zpaAncode: Int!): ConnectedExam!
   createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
   seedStudyProgramsFromConfig: Int!
   upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
