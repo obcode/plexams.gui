@@ -578,6 +578,7 @@ export type Mutation = {
    * empty the backend tries to resolve it).
    */
   setPermanentNonInvigilator: PermanentNonInvigilator;
+  setPlaner: Planer;
   /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
   setPlanningCondition: PlanningState;
   setPreplanExamSlot: PreplanExam;
@@ -848,6 +849,12 @@ export type MutationSetPermanentNonInvigilatorArgs = {
 };
 
 
+export type MutationSetPlanerArgs = {
+  email: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+};
+
+
 export type MutationSetPlanningConditionArgs = {
   done: Scalars['Boolean']['input'];
   key: Scalars['String']['input'];
@@ -1023,6 +1030,13 @@ export type PlanEntry = {
   locked: Scalars['Boolean']['output'];
   slotNumber: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
+};
+
+/** Global planner (name + e-mail), stored in the DB, semester-independent. */
+export type Planer = {
+  __typename?: 'Planer';
+  email: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type PlannedExam = {
@@ -1307,6 +1321,7 @@ export type Query = {
    * DB), carries over between semesters; always implies isNotInvigilator.
    */
   permanentNonInvigilators: Array<PermanentNonInvigilator>;
+  planer: Planer;
   plannedExam?: Maybe<PlannedExam>;
   plannedExams: Array<PlannedExam>;
   plannedRoomForStudent?: Maybe<PlannedRoom>;
@@ -1821,6 +1836,7 @@ export type StudyProgram = {
   category: Scalars['String']['output'];
   degree?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  retired: Scalars['Boolean']['output'];
   shortname: Scalars['String']['output'];
 };
 
@@ -1829,6 +1845,7 @@ export type StudyProgramInput = {
   category: Scalars['String']['input'];
   degree?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  retired?: InputMaybe<Scalars['Boolean']['input']>;
   shortname: Scalars['String']['input'];
 };
 

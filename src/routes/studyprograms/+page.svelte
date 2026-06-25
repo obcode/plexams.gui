@@ -41,7 +41,14 @@
 	let saving = false;
 
 	function openAdd() {
-		editing = { shortname: '', name: '', degree: '', category: 'fk07', active: true };
+		editing = {
+			shortname: '',
+			name: '',
+			degree: '',
+			category: 'fk07',
+			active: true,
+			retired: false
+		};
 		isNew = true;
 		editError = '';
 	}
@@ -52,7 +59,8 @@
 			name: p.name ?? '',
 			degree: p.degree ?? '',
 			category: p.category || 'misc',
-			active: !!p.active
+			active: !!p.active,
+			retired: !!p.retired
 		};
 		isNew = false;
 		editError = '';
@@ -84,7 +92,8 @@
 				name: editing.name ?? '',
 				degree: (editing.degree ?? '').trim() || null,
 				category: editing.category || 'misc',
-				active: !!editing.active
+				active: !!editing.active,
+				retired: !!editing.retired
 			});
 			closeEdit();
 			await invalidateAll();
@@ -106,7 +115,8 @@
 				name: p.name ?? '',
 				degree: p.degree ?? null,
 				category: p.category || 'misc',
-				active: !p.active
+				active: !p.active,
+				retired: !!p.retired
 			});
 			await invalidateAll();
 		} catch (e) {
@@ -219,6 +229,14 @@
 										{:else}
 											<span class="text-warning">— Name fehlt</span>
 										{/if}
+										{#if p.retired}
+											<span
+												class="badge badge-warning badge-sm ml-1"
+												title="ausgelaufenes Programm"
+											>
+												ausgelaufen
+											</span>
+										{/if}
 									</td>
 									<td class="text-sm text-base-content/70">{p.degree || '—'}</td>
 									<td>
@@ -289,6 +307,15 @@
 					<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.active} />
 					<span>aktiv</span>
 				</label>
+				{#if editing.category === 'fk07'}
+					<label class="flex cursor-pointer items-center gap-2">
+						<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.retired} />
+						<span
+							>ausgelaufenes Programm <span class="text-base-content/50">(altes oldprogram)</span
+							></span
+						>
+					</label>
+				{/if}
 			</div>
 			{#if editError}
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>

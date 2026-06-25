@@ -9,6 +9,10 @@ export async function load() {
 				semester {
 					id
 				}
+				planer {
+					name
+					email
+				}
 				semesterConfigInput {
 					from
 					until
@@ -33,6 +37,8 @@ export async function load() {
 
 	return {
 		semester: data.semester?.id ?? '',
+		// global (semesterübergreifend) in der DB
+		planer: data.planer ?? { name: '', email: '' },
 		// null = frisches Semester ohne Config → leeres Formular
 		config: data.semesterConfigInput ?? null
 	};

@@ -505,6 +505,7 @@ type Mutation {
   """
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
+  setPlaner(name: String!, email: String!): Planer!
   createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
   seedStudyProgramsFromConfig: Int!
   upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
@@ -870,6 +871,7 @@ type PrimussExamWithCount {
 type Query {
   allSemesterNames: [Semester!]!
   semester: Semester!
+  planer: Planer!
   semesterConfig: SemesterConfig!
   semesterConfigInput: SemesterConfigInput
   newSemesterConfigDefaults: SemesterConfigInput!
@@ -1215,6 +1217,7 @@ type StudyProgram {
   degree: String
   category: String!
   active: Boolean!
+  retired: Boolean!
 }
 
 input StudyProgramInput {
@@ -1223,6 +1226,7 @@ input StudyProgramInput {
   degree: String
   category: String!
   active: Boolean!
+  retired: Boolean
 }
 
 """
@@ -1308,6 +1312,12 @@ type PreplanAncodeSuggestion {
 type SaveSemesterConfigResult {
   ok: Boolean!
   warnings: [String!]!
+}
+
+"""Global planner (name + e-mail), stored in the DB, semester-independent."""
+type Planer {
+  name: String!
+  email: String!
 }
 
 type SemesterConfig {

@@ -12,6 +12,7 @@ export async function load() {
 					degree
 					category
 					active
+					retired
 				}
 			}
 		`

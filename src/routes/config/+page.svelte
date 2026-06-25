@@ -13,6 +13,37 @@
 	let showWarnings = false;
 	let savedAt = '';
 
+	// Planer (global, semesterübergreifend in der DB)
+	let planerName = data.planer?.name ?? '';
+	let planerEmail = data.planer?.email ?? '';
+	let planerSaving = false;
+	let planerError = '';
+	let planerSavedAt = '';
+
+	async function savePlaner() {
+		if (planerSaving) return;
+		planerSaving = true;
+		planerError = '';
+		planerSavedAt = '';
+		try {
+			const res = await fetch('/api/setPlaner', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ name: planerName.trim(), email: planerEmail.trim() })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				planerError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			planerSavedAt = new Date().toLocaleTimeString('de-DE');
+		} catch (e) {
+			planerError = e instanceof Error ? e.message : String(e);
+		} finally {
+			planerSaving = false;
+		}
+	}
+
 	async function save() {
 		if (saving) return;
 		saving = true;
@@ -57,6 +88,33 @@
 		{/if}
 		<div class="flex-1"></div>
 		<a class="btn btn-outline btn-sm" href="/config/new">+ Neues Semester anlegen</a>
+	</div>
+
+	<!-- Planer (global, semesterübergreifend) -->
+	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
+		<div class="flex items-center gap-2">
+			<span class="font-semibold">Planer</span>
+			<span class="text-sm text-base-content/50">global, semesterübergreifend</span>
+		</div>
+		<div class="flex flex-wrap items-end gap-3">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Name</span>
+				<input type="text" class="input input-bordered input-sm w-72" bind:value={planerName} />
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">E-Mail</span>
+				<input type="email" class="input input-bordered input-sm w-72" bind:value={planerEmail} />
+			</label>
+			<button class="btn btn-primary btn-sm" disabled={planerSaving} on:click={savePlaner}>
+				{planerSaving ? 'speichert …' : 'Planer speichern'}
+			</button>
+			{#if planerSavedAt}
+				<span class="text-xs text-success">gespeichert ({planerSavedAt})</span>
+			{/if}
+		</div>
+		{#if planerError}
+			<div class="alert alert-error py-2 text-sm"><span>{planerError}</span></div>
+		{/if}
 	</div>
 
 	{#if errorMsg}
