@@ -1,0 +1,28 @@
+import { env } from '$env/dynamic/private';
+import { json } from '@sveltejs/kit';
+import { request as gqlrequest, gql } from 'graphql-request';
+import { gqlErrorMessage } from '$lib/gqlError';
+
+/** @type {import('./$types').RequestHandler} */
+export async function POST({ request }) {
+	const { id } = await request.json();
+
+	const query = gql`
+		query ($id: Int!) {
+			preplanExamAncodeSuggestions(id: $id) {
+				ancode
+				module
+				mainExamer
+				mainExamerID
+				examType
+			}
+		}
+	`;
+
+	try {
+		const data = await gqlrequest(env.PLEXAMS_SERVER, query, { id });
+		return json(data);
+	} catch (e) {
+		return json({ error: gqlErrorMessage(e) }, { status: 400 });
+	}
+}

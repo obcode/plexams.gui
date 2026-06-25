@@ -153,6 +153,96 @@
 			busy = set;
 		}
 	}
+
+	// ZPA-Ancode-Zuordnung
+	/** @type {any} */
+	let suggestFor = null;
+	/** @type {any[]} */
+	let suggestions = [];
+	let suggestLoading = false;
+	let suggestError = '';
+	let manualAncode = '';
+	let connecting = false;
+
+	const jsonHeaders = { 'content-type': 'application/json' };
+
+	/** @param {any} e */
+	async function openSuggest(e) {
+		suggestFor = e;
+		suggestions = [];
+		suggestError = '';
+		manualAncode = '';
+		suggestLoading = true;
+		try {
+			const res = await fetch('/api/preplanExamAncodeSuggestions', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ id: e.id })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				suggestError = result?.error || `Fehler (HTTP ${res.status})`;
+			} else {
+				suggestions = result.preplanExamAncodeSuggestions ?? [];
+			}
+		} catch (err) {
+			suggestError = err instanceof Error ? err.message : String(err);
+		} finally {
+			suggestLoading = false;
+		}
+	}
+
+	function closeSuggest() {
+		suggestFor = null;
+	}
+
+	/** @param {number|string} ancode */
+	async function connect(ancode) {
+		if (!suggestFor || connecting) return;
+		const a = Number(ancode);
+		if (!a) return;
+		connecting = true;
+		suggestError = '';
+		try {
+			const res = await fetch('/api/connectPreplanExamToAncode', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ id: suggestFor.id, ancode: a })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				suggestError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			closeSuggest();
+			await invalidateAll();
+		} catch (err) {
+			suggestError = err instanceof Error ? err.message : String(err);
+		} finally {
+			connecting = false;
+		}
+	}
+
+	/** @param {any} e */
+	async function disconnect(e) {
+		if (!confirm(`Ancode ${e.ancode} von „${e.module}“ lösen?`)) return;
+		listError = '';
+		try {
+			const res = await fetch('/api/disconnectPreplanExam', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ id: e.id })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -256,12 +346,13 @@
 						<th>Studis</th>
 						<th>Dauer</th>
 						<th>Slot</th>
+						<th>ZPA / Ancode</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each data.exams as e (e.id)}
-						<tr class="hover">
+						<tr class="hover {data.zpaPresent && !e.ancode ? 'bg-warning/5' : ''}">
 							<td>
 								{#if e.examKind === 'SEB'}
 									<span class="badge badge-error badge-sm">SEB</span>
@@ -298,9 +389,20 @@
 											<option value="{s.dayNumber}-{s.slotNumber}">{slotLabel(s)}</option>
 										{/each}
 									</select>
-									{#if e.ancode}<span class="badge badge-outline badge-xs">ancode {e.ancode}</span
-										>{/if}
 								</div>
+							</td>
+							<td>
+								{#if e.ancode}
+									<span class="badge badge-success badge-sm tabular-nums">✓ {e.ancode}</span>
+									<button class="btn btn-ghost btn-xs" on:click={() => disconnect(e)}>Lösen</button>
+								{:else}
+									<span class="badge badge-sm {data.zpaPresent ? 'badge-warning' : 'badge-ghost'}">
+										nicht zugeordnet
+									</span>
+									<button class="btn btn-ghost btn-xs" on:click={() => openSuggest(e)}
+										>Zuordnen</button
+									>
+								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
 								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button
@@ -403,5 +505,92 @@
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+	</div>
+{/if}
+
+<!-- ZPA-Ancode zuordnen -->
+{#if suggestFor}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-2xl">
+			<h2 class="text-lg font-semibold">Ancode zuordnen</h2>
+			<p class="mt-1 text-sm text-base-content/60">
+				{suggestFor.examKind} · {suggestFor.module} · {suggestFor.examerName}
+			</p>
+
+			{#if suggestLoading}
+				<div class="mt-4 flex items-center gap-2 text-sm text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span> lädt Vorschläge …
+				</div>
+			{:else}
+				{#if suggestError}
+					<div class="alert alert-error mt-3 py-2 text-sm"><span>{suggestError}</span></div>
+				{/if}
+
+				{#if suggestions.length > 0}
+					<div class="mt-3 overflow-x-auto rounded-lg border border-base-300">
+						<table class="table table-sm">
+							<thead>
+								<tr>
+									<th>Ancode</th>
+									<th>Modul</th>
+									<th>Prüfer/in</th>
+									<th>Typ</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each suggestions as s}
+									<tr class="hover">
+										<td class="tabular-nums font-medium">{s.ancode}</td>
+										<td>{s.module}</td>
+										<td class="text-sm">{s.mainExamer}</td>
+										<td class="text-sm text-base-content/70">{s.examType}</td>
+										<td class="text-right">
+											<button
+												class="btn btn-primary btn-xs"
+												disabled={connecting}
+												on:click={() => connect(s.ancode)}
+											>
+												verknüpfen
+											</button>
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{:else}
+					<div class="mt-3 text-sm text-base-content/50">
+						Keine Vorschläge — die ZPA-Prüfungsliste ist evtl. noch nicht importiert oder es gibt
+						keinen passenden Treffer. Du kannst den Ancode unten manuell eintragen.
+					</div>
+				{/if}
+
+				<div class="mt-4 flex items-end gap-2 border-t border-base-300 pt-3">
+					<label class="flex flex-col gap-1">
+						<span class="text-xs font-medium text-base-content/60">Ancode manuell</span>
+						<input
+							type="number"
+							class="input input-bordered input-sm w-32"
+							bind:value={manualAncode}
+						/>
+					</label>
+					<button
+						class="btn btn-outline btn-sm"
+						disabled={connecting || !manualAncode}
+						on:click={() => connect(manualAncode)}
+					>
+						verknüpfen
+					</button>
+				</div>
+			{/if}
+
+			<div class="modal-action">
+				<button class="btn btn-ghost btn-sm" on:click={closeSuggest} disabled={connecting}>
+					Schließen
+				</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={closeSuggest}></button>
 	</div>
 {/if}

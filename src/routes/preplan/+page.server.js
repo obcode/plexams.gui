@@ -24,6 +24,9 @@ export async function load() {
 					id
 					fullname
 				}
+				zpaExams {
+					ancode
+				}
 				studyPrograms {
 					shortname
 					name
@@ -103,6 +106,8 @@ export async function load() {
 		teachers,
 		studyPrograms: data.studyPrograms ?? [],
 		slots,
-		overview
+		overview,
+		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
+		zpaPresent: (data.zpaExams ?? []).length > 0
 	};
 }

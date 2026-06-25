@@ -513,6 +513,8 @@ type Mutation {
   updatePreplanExam(id: Int!, input: PreplanExamInput!): PreplanExam!
   deletePreplanExam(id: Int!): Boolean!
   setPreplanExamSlot(id: Int!, dayNumber: Int, slotNumber: Int): PreplanExam!
+  connectPreplanExamToAncode(id: Int!, ancode: Int!): PreplanExam!
+  disconnectPreplanExam(id: Int!): PreplanExam!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -868,6 +870,8 @@ type Query {
   studyPrograms: [StudyProgram!]!
   preplanExams: [PreplanExam!]!
   preplanExam(id: Int!): PreplanExam
+  preplanExamAncodeSuggestions(id: Int!): [PreplanAncodeSuggestion!]!
+  preplanOverview: PreplanOverview!
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1248,6 +1252,46 @@ input PreplanExamInput {
   expectedStudents: Int!
   duration: Int
   notes: String
+}
+
+type PreplanOverview {
+  slots: [PreplanSlotNeed!]!
+}
+
+"""
+PreplanSlotNeed: per-slot SEB/EXaHM room demand. A slot with all of
+dayNumber/slotNumber/starttime null is the "without slot" bucket.
+"""
+type PreplanSlotNeed {
+  dayNumber: Int
+  slotNumber: Int
+  starttime: Time
+  exahm: PreplanKindNeed!
+  seb: PreplanKindNeed!
+  conflicts: [PreplanSlotConflict!]!
+}
+
+type PreplanKindNeed {
+  examCount: Int!
+  seatsNeeded: Int!
+  roomsSuggested: Int!
+  rooms: [String!]!
+  seatsAvailable: Int!
+}
+
+type PreplanSlotConflict {
+  program: String!
+  preplanExamIDs: [Int!]!
+  modules: [String!]!
+}
+
+"""Suggested ZPA exam (ancode) for a PreplanExam — best matches first."""
+type PreplanAncodeSuggestion {
+  ancode: Int!
+  module: String!
+  mainExamer: String!
+  mainExamerID: Int!
+  examType: String!
 }
 
 type SaveSemesterConfigResult {
