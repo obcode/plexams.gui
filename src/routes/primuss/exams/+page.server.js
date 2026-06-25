@@ -16,12 +16,24 @@ export async function load({ params }) {
 					studentRegsCount
 				}
 			}
+			studyPrograms {
+				shortname
+				category
+			}
 		}
 	`;
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
+	// Programm-Kürzel → Kategorie (fk07 | mucdai | misc); unbekannte → Sonstige
+	/** @type {Record<string, string>} */
+	const catByProgram = {};
+	for (const sp of data.studyPrograms ?? []) {
+		catByProgram[sp.shortname] = sp.category;
+	}
+
 	return {
-		primussExams: data.primussExams
+		primussExams: data.primussExams,
+		catByProgram
 	};
 }
