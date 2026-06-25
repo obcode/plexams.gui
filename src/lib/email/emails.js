@@ -16,16 +16,20 @@
  */
 
 /** @type {EmailDef[]} */
+export const previousSemesterEmails = [
+	{
+		key: 'sendEmailExaHM',
+		title: 'EXaHM / SEB',
+		description: 'Information zu den Computer-Prüfungen (EXaHM / SEB)'
+	}
+];
+
+/** @type {EmailDef[]} */
 export const constraintEmails = [
 	{
 		key: 'sendEmailConstraints',
 		title: 'Constraints / Wünsche',
 		description: 'Aufforderung an die Prüfenden, ihre Constraints und Wünsche zu melden'
-	},
-	{
-		key: 'sendEmailExaHM',
-		title: 'EXaHM / SEB',
-		description: 'Information zu den Computer-Prüfungen (EXaHM / SEB)'
 	},
 	{
 		key: 'sendEmailPrepared',
@@ -143,6 +147,7 @@ export const coverPageEmails = [
 // (Workflow-Reihenfolge; Deckblätter ganz am Ende).
 /** @type {EmailGroup[]} */
 export const emailGroups = [
+	{ id: 'previousSemester', title: 'noch im vorherigen Semester', emails: previousSemesterEmails },
 	{ id: 'constraints', title: 'Vorbereitung', emails: constraintEmails },
 	{ id: 'primuss', title: 'Primuss', emails: primussEmails },
 	{ id: 'planning', title: 'Planung', emails: planningEmails },
