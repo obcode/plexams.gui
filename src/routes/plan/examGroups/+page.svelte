@@ -2,13 +2,15 @@
 	export let data;
 	import Slot from '$lib/slot/Slot.svelte';
 	import ExamGroupsWithoutSlot from '$lib/examGroups/ExamGroupsWithoutSlot.svelte';
+	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
 	let details = false;
 	let moveable = false;
 
-	let maxSlots = data.semesterConfig.days.length * data.semesterConfig.starttimes.length;
+	let maxSlots =
+		(data.semesterConfig?.days?.length ?? 0) * (data.semesterConfig?.starttimes?.length ?? 0);
 
 	// status can be
 	// unknown
@@ -51,8 +53,8 @@
 	let slotsStatus = new Map();
 
 	function initSlotsStatus(status) {
-		for (let day of data.semesterConfig.days) {
-			for (let time of data.semesterConfig.starttimes) {
+		for (let day of data.semesterConfig?.days ?? []) {
+			for (let time of data.semesterConfig?.starttimes ?? []) {
 				slotsStatus[[day.number, time.number]] = status;
 			}
 		}
@@ -61,8 +63,8 @@
 	let refresh = new Map();
 
 	function initRefresh() {
-		for (let day of data.semesterConfig.days) {
-			for (let time of data.semesterConfig.starttimes) {
+		for (let day of data.semesterConfig?.days ?? []) {
+			for (let time of data.semesterConfig?.starttimes ?? []) {
 				refresh[[day.number, time.number]] = false;
 			}
 		}
@@ -211,182 +213,186 @@
 	}
 </script>
 
-<div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">
-		<b>Deprecated:</b> Prüfungsplan (Prüfungsgruppen)
+{#if !data.semesterConfig}
+	<NoSemesterConfig />
+{:else}
+	<div class="text-center m-2">
+		<div class="text-4xl text-center mt-8 uppercase">
+			<b>Deprecated:</b> Prüfungsplan (Prüfungsgruppen)
+		</div>
 	</div>
-</div>
 
-<div class="flex">
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Details</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						details = !details;
-					}}
-				/>
-			</label>
+	<div class="flex">
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">Details</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							details = !details;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">veränderbar</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						moveable = !moveable;
-					}}
-				/>
-			</label>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">veränderbar</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							moveable = !moveable;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">online</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyOnline = !showOnlyOnline;
-					}}
-				/>
-			</label>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">online</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlyOnline = !showOnlyOnline;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">EXaHM</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyExahm = !showOnlyExahm;
-					}}
-				/>
-			</label>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">EXaHM</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlyExahm = !showOnlyExahm;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">SafeExamBrowser</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlySEB = !showOnlySEB;
-					}}
-				/>
-			</label>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">SafeExamBrowser</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlySEB = !showOnlySEB;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2" bind:value={showGroup}>
-			<option selected value="all">Alle Gruppen</option>
-			{#each allProgramsInPlan as program}
-				<option>{program}</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2 mx-2" bind:value={showExamerID}>
-			<option selected value="all">Alle Prüfer:innen</option>
-			{#each allExamer as examer}
-				<option value={examer.mainExamerID}>{examer.mainExamer}</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2 mx-4" bind:value={showAncode}>
-			<option selected value="0">Alle Ancodes</option>
-			{#each allAncodes as ancode}
-				<option>{ancode}</option>
-			{/each}
-		</select>
-	</div>
-</div>
-<div>
-	<table
-		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
-	>
-		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
-			<tr>
-				<th />
-				{#each data.semesterConfig.days as day}
-					<th class="border-dashed border-2 border-sky-500 object-center">
-						<div class="">
-							<div>#{day.number}</div>
-							<div>{mkDateShort(day.date)}</div>
-						</div>
-					</th>
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2" bind:value={showGroup}>
+				<option selected value="all">Alle Gruppen</option>
+				{#each allProgramsInPlan as program}
+					<option>{program}</option>
 				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data.semesterConfig.starttimes as time}
+			</select>
+		</div>
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2 mx-2" bind:value={showExamerID}>
+				<option selected value="all">Alle Prüfer:innen</option>
+				{#each allExamer as examer}
+					<option value={examer.mainExamerID}>{examer.mainExamer}</option>
+				{/each}
+			</select>
+		</div>
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2 mx-4" bind:value={showAncode}>
+				<option selected value="0">Alle Ancodes</option>
+				{#each allAncodes as ancode}
+					<option>{ancode}</option>
+				{/each}
+			</select>
+		</div>
+	</div>
+	<div>
+		<table
+			class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-fit"
+		>
+			<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 				<tr>
-					<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
-						<div>
-							<div>#{time.number}</div>
-							<div>{time.start}</div>
-						</div>
-					</td>
+					<th />
 					{#each data.semesterConfig.days as day}
-						<td
-							class="align-top border-dashed border-2 border-sky-500 {statusColor(
-								slotsStatus[[day.number, time.number]]
-							)} "
-						>
-							<Slot
-								day={day.number}
-								time={time.number}
-								{maxSlots}
-								{selectedGroup}
-								{details}
-								{moveable}
-								{showGroup}
-								{showAncode}
-								{showExamerID}
-								{showOnlyOnline}
-								{showOnlyExahm}
-								{showOnlySEB}
-								{conflictingGroupCodes}
-								refresh={refresh[[day.number, time.number]]}
-								on:selected={handleSelect}
-								on:unselected={handleUnselect}
-								on:addToSlot={handleAddToSlot}
-								on:rmFromSlot={handleRmFromSlot}
-							/>
-						</td>
+						<th class="border-dashed border-2 border-sky-500 object-center">
+							<div class="">
+								<div>#{day.number}</div>
+								<div>{mkDateShort(day.date)}</div>
+							</div>
+						</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
-</div>
+			</thead>
+			<tbody>
+				{#each data.semesterConfig.starttimes as time}
+					<tr>
+						<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
+							<div>
+								<div>#{time.number}</div>
+								<div>{time.start}</div>
+							</div>
+						</td>
+						{#each data.semesterConfig.days as day}
+							<td
+								class="align-top border-dashed border-2 border-sky-500 {statusColor(
+									slotsStatus[[day.number, time.number]]
+								)} "
+							>
+								<Slot
+									day={day.number}
+									time={time.number}
+									{maxSlots}
+									{selectedGroup}
+									{details}
+									{moveable}
+									{showGroup}
+									{showAncode}
+									{showExamerID}
+									{showOnlyOnline}
+									{showOnlyExahm}
+									{showOnlySEB}
+									{conflictingGroupCodes}
+									refresh={refresh[[day.number, time.number]]}
+									on:selected={handleSelect}
+									on:unselected={handleUnselect}
+									on:addToSlot={handleAddToSlot}
+									on:rmFromSlot={handleRmFromSlot}
+								/>
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 
-<ExamGroupsWithoutSlot
-	{examGroupsWithoutSlot}
-	{maxSlots}
-	{showGroup}
-	{showAncode}
-	{showExamerID}
-	{showOnlyOnline}
-	{showOnlyExahm}
-	{showOnlySEB}
-	{selectedGroup}
-	{details}
-	{moveable}
-	{conflictingGroupCodes}
-	on:selected={handleSelect}
-	on:unselected={handleUnselect}
-	on:addToSlot={handleAddToSlot}
-/>
+	<ExamGroupsWithoutSlot
+		{examGroupsWithoutSlot}
+		{maxSlots}
+		{showGroup}
+		{showAncode}
+		{showExamerID}
+		{showOnlyOnline}
+		{showOnlyExahm}
+		{showOnlySEB}
+		{selectedGroup}
+		{details}
+		{moveable}
+		{conflictingGroupCodes}
+		on:selected={handleSelect}
+		on:unselected={handleUnselect}
+		on:addToSlot={handleAddToSlot}
+	/>
+{/if}

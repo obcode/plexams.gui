@@ -138,6 +138,16 @@ export async function load({ params }) {
 
 	let semesterConfig = semesterData.semesterConfig;
 
+	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
+	if (!semesterConfig) {
+		return {
+			semesterConfig: null,
+			examsWithoutSlot: [],
+			globalSlotStatus: new Map(),
+			roomsForSlots: new Map()
+		};
+	}
+
 	let globalSlotStatus = new Map();
 
 	for (let day of semesterConfig.days) {

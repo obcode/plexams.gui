@@ -1,13 +1,14 @@
 <script>
 	export let data;
 	import { onMount } from 'svelte';
+	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 
 	let constraints = data.constraints;
 	let exam = data.exam;
 	let semesterConfig = data.semesterConfig;
 	let rooms = data.rooms;
 
-	let days = semesterConfig.days.map((day) => {
+	let days = (semesterConfig?.days ?? []).map((day) => {
 		return new Date(day.date).toLocaleDateString('de-DE', {
 			weekday: 'long',
 			day: '2-digit',
@@ -125,274 +126,282 @@
 	let navigateAncode = '';
 </script>
 
-<div class="text-center m-2 text-4xl">
-	<span class="uppercase">
-		Constraints<br />
-		{exam.ancode}. {exam.module} ({exam.mainExamer})
-	</span>
-</div>
+{#if !data.semesterConfig}
+	<NoSemesterConfig />
+{:else}
+	<div class="text-center m-2 text-4xl">
+		<span class="uppercase">
+			Constraints<br />
+			{exam.ancode}. {exam.module} ({exam.mainExamer})
+		</span>
+	</div>
 
-{#if !constraints}
-	<div role="alert" class="alert">
-		<span class="text-xl">ℹ️</span>
-		<span>Keine Constraints vorhanden.</span>
-	</div>
-{/if}
-<div class="divider"></div>
-<div class="flex w-full justify-center">
-	<fieldset
-		class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 m-4"
-		class:bg-red-100={constraintsInput.notPlannedByMe}
-	>
-		<label class="label">
-			<input type="checkbox" class="checkbox" bind:checked={constraintsInput.notPlannedByMe} />
-			Nicht von mir geplant
-		</label>
-	</fieldset>
-</div>
-{#if !constraintsInput.notPlannedByMe}
-	<div class="divider">Raum-Constraints</div>
-	<div class="flex w-full justify-center">
-		<fieldset
-			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
-			class:bg-green-100={constraintsInput.lab}
-			class:border-green-500={constraintsInput.lab}
-		>
-			<label class="label">
-				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.lab} />
-				Laborräume
-			</label>
-		</fieldset>
-		<div class="divider divider-horizontal"></div>
-		<fieldset
-			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
-			class:bg-green-100={constraintsInput.seb}
-			class:border-green-500={constraintsInput.seb}
-		>
-			<label class="label">
-				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.seb} />
-				SafeExamBrowser
-			</label>
-		</fieldset>
-		<div class="divider divider-horizontal"></div>
-		<fieldset
-			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
-			class:bg-green-100={constraintsInput.exahm}
-			class:border-green-500={constraintsInput.exahm}
-		>
-			<label class="label">
-				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.exahm} />
-				EXaHM
-			</label>
-		</fieldset>
-		<div class="divider divider-horizontal"></div>
-		<fieldset
-			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
-			class:bg-green-100={constraintsInput.placesWithSocket}
-			class:border-green-500={constraintsInput.placesWithSocket}
-		>
-			<label class="label">
-				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.placesWithSocket} />
-				Plätze mit Steckdosen
-			</label>
-		</fieldset>
-		<div class="divider divider-horizontal"></div>
-		<fieldset
-			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
-			class:bg-green-100={constraintsInput.online}
-			class:border-green-500={constraintsInput.online}
-		>
-			<label class="label">
-				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.online} />
-				Online
-			</label>
-		</fieldset>
-	</div>
-	{#if constraintsInput.seb || constraintsInput.exahm}
-		<div class="flex w-full justify-center mt-4">
-			<fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-3/4 border p-4">
-				<label class="label">
-					<span class="label-text">KDP Jira URL</span>
-					<input
-						type="url"
-						class="input input-bordered w-full"
-						bind:value={constraintsInput.kdpJiraURL}
-						placeholder="https://example.com"
-					/>
-					{#if constraintsInput.kdpJiraURL}
-						<button
-							class="btn btn-sm ml-2"
-							on:click={() => window.open(constraintsInput.kdpJiraURL, '_blank')}
-							disabled={!constraintsInput.kdpJiraURL}
-						>
-							Link öffnen
-						</button>
-					{/if}
-				</label>
-				<label class="label mt-4">
-					<span class="label-text">Maximale Anzahl Studierende</span>
-					<input
-						type="number"
-						class="input input-bordered w-full"
-						bind:value={constraintsInput.maxStudents}
-						placeholder="0"
-					/>
-				</label>
-				<label class="label mt-4">
-					<span class="label-text">Kommentare</span>
-					<textarea
-						class="textarea textarea-bordered w-full"
-						bind:value={constraintsInput.comments}
-						placeholder="Kommentare eingeben..."
-					></textarea>
-				</label>
-			</fieldset>
+	{#if !constraints}
+		<div role="alert" class="alert">
+			<span class="text-xl">ℹ️</span>
+			<span>Keine Constraints vorhanden.</span>
 		</div>
 	{/if}
-	<div class="divider">
-		Einschränkung auf bestimmte Räume ({constraintsInput.allowedRooms.length} Räume ausgewählt)
-	</div>
+	<div class="divider"></div>
 	<div class="flex w-full justify-center">
-		<div class="w-3/4 border rounded-box">
-			<div class="flex flex-wrap gap-2 justify-center">
-				{#each rooms as room}
-					{@const isSelected = constraintsInput.allowedRooms.includes(room.name)}
-					<!-- svelte-ignore a11y_click_events_have_key_events -->
-					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div
-						class="badge badge-lg cursor-pointer p-4 {isSelected
-							? 'bg-green-100 border-green-500'
-							: 'bg-base-200'}"
-						on:click={() => {
-							if (isSelected) {
-								constraintsInput.allowedRooms = constraintsInput.allowedRooms.filter(
-									(r) => r !== room.name
-								);
-							} else {
-								constraintsInput.allowedRooms = [...constraintsInput.allowedRooms, room.name];
-							}
-						}}
-					>
-						{room.name}
-					</div>
-				{/each}
-			</div>
-		</div>
+		<fieldset
+			class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4 m-4"
+			class:bg-red-100={constraintsInput.notPlannedByMe}
+		>
+			<label class="label">
+				<input type="checkbox" class="checkbox" bind:checked={constraintsInput.notPlannedByMe} />
+				Nicht von mir geplant
+			</label>
+		</fieldset>
 	</div>
-	<div class="divider">Prüfungen, die im gleichen Slot stattfinden müssen</div>
-	<div class="flex w-full justify-center">
-		<div class="w-1/2 p-4">
-			<h3 class="text-center mb-4">Verfügbare Prüfungen</h3>
-			<div>
-				<input
-					type="text"
-					placeholder="Nach Name oder Ancode filtern"
-					class="input input-bordered w-full mb-4"
-					bind:value={filterText}
-				/>
-				<div class="overflow-y-auto max-h-32">
-					<ul class="list-inside">
-						{#each zpaExamsToPlan.filter((exam) => exam.ancode
-									.toString()
-									.includes(filterText) || exam.module
-									.toLowerCase()
-									.includes(filterText.toLowerCase()) || exam.mainExamer
-									.toLowerCase()
-									.includes(filterText.toLowerCase())) as exam (exam.ancode)}
-							<li class="flex justify-between items-center">
-								<span>
-									{exam.ancode}. {exam.module} ({exam.mainExamer})
-								</span>
-								<button class="btn btn-sm mb-1" on:click={() => addExamToSameSlot(exam)}>
-									Hinzufügen
-								</button>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			</div>
-		</div>
-		<div class="divider divider-horizontal"></div>
-		<div class="w-1/2 p-4">
-			<h3 class="text-center mb-4">Ausgewählte Prüfungen</h3>
-			<ul class="list-inside">
-				{#each sameSlotExams as selectedExam (selectedExam.ancode)}
-					<li
-						class="flex justify-between items-center bg-green-100 border-green-500 p-2 mb-2 rounded-lg"
-					>
-						<span>
-							{selectedExam.ancode}. {selectedExam.module} ({selectedExam.mainExamer})
-						</span>
-						<button class="btn btn-sm mb-1" on:click={() => removeExamFromSameSlot(selectedExam)}>
-							Entfernen
-						</button>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	</div>
-	<div class="divider">Ausgeschlossene Prüfungstage</div>
-	<div class="flex w-full justify-center flex-wrap">
-		{#each days as day}
+	{#if !constraintsInput.notPlannedByMe}
+		<div class="divider">Raum-Constraints</div>
+		<div class="flex w-full justify-center">
 			<fieldset
-				class="fieldset bg-base-100 border-base-300 rounded-box w-1/6 border p-4 m-2"
-				class:bg-red-100={constraintsInput?.excludeDays?.includes(day)}
-				class:border-red-500={constraintsInput?.excludeDays?.includes(day)}
-				class:bg-green-100={!constraintsInput?.excludeDays?.includes(day)}
-				class:border-green-500={!constraintsInput?.excludeDays?.includes(day)}
+				class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
+				class:bg-green-100={constraintsInput.lab}
+				class:border-green-500={constraintsInput.lab}
+			>
+				<label class="label">
+					<input type="checkbox" class="checkbox" bind:checked={constraintsInput.lab} />
+					Laborräume
+				</label>
+			</fieldset>
+			<div class="divider divider-horizontal"></div>
+			<fieldset
+				class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
+				class:bg-green-100={constraintsInput.seb}
+				class:border-green-500={constraintsInput.seb}
+			>
+				<label class="label">
+					<input type="checkbox" class="checkbox" bind:checked={constraintsInput.seb} />
+					SafeExamBrowser
+				</label>
+			</fieldset>
+			<div class="divider divider-horizontal"></div>
+			<fieldset
+				class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
+				class:bg-green-100={constraintsInput.exahm}
+				class:border-green-500={constraintsInput.exahm}
+			>
+				<label class="label">
+					<input type="checkbox" class="checkbox" bind:checked={constraintsInput.exahm} />
+					EXaHM
+				</label>
+			</fieldset>
+			<div class="divider divider-horizontal"></div>
+			<fieldset
+				class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
+				class:bg-green-100={constraintsInput.placesWithSocket}
+				class:border-green-500={constraintsInput.placesWithSocket}
 			>
 				<label class="label">
 					<input
 						type="checkbox"
 						class="checkbox"
-						bind:group={constraintsInput.excludeDays}
-						value={day}
-						checked={constraintsInput?.excludeDays?.includes(day)}
+						bind:checked={constraintsInput.placesWithSocket}
 					/>
-					{day}
+					Plätze mit Steckdosen
 				</label>
 			</fieldset>
-		{/each}
-	</div>
-{/if}
-
-<div class="divider"></div>
-<div class="flex w-full justify-center">
-	<button class="btn m-2" on:click={() => (location.href = '/exam/constraints')}
-		>Zurück zu allen Constraints</button
-	>
-	<button class="btn m-2" on:click={() => addConstraints()}>Änderungen übernehmen</button>
-	<button class="btn m-2" on:click={() => (showModal = true)}>Constraints anzeigen</button>
-</div>
-<div class="flex w-full justify-center mt-4">
-	<input
-		type="number"
-		class="input input-bordered w-64 mr-2"
-		bind:value={navigateAncode}
-		placeholder="Ancode eingeben"
-	/>
-	<button
-		class="btn"
-		on:click={() => {
-			if (navigateAncode) {
-				location.href = `/exam/constraints/${navigateAncode}`;
-			}
-		}}
-	>
-		Zu Constraint wechseln
-	</button>
-</div>
-
-{#if showModal}
-	<div class="modal modal-open">
-		<div class="modal-box">
-			<h3 class="font-bold text-lg">Constraints</h3>
-			<div class="mockup-code">
-				<pre><code>{JSON.stringify(constraints, undefined, 4)}</code></pre>
+			<div class="divider divider-horizontal"></div>
+			<fieldset
+				class="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4"
+				class:bg-green-100={constraintsInput.online}
+				class:border-green-500={constraintsInput.online}
+			>
+				<label class="label">
+					<input type="checkbox" class="checkbox" bind:checked={constraintsInput.online} />
+					Online
+				</label>
+			</fieldset>
+		</div>
+		{#if constraintsInput.seb || constraintsInput.exahm}
+			<div class="flex w-full justify-center mt-4">
+				<fieldset class="fieldset bg-base-100 border-base-300 rounded-box w-3/4 border p-4">
+					<label class="label">
+						<span class="label-text">KDP Jira URL</span>
+						<input
+							type="url"
+							class="input input-bordered w-full"
+							bind:value={constraintsInput.kdpJiraURL}
+							placeholder="https://example.com"
+						/>
+						{#if constraintsInput.kdpJiraURL}
+							<button
+								class="btn btn-sm ml-2"
+								on:click={() => window.open(constraintsInput.kdpJiraURL, '_blank')}
+								disabled={!constraintsInput.kdpJiraURL}
+							>
+								Link öffnen
+							</button>
+						{/if}
+					</label>
+					<label class="label mt-4">
+						<span class="label-text">Maximale Anzahl Studierende</span>
+						<input
+							type="number"
+							class="input input-bordered w-full"
+							bind:value={constraintsInput.maxStudents}
+							placeholder="0"
+						/>
+					</label>
+					<label class="label mt-4">
+						<span class="label-text">Kommentare</span>
+						<textarea
+							class="textarea textarea-bordered w-full"
+							bind:value={constraintsInput.comments}
+							placeholder="Kommentare eingeben..."
+						></textarea>
+					</label>
+				</fieldset>
 			</div>
-			<div class="modal-action">
-				<button class="btn" on:click={() => (showModal = false)}>Schließen</button>
+		{/if}
+		<div class="divider">
+			Einschränkung auf bestimmte Räume ({constraintsInput.allowedRooms.length} Räume ausgewählt)
+		</div>
+		<div class="flex w-full justify-center">
+			<div class="w-3/4 border rounded-box">
+				<div class="flex flex-wrap gap-2 justify-center">
+					{#each rooms as room}
+						{@const isSelected = constraintsInput.allowedRooms.includes(room.name)}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<!-- svelte-ignore a11y_no_static_element_interactions -->
+						<div
+							class="badge badge-lg cursor-pointer p-4 {isSelected
+								? 'bg-green-100 border-green-500'
+								: 'bg-base-200'}"
+							on:click={() => {
+								if (isSelected) {
+									constraintsInput.allowedRooms = constraintsInput.allowedRooms.filter(
+										(r) => r !== room.name
+									);
+								} else {
+									constraintsInput.allowedRooms = [...constraintsInput.allowedRooms, room.name];
+								}
+							}}
+						>
+							{room.name}
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
+		<div class="divider">Prüfungen, die im gleichen Slot stattfinden müssen</div>
+		<div class="flex w-full justify-center">
+			<div class="w-1/2 p-4">
+				<h3 class="text-center mb-4">Verfügbare Prüfungen</h3>
+				<div>
+					<input
+						type="text"
+						placeholder="Nach Name oder Ancode filtern"
+						class="input input-bordered w-full mb-4"
+						bind:value={filterText}
+					/>
+					<div class="overflow-y-auto max-h-32">
+						<ul class="list-inside">
+							{#each zpaExamsToPlan.filter((exam) => exam.ancode
+										.toString()
+										.includes(filterText) || exam.module
+										.toLowerCase()
+										.includes(filterText.toLowerCase()) || exam.mainExamer
+										.toLowerCase()
+										.includes(filterText.toLowerCase())) as exam (exam.ancode)}
+								<li class="flex justify-between items-center">
+									<span>
+										{exam.ancode}. {exam.module} ({exam.mainExamer})
+									</span>
+									<button class="btn btn-sm mb-1" on:click={() => addExamToSameSlot(exam)}>
+										Hinzufügen
+									</button>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="divider divider-horizontal"></div>
+			<div class="w-1/2 p-4">
+				<h3 class="text-center mb-4">Ausgewählte Prüfungen</h3>
+				<ul class="list-inside">
+					{#each sameSlotExams as selectedExam (selectedExam.ancode)}
+						<li
+							class="flex justify-between items-center bg-green-100 border-green-500 p-2 mb-2 rounded-lg"
+						>
+							<span>
+								{selectedExam.ancode}. {selectedExam.module} ({selectedExam.mainExamer})
+							</span>
+							<button class="btn btn-sm mb-1" on:click={() => removeExamFromSameSlot(selectedExam)}>
+								Entfernen
+							</button>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</div>
+		<div class="divider">Ausgeschlossene Prüfungstage</div>
+		<div class="flex w-full justify-center flex-wrap">
+			{#each days as day}
+				<fieldset
+					class="fieldset bg-base-100 border-base-300 rounded-box w-1/6 border p-4 m-2"
+					class:bg-red-100={constraintsInput?.excludeDays?.includes(day)}
+					class:border-red-500={constraintsInput?.excludeDays?.includes(day)}
+					class:bg-green-100={!constraintsInput?.excludeDays?.includes(day)}
+					class:border-green-500={!constraintsInput?.excludeDays?.includes(day)}
+				>
+					<label class="label">
+						<input
+							type="checkbox"
+							class="checkbox"
+							bind:group={constraintsInput.excludeDays}
+							value={day}
+							checked={constraintsInput?.excludeDays?.includes(day)}
+						/>
+						{day}
+					</label>
+				</fieldset>
+			{/each}
+		</div>
+	{/if}
+
+	<div class="divider"></div>
+	<div class="flex w-full justify-center">
+		<button class="btn m-2" on:click={() => (location.href = '/exam/constraints')}
+			>Zurück zu allen Constraints</button
+		>
+		<button class="btn m-2" on:click={() => addConstraints()}>Änderungen übernehmen</button>
+		<button class="btn m-2" on:click={() => (showModal = true)}>Constraints anzeigen</button>
 	</div>
+	<div class="flex w-full justify-center mt-4">
+		<input
+			type="number"
+			class="input input-bordered w-64 mr-2"
+			bind:value={navigateAncode}
+			placeholder="Ancode eingeben"
+		/>
+		<button
+			class="btn"
+			on:click={() => {
+				if (navigateAncode) {
+					location.href = `/exam/constraints/${navigateAncode}`;
+				}
+			}}
+		>
+			Zu Constraint wechseln
+		</button>
+	</div>
+
+	{#if showModal}
+		<div class="modal modal-open">
+			<div class="modal-box">
+				<h3 class="font-bold text-lg">Constraints</h3>
+				<div class="mockup-code">
+					<pre><code>{JSON.stringify(constraints, undefined, 4)}</code></pre>
+				</div>
+				<div class="modal-action">
+					<button class="btn" on:click={() => (showModal = false)}>Schließen</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 {/if}

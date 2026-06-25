@@ -1,6 +1,7 @@
 <script>
 	export let data;
 	import { mkDateShort } from '$lib/jshelper/misc';
+	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 
 	let days = data.days;
 	// mtknr -> NTA, to mark NTA students sitting in a room
@@ -333,396 +334,403 @@
 	}
 </script>
 
-<div class="mx-2 mt-4 flex flex-col gap-3">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufsichtsplan</h1>
-		{#if selKind}
-			<span class="badge badge-primary badge-lg gap-2">
-				{selectedName}{selKind === 'teacher' ? ` (${selectedId})` : ' · NTA'}
-				<button class="font-bold" on:click={clearSel}>✕</button>
-			</span>
-		{/if}
-		<div class="ml-auto flex flex-wrap items-center gap-1">
-			<button
-				class="btn btn-outline btn-error btn-xs"
-				disabled={data.invigilationsBlocked || resetBusy}
-				on:click={resetInvigilations}
-			>
-				{resetBusy ? 'Setzt zurück…' : 'Generierte Aufsichten zurücksetzen'}
-			</button>
-			<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
-			<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>
-		</div>
-	</div>
-
-	{#if data.invigilationsBlocked}
-		<div class="alert alert-warning py-2 text-sm">
-			<span>
-				🔒 Aufsichtengenerierung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
-				Zurücksetzen/Ändern das Häkchen „Aufsichtenplan veröffentlicht" auf der Startseite lösen.
-			</span>
-		</div>
-	{/if}
-
-	<!-- Auswahl per Dropdown -->
-	<div class="flex flex-wrap items-center gap-2">
-		<select
-			class="select select-bordered select-sm"
-			bind:value={examinerSel}
-			on:change={() => examinerSel && selectPerson(examinerSel, examinerMap.get(examinerSel) ?? '')}
-		>
-			<option value={0}>Prüfende wählen…</option>
-			{#each examiners as ex}
-				<option value={ex.id}>{ex.name}</option>
-			{/each}
-		</select>
-		<select
-			class="select select-bordered select-sm"
-			bind:value={ntaSel}
-			on:change={() => ntaSel && selectNta(ntaSel)}
-		>
-			<option value="">NTA wählen…</option>
-			{#each ntaList as n}
-				<option value={n.mtknr}>{n.name} (+{n.deltaDurationPercent} %)</option>
-			{/each}
-		</select>
-	</div>
-
-	<!-- Legende -->
-	<div class="flex flex-wrap items-center gap-2 text-xs">
-		<span class="rounded bg-warning px-1.5 py-0.5 font-medium text-warning-content"
-			>👤 Aufsicht</span
-		>
-		<span class="font-semibold text-info">Prüfende</span>
-		<span class="badge badge-neutral badge-sm">👥 Personen</span>
-		<span class="badge badge-accent badge-sm">⏱ Dauer</span>
-		<span class="badge badge-secondary badge-sm">NTA (Details im Hover)</span>
-		<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content"
-			>keine Aufsicht / Reserve</span
-		>
-		<span class="text-base-content/60"
-			>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neugenerierung)</span
-		>
-	</div>
-
-	{#if actionError}
-		<div class="alert alert-error py-2 text-sm">
-			<span>{actionError}</span>
-			<button class="btn btn-ghost btn-xs" on:click={() => (actionError = '')}>✕</button>
-		</div>
-	{/if}
-
-	<div class="flex flex-col gap-5">
-		{#each days as day, i}
-			<details
-				bind:open={open[i]}
-				class="overflow-hidden rounded-box border-2 border-base-300 bg-base-100 shadow-md"
-			>
-				<summary
-					class="flex cursor-pointer list-none items-center gap-3 border-l-8 border-primary bg-base-200 px-4 py-3 text-base-content"
+{#if !data.semesterConfig}
+	<NoSemesterConfig />
+{:else}
+	<div class="mx-2 mt-4 flex flex-col gap-3">
+		<div class="flex flex-wrap items-center gap-3">
+			<h1 class="text-2xl font-semibold">Aufsichtsplan</h1>
+			{#if selKind}
+				<span class="badge badge-primary badge-lg gap-2">
+					{selectedName}{selKind === 'teacher' ? ` (${selectedId})` : ' · NTA'}
+					<button class="font-bold" on:click={clearSel}>✕</button>
+				</span>
+			{/if}
+			<div class="ml-auto flex flex-wrap items-center gap-1">
+				<button
+					class="btn btn-outline btn-error btn-xs"
+					disabled={data.invigilationsBlocked || resetBusy}
+					on:click={resetInvigilations}
 				>
-					<span class="text-lg font-bold">Tag {day.number}</span>
-					<span class="text-sm text-base-content/70">{mkDateShort(day.date)}</span>
-					<span class="ml-auto flex items-center gap-2 text-xs text-base-content/70">
-						{dayRoomCount(day)} Räume
-						{#if dayOpenCount(day) > 0}
-							<span class="badge badge-error badge-sm">{dayOpenCount(day)} ohne Aufsicht</span>
-						{/if}
-					</span>
-				</summary>
+					{resetBusy ? 'Setzt zurück…' : 'Generierte Aufsichten zurücksetzen'}
+				</button>
+				<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
+				<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>
+			</div>
+		</div>
 
-				<div class="flex flex-col gap-3 p-3">
-					{#each day.slots as s}
-						{@const slot = s.slot}
-						{@const slotHi =
-							selKind === 'teacher' && !!slot && !!slot.reserve && slot.reserve.id === selectedId}
-						<div
-							class="rounded-lg border p-2 {slotHi
-								? 'border-primary ring-2 ring-primary'
-								: 'border-base-300 bg-base-200/40'}"
-						>
+		{#if data.invigilationsBlocked}
+			<div class="alert alert-warning py-2 text-sm">
+				<span>
+					🔒 Aufsichtengenerierung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
+					Zurücksetzen/Ändern das Häkchen „Aufsichtenplan veröffentlicht" auf der Startseite lösen.
+				</span>
+			</div>
+		{/if}
+
+		<!-- Auswahl per Dropdown -->
+		<div class="flex flex-wrap items-center gap-2">
+			<select
+				class="select select-bordered select-sm"
+				bind:value={examinerSel}
+				on:change={() =>
+					examinerSel && selectPerson(examinerSel, examinerMap.get(examinerSel) ?? '')}
+			>
+				<option value={0}>Prüfende wählen…</option>
+				{#each examiners as ex}
+					<option value={ex.id}>{ex.name}</option>
+				{/each}
+			</select>
+			<select
+				class="select select-bordered select-sm"
+				bind:value={ntaSel}
+				on:change={() => ntaSel && selectNta(ntaSel)}
+			>
+				<option value="">NTA wählen…</option>
+				{#each ntaList as n}
+					<option value={n.mtknr}>{n.name} (+{n.deltaDurationPercent} %)</option>
+				{/each}
+			</select>
+		</div>
+
+		<!-- Legende -->
+		<div class="flex flex-wrap items-center gap-2 text-xs">
+			<span class="rounded bg-warning px-1.5 py-0.5 font-medium text-warning-content"
+				>👤 Aufsicht</span
+			>
+			<span class="font-semibold text-info">Prüfende</span>
+			<span class="badge badge-neutral badge-sm">👥 Personen</span>
+			<span class="badge badge-accent badge-sm">⏱ Dauer</span>
+			<span class="badge badge-secondary badge-sm">NTA (Details im Hover)</span>
+			<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content"
+				>keine Aufsicht / Reserve</span
+			>
+			<span class="text-base-content/60"
+				>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neugenerierung)</span
+			>
+		</div>
+
+		{#if actionError}
+			<div class="alert alert-error py-2 text-sm">
+				<span>{actionError}</span>
+				<button class="btn btn-ghost btn-xs" on:click={() => (actionError = '')}>✕</button>
+			</div>
+		{/if}
+
+		<div class="flex flex-col gap-5">
+			{#each days as day, i}
+				<details
+					bind:open={open[i]}
+					class="overflow-hidden rounded-box border-2 border-base-300 bg-base-100 shadow-md"
+				>
+					<summary
+						class="flex cursor-pointer list-none items-center gap-3 border-l-8 border-primary bg-base-200 px-4 py-3 text-base-content"
+					>
+						<span class="text-lg font-bold">Tag {day.number}</span>
+						<span class="text-sm text-base-content/70">{mkDateShort(day.date)}</span>
+						<span class="ml-auto flex items-center gap-2 text-xs text-base-content/70">
+							{dayRoomCount(day)} Räume
+							{#if dayOpenCount(day) > 0}
+								<span class="badge badge-error badge-sm">{dayOpenCount(day)} ohne Aufsicht</span>
+							{/if}
+						</span>
+					</summary>
+
+					<div class="flex flex-col gap-3 p-3">
+						{#each day.slots as s}
+							{@const slot = s.slot}
+							{@const slotHi =
+								selKind === 'teacher' && !!slot && !!slot.reserve && slot.reserve.id === selectedId}
 							<div
-								class="mb-2 flex flex-wrap items-center gap-2 text-sm {slotHi
-									? 'rounded bg-primary px-2 py-1 text-primary-content'
-									: 'border-b border-base-300 pb-1.5'}"
+								class="rounded-lg border p-2 {slotHi
+									? 'border-primary ring-2 ring-primary'
+									: 'border-base-300 bg-base-200/40'}"
 							>
-								<span class="badge {slotHi ? 'badge-neutral' : 'badge-primary'}"
-									>Slot {s.time.number}</span
+								<div
+									class="mb-2 flex flex-wrap items-center gap-2 text-sm {slotHi
+										? 'rounded bg-primary px-2 py-1 text-primary-content'
+										: 'border-b border-base-300 pb-1.5'}"
 								>
-								<span class="font-semibold">{s.time.start} Uhr</span>
-								{#if slot}
-									{#if slot.reserve}
-										<button
-											class="rounded bg-warning px-2 py-0.5 text-xs font-semibold text-warning-content hover:brightness-95 {slot
-												.reserve.id === selectedId
-												? 'ring-2 ring-primary ring-offset-1'
-												: ''}"
-											style:opacity={selKind && slot.reserve.id !== selectedId ? 0.4 : 1}
-											on:click={() => selectPerson(slot.reserve.id, slot.reserve.shortname)}
-										>
-											Reserve: {slot.reserve.shortname}
-										</button>
-									{:else}
-										<span
-											class="rounded bg-error px-2 py-0.5 text-xs font-semibold text-error-content"
-											>keine Reserve</span
-										>
-									{/if}
-
-									<!-- Reserve vorplanen / fixieren -->
-									{@const rKey = entryKey(day.number, s.time.number, null)}
-									{#if slot.reservePrePlanned}
-										<button
-											class="badge badge-success badge-sm gap-1"
-											disabled={busy.has(rKey)}
-											title="Reserve aus der Vorplanung entfernen"
-											on:click={() =>
-												removePre(
-													day.number,
-													s.time.number,
-													null,
-													(v) => (slot.reservePrePlanned = v)
-												)}
-										>
-											🔒 fixiert ✕
-										</button>
-									{:else}
+									<span class="badge {slotHi ? 'badge-neutral' : 'badge-primary'}"
+										>Slot {s.time.number}</span
+									>
+									<span class="font-semibold">{s.time.start} Uhr</span>
+									{#if slot}
 										{#if slot.reserve}
 											<button
-												class="badge badge-ghost badge-sm"
+												class="rounded bg-warning px-2 py-0.5 text-xs font-semibold text-warning-content hover:brightness-95 {slot
+													.reserve.id === selectedId
+													? 'ring-2 ring-primary ring-offset-1'
+													: ''}"
+												style:opacity={selKind && slot.reserve.id !== selectedId ? 0.4 : 1}
+												on:click={() => selectPerson(slot.reserve.id, slot.reserve.shortname)}
+											>
+												Reserve: {slot.reserve.shortname}
+											</button>
+										{:else}
+											<span
+												class="rounded bg-error px-2 py-0.5 text-xs font-semibold text-error-content"
+												>keine Reserve</span
+											>
+										{/if}
+
+										<!-- Reserve vorplanen / fixieren -->
+										{@const rKey = entryKey(day.number, s.time.number, null)}
+										{#if slot.reservePrePlanned}
+											<button
+												class="badge badge-success badge-sm gap-1"
 												disabled={busy.has(rKey)}
-												title="aktuelle Reserve in die Vorplanung übernehmen"
+												title="Reserve aus der Vorplanung entfernen"
 												on:click={() =>
-													fixCurrent(
+													removePre(
 														day.number,
 														s.time.number,
 														null,
 														(v) => (slot.reservePrePlanned = v)
 													)}
 											>
-												📌 fixieren
+												🔒 fixiert ✕
 											</button>
-										{/if}
-										<button
-											class="badge badge-ghost badge-sm"
-											title="Reserve vorplanen"
-											on:click={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
-										>
-									{/if}
-									{#if pickerOpen === rKey}
-										<div class="flex w-full items-center gap-1">
-											<select bind:value={pickSel} class="select select-bordered select-xs">
-												<option value={0} disabled>Person…</option>
-												{#each candidatesByDay.get(day.number) ?? [] as c}
-													<option value={c.id}>{c.shortname}</option>
-												{/each}
-											</select>
-											<button
-												class="btn btn-primary btn-xs"
-												disabled={!pickSel || busy.has(rKey)}
-												on:click={() =>
-													assignPerson(
-														day.number,
-														s.time.number,
-														null,
-														(v) => (slot.reservePrePlanned = v),
-														(t) => (slot.reserve = t)
-													)}>vorplanen</button
-											>
-										</div>
-									{/if}
-								{/if}
-							</div>
-
-							{#if slot && slot.roomsWithInvigilators && slot.roomsWithInvigilators.length}
-								<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-									{#each slot.roomsWithInvigilators as r}
-										{@const involved = roomInvolved(r, selKind, selectedId, selectedNta)}
-										{@const rKey = entryKey(day.number, s.time.number, r.name)}
-										<div
-											class="overflow-hidden rounded-lg border border-base-300 text-xs shadow-sm {selKind ===
-												'teacher' &&
-											involved &&
-											!slotHi
-												? 'border-primary ring-4 ring-primary'
-												: ''}"
-											style:opacity={roomOpacity(r, selKind, selectedId, selectedNta, slotHi)}
-										>
-											<!-- Kopf: Raum + Personen + Dauer -->
-											<div
-												class="flex items-center gap-1.5 px-2 py-1 {selKind === 'teacher' &&
-												involved
-													? 'bg-primary text-primary-content'
-													: 'bg-base-300'}"
-											>
-												<span class="font-bold">{r.name}</span>
-												<span class="badge badge-neutral badge-sm ml-auto">👥 {r.studentCount}</span
+										{:else}
+											{#if slot.reserve}
+												<button
+													class="badge badge-ghost badge-sm"
+													disabled={busy.has(rKey)}
+													title="aktuelle Reserve in die Vorplanung übernehmen"
+													on:click={() =>
+														fixCurrent(
+															day.number,
+															s.time.number,
+															null,
+															(v) => (slot.reservePrePlanned = v)
+														)}
 												>
-												<span class="badge badge-accent badge-sm">⏱ {r.maxDuration}′</span>
-											</div>
-
-											<div class="space-y-1.5 p-2">
-												<!-- Aufsicht -->
-												{#if r.invigilator}
-													<button
-														class="flex w-full items-center gap-1 rounded bg-warning px-1.5 py-1 text-left font-semibold text-warning-content hover:brightness-95 {r
-															.invigilator.id === selectedId
-															? 'ring-2 ring-primary ring-offset-1'
-															: ''}"
-														style:opacity={selKind && r.invigilator.id !== selectedId ? 0.4 : 1}
-														on:click={() => selectPerson(r.invigilator.id, r.invigilator.shortname)}
-													>
-														👤 {r.invigilator.shortname}
-													</button>
-												{:else if r.name !== 'No Room'}
-													<div
-														class="rounded bg-error px-1.5 py-1 font-semibold text-error-content"
-													>
-														⚠ keine Aufsicht
-													</div>
-												{/if}
-
-												<!-- Prüfungen -->
-												<ul class="space-y-1">
-													{#each r.roomAndExams as re}
-														{@const ntas = ntaIn(re)}
-														{@const ntaHere =
-															selKind === 'nta' &&
-															(re.room.studentsInRoom ?? []).includes(selectedNta)}
-														{@const liActive =
-															ntaHere ||
-															(selKind === 'teacher' && re.exam.mainExamerID === selectedId)}
-														<li
-															class="rounded border-l-4 px-1.5 py-1 {ntaHere
-																? 'border-primary bg-primary text-primary-content'
-																: 'border-info/60 bg-base-200'}"
-															style:opacity={selKind && !liActive ? 0.4 : 1}
-														>
-															<div class="flex items-start justify-between gap-1">
-																<span class="min-w-0">
-																	<span class="tabular-nums opacity-50">{re.exam.ancode}</span>
-																	<button
-																		class="font-semibold hover:underline {re.exam.mainExamerID ===
-																		selectedId
-																			? 'rounded bg-primary px-1 text-primary-content'
-																			: ntaHere
-																				? 'text-primary-content'
-																				: 'text-info'}"
-																		on:click={() =>
-																			selectPerson(re.exam.mainExamerID, re.exam.mainExamer)}
-																	>
-																		{re.exam.mainExamer}
-																	</button>
-																	<span class="opacity-80">· {re.exam.module}</span>
-																</span>
-																<span class="badge badge-neutral badge-xs shrink-0"
-																	>👥 {re.room.studentsInRoom.length}</span
-																>
-															</div>
-
-															{#if ntas.length}
-																<div class="mt-1 flex flex-wrap items-center gap-1">
-																	{#each ntas as n}
-																		<span
-																			class="badge badge-secondary badge-sm cursor-help {selKind ===
-																				'nta' && n.mtknr === selectedNta
-																				? 'ring-2 ring-primary ring-offset-1'
-																				: ''}"
-																			title={ntaTitle(n)}
-																		>
-																			NTA +{n.deltaDurationPercent}%{n.needsRoomAlone
-																				? ' 🚪'
-																				: ''}{n.needsHardware ? ' 🖥' : ''}
-																		</span>
-																	{/each}
-																</div>
-															{/if}
-														</li>
+													📌 fixieren
+												</button>
+											{/if}
+											<button
+												class="badge badge-ghost badge-sm"
+												title="Reserve vorplanen"
+												on:click={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
+											>
+										{/if}
+										{#if pickerOpen === rKey}
+											<div class="flex w-full items-center gap-1">
+												<select bind:value={pickSel} class="select select-bordered select-xs">
+													<option value={0} disabled>Person…</option>
+													{#each candidatesByDay.get(day.number) ?? [] as c}
+														<option value={c.id}>{c.shortname}</option>
 													{/each}
-												</ul>
+												</select>
+												<button
+													class="btn btn-primary btn-xs"
+													disabled={!pickSel || busy.has(rKey)}
+													on:click={() =>
+														assignPerson(
+															day.number,
+															s.time.number,
+															null,
+															(v) => (slot.reservePrePlanned = v),
+															(t) => (slot.reserve = t)
+														)}>vorplanen</button
+												>
+											</div>
+										{/if}
+									{/if}
+								</div>
 
-												<!-- Vorplanung: Aufsicht fixieren / Person vorplanen -->
-												{#if r.name !== 'No Room'}
-													<div
-														class="flex flex-wrap items-center gap-1 border-t border-base-300 pt-1.5"
+								{#if slot && slot.roomsWithInvigilators && slot.roomsWithInvigilators.length}
+									<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+										{#each slot.roomsWithInvigilators as r}
+											{@const involved = roomInvolved(r, selKind, selectedId, selectedNta)}
+											{@const rKey = entryKey(day.number, s.time.number, r.name)}
+											<div
+												class="overflow-hidden rounded-lg border border-base-300 text-xs shadow-sm {selKind ===
+													'teacher' &&
+												involved &&
+												!slotHi
+													? 'border-primary ring-4 ring-primary'
+													: ''}"
+												style:opacity={roomOpacity(r, selKind, selectedId, selectedNta, slotHi)}
+											>
+												<!-- Kopf: Raum + Personen + Dauer -->
+												<div
+													class="flex items-center gap-1.5 px-2 py-1 {selKind === 'teacher' &&
+													involved
+														? 'bg-primary text-primary-content'
+														: 'bg-base-300'}"
+												>
+													<span class="font-bold">{r.name}</span>
+													<span class="badge badge-neutral badge-sm ml-auto"
+														>👥 {r.studentCount}</span
 													>
-														{#if r.prePlanned}
-															<button
-																class="badge badge-success badge-sm gap-1"
-																disabled={busy.has(rKey)}
-																title="aus der Vorplanung entfernen"
-																on:click={() =>
-																	removePre(
-																		day.number,
-																		s.time.number,
-																		r.name,
-																		(v) => (r.prePlanned = v)
-																	)}
+													<span class="badge badge-accent badge-sm">⏱ {r.maxDuration}′</span>
+												</div>
+
+												<div class="space-y-1.5 p-2">
+													<!-- Aufsicht -->
+													{#if r.invigilator}
+														<button
+															class="flex w-full items-center gap-1 rounded bg-warning px-1.5 py-1 text-left font-semibold text-warning-content hover:brightness-95 {r
+																.invigilator.id === selectedId
+																? 'ring-2 ring-primary ring-offset-1'
+																: ''}"
+															style:opacity={selKind && r.invigilator.id !== selectedId ? 0.4 : 1}
+															on:click={() =>
+																selectPerson(r.invigilator.id, r.invigilator.shortname)}
+														>
+															👤 {r.invigilator.shortname}
+														</button>
+													{:else if r.name !== 'No Room'}
+														<div
+															class="rounded bg-error px-1.5 py-1 font-semibold text-error-content"
+														>
+															⚠ keine Aufsicht
+														</div>
+													{/if}
+
+													<!-- Prüfungen -->
+													<ul class="space-y-1">
+														{#each r.roomAndExams as re}
+															{@const ntas = ntaIn(re)}
+															{@const ntaHere =
+																selKind === 'nta' &&
+																(re.room.studentsInRoom ?? []).includes(selectedNta)}
+															{@const liActive =
+																ntaHere ||
+																(selKind === 'teacher' && re.exam.mainExamerID === selectedId)}
+															<li
+																class="rounded border-l-4 px-1.5 py-1 {ntaHere
+																	? 'border-primary bg-primary text-primary-content'
+																	: 'border-info/60 bg-base-200'}"
+																style:opacity={selKind && !liActive ? 0.4 : 1}
 															>
-																🔒 fixiert ✕
-															</button>
-														{:else}
-															{#if r.invigilator}
+																<div class="flex items-start justify-between gap-1">
+																	<span class="min-w-0">
+																		<span class="tabular-nums opacity-50">{re.exam.ancode}</span>
+																		<button
+																			class="font-semibold hover:underline {re.exam.mainExamerID ===
+																			selectedId
+																				? 'rounded bg-primary px-1 text-primary-content'
+																				: ntaHere
+																					? 'text-primary-content'
+																					: 'text-info'}"
+																			on:click={() =>
+																				selectPerson(re.exam.mainExamerID, re.exam.mainExamer)}
+																		>
+																			{re.exam.mainExamer}
+																		</button>
+																		<span class="opacity-80">· {re.exam.module}</span>
+																	</span>
+																	<span class="badge badge-neutral badge-xs shrink-0"
+																		>👥 {re.room.studentsInRoom.length}</span
+																	>
+																</div>
+
+																{#if ntas.length}
+																	<div class="mt-1 flex flex-wrap items-center gap-1">
+																		{#each ntas as n}
+																			<span
+																				class="badge badge-secondary badge-sm cursor-help {selKind ===
+																					'nta' && n.mtknr === selectedNta
+																					? 'ring-2 ring-primary ring-offset-1'
+																					: ''}"
+																				title={ntaTitle(n)}
+																			>
+																				NTA +{n.deltaDurationPercent}%{n.needsRoomAlone
+																					? ' 🚪'
+																					: ''}{n.needsHardware ? ' 🖥' : ''}
+																			</span>
+																		{/each}
+																	</div>
+																{/if}
+															</li>
+														{/each}
+													</ul>
+
+													<!-- Vorplanung: Aufsicht fixieren / Person vorplanen -->
+													{#if r.name !== 'No Room'}
+														<div
+															class="flex flex-wrap items-center gap-1 border-t border-base-300 pt-1.5"
+														>
+															{#if r.prePlanned}
 																<button
-																	class="badge badge-ghost badge-sm"
+																	class="badge badge-success badge-sm gap-1"
 																	disabled={busy.has(rKey)}
-																	title="aktuelle Aufsicht in die Vorplanung übernehmen"
+																	title="aus der Vorplanung entfernen"
 																	on:click={() =>
-																		fixCurrent(
+																		removePre(
 																			day.number,
 																			s.time.number,
 																			r.name,
 																			(v) => (r.prePlanned = v)
 																		)}
 																>
-																	📌 fixieren
+																	🔒 fixiert ✕
 																</button>
+															{:else}
+																{#if r.invigilator}
+																	<button
+																		class="badge badge-ghost badge-sm"
+																		disabled={busy.has(rKey)}
+																		title="aktuelle Aufsicht in die Vorplanung übernehmen"
+																		on:click={() =>
+																			fixCurrent(
+																				day.number,
+																				s.time.number,
+																				r.name,
+																				(v) => (r.prePlanned = v)
+																			)}
+																	>
+																		📌 fixieren
+																	</button>
+																{/if}
+																<button
+																	class="badge badge-ghost badge-sm"
+																	title="andere Person vorplanen"
+																	on:click={() => togglePicker(rKey, day.number)}
+																	>Person vorplanen…</button
+																>
 															{/if}
-															<button
-																class="badge badge-ghost badge-sm"
-																title="andere Person vorplanen"
-																on:click={() => togglePicker(rKey, day.number)}
-																>Person vorplanen…</button
-															>
-														{/if}
-													</div>
-													{#if pickerOpen === rKey}
-														<div class="flex items-center gap-1">
-															<select
-																bind:value={pickSel}
-																class="select select-bordered select-xs flex-1"
-															>
-																<option value={0} disabled>Person…</option>
-																{#each candidatesByDay.get(day.number) ?? [] as c}
-																	<option value={c.id}>{c.shortname}</option>
-																{/each}
-															</select>
-															<button
-																class="btn btn-primary btn-xs"
-																disabled={!pickSel || busy.has(rKey)}
-																on:click={() =>
-																	assignPerson(
-																		day.number,
-																		s.time.number,
-																		r.name,
-																		(v) => (r.prePlanned = v),
-																		(t) => (r.invigilator = t)
-																	)}>✓</button
-															>
 														</div>
+														{#if pickerOpen === rKey}
+															<div class="flex items-center gap-1">
+																<select
+																	bind:value={pickSel}
+																	class="select select-bordered select-xs flex-1"
+																>
+																	<option value={0} disabled>Person…</option>
+																	{#each candidatesByDay.get(day.number) ?? [] as c}
+																		<option value={c.id}>{c.shortname}</option>
+																	{/each}
+																</select>
+																<button
+																	class="btn btn-primary btn-xs"
+																	disabled={!pickSel || busy.has(rKey)}
+																	on:click={() =>
+																		assignPerson(
+																			day.number,
+																			s.time.number,
+																			r.name,
+																			(v) => (r.prePlanned = v),
+																			(t) => (r.invigilator = t)
+																		)}>✓</button
+																>
+															</div>
+														{/if}
 													{/if}
-												{/if}
+												</div>
 											</div>
-										</div>
-									{/each}
-								</div>
-							{:else}
-								<div class="text-xs text-base-content/50">keine Räume geplant</div>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			</details>
-		{/each}
+										{/each}
+									</div>
+								{:else}
+									<div class="text-xs text-base-content/50">keine Räume geplant</div>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</details>
+			{/each}
+		</div>
 	</div>
-</div>
+{/if}

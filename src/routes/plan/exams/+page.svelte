@@ -2,16 +2,18 @@
 	export let data;
 	import Slot from '$lib/slot/Slot.svelte';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
+	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
-	let examsWithoutSlot = data.examsWithoutSlot;
+	let examsWithoutSlot = data.examsWithoutSlot ?? [];
 
 	let onlyPlannedByMe = false;
 	let details = false;
 	let moveable = false;
 
-	let maxSlots = data.semesterConfig.days.length * data.semesterConfig.starttimes.length;
+	let maxSlots =
+		(data.semesterConfig?.days?.length ?? 0) * (data.semesterConfig?.starttimes?.length ?? 0);
 
 	// // status can be
 	// // unknown
@@ -58,8 +60,8 @@
 	let slotsStatus = new Map();
 
 	function initSlotsStatus(status) {
-		for (let day of data.semesterConfig.days) {
-			for (let time of data.semesterConfig.starttimes) {
+		for (let day of data.semesterConfig?.days ?? []) {
+			for (let time of data.semesterConfig?.starttimes ?? []) {
 				slotsStatus[[day.number, time.number]] = status;
 			}
 		}
@@ -68,8 +70,8 @@
 	let refresh = new Map();
 
 	function initRefresh() {
-		for (let day of data.semesterConfig.days) {
-			for (let time of data.semesterConfig.starttimes) {
+		for (let day of data.semesterConfig?.days ?? []) {
+			for (let time of data.semesterConfig?.starttimes ?? []) {
 				refresh[[day.number, time.number]] = false;
 			}
 		}
@@ -89,7 +91,7 @@
 
 	let mucdaiSlot = new Map();
 
-	for (const slot of data.semesterConfig.mucDaiSlots) {
+	for (const slot of data.semesterConfig?.mucDaiSlots ?? []) {
 		mucdaiSlot[[slot.dayNumber, slot.slotNumber]] = 'border border-red-500 border-8 ';
 	}
 
@@ -267,244 +269,248 @@
 	}
 </script>
 
-<div class="text-center m-2">
-	<div class="text-4xl text-center mt-8 uppercase">Prüfungsplan</div>
-</div>
-
-<div class="flex">
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Nur eigene Planung</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						onlyPlannedByMe = !onlyPlannedByMe;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Nur Konflikte</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					checked
-					on:click={() => {
-						onlyConflicts = !onlyConflicts;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">Details</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						details = !details;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">veränderbar</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						moveable = !moveable;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">online</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyOnline = !showOnlyOnline;
-					}}
-				/>
-			</label>
-		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">EXaHM/SEB</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyExahm = !showOnlyExahm;
-					}}
-				/>
-			</label>
-		</div>
+{#if !data.semesterConfig}
+	<NoSemesterConfig />
+{:else}
+	<div class="text-center m-2">
+		<div class="text-4xl text-center mt-8 uppercase">Prüfungsplan</div>
 	</div>
 
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2" bind:value={showExam}>
-			<option selected value="all">Alle Gruppen</option>
-			{#each allProgramsInPlan as program}
-				{@const count = unplannedExams(program)}
-				<option value={program}
-					>{program}
-					{#if count > 0}
-						({count} noch zu planen)
-					{/if}
-				</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2 mx-2" bind:value={showExamerID}>
-			<option selected value="all">Alle Prüfer:innen</option>
-			{#each allExamer as examer}
-				<option value={examer.mainExamerID}>{examer.mainExamer}</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<select class="select select-primary w-full max-w-xs my-2 mx-4" bind:value={showAncode}>
-			<option selected value="0">Alle Ancodes</option>
-			{#each allAncodes as ancode}
-				<option>{ancode}</option>
-			{/each}
-		</select>
-	</div>
-	<div>
-		<div class="form-control my-3 ml-10">
-			<label class="label cursor-pointer">
-				<span class="label-text">EXaHM-Räume</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showOnlyEXaHMRooms = !showOnlyEXaHMRooms;
-					}}
-				/>
-			</label>
+	<div class="flex">
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">Nur eigene Planung</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							onlyPlannedByMe = !onlyPlannedByMe;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-	<div>
-		<div class="form-control my-3">
-			<label class="label cursor-pointer">
-				<span class="label-text">MUC.DAI-Slots</span>
-				<input
-					type="checkbox"
-					class="toggle mx-3"
-					on:click={() => {
-						showMucdaiSlots = !showMucdaiSlots;
-						handleMucdaiSlots();
-					}}
-				/>
-			</label>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">Nur Konflikte</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						checked
+						on:click={() => {
+							onlyConflicts = !onlyConflicts;
+						}}
+					/>
+				</label>
+			</div>
 		</div>
-	</div>
-</div>
-<div>
-	<table
-		class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-none"
-	>
-		<thead class="border-dashed border-2 border-sky-500 bg-green-400">
-			<tr>
-				<th></th>
-				{#each data.semesterConfig.days as day}
-					<th class="border-dashed border-2 border-sky-500 object-center">
-						<div class="">
-							<div>#{day.number}</div>
-							<div>{mkDateShort(day.date)}</div>
-						</div>
-					</th>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">Details</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							details = !details;
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">veränderbar</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							moveable = !moveable;
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">online</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlyOnline = !showOnlyOnline;
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">EXaHM/SEB</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlyExahm = !showOnlyExahm;
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2" bind:value={showExam}>
+				<option selected value="all">Alle Gruppen</option>
+				{#each allProgramsInPlan as program}
+					{@const count = unplannedExams(program)}
+					<option value={program}
+						>{program}
+						{#if count > 0}
+							({count} noch zu planen)
+						{/if}
+					</option>
 				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each data.semesterConfig.starttimes as time}
+			</select>
+		</div>
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2 mx-2" bind:value={showExamerID}>
+				<option selected value="all">Alle Prüfer:innen</option>
+				{#each allExamer as examer}
+					<option value={examer.mainExamerID}>{examer.mainExamer}</option>
+				{/each}
+			</select>
+		</div>
+		<div>
+			<select class="select select-primary w-full max-w-xs my-2 mx-4" bind:value={showAncode}>
+				<option selected value="0">Alle Ancodes</option>
+				{#each allAncodes as ancode}
+					<option>{ancode}</option>
+				{/each}
+			</select>
+		</div>
+		<div>
+			<div class="form-control my-3 ml-10">
+				<label class="label cursor-pointer">
+					<span class="label-text">EXaHM-Räume</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showOnlyEXaHMRooms = !showOnlyEXaHMRooms;
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+		<div>
+			<div class="form-control my-3">
+				<label class="label cursor-pointer">
+					<span class="label-text">MUC.DAI-Slots</span>
+					<input
+						type="checkbox"
+						class="toggle mx-3"
+						on:click={() => {
+							showMucdaiSlots = !showMucdaiSlots;
+							handleMucdaiSlots();
+						}}
+					/>
+				</label>
+			</div>
+		</div>
+	</div>
+	<div>
+		<table
+			class="table-fixed border-collapse border-solid border-2 border-sky-500 min-w-full max-w-none"
+		>
+			<thead class="border-dashed border-2 border-sky-500 bg-green-400">
 				<tr>
-					<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
-						<div>
-							<div>#{time.number}</div>
-							<div>{time.start}</div>
-						</div>
-					</td>
+					<th></th>
 					{#each data.semesterConfig.days as day}
-						<td
-							class="align-top border-dashed border-2 border-sky-500 {statusColor(
-								slotsStatus[[day.number, time.number]]
-							)}  {globalForbiddenSlot(day.number, time.number)}"
-						>
-							<div class={mucdaiSlotToShow[[day.number, time.number]]}>
-								<Slot
-									{day}
-									{time}
-									forbiddenSlot={forbiddenSlot(day.number, time.number)}
-									exahmrooms={(data.roomsForSlots.get(`${day.number},${time.number}`) ?? []).filter(
-										(r) => r.exahm
-									)}
-									{maxSlots}
-									{selectedExam}
-									{selectedExamerID}
-									{onlyPlannedByMe}
-									{onlyConflicts}
-									{details}
-									{moveable}
-									{showExam}
-									{showAncode}
-									{showExamerID}
-									{showOnlyOnline}
-									{showOnlyExahm}
-									{showOnlySEB}
-									{showOnlyEXaHMRooms}
-									{conflictingAncodes}
-									refresh={refresh[[day.number, time.number]]}
-									on:selected={handleSelect}
-									on:unselected={handleUnselect}
-									on:addToSlot={handleAddToSlot}
-									on:rmFromSlot={handleRmFromSlot}
-								/>
+						<th class="border-dashed border-2 border-sky-500 object-center">
+							<div class="">
+								<div>#{day.number}</div>
+								<div>{mkDateShort(day.date)}</div>
 							</div>
-						</td>
+						</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
-</div>
+			</thead>
+			<tbody>
+				{#each data.semesterConfig.starttimes as time}
+					<tr>
+						<td class="border-dashed border-2 border-sky-500 content-center bg-green-400">
+							<div>
+								<div>#{time.number}</div>
+								<div>{time.start}</div>
+							</div>
+						</td>
+						{#each data.semesterConfig.days as day}
+							<td
+								class="align-top border-dashed border-2 border-sky-500 {statusColor(
+									slotsStatus[[day.number, time.number]]
+								)}  {globalForbiddenSlot(day.number, time.number)}"
+							>
+								<div class={mucdaiSlotToShow[[day.number, time.number]]}>
+									<Slot
+										{day}
+										{time}
+										forbiddenSlot={forbiddenSlot(day.number, time.number)}
+										exahmrooms={(
+											data.roomsForSlots.get(`${day.number},${time.number}`) ?? []
+										).filter((r) => r.exahm)}
+										{maxSlots}
+										{selectedExam}
+										{selectedExamerID}
+										{onlyPlannedByMe}
+										{onlyConflicts}
+										{details}
+										{moveable}
+										{showExam}
+										{showAncode}
+										{showExamerID}
+										{showOnlyOnline}
+										{showOnlyExahm}
+										{showOnlySEB}
+										{showOnlyEXaHMRooms}
+										{conflictingAncodes}
+										refresh={refresh[[day.number, time.number]]}
+										on:selected={handleSelect}
+										on:unselected={handleUnselect}
+										on:addToSlot={handleAddToSlot}
+										on:rmFromSlot={handleRmFromSlot}
+									/>
+								</div>
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 
-<ExamsWithoutSlot
-	{examsWithoutSlot}
-	{maxSlots}
-	{showExam}
-	{showAncode}
-	{showExamerID}
-	{showOnlyOnline}
-	{showOnlyExahm}
-	{showOnlySEB}
-	{selectedExam}
-	{selectedExamerID}
-	{onlyPlannedByMe}
-	{onlyConflicts}
-	{details}
-	{moveable}
-	{conflictingAncodes}
-	on:selected={handleSelect}
-	on:unselected={handleUnselect}
-	on:addToSlot={handleAddToSlot}
-/>
+	<ExamsWithoutSlot
+		{examsWithoutSlot}
+		{maxSlots}
+		{showExam}
+		{showAncode}
+		{showExamerID}
+		{showOnlyOnline}
+		{showOnlyExahm}
+		{showOnlySEB}
+		{selectedExam}
+		{selectedExamerID}
+		{onlyPlannedByMe}
+		{onlyConflicts}
+		{details}
+		{moveable}
+		{conflictingAncodes}
+		on:selected={handleSelect}
+		on:unselected={handleUnselect}
+		on:addToSlot={handleAddToSlot}
+	/>
+{/if}

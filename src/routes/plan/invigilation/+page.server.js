@@ -23,6 +23,17 @@ export async function load({ url }) {
 	const { semesterConfig, planningState } = await request(env.PLEXAMS_SERVER, semesterQuery);
 	const invigilationsBlocked = (planningState?.blockedAreas ?? []).includes('INVIGILATIONS');
 
+	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
+	if (!semesterConfig) {
+		return {
+			semesterConfig: null,
+			days: [],
+			ntas: [],
+			invigilationsBlocked,
+			focus: url.searchParams.get('focus')
+		};
+	}
+
 	const ntaQuery = gql`
 		query {
 			ntas {

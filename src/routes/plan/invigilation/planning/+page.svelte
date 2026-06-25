@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
+	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 
 	let invigilators = data.todos.invigilators;
 	const todos = data.todos;
@@ -272,222 +273,226 @@
 	}
 </script>
 
-<div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufsichten mit Anforderungen</h1>
-		<span class="badge badge-primary badge-lg">{invigilators.length}</span>
-	</div>
-
-	<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
-		{#each [{ label: 'Aufsichten in Räumen', value: todos.sumExamRooms }, { label: 'Reserve-Aufsichten', value: todos.sumReserve }, { label: 'anrechenbar', value: todos.sumOtherContributions }, { label: 'anrechenbar (bereinigt)', value: todos.sumOtherContributionsOvertimeCutted }, { label: 'zu leisten / Aufsicht', value: todos.todoPerInvigilator }, { label: 'zu leisten / Aufsicht (bereinigt)', value: todos.todoPerInvigilatorOvertimeCutted }, { label: 'Summe noch offen', value: stillOpen, accent: true }, { label: 'noch offen / Aufsicht', value: stillOpenPerInvig, accent: true }] as stat}
-			<div
-				class="rounded-lg border border-base-300 bg-base-100 px-3 py-2 {stat.accent
-					? 'border-warning/40 bg-warning/10'
-					: ''}"
-			>
-				<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
-				<div class="text-lg font-semibold tabular-nums">
-					{stat.value}
-					<span class="text-xs font-normal text-base-content/50">Min.</span>
-				</div>
-			</div>
-		{/each}
-	</div>
-
-	<div class="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_2fr_1fr]">
-		<!-- Verhältnis Räume/Reserve als Dot-Plot -->
-		<div class="rounded-lg border border-base-300 bg-base-100 p-3">
-			<div class="mb-3 flex items-baseline justify-between">
-				<span class="text-xs font-medium text-base-content/60"
-					>Verhältnis Räume / Reserve — ein Punkt pro Aufsicht</span
-				>
-				<span class="text-[10px] text-base-content/50"
-					>{ratioCount} mit Aufsichten · {ratioWithoutCount} ohne Aufsichten</span
-				>
-			</div>
-			<div class="relative" style="height: {ratioPlotHeight}px">
-				<!-- 50/50-Linie -->
-				<div class="absolute inset-y-0 left-1/2 w-px bg-base-300"></div>
-				{#each ratioDots as d}
-					<button
-						class="absolute h-2 w-2 -translate-x-1/2 rounded-full bg-primary transition-transform hover:scale-150 {dotFilter &&
-						dotFilter.kind === 'ratio' &&
-						dotFilter.bin === d.bin
-							? 'opacity-100 ring-2 ring-primary'
-							: 'opacity-80'}"
-						style="left: {d.leftPct}%; bottom: {d.bottom}px"
-						title="Räume {d.room} Min · Reserve {d.reserve} Min — klicken zum Filtern"
-						aria-label="Aufsichten mit {Math.round(d.share * 100)} % Reserve filtern"
-						on:click={() => pickDot('ratio', d.bin, `${Math.round(d.share * 100)} % Reserve`)}
-					></button>
-				{/each}
-			</div>
-			<div class="mt-1 flex justify-between text-[10px] text-base-content/60">
-				<span>nur Räume</span>
-				<span>50 / 50</span>
-				<span>nur Reserve</span>
-			</div>
+{#if !data.semesterConfig}
+	<NoSemesterConfig />
+{:else}
+	<div class="mx-2 mt-4 flex flex-col gap-4">
+		<div class="flex items-center gap-3">
+			<h1 class="text-2xl font-semibold">Aufsichten mit Anforderungen</h1>
+			<span class="badge badge-primary badge-lg">{invigilators.length}</span>
 		</div>
 
-		<!-- Verteilung der noch offenen Minuten als Dot-Plot -->
-		<div class="rounded-lg border border-base-300 bg-base-100 p-3">
-			<div class="mb-3 flex items-baseline justify-between">
-				<span class="text-xs font-medium text-base-content/60"
-					>Verteilung „noch offen" — ein Punkt pro Aufsicht</span
+		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+			{#each [{ label: 'Aufsichten in Räumen', value: todos.sumExamRooms }, { label: 'Reserve-Aufsichten', value: todos.sumReserve }, { label: 'anrechenbar', value: todos.sumOtherContributions }, { label: 'anrechenbar (bereinigt)', value: todos.sumOtherContributionsOvertimeCutted }, { label: 'zu leisten / Aufsicht', value: todos.todoPerInvigilator }, { label: 'zu leisten / Aufsicht (bereinigt)', value: todos.todoPerInvigilatorOvertimeCutted }, { label: 'Summe noch offen', value: stillOpen, accent: true }, { label: 'noch offen / Aufsicht', value: stillOpenPerInvig, accent: true }] as stat}
+				<div
+					class="rounded-lg border border-base-300 bg-base-100 px-3 py-2 {stat.accent
+						? 'border-warning/40 bg-warning/10'
+						: ''}"
 				>
-				<span class="text-[10px] text-base-content/50">{invigCount} Aufsichten</span>
-			</div>
-			<div class="relative" style="height: {dotPlotHeight}px">
-				{#if zeroPct !== null}
-					<div class="absolute inset-y-0 w-px bg-base-300" style="left: {zeroPct}%"></div>
-					<div
-						class="absolute -top-3 -translate-x-1/2 text-[9px] text-base-content/50"
-						style="left: {zeroPct}%"
-					>
-						0
+					<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
+					<div class="text-lg font-semibold tabular-nums">
+						{stat.value}
+						<span class="text-xs font-normal text-base-content/50">Min.</span>
 					</div>
-				{/if}
-				{#each openDots as d}
-					<button
-						class="absolute h-2 w-2 -translate-x-1/2 rounded-full transition-transform hover:scale-150 {d.cls} {dotFilter &&
-						dotFilter.kind === 'open' &&
-						dotFilter.bin === d.bin
-							? 'opacity-100 ring-2 ring-primary'
-							: 'opacity-80'}"
-						style="left: {d.leftPct}%; bottom: {d.bottom}px"
-						title="{d.value} Min. offen — klicken zum Filtern"
-						aria-label="Aufsichten mit {d.value} Min. offen filtern"
-						on:click={() => pickDot('open', d.bin, `${d.value} Min. offen`)}
-					></button>
-				{/each}
-			</div>
-			<div class="mt-1 flex justify-between text-[10px] text-base-content/60">
-				<span>min {openMin} Min.</span>
-				<span>max {openMax} Min.</span>
-			</div>
+				</div>
+			{/each}
 		</div>
 
-		<!-- Manuell ausgeschlossene Aufsichten (Aufsichts-Constraints) -->
-		<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
-			<div class="mb-3 flex items-baseline justify-between">
-				<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>
-				<span class="text-[10px] text-base-content/50"
-					>{data.excludedByConfig.length} Person(en)</span
-				>
-			</div>
-			{#if data.excludedByConfig.length}
-				<div class="flex flex-col gap-1">
-					{#each data.excludedByConfig as ex}
-						<span
-							class="badge badge-outline badge-warning badge-sm w-full justify-start truncate"
-							title="ID {ex.teacher.id} · Faktor {ex.requirements?.factor}"
-						>
-							{ex.teacher.fullname}
-						</span>
+		<div class="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_2fr_1fr]">
+			<!-- Verhältnis Räume/Reserve als Dot-Plot -->
+			<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+				<div class="mb-3 flex items-baseline justify-between">
+					<span class="text-xs font-medium text-base-content/60"
+						>Verhältnis Räume / Reserve — ein Punkt pro Aufsicht</span
+					>
+					<span class="text-[10px] text-base-content/50"
+						>{ratioCount} mit Aufsichten · {ratioWithoutCount} ohne Aufsichten</span
+					>
+				</div>
+				<div class="relative" style="height: {ratioPlotHeight}px">
+					<!-- 50/50-Linie -->
+					<div class="absolute inset-y-0 left-1/2 w-px bg-base-300"></div>
+					{#each ratioDots as d}
+						<button
+							class="absolute h-2 w-2 -translate-x-1/2 rounded-full bg-primary transition-transform hover:scale-150 {dotFilter &&
+							dotFilter.kind === 'ratio' &&
+							dotFilter.bin === d.bin
+								? 'opacity-100 ring-2 ring-primary'
+								: 'opacity-80'}"
+							style="left: {d.leftPct}%; bottom: {d.bottom}px"
+							title="Räume {d.room} Min · Reserve {d.reserve} Min — klicken zum Filtern"
+							aria-label="Aufsichten mit {Math.round(d.share * 100)} % Reserve filtern"
+							on:click={() => pickDot('ratio', d.bin, `${Math.round(d.share * 100)} % Reserve`)}
+						></button>
 					{/each}
 				</div>
-				<div class="mt-2 text-[10px] text-base-content/50">
-					Würden Aufsicht machen (Faktor &gt; 0), sind aber per Konfiguration ausgenommen — prüfen,
-					ob die Liste noch aktuell ist.
+				<div class="mt-1 flex justify-between text-[10px] text-base-content/60">
+					<span>nur Räume</span>
+					<span>50 / 50</span>
+					<span>nur Reserve</span>
 				</div>
-			{:else}
-				<div class="text-sm text-base-content/50">Niemand manuell ausgeschlossen.</div>
-			{/if}
+			</div>
+
+			<!-- Verteilung der noch offenen Minuten als Dot-Plot -->
+			<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+				<div class="mb-3 flex items-baseline justify-between">
+					<span class="text-xs font-medium text-base-content/60"
+						>Verteilung „noch offen" — ein Punkt pro Aufsicht</span
+					>
+					<span class="text-[10px] text-base-content/50">{invigCount} Aufsichten</span>
+				</div>
+				<div class="relative" style="height: {dotPlotHeight}px">
+					{#if zeroPct !== null}
+						<div class="absolute inset-y-0 w-px bg-base-300" style="left: {zeroPct}%"></div>
+						<div
+							class="absolute -top-3 -translate-x-1/2 text-[9px] text-base-content/50"
+							style="left: {zeroPct}%"
+						>
+							0
+						</div>
+					{/if}
+					{#each openDots as d}
+						<button
+							class="absolute h-2 w-2 -translate-x-1/2 rounded-full transition-transform hover:scale-150 {d.cls} {dotFilter &&
+							dotFilter.kind === 'open' &&
+							dotFilter.bin === d.bin
+								? 'opacity-100 ring-2 ring-primary'
+								: 'opacity-80'}"
+							style="left: {d.leftPct}%; bottom: {d.bottom}px"
+							title="{d.value} Min. offen — klicken zum Filtern"
+							aria-label="Aufsichten mit {d.value} Min. offen filtern"
+							on:click={() => pickDot('open', d.bin, `${d.value} Min. offen`)}
+						></button>
+					{/each}
+				</div>
+				<div class="mt-1 flex justify-between text-[10px] text-base-content/60">
+					<span>min {openMin} Min.</span>
+					<span>max {openMax} Min.</span>
+				</div>
+			</div>
+
+			<!-- Manuell ausgeschlossene Aufsichten (Aufsichts-Constraints) -->
+			<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
+				<div class="mb-3 flex items-baseline justify-between">
+					<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>
+					<span class="text-[10px] text-base-content/50"
+						>{data.excludedByConfig.length} Person(en)</span
+					>
+				</div>
+				{#if data.excludedByConfig.length}
+					<div class="flex flex-col gap-1">
+						{#each data.excludedByConfig as ex}
+							<span
+								class="badge badge-outline badge-warning badge-sm w-full justify-start truncate"
+								title="ID {ex.teacher.id} · Faktor {ex.requirements?.factor}"
+							>
+								{ex.teacher.fullname}
+							</span>
+						{/each}
+					</div>
+					<div class="mt-2 text-[10px] text-base-content/50">
+						Würden Aufsicht machen (Faktor &gt; 0), sind aber per Konfiguration ausgenommen —
+						prüfen, ob die Liste noch aktuell ist.
+					</div>
+				{:else}
+					<div class="text-sm text-base-content/50">Niemand manuell ausgeschlossen.</div>
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
 
-<div
-	class="sticky top-0 z-10 mx-2 mt-2 flex items-center gap-3 border-b border-base-300 bg-base-100/95 py-2 backdrop-blur"
->
-	<input
-		class="input input-bordered input-sm flex-1"
-		type="text"
-		bind:value={searchTerm}
-		placeholder="Suche Aufsichten (Name, Kürzel oder Nummer)"
-	/>
-	{#if dotFilter}
-		<span class="badge badge-primary gap-2 whitespace-nowrap">
-			{dotFilter.label} ({dotFilter.ids.size})
-			<button class="font-bold" on:click={clearDotFilter} aria-label="Filter aufheben">✕</button>
-		</span>
-	{/if}
-	<label class="label cursor-pointer gap-2">
-		<span class="label-text">Nur Prüfungen</span>
-		<input
-			type="checkbox"
-			class="toggle toggle-sm"
-			checked={!showInvigilations}
-			on:change={(e) => (showInvigilations = !e.currentTarget.checked)}
-		/>
-	</label>
-	<label class="label cursor-pointer gap-2">
-		<span class="label-text">Alphabetisch</span>
-		<input
-			type="checkbox"
-			class="toggle toggle-sm"
-			on:click={() => {
-				sortOpen = !sortOpen;
-			}}
-		/>
-	</label>
-	<button class="btn btn-outline btn-sm gap-2" on:click={exportAllPng} disabled={exporting}>
-		{#if exporting}
-			<span class="loading loading-spinner loading-xs"></span>
-			{exportProgress}
-		{:else}
-			📷 Kalender als PNG (ZIP)
-		{/if}
-	</button>
-	<button
-		class="btn btn-primary btn-sm gap-2"
-		on:click={uploadAllPng}
-		disabled={uploading || exporting}
-	>
-		{#if uploading}
-			<span class="loading loading-spinner loading-xs"></span>
-			{uploadProgress}
-		{:else}
-			⬆ Kalender auf Server hochladen
-		{/if}
-	</button>
-</div>
-
-{#if uploadResult}
 	<div
-		class="mx-2 alert py-2 text-sm {uploadResult.blocked || uploadResult.failed.length
-			? 'alert-warning'
-			: 'alert-success'}"
-		transition:fade
+		class="sticky top-0 z-10 mx-2 mt-2 flex items-center gap-3 border-b border-base-300 bg-base-100/95 py-2 backdrop-blur"
 	>
-		<div>
-			<div>{uploadResult.done} Bild(er) hochgeladen.</div>
-			{#if uploadResult.blocked}
-				<div class="mt-1 text-xs">
-					Abgebrochen: Es läuft gerade eine Validierung oder ein anderer Transfer/E-Mail-Versand.
-					Bitte später erneut hochladen.
-				</div>
-			{/if}
-			{#if uploadResult.failed.length}
-				<div class="mt-1 text-xs">
-					Fehlgeschlagen ({uploadResult.failed.length}):
-					<span class="font-mono">{uploadResult.failed.join(', ')}</span>
-				</div>
-			{/if}
-		</div>
-	</div>
-{/if}
-
-{#key filteredInvigilators}
-	<div class="mx-2 flex flex-col items-center" transition:fade>
-		{#each filteredInvigilators as invigilator, index}
-			<InvigilatorTR
-				semesterConfig={data.semesterConfig}
-				{index}
-				{invigilator}
-				{showInvigilations}
-				base100={todos.todoPerInvigilatorOvertimeCutted}
+		<input
+			class="input input-bordered input-sm flex-1"
+			type="text"
+			bind:value={searchTerm}
+			placeholder="Suche Aufsichten (Name, Kürzel oder Nummer)"
+		/>
+		{#if dotFilter}
+			<span class="badge badge-primary gap-2 whitespace-nowrap">
+				{dotFilter.label} ({dotFilter.ids.size})
+				<button class="font-bold" on:click={clearDotFilter} aria-label="Filter aufheben">✕</button>
+			</span>
+		{/if}
+		<label class="label cursor-pointer gap-2">
+			<span class="label-text">Nur Prüfungen</span>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm"
+				checked={!showInvigilations}
+				on:change={(e) => (showInvigilations = !e.currentTarget.checked)}
 			/>
-		{/each}
+		</label>
+		<label class="label cursor-pointer gap-2">
+			<span class="label-text">Alphabetisch</span>
+			<input
+				type="checkbox"
+				class="toggle toggle-sm"
+				on:click={() => {
+					sortOpen = !sortOpen;
+				}}
+			/>
+		</label>
+		<button class="btn btn-outline btn-sm gap-2" on:click={exportAllPng} disabled={exporting}>
+			{#if exporting}
+				<span class="loading loading-spinner loading-xs"></span>
+				{exportProgress}
+			{:else}
+				📷 Kalender als PNG (ZIP)
+			{/if}
+		</button>
+		<button
+			class="btn btn-primary btn-sm gap-2"
+			on:click={uploadAllPng}
+			disabled={uploading || exporting}
+		>
+			{#if uploading}
+				<span class="loading loading-spinner loading-xs"></span>
+				{uploadProgress}
+			{:else}
+				⬆ Kalender auf Server hochladen
+			{/if}
+		</button>
 	</div>
-{/key}
+
+	{#if uploadResult}
+		<div
+			class="mx-2 alert py-2 text-sm {uploadResult.blocked || uploadResult.failed.length
+				? 'alert-warning'
+				: 'alert-success'}"
+			transition:fade
+		>
+			<div>
+				<div>{uploadResult.done} Bild(er) hochgeladen.</div>
+				{#if uploadResult.blocked}
+					<div class="mt-1 text-xs">
+						Abgebrochen: Es läuft gerade eine Validierung oder ein anderer Transfer/E-Mail-Versand.
+						Bitte später erneut hochladen.
+					</div>
+				{/if}
+				{#if uploadResult.failed.length}
+					<div class="mt-1 text-xs">
+						Fehlgeschlagen ({uploadResult.failed.length}):
+						<span class="font-mono">{uploadResult.failed.join(', ')}</span>
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
+	{#key filteredInvigilators}
+		<div class="mx-2 flex flex-col items-center" transition:fade>
+			{#each filteredInvigilators as invigilator, index}
+				<InvigilatorTR
+					semesterConfig={data.semesterConfig}
+					{index}
+					{invigilator}
+					{showInvigilations}
+					base100={todos.todoPerInvigilatorOvertimeCutted}
+				/>
+			{/each}
+		</div>
+	{/key}
+{/if}
