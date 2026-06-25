@@ -336,10 +336,15 @@
 		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
 	</div>
 
-	<div class="alert alert-info py-2 text-sm">
+	<div class="alert alert-info flex-col items-start py-2 text-sm">
 		<span>
 			Diese Vorplanung liegt in der DB des <strong>betreffenden Semesters</strong> — plexams muss auf
 			dieses Semester gestartet sein.
+		</span>
+		<span class="text-xs opacity-80">
+			Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
+			<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren → erneut
+			validieren, bis alles ok.
 		</span>
 	</div>
 
@@ -418,6 +423,29 @@
 												<span class="text-error">⚠ Kapazität reicht nicht</span>
 											{/if}
 										</div>
+										<div
+											class="mt-1 flex flex-wrap items-center gap-x-2 tabular-nums {k.need
+												.seatsBooked < k.need.seatsNeeded
+												? 'font-medium text-warning'
+												: 'text-base-content/70'}"
+										>
+											<span>nötig {k.need.seatsNeeded}</span>
+											<span>· gebucht {k.need.seatsBooked}</span>
+											{#if k.need.seatsBooked < k.need.seatsNeeded}
+												<span class="badge badge-warning badge-sm">
+													noch zu buchen: {k.need.seatsNeeded - k.need.seatsBooked} Plätze
+												</span>
+											{:else}
+												<span class="badge badge-success badge-sm">gebucht</span>
+											{/if}
+										</div>
+										{#if k.need.roomsToBook.length}
+											<div class="mt-1 text-xs text-warning">
+												noch in Anny buchen: <span class="font-medium"
+													>{k.need.roomsToBook.join(', ')}</span
+												>
+											</div>
+										{/if}
 										{#if k.need.rooms.length}
 											<div class="mt-1 text-xs text-base-content/60">
 												Vorschlag ({k.need.roomsSuggested}): {k.need.rooms.join(', ')}

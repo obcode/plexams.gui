@@ -1292,6 +1292,8 @@ type PreplanKindNeed {
   roomsSuggested: Int!
   rooms: [String!]!
   seatsAvailable: Int!
+  seatsBooked: Int!
+  roomsToBook: [String!]!
 }
 
 type PreplanSlotConflict {

@@ -55,6 +55,8 @@ export async function load() {
 							roomsSuggested
 							rooms
 							seatsAvailable
+							seatsBooked
+							roomsToBook
 						}
 						seb {
 							examCount
@@ -62,6 +64,8 @@ export async function load() {
 							roomsSuggested
 							rooms
 							seatsAvailable
+							seatsBooked
+							roomsToBook
 						}
 						conflicts {
 							program
