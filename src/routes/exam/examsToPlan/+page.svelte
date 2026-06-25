@@ -85,11 +85,18 @@
 		return `${WD[dt.getUTCDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
 	};
 
+	// „Dauer 0": zu planen, nicht notPlannedByMe, keine Dauer hinterlegt
+	/** @param {any} e */
+	const isDurZero = (e) =>
+		e.status === 'toPlan' && !e.constraints?.notPlannedByMe && !(e.duration > 0);
+	$: durZeroCount = items.filter(isDurZero).length;
+
 	// --- Filter ---
 	// Status: beim Laden nur „zu planen"
 	/** @type {string | null} */
 	let filterStatus = 'toPlan';
 	let cFilter = 'alle';
+	let durZero = false;
 	let q = '';
 	const setStatusFilter = (/** @type {string} */ s) =>
 		(filterStatus = filterStatus === s ? null : s);
@@ -122,6 +129,7 @@
 
 	$: filtered = items.filter((/** @type {any} */ e) => {
 		if (filterStatus && e.status !== filterStatus) return false;
+		if (durZero && !isDurZero(e)) return false;
 		if (cFilter !== 'alle' && !passesConstraint(e)) return false;
 		if (examType && e.examTypeFull !== examType) return false;
 		if (q.trim()) {
@@ -236,6 +244,16 @@
 				on:click={() => setStatusFilter('unknown')}
 			>
 				? {counts.unknown} nicht zugeordnet
+			</button>
+			<button
+				class="badge badge-error gap-1 tabular-nums {durZero ? '' : 'badge-outline'}"
+				title="zu planen, nicht „nicht von mir geplant“, ohne hinterlegte Dauer"
+				on:click={() => {
+					durZero = !durZero;
+					if (durZero) filterStatus = null;
+				}}
+			>
+				⏱ {durZeroCount} Dauer 0
 			</button>
 		</div>
 		<div class="flex-1"></div>
