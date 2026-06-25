@@ -504,6 +504,7 @@ type Mutation {
   empty the backend tries to resolve it).
   """
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
+  setSemesterConfigInput(input: SemesterConfigInputData!): SetSemesterConfigInputResult!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -854,6 +855,7 @@ type Query {
   allSemesterNames: [Semester!]!
   semester: Semester!
   semesterConfig: SemesterConfig!
+  semesterConfigInput: SemesterConfigInput
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1143,6 +1145,52 @@ type RoomWithInvigilator {
 
 type Semester {
   id: String!
+}
+
+"""
+SemesterConfigInput is the editable semester configuration (raw input form,
+before days/slots are computed). Null for a fresh semester without config.
+NOTE: hand-written stub for the GUI — regenerate via update-schema.graphql.
+"""
+type SemesterConfigInput {
+  from: Time!
+  fromFK07: Time!
+  until: Time!
+  dayNumberStart: Int!
+  slots: [String!]!
+  goDay0: Time!
+  forbiddenDays: [Time!]!
+  goSlots: [[Int!]!]!
+  emails: Emails!
+}
+
+input SemesterConfigInputData {
+  from: Time!
+  fromFK07: Time!
+  until: Time!
+  dayNumberStart: Int!
+  slots: [String!]!
+  goDay0: Time!
+  forbiddenDays: [Time!]!
+  goSlots: [[Int!]!]!
+  emails: EmailsInput!
+}
+
+input EmailsInput {
+  profs: String!
+  lbas: String!
+  lbasLastSemester: String!
+  additionalExamer: [String!]!
+  fs: String!
+  sekr: String!
+  roomManagement: String!
+  kdp: String!
+  lbaba: String!
+}
+
+type SetSemesterConfigInputResult {
+  ok: Boolean!
+  warnings: [String!]!
 }
 
 type SemesterConfig {
