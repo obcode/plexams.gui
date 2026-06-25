@@ -98,6 +98,19 @@
 	let cFilter = 'alle';
 	let durZero = false;
 	let q = '';
+
+	// „Dauer 0" blendet den Status-Filter aus; beim Ausschalten wieder herstellen
+	/** @type {string | null} */
+	let prevFilterStatus = 'toPlan';
+	function toggleDurZero() {
+		durZero = !durZero;
+		if (durZero) {
+			prevFilterStatus = filterStatus;
+			filterStatus = null;
+		} else {
+			filterStatus = prevFilterStatus;
+		}
+	}
 	const setStatusFilter = (/** @type {string} */ s) =>
 		(filterStatus = filterStatus === s ? null : s);
 
@@ -248,10 +261,7 @@
 			<button
 				class="badge badge-error gap-1 tabular-nums {durZero ? '' : 'badge-outline'}"
 				title="zu planen, nicht „nicht von mir geplant“, ohne hinterlegte Dauer"
-				on:click={() => {
-					durZero = !durZero;
-					if (durZero) filterStatus = null;
-				}}
+				on:click={toggleDurZero}
 			>
 				⏱ {durZeroCount} Dauer 0
 			</button>

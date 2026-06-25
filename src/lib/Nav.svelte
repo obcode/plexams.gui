@@ -122,7 +122,6 @@
 				{ section: 'ZPA' },
 				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
 				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
-				{ href: '/zpa/studentregs', label: '⚠️ Importfehler Anmeldungen (ZPA)' },
 				{ section: 'Primuss' },
 				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
 				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
