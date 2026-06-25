@@ -234,6 +234,9 @@
 			Ankreuzen, welche Tag/Slot-Zellen MUC.DAI-Slots sind. Tag 1 = „von (from)", Wochenenden sind
 			ausgelassen. Klick auf einen Spalten- oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
 		</p>
+		<p class="text-xs text-base-content/50">
+			Üblicherweise an Tag 1 Nachmittagsslots und dann immer abwechselnd Vor- und Nachmittags.
+		</p>
 		{#if matrixDays.length === 0 || matrixRows.length === 0}
 			<div class="text-xs text-base-content/50">
 				Bitte zuerst Zeitraum (von/bis) und Slot-Startzeiten setzen.
