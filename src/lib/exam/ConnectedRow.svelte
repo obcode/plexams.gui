@@ -7,8 +7,15 @@
 
 	/** @type {any} */
 	export let exam;
+	/** @type {Record<string, {ancode:number, module:string, mainExamer:string}[]>} */
+	export let primussByProgram = {};
 
 	const dispatch = createEventDispatcher();
+
+	$: programOptions = Object.keys(primussByProgram).sort((a, b) => a.localeCompare(b));
+	let addProgram = '';
+	/** @type {number | string} */
+	let addAncode = '';
 
 	$: lvl = LEVEL[exam.level];
 	$: errs = warningsOf(exam, 'error');
@@ -62,6 +69,15 @@
 	const fix = (program, fromAncode, toAncode) =>
 		call('fixPrimussAncode', { program, fromAncode, toAncode });
 	const rebuild = () => call('rebuildConnectedExam', {});
+
+	async function manualAdd() {
+		if (!addProgram || !addAncode) return;
+		await add(addProgram, Number(addAncode));
+		if (!actionError) {
+			addProgram = '';
+			addAncode = '';
+		}
+	}
 </script>
 
 <div
@@ -170,6 +186,39 @@
 						</button>
 					{/if}
 				{/each}
+			</div>
+		{/if}
+
+		{#if editing}
+			<!-- beliebiges Primuss-Exam zuordnen (Auswahl aus den Primuss-Daten) -->
+			<div class="mt-1 flex flex-wrap items-center gap-1">
+				<select
+					class="select select-bordered select-xs w-24"
+					bind:value={addProgram}
+					on:change={() => (addAncode = '')}
+				>
+					<option value="">Studiengang</option>
+					{#each programOptions as p}
+						<option value={p}>{p}</option>
+					{/each}
+				</select>
+				<select
+					class="select select-bordered select-xs w-56"
+					bind:value={addAncode}
+					disabled={!addProgram}
+				>
+					<option value="">Ancode wählen …</option>
+					{#each primussByProgram[addProgram] ?? [] as e}
+						<option value={e.ancode}>{e.ancode} — {e.module}</option>
+					{/each}
+				</select>
+				<button
+					class="btn btn-xs"
+					disabled={busy || !addProgram || !addAncode}
+					on:click={manualAdd}
+				>
+					＋ hinzufügen
+				</button>
 			</div>
 		{/if}
 	</div>

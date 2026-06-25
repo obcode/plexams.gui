@@ -166,7 +166,7 @@
 
 		<div class="flex flex-col gap-1.5">
 			{#each filtered as exam (exam.zpaExam.ancode)}
-				<ConnectedRow {exam} on:updated={onUpdated} />
+				<ConnectedRow {exam} primussByProgram={data.primussByProgram} on:updated={onUpdated} />
 			{:else}
 				<div class="p-6 text-center text-sm text-base-content/50">
 					Keine Prüfungen entsprechen dem Filter.
