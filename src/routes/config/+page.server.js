@@ -11,9 +11,7 @@ export async function load() {
 				}
 				semesterConfigInput {
 					from
-					fromFK07
 					until
-					dayNumberStart
 					slots
 					goDay0
 					forbiddenDays

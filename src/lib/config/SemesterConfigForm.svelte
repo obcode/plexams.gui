@@ -19,10 +19,8 @@
 		const e = c.emails || {};
 		return {
 			from: c.from ?? '',
-			fromFK07: c.fromFK07 ?? '',
 			until: c.until ?? '',
 			goDay0: c.goDay0 ?? '',
-			dayNumberStart: c.dayNumberStart ?? 'from',
 			/** @type {string[]} */
 			slots: [...(c.slots ?? [])],
 			/** @type {string[]} */
@@ -69,9 +67,7 @@
 	export function getInput() {
 		return {
 			from: form.from,
-			fromFK07: form.fromFK07,
 			until: form.until,
-			dayNumberStart: String(form.dayNumberStart).trim(),
 			slots: form.slots.map((s) => s.trim()).filter(Boolean),
 			goDay0: form.goDay0,
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
@@ -106,15 +102,6 @@
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">von FK07 (fromFK07)</span>
-				<input
-					type="date"
-					class="input input-bordered input-sm"
-					value={datePart(form.fromFK07)}
-					on:change={(e) => (form.fromFK07 = setDate(form.fromFK07, e.currentTarget.value))}
-				/>
-			</label>
-			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">bis (until)</span>
 				<input
 					type="date"
@@ -132,22 +119,8 @@
 					on:change={(e) => (form.goDay0 = setDate(form.goDay0, e.currentTarget.value))}
 				/>
 			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Tag-Zählung ab (dayNumberStart)</span
-				>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-40"
-					placeholder="from"
-					list="dayNumberStartOpts"
-					bind:value={form.dayNumberStart}
-				/>
-				<datalist id="dayNumberStartOpts">
-					<option value="from"></option>
-					<option value="fromFK07"></option>
-				</datalist>
-			</label>
 		</div>
+		<p class="text-xs text-base-content/50">„von (from)" ist der Planungsbeginn = Tag 1.</p>
 	</div>
 
 	<!-- Slots -->

@@ -20,7 +20,7 @@ export async function POST({ request }) {
 		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, { input });
 		return json(data);
 	} catch (e) {
-		// Validierungsfehler (from > fromFK07, ungültiges Slot-Format, …)
+		// Validierungsfehler (ungültiges Datum/Slot-Format, …)
 		return json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
 }

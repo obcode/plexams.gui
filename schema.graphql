@@ -1177,9 +1177,7 @@ NOTE: hand-written stub for the GUI — regenerate via update-schema.graphql.
 """
 type SemesterConfigInput {
   from: Time!
-  fromFK07: Time!
   until: Time!
-  dayNumberStart: String
   slots: [String!]!
   goDay0: Time!
   forbiddenDays: [Time!]
@@ -1189,9 +1187,7 @@ type SemesterConfigInput {
 
 input SemesterConfigInputData {
   from: Time!
-  fromFK07: Time!
   until: Time!
-  dayNumberStart: String
   slots: [String!]!
   goDay0: Time!
   forbiddenDays: [Time!]
@@ -1325,7 +1321,6 @@ type SemesterConfig {
   goDay0: Time!
   forbiddenSlots: [Slot!]
   from: Time!
-  fromFK07: Time!
   until: Time!
   emails: Emails!
 }
