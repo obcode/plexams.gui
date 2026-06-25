@@ -22,7 +22,7 @@
 			fromFK07: c.fromFK07 ?? '',
 			until: c.until ?? '',
 			goDay0: c.goDay0 ?? '',
-			dayNumberStart: c.dayNumberStart ?? 1,
+			dayNumberStart: c.dayNumberStart ?? 'from',
 			/** @type {string[]} */
 			slots: [...(c.slots ?? [])],
 			/** @type {string[]} */
@@ -80,7 +80,7 @@
 			from: form.from,
 			fromFK07: form.fromFK07,
 			until: form.until,
-			dayNumberStart: Number(form.dayNumberStart),
+			dayNumberStart: String(form.dayNumberStart).trim(),
 			slots: form.slots.map((s) => s.trim()).filter(Boolean),
 			goDay0: form.goDay0,
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
@@ -191,14 +191,19 @@
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60"
-					>erste Tag-Nummer (dayNumberStart)</span
+				<span class="text-xs font-medium text-base-content/60">Tag-Zählung ab (dayNumberStart)</span
 				>
 				<input
-					type="number"
-					class="input input-bordered input-sm w-28"
+					type="text"
+					class="input input-bordered input-sm w-40"
+					placeholder="from"
+					list="dayNumberStartOpts"
 					bind:value={form.dayNumberStart}
 				/>
+				<datalist id="dayNumberStartOpts">
+					<option value="from"></option>
+					<option value="fromFK07"></option>
+				</datalist>
 			</label>
 		</div>
 	</div>

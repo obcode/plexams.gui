@@ -1156,11 +1156,11 @@ type SemesterConfigInput {
   from: Time!
   fromFK07: Time!
   until: Time!
-  dayNumberStart: Int!
+  dayNumberStart: String
   slots: [String!]!
   goDay0: Time!
-  forbiddenDays: [Time!]!
-  goSlots: [[Int!]!]!
+  forbiddenDays: [Time!]
+  goSlots: [[Int!]!]
   emails: Emails!
 }
 
@@ -1168,11 +1168,11 @@ input SemesterConfigInputData {
   from: Time!
   fromFK07: Time!
   until: Time!
-  dayNumberStart: Int!
+  dayNumberStart: String
   slots: [String!]!
   goDay0: Time!
-  forbiddenDays: [Time!]!
-  goSlots: [[Int!]!]!
+  forbiddenDays: [Time!]
+  goSlots: [[Int!]!]
   emails: EmailsInput!
 }
 
