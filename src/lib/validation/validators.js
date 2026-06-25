@@ -72,11 +72,6 @@ export const roomValidators = [
 		key: 'validateRoomsBlocked',
 		title: 'Blockierte Räume',
 		description: 'gesperrter Raum noch verplant → neu generieren'
-	},
-	{
-		key: 'validateRoomsForSlotsFresh',
-		title: 'Räume-Cache aktuell',
-		description: 'rooms_for_slots veraltet → neu generieren'
 	}
 ];
 

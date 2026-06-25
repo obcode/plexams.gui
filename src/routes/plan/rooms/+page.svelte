@@ -266,11 +266,6 @@
 						primary: true,
 						disabled: data.roomsBlocked
 					},
-					{
-						field: 'generateRoomsForSlots',
-						label: 'Erlaubte Räume pro Slot neu berechnen',
-						disabled: data.roomsBlocked
-					},
 					{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }
 				]}
 				on:done={onGenerated}
