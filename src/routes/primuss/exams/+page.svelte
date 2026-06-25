@@ -69,12 +69,8 @@
 						<td>{exam.module}</td>
 						<td>{exam.mainExamer}</td>
 						<td>{exam.examType}</td>
-						<td class="text-right">
-							{#if exam.studentRegsCount == 0}
-								<span class="badge badge-ghost badge-sm">0</span>
-							{:else}
-								<span class="tabular-nums">{exam.studentRegsCount}</span>
-							{/if}
+						<td class="text-right tabular-nums">
+							{exam.studentRegsCount}
 						</td>
 					</tr>
 				{/each}
