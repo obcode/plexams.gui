@@ -32,11 +32,18 @@ export const isCalm = (level) => level === 'ok' || level === 'info';
  * „DC5" → „DC", „IF1A" → „IF". @param {string} group */
 export const programOfGroup = (group) => group.match(/^[A-Za-z]+/)?.[0] ?? group;
 
-/** Alle Studiengänge einer Zuordnung — ZPA-Seite (Gruppen) und Primuss-Seite. @param {any} exam */
-export function examPrograms(exam) {
+/** Studiengänge der ZPA-Seite (aus den Gruppen). @param {any} exam */
+export function zpaPrograms(exam) {
 	/** @type {Set<string>} */
 	const s = new Set();
 	for (const g of exam.zpaExam?.groups ?? []) s.add(programOfGroup(g));
+	return s;
+}
+
+/** Studiengänge der Primuss-Seite (zugeordnete Prüfungen). @param {any} exam */
+export function primussPrograms(exam) {
+	/** @type {Set<string>} */
+	const s = new Set();
 	for (const p of exam.primussExams ?? []) s.add(p.program);
 	return s;
 }

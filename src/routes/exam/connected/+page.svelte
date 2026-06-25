@@ -1,5 +1,5 @@
 <script>
-	import { levelOf, examPrograms } from '$lib/exam/connected.js';
+	import { levelOf, zpaPrograms, primussPrograms } from '$lib/exam/connected.js';
 	import ConnectedRow from '$lib/exam/ConnectedRow.svelte';
 
 	export let data;
@@ -9,10 +9,14 @@
 		level: levelOf(e)
 	}));
 
-	// alle vorkommenden Studiengänge (ZPA-Gruppen + Primuss-Programme), sortiert
-	$: allPrograms = [...new Set(rows.flatMap((/** @type {any} */ r) => [...examPrograms(r)]))].sort(
-		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
-	);
+	/** @param {(e: any) => Set<string>} fn */
+	const sortedPrograms = (fn) =>
+		[...new Set(rows.flatMap((/** @type {any} */ r) => [...fn(r)]))].sort((a, b) =>
+			a.localeCompare(b)
+		);
+	// Studiengänge je Seite (eigene Optionslisten)
+	$: zpaProgramOptions = sortedPrograms(zpaPrograms);
+	$: primussProgramOptions = sortedPrograms(primussPrograms);
 
 	$: counts = {
 		total: rows.length,
@@ -25,22 +29,23 @@
 	// Filter: null = alle, 'attention' = Warnungen+Fehler, sonst genau eine Stufe.
 	/** @type {string | null} */
 	let filter = null;
-	let program = ''; // '' = alle Studiengänge
+	let zpaProgram = ''; // '' = alle (ZPA-Seite)
+	let primussProgram = ''; // '' = alle (Primuss-Seite)
 	let q = '';
 
 	/** @param {string} f */
 	const toggle = (f) => (filter = filter === f ? null : f);
 
-	// `filter`, `program` und `q` werden hier direkt referenziert, damit Svelte
-	// die Reaktivität erkennt (Funktionen, die sie nur intern nutzen, würden
-	// nicht neu ausgewertet).
+	// `filter`, `zpaProgram`, `primussProgram` und `q` werden hier direkt
+	// referenziert, damit Svelte die Reaktivität erkennt.
 	$: filtered = rows.filter((/** @type {any} */ r) => {
 		if (filter === 'attention') {
 			if (r.level !== 'warning' && r.level !== 'error') return false;
 		} else if (filter && r.level !== filter) {
 			return false;
 		}
-		if (program && !examPrograms(r).has(program)) return false;
+		if (zpaProgram && !zpaPrograms(r).has(zpaProgram)) return false;
+		if (primussProgram && !primussPrograms(r).has(primussProgram)) return false;
 		if (q.trim()) {
 			const n = q.trim().toLowerCase();
 			const hay =
@@ -113,12 +118,24 @@
 				/>
 				<span>nur Auffälligkeiten</span>
 			</label>
-			<select class="select select-bordered select-sm w-40" bind:value={program}>
-				<option value="">alle Studiengänge</option>
-				{#each allPrograms as p}
-					<option value={p}>{p}</option>
-				{/each}
-			</select>
+			<label class="flex items-center gap-1 text-sm">
+				<span class="text-base-content/50">ZPA</span>
+				<select class="select select-bordered select-sm w-32" bind:value={zpaProgram}>
+					<option value="">alle</option>
+					{#each zpaProgramOptions as p}
+						<option value={p}>{p}</option>
+					{/each}
+				</select>
+			</label>
+			<label class="flex items-center gap-1 text-sm">
+				<span class="text-base-content/50">Primuss</span>
+				<select class="select select-bordered select-sm w-32" bind:value={primussProgram}>
+					<option value="">alle</option>
+					{#each primussProgramOptions as p}
+						<option value={p}>{p}</option>
+					{/each}
+				</select>
+			</label>
 			<input
 				class="input input-bordered input-sm w-56"
 				type="text"
