@@ -89,7 +89,7 @@
 
 	let mucdaiSlot = new Map();
 
-	for (const slot of data.semesterConfig.goSlots) {
+	for (const slot of data.semesterConfig.mucDaiSlots) {
 		mucdaiSlot[[slot.dayNumber, slot.slotNumber]] = 'border border-red-500 border-8 ';
 	}
 

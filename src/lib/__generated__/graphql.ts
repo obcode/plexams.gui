@@ -1707,9 +1707,8 @@ export type SemesterConfig = {
   emails: Emails;
   forbiddenSlots?: Maybe<Array<Slot>>;
   from: Scalars['Time']['output'];
-  goDay0: Scalars['Time']['output'];
-  goSlots: Array<Slot>;
-  goSlotsRaw?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  mucDaiSlots: Array<Slot>;
+  mucDaiSlotsRaw?: Maybe<Array<Array<Scalars['Int']['output']>>>;
   slots: Array<Slot>;
   starttimes: Array<Starttime>;
   until: Scalars['Time']['output'];
@@ -1725,8 +1724,7 @@ export type SemesterConfigInput = {
   emails: Emails;
   forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
   from: Scalars['Time']['output'];
-  goDay0: Scalars['Time']['output'];
-  goSlots?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  mucDaiSlots?: Maybe<Array<Array<Scalars['Int']['output']>>>;
   slots: Array<Scalars['String']['output']>;
   until: Scalars['Time']['output'];
 };
@@ -1735,8 +1733,7 @@ export type SemesterConfigInputData = {
   emails: EmailsInput;
   forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
   from: Scalars['Time']['input'];
-  goDay0: Scalars['Time']['input'];
-  goSlots?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
+  mucDaiSlots?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
   slots: Array<Scalars['String']['input']>;
   until: Scalars['Time']['input'];
 };

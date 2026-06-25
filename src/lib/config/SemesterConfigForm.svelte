@@ -20,13 +20,13 @@
 		return {
 			from: c.from ?? '',
 			until: c.until ?? '',
-			goDay0: c.goDay0 ?? '',
 			/** @type {string[]} */
 			slots: [...(c.slots ?? [])],
 			/** @type {string[]} */
 			forbiddenDays: [...(c.forbiddenDays ?? [])],
-			/** @type {number[][]} */
-			goSlots: (c.goSlots ?? []).map((/** @type {number[]} */ p) => [p[0], p[1]]),
+			// MUC.DAI-Slots als Set von "tag-slot"-Schlüsseln (absolute Paare, Tag 1 = from)
+			/** @type {Set<string>} */
+			mucDai: new Set((c.mucDaiSlots ?? []).map((/** @type {number[]} */ p) => `${p[0]}-${p[1]}`)),
 			emails: {
 				profs: e.profs ?? '',
 				lbas: e.lbas ?? '',
@@ -55,13 +55,91 @@
 	const addForbidden = () => (form.forbiddenDays = [...form.forbiddenDays, '']);
 	/** @param {number} i */
 	const rmForbidden = (i) => (form.forbiddenDays = form.forbiddenDays.filter((_, j) => j !== i));
-	const addGoSlot = () => (form.goSlots = [...form.goSlots, [0, 1]]);
-	/** @param {number} i */
-	const rmGoSlot = (i) => (form.goSlots = form.goSlots.filter((_, j) => j !== i));
 	const addExaminer = () => (form.emails.additionalExamer = [...form.emails.additionalExamer, '']);
 	/** @param {number} i */
 	const rmExaminer = (i) =>
 		(form.emails.additionalExamer = form.emails.additionalExamer.filter((_, j) => j !== i));
+
+	// ---- MUC.DAI-Slot-Matrix (Zeilen = Slots/Uhrzeit, Spalten = Prüfungstage/Datum) ----
+	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	/** @param {string} iso */
+	const fmtDay = (iso) => {
+		const [y, m, d] = iso.split('-').map(Number);
+		const dt = new Date(Date.UTC(y, m - 1, d));
+		return {
+			wd: WD[dt.getUTCDay()],
+			label: `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`
+		};
+	};
+
+	// Prüfungstage = Werktage (Mo–Fr) zwischen from und until, fortlaufend ab Tag 1 = from.
+	// Wochenenden werden – wie die ExamDays des Servers – übersprungen.
+	/** @param {string} fromIso @param {string} untilIso */
+	function examDays(fromIso, untilIso) {
+		const f = (fromIso ?? '').slice(0, 10);
+		const u = (untilIso ?? '').slice(0, 10);
+		/** @type {{number:number, wd:string, label:string, iso:string}[]} */
+		const out = [];
+		if (!f || !u || f > u) return out;
+		let [y, m, d] = f.split('-').map(Number);
+		let cur = new Date(Date.UTC(y, m - 1, d));
+		const end = new Date(u + 'T00:00:00Z');
+		let n = 0;
+		while (cur.getTime() <= end.getTime()) {
+			const dow = cur.getUTCDay();
+			if (dow !== 0 && dow !== 6) {
+				n++;
+				const iso = cur.toISOString().slice(0, 10);
+				out.push({ number: n, iso, ...fmtDay(iso) });
+			}
+			cur.setUTCDate(cur.getUTCDate() + 1);
+			if (n > 200) break; // Sicherung
+		}
+		return out;
+	}
+
+	$: matrixDays = examDays(form.from, form.until);
+	// Zeilen aus den (editierbaren) Slot-Startzeiten; Slot-Nr = Position (1-basiert).
+	$: matrixRows = form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() }));
+	$: forbiddenSet = new Set(
+		form.forbiddenDays.filter(Boolean).map((/** @type {string} */ x) => x.slice(0, 10))
+	);
+
+	/** @param {number} day @param {number} slot @param {Set<string>} mucDai */
+	const cellChecked = (day, slot, mucDai) => mucDai.has(`${day}-${slot}`);
+	/** @param {number} day @param {number} slot */
+	function toggleCell(day, slot) {
+		const k = `${day}-${slot}`;
+		const s = new Set(form.mucDai);
+		if (s.has(k)) s.delete(k);
+		else s.add(k);
+		form.mucDai = s;
+	}
+	/** Spalte (Tag) umschalten: an, wenn noch nicht alle gesetzt sind, sonst aus.
+	 * @param {number} day */
+	function toggleDay(day) {
+		const s = new Set(form.mucDai);
+		const allSet = matrixRows.every((r) => s.has(`${day}-${r.slotNumber}`));
+		for (const r of matrixRows) {
+			const k = `${day}-${r.slotNumber}`;
+			if (allSet) s.delete(k);
+			else s.add(k);
+		}
+		form.mucDai = s;
+	}
+	/** Zeile (Slot) umschalten.
+	 * @param {number} slot */
+	function toggleSlotRow(slot) {
+		const s = new Set(form.mucDai);
+		const allSet = matrixDays.every((d) => s.has(`${d.number}-${slot}`));
+		for (const d of matrixDays) {
+			const k = `${d.number}-${slot}`;
+			if (allSet) s.delete(k);
+			else s.add(k);
+		}
+		form.mucDai = s;
+	}
+	const clearMucDai = () => (form.mucDai = new Set());
 
 	// Das fertige SemesterConfigInputData-Objekt (vom Eltern-Page aufgerufen).
 	export function getInput() {
@@ -69,9 +147,11 @@
 			from: form.from,
 			until: form.until,
 			slots: form.slots.map((s) => s.trim()).filter(Boolean),
-			goDay0: form.goDay0,
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
-			goSlots: form.goSlots.map((p) => [Number(p[0]), Number(p[1])]),
+			// Set → absolute [Tag, Slot]-Paare, sortiert
+			mucDaiSlots: [...form.mucDai]
+				.map((k) => k.split('-').map(Number))
+				.sort((a, b) => a[0] - b[0] || a[1] - b[1]),
 			emails: {
 				profs: form.emails.profs,
 				lbas: form.emails.lbas,
@@ -110,15 +190,6 @@
 					on:change={(e) => (form.until = setDate(form.until, e.currentTarget.value))}
 				/>
 			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Go-Day 0 (goDay0)</span>
-				<input
-					type="date"
-					class="input input-bordered input-sm"
-					value={datePart(form.goDay0)}
-					on:change={(e) => (form.goDay0 = setDate(form.goDay0, e.currentTarget.value))}
-				/>
-			</label>
 		</div>
 		<p class="text-xs text-base-content/50">„von (from)" ist der Planungsbeginn = Tag 1.</p>
 	</div>
@@ -149,35 +220,78 @@
 		{/if}
 	</div>
 
-	<!-- Go-Slots -->
+	<!-- MUC.DAI-Slots als Matrix: Zeilen = Slot/Uhrzeit, Spalten = Prüfungstag/Datum -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-		<div class="flex items-center gap-2">
-			<span class="font-semibold">Go-Slots</span>
-			<span class="badge badge-ghost badge-sm">{form.goSlots.length}</span>
-			<button class="btn btn-ghost btn-xs" on:click={addGoSlot}>+ Go-Slot</button>
+		<div class="flex flex-wrap items-center gap-2">
+			<span class="font-semibold">MUC.DAI-Slots</span>
+			<span class="badge badge-ghost badge-sm">{form.mucDai.size}</span>
+			<div class="flex-1"></div>
+			<button class="btn btn-ghost btn-xs" on:click={clearMucDai} disabled={form.mucDai.size === 0}>
+				alle abwählen
+			</button>
 		</div>
-		<p class="text-xs text-base-content/50">je Paar: Tag-Offset (ab Go-Day 0) und Slot-Nummer.</p>
-		{#if form.goSlots.length === 0}
-			<div class="text-xs text-base-content/50">keine</div>
+		<p class="text-xs text-base-content/50">
+			Ankreuzen, welche Tag/Slot-Zellen MUC.DAI-Slots sind. Tag 1 = „von (from)", Wochenenden sind
+			ausgelassen. Klick auf einen Spalten- oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
+		</p>
+		{#if matrixDays.length === 0 || matrixRows.length === 0}
+			<div class="text-xs text-base-content/50">
+				Bitte zuerst Zeitraum (von/bis) und Slot-Startzeiten setzen.
+			</div>
 		{:else}
-			<div class="flex flex-wrap gap-2">
-				{#each form.goSlots as _, i}
-					<div class="flex items-center gap-1 rounded border border-base-300 px-2 py-1">
-						<span class="text-xs text-base-content/50">Tag</span>
-						<input
-							type="number"
-							class="input input-bordered input-xs w-16"
-							bind:value={form.goSlots[i][0]}
-						/>
-						<span class="text-xs text-base-content/50">Slot</span>
-						<input
-							type="number"
-							class="input input-bordered input-xs w-16"
-							bind:value={form.goSlots[i][1]}
-						/>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => rmGoSlot(i)}>✕</button>
-					</div>
-				{/each}
+			<div class="overflow-x-auto">
+				<table class="table-xs table w-auto border-separate border-spacing-0.5">
+					<thead>
+						<tr>
+							<th class="bg-base-200 sticky left-0 z-10"></th>
+							{#each matrixDays as d}
+								<th class="p-0">
+									<button
+										class="flex w-full flex-col items-center rounded px-1 py-0.5 leading-tight hover:bg-base-200 {forbiddenSet.has(
+											d.iso
+										)
+											? 'text-base-content/40'
+											: ''}"
+										title="Tag {d.number} – ganze Spalte umschalten{forbiddenSet.has(d.iso)
+											? ' (Sperrtag)'
+											: ''}"
+										on:click={() => toggleDay(d.number)}
+									>
+										<span class="text-[10px] font-medium">{d.wd}</span>
+										<span class="text-[10px] tabular-nums">{d.label}</span>
+										<span class="text-[9px] text-base-content/40">#{d.number}</span>
+									</button>
+								</th>
+							{/each}
+						</tr>
+					</thead>
+					<tbody>
+						{#each matrixRows as r}
+							<tr>
+								<th class="bg-base-100 sticky left-0 z-10 p-0 text-right">
+									<button
+										class="flex w-full items-center justify-end gap-1 rounded px-2 py-0.5 hover:bg-base-200"
+										title="Slot {r.slotNumber} – ganze Zeile umschalten"
+										on:click={() => toggleSlotRow(r.slotNumber)}
+									>
+										<span class="tabular-nums">{r.time || `Slot ${r.slotNumber}`}</span>
+									</button>
+								</th>
+								{#each matrixDays as d}
+									<td class="p-0 text-center {forbiddenSet.has(d.iso) ? 'bg-base-200/50' : ''}">
+										<input
+											type="checkbox"
+											class="checkbox checkbox-xs"
+											checked={cellChecked(d.number, r.slotNumber, form.mucDai)}
+											on:change={() => toggleCell(d.number, r.slotNumber)}
+											title="Tag {d.number} ({d.wd} {d.label}) · Slot {r.slotNumber} ({r.time})"
+										/>
+									</td>
+								{/each}
+							</tr>
+						{/each}
+					</tbody>
+				</table>
 			</div>
 		{/if}
 	</div>

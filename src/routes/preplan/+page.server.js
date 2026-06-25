@@ -38,7 +38,7 @@ export async function load() {
 						slotNumber
 						starttime
 					}
-					goSlots {
+					mucDaiSlots {
 						dayNumber
 						slotNumber
 						starttime
@@ -82,12 +82,12 @@ export async function load() {
 		.slice()
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.fullname.localeCompare(b.fullname));
 
-	// gültige Slots = slots ∪ goSlots (dedupliziert, sortiert)
+	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert)
 	/** @type {Map<string, any>} */
 	const slotMap = new Map();
 	for (const s of [
 		...(data.semesterConfig?.slots ?? []),
-		...(data.semesterConfig?.goSlots ?? [])
+		...(data.semesterConfig?.mucDaiSlots ?? [])
 	]) {
 		slotMap.set(`${s.dayNumber}-${s.slotNumber}`, s);
 	}

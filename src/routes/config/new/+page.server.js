@@ -13,9 +13,8 @@ export async function load() {
 					from
 					until
 					slots
-					goDay0
 					forbiddenDays
-					goSlots
+					mucDaiSlots
 					emails {
 						profs
 						lbas

@@ -9,7 +9,7 @@ export async function load({ params }) {
 					number
 					date
 				}
-				goSlots {
+				mucDaiSlots {
 					dayNumber
 					slotNumber
 				}
