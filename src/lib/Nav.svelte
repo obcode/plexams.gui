@@ -75,6 +75,7 @@
 				{ href: '/exam/examersToPlan', label: 'Zu planende Prüfende' },
 				{ href: '/exam/constraints', label: 'Constraints' },
 				{ href: '/exam/kdp', label: 'EXaHM/SEB' },
+				{ href: '/preplan', label: 'SEB/EXaHM-Vorplanung' },
 				{ href: '/plan/annyBookings', label: 'Anny-Buchungen' },
 				{ href: '/exam/connected', label: 'Anmeldungszuordnung (ZPA/Primuss)' }
 			]

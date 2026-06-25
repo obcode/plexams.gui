@@ -509,6 +509,10 @@ type Mutation {
   seedStudyProgramsFromConfig: Int!
   upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
   deleteStudyProgram(shortname: String!): Boolean!
+  addPreplanExam(input: PreplanExamInput!): PreplanExam!
+  updatePreplanExam(id: Int!, input: PreplanExamInput!): PreplanExam!
+  deletePreplanExam(id: Int!): Boolean!
+  setPreplanExamSlot(id: Int!, dayNumber: Int, slotNumber: Int): PreplanExam!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -862,6 +866,8 @@ type Query {
   semesterConfigInput: SemesterConfigInput
   newSemesterConfigDefaults: SemesterConfigInput!
   studyPrograms: [StudyProgram!]!
+  preplanExams: [PreplanExam!]!
+  preplanExam(id: Int!): PreplanExam
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1212,6 +1218,36 @@ input StudyProgramInput {
   degree: String
   category: String!
   active: Boolean!
+}
+
+"""
+PreplanExam is an SEB/EXaHM exam pre-planned for a semester (kept in that
+semester's DB). Slot assignment (plannedDayNumber/SlotNumber) and ancode are
+managed separately and survive updates.
+"""
+type PreplanExam {
+  id: Int!
+  examKind: String!
+  examerID: Int!
+  examerName: String!
+  module: String!
+  programs: [String!]!
+  expectedStudents: Int!
+  duration: Int
+  plannedDayNumber: Int
+  plannedSlotNumber: Int
+  ancode: Int
+  notes: String
+}
+
+input PreplanExamInput {
+  examKind: String!
+  examerID: Int!
+  module: String!
+  programs: [String!]!
+  expectedStudents: Int!
+  duration: Int
+  notes: String
 }
 
 type SaveSemesterConfigResult {

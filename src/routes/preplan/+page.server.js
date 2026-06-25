@@ -1,0 +1,72 @@
+import { env } from '$env/dynamic/private';
+import { request, gql } from 'graphql-request';
+
+export async function load() {
+	const data = await request(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				preplanExams {
+					id
+					examKind
+					examerID
+					examerName
+					module
+					programs
+					expectedStudents
+					duration
+					plannedDayNumber
+					plannedSlotNumber
+					ancode
+					notes
+				}
+				teachers(fromZPA: false) {
+					id
+					fullname
+				}
+				studyPrograms {
+					shortname
+					name
+					category
+				}
+				semesterConfig {
+					slots {
+						dayNumber
+						slotNumber
+						starttime
+					}
+					goSlots {
+						dayNumber
+						slotNumber
+						starttime
+					}
+				}
+			}
+		`
+	);
+
+	const teachers = (data.teachers ?? [])
+		.slice()
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.fullname.localeCompare(b.fullname));
+
+	// gültige Slots = slots ∪ goSlots (dedupliziert, sortiert)
+	/** @type {Map<string, any>} */
+	const slotMap = new Map();
+	for (const s of [
+		...(data.semesterConfig?.slots ?? []),
+		...(data.semesterConfig?.goSlots ?? [])
+	]) {
+		slotMap.set(`${s.dayNumber}-${s.slotNumber}`, s);
+	}
+	const slots = [...slotMap.values()].sort(
+		(/** @type {any} */ a, /** @type {any} */ b) =>
+			a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber
+	);
+
+	return {
+		exams: data.preplanExams ?? [],
+		teachers,
+		studyPrograms: data.studyPrograms ?? [],
+		slots
+	};
+}
