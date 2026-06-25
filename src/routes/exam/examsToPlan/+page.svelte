@@ -240,6 +240,15 @@
 		</div>
 		<div class="flex-1"></div>
 		<label class="flex items-center gap-1 text-sm">
+			<span class="text-base-content/50">Art</span>
+			<select class="select select-bordered select-sm" bind:value={examType}>
+				<option value="">alle</option>
+				{#each examTypes as t}
+					<option value={t}>{t}</option>
+				{/each}
+			</select>
+		</label>
+		<label class="flex items-center gap-1 text-sm">
 			<span class="text-base-content/50">Constraints</span>
 			<select class="select select-bordered select-sm" bind:value={cFilter}>
 				<option value="alle">alle</option>
@@ -251,15 +260,6 @@
 				<option value="lab">Labor</option>
 				<option value="socket">Steckdosen</option>
 				<option value="notme">nicht von mir geplant</option>
-			</select>
-		</label>
-		<label class="flex items-center gap-1 text-sm">
-			<span class="text-base-content/50">Art</span>
-			<select class="select select-bordered select-sm" bind:value={examType}>
-				<option value="">alle</option>
-				{#each examTypes as t}
-					<option value={t}>{t}</option>
-				{/each}
 			</select>
 		</label>
 		<input
