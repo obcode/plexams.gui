@@ -506,6 +506,9 @@ type Mutation {
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
   createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
+  seedStudyProgramsFromConfig: Int!
+  upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
+  deleteStudyProgram(shortname: String!): Boolean!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -858,6 +861,7 @@ type Query {
   semesterConfig: SemesterConfig!
   semesterConfigInput: SemesterConfigInput
   newSemesterConfigDefaults: SemesterConfigInput!
+  studyPrograms: [StudyProgram!]!
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1188,6 +1192,26 @@ input EmailsInput {
   roomManagement: String!
   kdp: String!
   lbaba: String!
+}
+
+"""
+StudyProgram is a global (cross-semester) study program. category groups them
+(fk07 | mucdai | misc). name may be empty right after the seed.
+"""
+type StudyProgram {
+  shortname: String!
+  name: String!
+  degree: String
+  category: String!
+  active: Boolean!
+}
+
+input StudyProgramInput {
+  shortname: String!
+  name: String!
+  degree: String
+  category: String!
+  active: Boolean!
 }
 
 type SaveSemesterConfigResult {

@@ -132,6 +132,10 @@
 				{ href: '/email', label: 'E-Mails versenden' },
 				{ href: '/email/attachments', label: 'Anhänge (Deckblätter, Bilder)' }
 			]
+		},
+		{
+			label: 'Stammdaten',
+			items: [{ href: '/studyprograms', label: 'Studiengänge' }]
 		}
 	];
 
