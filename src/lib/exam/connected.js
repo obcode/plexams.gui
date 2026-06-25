@@ -27,3 +27,16 @@ export const warningsOf = (exam, lvl) =>
 
 /** „ruhig" = unauffällig (ok oder nur Hinweise). @param {string} level */
 export const isCalm = (level) => level === 'ok' || level === 'info';
+
+/** Studiengang-Code einer ZPA-Gruppe (führende Buchstaben, ohne Kohorten-Suffix):
+ * „DC5" → „DC", „IF1A" → „IF". @param {string} group */
+export const programOfGroup = (group) => group.match(/^[A-Za-z]+/)?.[0] ?? group;
+
+/** Alle Studiengänge einer Zuordnung — ZPA-Seite (Gruppen) und Primuss-Seite. @param {any} exam */
+export function examPrograms(exam) {
+	/** @type {Set<string>} */
+	const s = new Set();
+	for (const g of exam.zpaExam?.groups ?? []) s.add(programOfGroup(g));
+	for (const p of exam.primussExams ?? []) s.add(p.program);
+	return s;
+}
