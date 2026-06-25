@@ -53,64 +53,6 @@
 			)
 		: data.constraints;
 
-	// ---- Permanente Nicht-Aufsichten (global) ----
-	$: addablePermanent = data.candidates.filter((/** @type {any} */ t) => !permByTeacher.has(t.id));
-	let permTeacherID = 0;
-	let permReason = '';
-	let permBusy = false;
-	let permError = '';
-
-	async function addPermanent() {
-		const teacherID = Number(permTeacherID);
-		const reason = permReason.trim();
-		if (!teacherID || !reason) return;
-		// Namen des gewählten Kandidaten mitschicken (Backend ergänzt ihn, falls leer)
-		const t = data.candidates.find((/** @type {any} */ x) => x.id === teacherID);
-		const name = t ? t.fullname || t.shortname : '';
-		permBusy = true;
-		permError = '';
-		try {
-			const res = await fetch('/api/setPermanentNonInvigilator', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ teacherID, name, reason })
-			});
-			const result = await res.json().catch(() => ({}));
-			if (!res.ok || result?.error) {
-				permError = result?.error ?? `Fehler (HTTP ${res.status})`;
-				return;
-			}
-			permTeacherID = 0;
-			permReason = '';
-			await invalidateAll();
-		} catch (e) {
-			permError = e instanceof Error ? e.message : String(e);
-		} finally {
-			permBusy = false;
-		}
-	}
-
-	/** @param {any} p */
-	async function removePermanent(p) {
-		if (!confirm(`Permanente Nicht-Aufsicht für ${p.name} aufheben?`)) return;
-		permError = '';
-		try {
-			const res = await fetch('/api/removePermanentNonInvigilator', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ teacherID: p.teacherID })
-			});
-			const result = await res.json().catch(() => ({}));
-			if (!res.ok || result?.error) {
-				permError = result?.error ?? `Fehler (HTTP ${res.status})`;
-				return;
-			}
-			await invalidateAll();
-		} catch (e) {
-			permError = e instanceof Error ? e.message : String(e);
-		}
-	}
-
 	// ---- Editor-Zustand ----
 	/** @type {number | null} */
 	let editing = null;
@@ -370,59 +312,12 @@
 		</div>
 	{/if}
 
-	<!-- Permanente Nicht-Aufsichten (global, semesterübergreifend) -->
-	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
-		<div class="flex items-center gap-2">
-			<span class="font-medium">Permanente Nicht-Aufsichten</span>
-			<span class="badge badge-neutral badge-sm">{data.permanent.length}</span>
-			<span class="text-xs text-base-content/50">semesterübergreifend — z. B. pensioniert</span>
-		</div>
-		<div class="flex flex-wrap items-end gap-2">
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Person</span>
-				<select class="select select-bordered select-sm w-64" bind:value={permTeacherID}>
-					<option value={0}>Person wählen…</option>
-					{#each addablePermanent as t}
-						<option value={t.id}>{t.shortname} ({t.fullname})</option>
-					{/each}
-				</select>
-			</label>
-			<label class="flex flex-1 flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Grund (Pflicht)</span>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-full"
-					placeholder="z. B. pensioniert"
-					bind:value={permReason}
-				/>
-			</label>
-			<button
-				class="btn btn-neutral btn-sm"
-				disabled={!permTeacherID || !permReason.trim() || permBusy}
-				on:click={addPermanent}
-			>
-				{permBusy ? 'speichert…' : 'permanent ausschließen'}
-			</button>
-		</div>
-		{#if permError}
-			<div class="alert alert-error py-2 text-sm"><span>{permError}</span></div>
-		{/if}
-		{#if data.permanent.length}
-			<div class="flex flex-col gap-1">
-				{#each data.permanent as p (p.teacherID)}
-					<div class="flex items-center gap-2 rounded border border-base-300 px-3 py-1.5 text-sm">
-						<span class="font-medium">{p.name}</span>
-						<span class="min-w-0 flex-1 truncate text-base-content/70">{p.reason}</span>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => removePermanent(p)}>
-							aufheben
-						</button>
-					</div>
-				{/each}
-			</div>
-		{:else}
-			<div class="text-xs text-base-content/50">keine</div>
-		{/if}
-	</div>
+	<!-- Permanente Nicht-Aufsichten: nur Hinweis; Verwaltung unter Stammdaten → Aufsichten -->
+	<p class="text-xs text-base-content/50">
+		<strong>Permanente</strong> Nicht-Aufsichten ({data.permanent.length}) werden unter
+		<a class="link" href="/invigilators">Stammdaten → Aufsichten</a>
+		verwaltet (semesterübergreifend) und erscheinen oben mit dem Badge „permanent".
+	</p>
 </div>
 
 <!-- Editor -->

@@ -95,7 +95,6 @@
 				{ href: '/plan/rooms', label: 'Raumplanung' },
 				{ href: '/plan/kdprooms', label: 'Anny-Anforderungen (KDP)' },
 				{ href: '/plan/roomRequests', label: 'Gebäudemanagement-Anforderungen' },
-				{ href: '/rooms', label: 'Vorhandene Räume' },
 				{ href: '/plan/rooms/validate', label: 'Validierung' }
 			]
 		},
@@ -111,10 +110,7 @@
 		},
 		{
 			label: 'NTA',
-			items: [
-				{ href: '/nta/semester', label: 'NTA im Semester' },
-				{ href: '/nta/all', label: 'NTA-Stammdaten' }
-			]
+			items: [{ href: '/nta/semester', label: 'NTA im Semester' }]
 		},
 		{
 			label: 'Externe Daten',
@@ -136,7 +132,12 @@
 		},
 		{
 			label: 'Stammdaten',
-			items: [{ href: '/studyprograms', label: 'Studiengänge' }]
+			items: [
+				{ href: '/studyprograms', label: 'Studiengänge' },
+				{ href: '/rooms', label: 'Räume' },
+				{ href: '/nta/all', label: 'NTAs' },
+				{ href: '/invigilators', label: 'Aufsichten' }
+			]
 		}
 	];
 
