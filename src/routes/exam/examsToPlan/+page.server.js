@@ -62,6 +62,10 @@ export async function load() {
 					number
 					date
 				}
+				starttimes {
+					number
+					start
+				}
 			}
 			rooms {
 				name
@@ -73,16 +77,34 @@ export async function load() {
 					slotNumber
 				}
 			}
+			preplanExams {
+				ancode
+				plannedDayNumber
+				plannedSlotNumber
+			}
 		}
 	`;
 
 	const data = await request(env.PLEXAMS_SERVER, query);
 
-	// Ancode → Slot (für „schon vorgeplant")
-	/** @type {Record<number, {dayNumber:number, slotNumber:number}>} */
-	const slotByAncode = {};
+	// „vorgeplant": es gibt eine planEntry (Slot im Plan) ODER eine Vorplanung.
+	// Ancode → { slot?, preplanned } ; slot = {dayNumber, slotNumber} wenn bekannt.
+	/** @type {Record<number, {slot: {dayNumber:number, slotNumber:number}|null, preplanned:boolean}>} */
+	const planned = {};
 	for (const pe of data.plannedExams ?? []) {
-		if (pe.planEntry && pe.planEntry.slotNumber != null) slotByAncode[pe.ancode] = pe.planEntry;
+		if (pe.planEntry && pe.planEntry.slotNumber != null) {
+			planned[pe.ancode] = { slot: pe.planEntry, preplanned: true };
+		}
+	}
+	for (const pp of data.preplanExams ?? []) {
+		if (pp.ancode == null) continue;
+		const slot =
+			pp.plannedSlotNumber != null
+				? { dayNumber: pp.plannedDayNumber, slotNumber: pp.plannedSlotNumber }
+				: null;
+		planned[pp.ancode] = planned[pp.ancode] ?? { slot, preplanned: true };
+		planned[pp.ancode].preplanned = true;
+		if (!planned[pp.ancode].slot && slot) planned[pp.ancode].slot = slot;
 	}
 
 	/** @type {any[]} */
@@ -91,26 +113,30 @@ export async function load() {
 			...x.zpaExam,
 			status: 'toPlan',
 			constraints: x.constraints ?? null,
-			slot: slotByAncode[x.zpaExam.ancode] ?? null
+			slot: planned[x.zpaExam.ancode]?.slot ?? null,
+			preplanned: !!planned[x.zpaExam.ancode]?.preplanned
 		})),
 		...(data.notToPlan ?? []).map((/** @type {any} */ e) => ({
 			...e,
 			status: 'notToPlan',
 			constraints: null,
-			slot: slotByAncode[e.ancode] ?? null
+			slot: planned[e.ancode]?.slot ?? null,
+			preplanned: !!planned[e.ancode]?.preplanned
 		})),
 		...(data.unknown ?? []).map((/** @type {any} */ e) => ({
 			...e,
 			status: 'unknown',
 			constraints: null,
 			primussAncodes: [],
-			slot: slotByAncode[e.ancode] ?? null
+			slot: planned[e.ancode]?.slot ?? null,
+			preplanned: !!planned[e.ancode]?.preplanned
 		}))
 	].sort((a, b) => a.ancode - b.ancode);
 
 	return {
 		items,
 		days: data.semesterConfig?.days ?? [],
+		starttimes: data.semesterConfig?.starttimes ?? [],
 		rooms: (data.rooms ?? []).map((/** @type {any} */ r) => r.name)
 	};
 }

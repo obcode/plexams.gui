@@ -21,6 +21,28 @@
 
 	$: byAncode = new Map(items.map((/** @type {any} */ e) => [e.ancode, e]));
 
+	// Slot-Infos für den „vorgeplant"-Tooltip
+	$: dateByDay = new Map(data.days.map((/** @type {any} */ d) => [d.number, d.date]));
+	$: startBySlot = new Map(data.starttimes.map((/** @type {any} */ s) => [s.number, s.start]));
+	/** @param {string} iso → „13.07." */
+	const ddmm = (iso) => {
+		const [, m, d] = (iso ?? '').slice(0, 10).split('-');
+		return m ? `${d}.${m}.` : '';
+	};
+	/** @param {any} e */
+	function slotTip(e) {
+		if (e.slot) {
+			const st = (startBySlot.get(e.slot.slotNumber) ?? '').slice(0, 5);
+			return `schon vorgeplant: ${ddmm(dateByDay.get(e.slot.dayNumber))} ${st} (${e.slot.dayNumber}/${e.slot.slotNumber})`;
+		}
+		return 'schon vorgeplant (Vorplanung, noch ohne Slot)';
+	}
+
+	$: examTypes = [
+		...new Set(items.map((/** @type {any} */ e) => e.examTypeFull).filter(Boolean))
+	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
+	let examType = '';
+
 	/** @type {Set<number>} */
 	let busy = new Set();
 	let actionError = '';
@@ -86,7 +108,7 @@
 			case 'seb':
 				return !!rc?.seb;
 			case 'exahmseb':
-				return !!rc?.exahm && !!rc?.seb;
+				return !!rc?.exahm || !!rc?.seb;
 			case 'lab':
 				return !!rc?.lab;
 			case 'socket':
@@ -101,6 +123,7 @@
 	$: filtered = items.filter((/** @type {any} */ e) => {
 		if (filterStatus && e.status !== filterStatus) return false;
 		if (cFilter !== 'alle' && !passesConstraint(e)) return false;
+		if (examType && e.examTypeFull !== examType) return false;
 		if (q.trim()) {
 			const n = q.trim().toLowerCase();
 			const hay =
@@ -224,10 +247,19 @@
 				<option value="ohne">ohne Constraints</option>
 				<option value="exahm">EXaHM</option>
 				<option value="seb">SEB</option>
-				<option value="exahmseb">EXaHM und SEB</option>
+				<option value="exahmseb">EXaHM oder SEB</option>
 				<option value="lab">Labor</option>
 				<option value="socket">Steckdosen</option>
 				<option value="notme">nicht von mir geplant</option>
+			</select>
+		</label>
+		<label class="flex items-center gap-1 text-sm">
+			<span class="text-base-content/50">Art</span>
+			<select class="select select-bordered select-sm" bind:value={examType}>
+				<option value="">alle</option>
+				{#each examTypes as t}
+					<option value={t}>{t}</option>
+				{/each}
 			</select>
 		</label>
 		<input
@@ -282,15 +314,10 @@
 				<!-- Prüfung -->
 				<div class="min-w-0 flex-1">
 					<div class="flex flex-wrap items-baseline gap-x-2">
-						<a
-							class="link link-primary font-mono text-lg font-semibold tabular-nums"
-							href="/exam/examWithRegs/{e.ancode}">{e.ancode}</a
-						>
+						<span class="font-mono text-lg font-semibold tabular-nums">{e.ancode}</span>
 						<span class="font-medium">{e.module}</span>
 						{#if e.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
-						{#if e.slot}<span
-								title="schon vorgeplant: Tag {e.slot.dayNumber} · Slot {e.slot.slotNumber}">📌</span
-							>{/if}
+						{#if e.preplanned}<span title={slotTip(e)}>📌</span>{/if}
 					</div>
 					<div class="text-sm text-base-content/70">
 						{e.mainExamer} · <span class="text-base-content/50">{e.examTypeFull}</span>

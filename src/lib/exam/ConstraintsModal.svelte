@@ -18,14 +18,37 @@
 
 	/** @param {string} iso */
 	const dayPart = (iso) => (iso ?? '').slice(0, 10);
-	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-	/** @param {string} iso → „Mo, 06.07." */
-	const fmtDay = (iso) => {
-		const [y, m, d] = dayPart(iso).split('-').map(Number);
-		if (!y) return dayPart(iso);
-		const dt = new Date(Date.UTC(y, m - 1, d));
-		return `${WD[dt.getUTCDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
+	/** @param {string} iso → „06.07." */
+	const ddmm = (iso) => {
+		const [, m, d] = dayPart(iso).split('-');
+		return m ? `${d}.${m}.` : dayPart(iso);
 	};
+
+	// Tage in ein Wochenraster (Spalten Mo…Fr) gruppieren.
+	// @ts-ignore Date.UTC ist hier (Browser) erlaubt
+	/** @param {string} iso → 0=Mo … 4=Fr (null bei Wochenende) */
+	const col = (iso) => {
+		const [y, m, d] = dayPart(iso).split('-').map(Number);
+		const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0=So…6=Sa
+		return dow >= 1 && dow <= 5 ? dow - 1 : null;
+	};
+	/** @type {({number:number, date:string}|null)[][]} */
+	let weeks = [];
+	{
+		/** @type {any} */
+		let cur = null;
+		let prev = 99;
+		for (const d of days) {
+			const cc = col(d.date);
+			if (cc == null) continue;
+			if (!cur || cc <= prev) {
+				cur = [null, null, null, null, null];
+				weeks.push(cur);
+			}
+			cur[cc] = d;
+			prev = cc;
+		}
+	}
 
 	// Formularzustand
 	let form = {
@@ -202,21 +225,32 @@
 				<input type="text" class="input input-bordered input-sm" bind:value={form.comments} />
 			</label>
 
-			<!-- Sperrtage -->
-			{#if days.length}
+			<!-- Sperrtage: 5 Spalten Mo…Fr, je Woche eine Zeile -->
+			{#if weeks.length}
 				<div class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Sperrtage (nicht am)</span>
-					<div class="flex flex-wrap gap-x-4 gap-y-1 rounded-lg border border-base-300 p-2">
-						{#each days as d}
-							<label class="flex cursor-pointer items-center gap-1 text-sm">
-								<input
-									type="checkbox"
-									class="checkbox checkbox-xs"
-									checked={form.excludeDays.has(dayPart(d.date))}
-									on:change={() => toggleDay(dayPart(d.date))}
-								/>
-								<span class="tabular-nums">{fmtDay(d.date)}</span>
-							</label>
+					<div class="grid grid-cols-5 gap-1 rounded-lg border border-base-300 p-2">
+						{#each ['Mo', 'Di', 'Mi', 'Do', 'Fr'] as wd}
+							<div class="text-center text-xs font-medium text-base-content/50">{wd}</div>
+						{/each}
+						{#each weeks as week}
+							{#each week as d}
+								{#if d}
+									<label
+										class="flex cursor-pointer items-center gap-1 rounded px-1 py-0.5 text-sm hover:bg-base-200"
+									>
+										<input
+											type="checkbox"
+											class="checkbox checkbox-xs"
+											checked={form.excludeDays.has(dayPart(d.date))}
+											on:change={() => toggleDay(dayPart(d.date))}
+										/>
+										<span class="tabular-nums">{ddmm(d.date)}</span>
+									</label>
+								{:else}
+									<div></div>
+								{/if}
+							{/each}
 						{/each}
 					</div>
 				</div>
