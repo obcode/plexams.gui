@@ -8,207 +8,254 @@
 	let searchTermTeachers = '';
 	let searchTermModule = '';
 	let searchTermGroups = '';
-	let filteredExams = [];
 
-	$: {
-		if (searchTermAncode) {
-			filteredExams = exams.filter((exam) => exam.ancode.toString().startsWith(searchTermAncode));
-		} else if (searchTermTeachers) {
-			filteredExams = exams.filter((exam) =>
-				exam.zpaExam.mainExamer.toLowerCase().includes(searchTermTeachers.toLowerCase())
-			);
-		} else if (searchTermModule) {
-			filteredExams = exams.filter((exam) =>
-				exam.zpaExam.module.toLowerCase().includes(searchTermModule.toLowerCase())
-			);
-		} else if (searchTermGroups) {
-			filteredExams = exams.filter((exam) => {
-				for (let primussExam of exam.primussExams) {
-					if (primussExam.exam.program.toLowerCase().startsWith(searchTermGroups.toLowerCase())) {
-						return true;
-					}
-				}
-				return false;
-			});
-		} else {
-			filteredExams = [...exams];
+	// Filter kombinieren (UND): jedes gesetzte Feld grenzt weiter ein.
+	$: filteredExams = exams.filter((/** @type {any} */ exam) => {
+		if (searchTermAncode && !exam.ancode.toString().startsWith(searchTermAncode.trim())) {
+			return false;
 		}
+		if (
+			searchTermModule &&
+			!exam.zpaExam.module.toLowerCase().includes(searchTermModule.trim().toLowerCase())
+		) {
+			return false;
+		}
+		if (
+			searchTermTeachers &&
+			!exam.zpaExam.mainExamer.toLowerCase().includes(searchTermTeachers.trim().toLowerCase())
+		) {
+			return false;
+		}
+		if (searchTermGroups) {
+			const needle = searchTermGroups.trim().toLowerCase();
+			const hit = exam.primussExams.some((/** @type {any} */ pe) =>
+				pe.exam.program.toLowerCase().startsWith(needle)
+			);
+			if (!hit) return false;
+		}
+		return true;
+	});
+
+	$: hasFilter = !!(searchTermAncode || searchTermModule || searchTermTeachers || searchTermGroups);
+
+	function clearFilters() {
+		searchTermAncode = '';
+		searchTermModule = '';
+		searchTermTeachers = '';
+		searchTermGroups = '';
 	}
 
+	/** @param {number} ancode */
 	function gotoo(ancode) {
 		goto(`/exam/generatedExams/${ancode}`);
 	}
 
+	/** @param {any} exam */
 	function regs(exam) {
 		let sum = 0;
 		for (const reg of exam.primussExams) {
 			sum += reg.studentRegs.length;
 		}
-
 		return sum;
 	}
 
-	// function regsP(exam) {
-	// 	let programs = '';
-	// 	for (const reg of exam.studentRegs) {
-	// 		programs = ``;
-	// 	}
-
-	// 	return programs;
-	// }
-
-	function bg(exam) {
+	/** Zeilen-Hintergrund je nach Status (Theme-Tokens, keine festen Farben). */
+	/** @param {any} exam */
+	function rowClass(exam) {
 		if (exam.constraints && exam.constraints.notPlannedByMe) {
-			return 'bg-slate-300';
+			return 'opacity-50';
 		}
 		if (regs(exam) == 0) {
-			return 'bg-red-300';
+			return 'bg-error/10';
 		}
 		return '';
 	}
 </script>
 
-<div class="flex">
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermAncode}
-		placeholder="AnCode"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermModule}
-		placeholder="Modulname"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermTeachers}
-		placeholder="Dozierender"
-	/>
-	<input
-		class="input input-bordered w-full max-w-x mr-2"
-		type="text"
-		bind:value={searchTermGroups}
-		placeholder="Gruppe"
-	/>
-</div>
+<div class="flex flex-col gap-3">
+	<!-- Suchleiste -->
+	<div class="flex flex-wrap items-end gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">AnCode</span>
+			<input
+				class="input input-bordered input-sm w-28"
+				type="text"
+				bind:value={searchTermAncode}
+				placeholder="z. B. 123"
+			/>
+		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Modul</span>
+			<input
+				class="input input-bordered input-sm w-56"
+				type="text"
+				bind:value={searchTermModule}
+				placeholder="Modulname"
+			/>
+		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Prüfer:in</span>
+			<input
+				class="input input-bordered input-sm w-48"
+				type="text"
+				bind:value={searchTermTeachers}
+				placeholder="Name"
+			/>
+		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Gruppe</span>
+			<input
+				class="input input-bordered input-sm w-32"
+				type="text"
+				bind:value={searchTermGroups}
+				placeholder="Studiengang"
+			/>
+		</label>
+		<div class="flex-1"></div>
+		<div class="flex items-center gap-2">
+			<span class="badge badge-ghost badge-sm tabular-nums">
+				{filteredExams.length} / {exams.length}
+			</span>
+			{#if hasFilter}
+				<button class="btn btn-ghost btn-sm" on:click={clearFilters}>zurücksetzen</button>
+			{/if}
+		</div>
+	</div>
 
-<div class="overflow-x-auto my-2">
-	<table class="table table-compact w-full">
-		<thead>
-			<tr>
-				<th>Termin</th>
-				<th>AnCode</th>
-				<th>Modul</th>
-				<th>Prüfer:in</th>
-				<th>Dauer</th>
-				<th>Wiederholungsprüfung</th>
-				<th>Constraints</th>
-				<th>Anmeldungen</th>
-				<th>NTA</th>
-			</tr>
-		</thead>
-		<tbody>
-			{#each filteredExams as exam}
-				<tr class={bg(exam)}>
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<td>
-						{#if exam.planEntry != null}
-							<div class=" flex">
-								{#if exam.planEntry.locked}
-									<div class="mt-1 mr-2">
+	<div class="overflow-x-auto rounded-lg border border-base-300">
+		<table class="table table-sm">
+			<thead>
+				<tr>
+					<th>Termin</th>
+					<th>AnCode</th>
+					<th>Modul</th>
+					<th>Prüfer:in</th>
+					<th>Dauer</th>
+					<th>Wdh.</th>
+					<th>Constraints</th>
+					<th>Anmeldungen</th>
+					<th>NTA</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each filteredExams as exam}
+					<tr class="hover {rowClass(exam)}">
+						<td class="whitespace-nowrap">
+							{#if exam.planEntry != null}
+								<div class="flex items-center gap-1">
+									{#if exam.planEntry.locked}
 										<span title="festgelegt">🔒</span>
-									</div>
-								{/if}
-
-								<span>
-									{mkStarttime(exam.planEntry.starttime)}
-								</span>
-							</div>
-						{/if}
-					</td>
-					<td on:click={gotoo(exam.ancode)}
-						>{exam.ancode}
-						{#each exam.primussExams as primussExam}
-							{#if primussExam.exam.ancode != exam.ancode}
-								<div class="badge">{primussExam.exam.program}/{primussExam.exam.ancode}</div>
+									{/if}
+									<span class="tabular-nums">{mkStarttime(exam.planEntry.starttime)}</span>
+								</div>
+							{:else}
+								<span class="text-base-content/30">—</span>
 							{/if}
-						{/each}
-					</td>
-					<td>{exam.zpaExam.module}</td>
-					<td
-						>{exam.mainExamer.shortname}
-						{#if exam.mainExamer.isLBA}<div class="badge badge-secondary">LBA</div>{/if}
-						{#if exam.mainExamer.fk != 'FK07'}<div class="badge badge-secondary">
-								{exam.mainExamer.fk}
-							</div>{/if}
-					</td>
-					<td
-						>{#if exam.zpaExam.duration > 0}
-							{exam.zpaExam.duration}
-						{:else}
-							<div class="badge badge-warning">{exam.zpaExam.duration}</div>
-						{/if}
-					</td>
-					<td>
-						{#if exam.zpaExam.isRepeaterExam}
-							<div class="mt-2 mr-3">
+						</td>
+						<td>
+							<button
+								class="link link-primary font-medium tabular-nums"
+								on:click={() => gotoo(exam.ancode)}
+							>
+								{exam.ancode}
+							</button>
+							<div class="mt-0.5 flex flex-wrap gap-1">
+								{#each exam.primussExams as primussExam}
+									{#if primussExam.exam.ancode != exam.ancode}
+										<span class="badge badge-ghost badge-xs tabular-nums">
+											{primussExam.exam.program}/{primussExam.exam.ancode}
+										</span>
+									{/if}
+								{/each}
+							</div>
+						</td>
+						<td>{exam.zpaExam.module}</td>
+						<td class="whitespace-nowrap">
+							{exam.mainExamer.shortname}
+							{#if exam.mainExamer.isLBA}<span class="badge badge-secondary badge-sm">LBA</span
+								>{/if}
+							{#if exam.mainExamer.fk != 'FK07'}
+								<span class="badge badge-outline badge-sm">{exam.mainExamer.fk}</span>
+							{/if}
+						</td>
+						<td class="tabular-nums">
+							{#if exam.zpaExam.duration > 0}
+								{exam.zpaExam.duration}
+							{:else}
+								<span class="badge badge-warning badge-sm" title="keine Dauer">0</span>
+							{/if}
+						</td>
+						<td class="text-center">
+							{#if exam.zpaExam.isRepeaterExam}
 								<span title="Wiederholungsprüfung">🔁</span>
+							{/if}
+						</td>
+						<td>
+							<div class="flex flex-wrap gap-1">
+								{#if exam.constraints && exam.constraints.online}
+									<span class="badge badge-warning badge-sm">Online</span>
+								{/if}
+								{#if exam.constraints && exam.constraints.roomConstraints}
+									{#if exam.constraints.roomConstraints.exahm}
+										<span class="badge badge-error badge-sm">EXaHM</span>
+									{/if}
+									{#if exam.constraints.roomConstraints.seb}
+										<span class="badge badge-error badge-sm">SEB</span>
+									{/if}
+									{#if exam.constraints.roomConstraints.lab}
+										<span class="badge badge-error badge-sm">Labor</span>
+									{/if}
+								{/if}
 							</div>
-						{/if}
-					</td>
-					<td>
-						{#if exam.constraints && exam.constraints.online}
-							<div class="badge badge-warning">Online</div>
-						{/if}
-						{#if exam.constraints && exam.constraints.roomConstraints}
-							{#if exam.constraints.roomConstraints.exahm}
-								<div class="badge badge-error">EXaHM</div>
-							{/if}
-							{#if exam.constraints.roomConstraints.seb}
-								<div class="badge badge-error">SEB</div>
-							{/if}
-							{#if exam.constraints.roomConstraints.lab}
-								<div class="badge badge-error">Labor</div>
-							{/if}
-						{/if}
-					</td>
-					<td>
-						{#if regs(exam) == 0}
-							<div class="badge badge-error gap-2">{regs(exam)}</div>
-						{:else}
-							<div class="badge badge-success gap-2">&sum; {regs(exam)}</div>
-						{/if}
-						{#each exam.primussExams as primussExam}
-							{#if primussExam.studentRegs.length > 0}
-								<button class="btn btn-xs p-1 mx-1">
-									{primussExam.exam.program}
-									<div class="badge badge-secondary badge-xs">{primussExam.studentRegs.length}</div>
-								</button>
-							{/if}
-						{/each}
-					</td>
-					<td>
-						{#if !exam.constraints || (exam.constraints && !exam.constraints.notPlannedByMe)}
-							{#each exam.primussExams as primussExam}
-								{#if primussExam.ntas.length > 0}
-									<button class="btn btn-xs p-1 mx-1">
-										{primussExam.exam.program}
-										<div class="badge badge-secondary badge-xs">{primussExam.ntas.length}</div>
-									</button>
-									{#each primussExam.ntas as nta}
-										{#if nta.needsRoomAlone}
-											<div class="badge badge-error">Raum</div>
+						</td>
+						<td>
+							<div class="flex flex-wrap items-center gap-1">
+								{#if regs(exam) == 0}
+									<span class="badge badge-error badge-sm tabular-nums">0</span>
+								{:else}
+									<span class="badge badge-success badge-sm tabular-nums">∑ {regs(exam)}</span>
+								{/if}
+								{#each exam.primussExams as primussExam}
+									{#if primussExam.studentRegs.length > 0}
+										<span class="badge badge-ghost badge-sm gap-1">
+											{primussExam.exam.program}
+											<span class="badge badge-neutral badge-xs tabular-nums">
+												{primussExam.studentRegs.length}
+											</span>
+										</span>
+									{/if}
+								{/each}
+							</div>
+						</td>
+						<td>
+							{#if !exam.constraints || (exam.constraints && !exam.constraints.notPlannedByMe)}
+								<div class="flex flex-wrap items-center gap-1">
+									{#each exam.primussExams as primussExam}
+										{#if primussExam.ntas.length > 0}
+											<span class="badge badge-ghost badge-sm gap-1">
+												{primussExam.exam.program}
+												<span class="badge badge-neutral badge-xs tabular-nums">
+													{primussExam.ntas.length}
+												</span>
+											</span>
+											{#each primussExam.ntas as nta}
+												{#if nta.needsRoomAlone}
+													<span class="badge badge-error badge-sm">Raum</span>
+												{/if}
+											{/each}
 										{/if}
 									{/each}
-								{/if}
-							{/each}
-						{/if}
-					</td>
-				</tr>
-			{/each}
-		</tbody>
-	</table>
+								</div>
+							{/if}
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+		{#if filteredExams.length === 0}
+			<div class="p-6 text-center text-sm text-base-content/50">
+				Keine Prüfungen entsprechen den Filtern.
+			</div>
+		{/if}
+	</div>
 </div>
