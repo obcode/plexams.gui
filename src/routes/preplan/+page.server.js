@@ -41,6 +41,32 @@ export async function load() {
 						starttime
 					}
 				}
+				preplanOverview {
+					slots {
+						dayNumber
+						slotNumber
+						starttime
+						exahm {
+							examCount
+							seatsNeeded
+							roomsSuggested
+							rooms
+							seatsAvailable
+						}
+						seb {
+							examCount
+							seatsNeeded
+							roomsSuggested
+							rooms
+							seatsAvailable
+						}
+						conflicts {
+							program
+							preplanExamIDs
+							modules
+						}
+					}
+				}
 			}
 		`
 	);
@@ -63,10 +89,20 @@ export async function load() {
 			a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber
 	);
 
+	// Übersicht: „ohne Slot"-Eimer (dayNumber == null) zuerst, dann nach Tag/Slot.
+	const overview = (data.preplanOverview?.slots ?? [])
+		.slice()
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => {
+			if (a.dayNumber == null) return -1;
+			if (b.dayNumber == null) return 1;
+			return a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber;
+		});
+
 	return {
 		exams: data.preplanExams ?? [],
 		teachers,
 		studyPrograms: data.studyPrograms ?? [],
-		slots
+		slots,
+		overview
 	};
 }

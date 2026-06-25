@@ -174,6 +174,74 @@
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
 	{/if}
 
+	<!-- Vorplanungs-Übersicht: Raumbedarf + Überschneidungen je Slot -->
+	{#if data.overview.length}
+		<div class="flex flex-col gap-2">
+			<h2 class="text-lg font-semibold">Übersicht — Raumbedarf & Überschneidungen</h2>
+			<div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
+				{#each data.overview as slot}
+					{@const isBucket = slot.dayNumber == null}
+					<div
+						class="flex flex-col gap-2 rounded-lg border p-3 {isBucket
+							? 'border-warning bg-warning/10'
+							: 'border-base-300 bg-base-100'}"
+					>
+						<div class="font-medium">
+							{#if isBucket}
+								⚠ Ohne Slot — noch zuzuordnen
+							{:else}
+								Tag {slot.dayNumber} · Slot {slot.slotNumber}{slot.starttime
+									? ` (${fmtTime(slot.starttime)})`
+									: ''}
+							{/if}
+						</div>
+
+						<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+							{#each [{ label: 'EXaHM', color: 'badge-info', need: slot.exahm }, { label: 'SEB', color: 'badge-error', need: slot.seb }] as k}
+								{#if k.need.examCount > 0}
+									<div class="rounded border border-base-300 p-2 text-sm">
+										<div class="flex items-center gap-2">
+											<span class="badge {k.color} badge-sm">{k.label}</span>
+											<span class="tabular-nums">{k.need.examCount} Prüfung(en)</span>
+										</div>
+										<div
+											class="mt-1 tabular-nums {k.need.seatsNeeded > k.need.seatsAvailable
+												? 'font-medium text-error'
+												: 'text-base-content/70'}"
+										>
+											{k.need.seatsNeeded} Plätze nötig · {k.need.seatsAvailable} verfügbar
+											{#if k.need.seatsNeeded > k.need.seatsAvailable}
+												<span class="text-error">⚠ Kapazität reicht nicht</span>
+											{/if}
+										</div>
+										{#if k.need.rooms.length}
+											<div class="mt-1 text-xs text-base-content/60">
+												Vorschlag ({k.need.roomsSuggested}): {k.need.rooms.join(', ')}
+											</div>
+										{/if}
+									</div>
+								{/if}
+							{/each}
+						</div>
+
+						{#if slot.conflicts.length}
+							<div class="flex flex-col gap-1">
+								{#each slot.conflicts as c}
+									<div class="alert alert-warning py-1 text-xs">
+										<span>
+											Studiengang <strong>{c.program}</strong> mehrfach im Slot:
+											{c.modules.join(', ')}
+										</span>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	{#if data.exams.length === 0}
 		<div class="text-sm text-base-content/50">Noch keine SEB/EXaHM-Vorplanungen angelegt.</div>
 	{:else}
