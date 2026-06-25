@@ -98,7 +98,13 @@ type ConnectedExam {
   zpaExam: ZPAExam!
   primussExams: [PrimussExam!]!
   otherPrimussExams: [PrimussExam!]!
-  errors: [String!]!
+  warnings: [ConnectedExamWarning!]!
+}
+
+"""A structured note on a ZPA↔Primuss connection. level ∈ info | warning | error."""
+type ConnectedExamWarning {
+  level: String!
+  message: String!
 }
 
 type Constraints {
