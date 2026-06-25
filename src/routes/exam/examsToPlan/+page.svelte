@@ -33,9 +33,9 @@
 	function slotTip(e) {
 		if (e.slot) {
 			const st = (startBySlot.get(e.slot.slotNumber) ?? '').slice(0, 5);
-			return `schon vorgeplant: ${ddmm(dateByDay.get(e.slot.dayNumber))} ${st} (${e.slot.dayNumber}/${e.slot.slotNumber})`;
+			return `schon (vor)geplant: ${ddmm(dateByDay.get(e.slot.dayNumber))} ${st} (${e.slot.dayNumber}/${e.slot.slotNumber})`;
 		}
-		return 'schon vorgeplant (Vorplanung, noch ohne Slot)';
+		return 'schon (vor)geplant (Vorplanung, noch ohne Slot)';
 	}
 
 	$: examTypes = [
@@ -319,8 +319,14 @@
 						{#if e.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
 						{#if e.preplanned}<span title={slotTip(e)}>📌</span>{/if}
 					</div>
-					<div class="text-sm text-base-content/70">
-						{e.mainExamer} · <span class="text-base-content/50">{e.examTypeFull}</span>
+					<div class="flex flex-wrap items-center gap-x-1 text-sm text-base-content/70">
+						<span>{e.mainExamer}</span>
+						<span class="text-base-content/50">· {e.examTypeFull} ·</span>
+						{#if e.duration > 0}
+							<span class="tabular-nums text-base-content/50">{e.duration} min</span>
+						{:else}
+							<span class="badge badge-error badge-sm" title="keine Dauer hinterlegt">Dauer 0</span>
+						{/if}
 					</div>
 					<div class="mt-1 flex flex-wrap items-center gap-1">
 						{#each e.groups ?? [] as g}
@@ -336,14 +342,22 @@
 						{#if c?.notPlannedByMe}
 							<span class="badge badge-neutral badge-sm">nicht von mir geplant</span>
 						{:else}
-							{#if c?.online}<span class="badge badge-warning badge-sm">Online</span>{/if}
+							{#if c?.online}<span class="badge badge-info badge-sm">Online</span>{/if}
 							{#if c?.roomConstraints?.exahm}<span class="badge badge-error badge-sm">EXaHM</span
 								>{/if}
-							{#if c?.roomConstraints?.seb}<span class="badge badge-error badge-sm">SEB</span>{/if}
-							{#if c?.roomConstraints?.lab}<span class="badge badge-error badge-sm">Labor</span
+							{#if c?.roomConstraints?.seb}<span class="badge badge-warning badge-sm">SEB</span
+								>{/if}
+							{#if c?.roomConstraints?.lab}<span class="badge badge-neutral badge-sm">Labor</span
 								>{/if}
 							{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm"
 									>Steckdosen</span
+								>{/if}
+							{#if c?.roomConstraints?.kdpJiraURL}<a
+									class="badge badge-info badge-outline badge-sm"
+									href={c.roomConstraints.kdpJiraURL}
+									target="_blank"
+									rel="noopener"
+									title={c.roomConstraints.kdpJiraURL}>Jira ↗</a
 								>{/if}
 							{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm"
 									>🚫 {c.excludeDays.map(day).join(', ')}</span
