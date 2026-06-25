@@ -25,15 +25,15 @@
 	/** @param {string} f */
 	const toggle = (f) => (filter = filter === f ? null : f);
 
-	/** @param {any} r */
-	function passesFilter(r) {
-		if (filter === 'attention') return r.level === 'warning' || r.level === 'error';
-		if (filter) return r.level === filter;
-		return true;
-	}
-
+	// `filter` und `q` werden hier direkt referenziert, damit Svelte die
+	// Reaktivität erkennt (Funktionen, die sie nur intern nutzen, würden nicht
+	// neu ausgewertet).
 	$: filtered = rows.filter((/** @type {any} */ r) => {
-		if (!passesFilter(r)) return false;
+		if (filter === 'attention') {
+			if (r.level !== 'warning' && r.level !== 'error') return false;
+		} else if (filter && r.level !== filter) {
+			return false;
+		}
 		if (q.trim()) {
 			const n = q.trim().toLowerCase();
 			const hay =
@@ -46,8 +46,9 @@
 		return true;
 	});
 
-	/** @param {string} f → Badge ausgegraut, wenn ein anderer Filter aktiv ist */
-	const dim = (f) => (filter && filter !== f ? 'opacity-40' : '');
+	/** Badge ausgegraut, wenn ein anderer Filter aktiv ist.
+	 * @param {string | null} active @param {string} f */
+	const dim = (active, f) => (active && active !== f ? 'opacity-40' : '');
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -71,25 +72,25 @@
 		>
 			<div class="flex flex-wrap items-center gap-1.5">
 				<button
-					class="badge badge-success gap-1 tabular-nums {dim('ok')}"
+					class="badge badge-success gap-1 tabular-nums {dim(filter, 'ok')}"
 					on:click={() => toggle('ok')}
 				>
 					✓ {counts.ok} passt
 				</button>
 				<button
-					class="badge badge-ghost gap-1 tabular-nums {dim('info')}"
+					class="badge badge-ghost gap-1 tabular-nums {dim(filter, 'info')}"
 					on:click={() => toggle('info')}
 				>
 					ℹ {counts.info} Hinweise
 				</button>
 				<button
-					class="badge badge-warning gap-1 tabular-nums {dim('warning')}"
+					class="badge badge-warning gap-1 tabular-nums {dim(filter, 'warning')}"
 					on:click={() => toggle('warning')}
 				>
 					⚠ {counts.warning} Warnungen
 				</button>
 				<button
-					class="badge badge-error gap-1 tabular-nums {dim('error')}"
+					class="badge badge-error gap-1 tabular-nums {dim(filter, 'error')}"
 					on:click={() => toggle('error')}
 				>
 					✕ {counts.error} Fehler
