@@ -504,7 +504,8 @@ type Mutation {
   empty the backend tries to resolve it).
   """
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
-  setSemesterConfigInput(input: SemesterConfigInputData!): SetSemesterConfigInputResult!
+  setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
+  createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -856,6 +857,7 @@ type Query {
   semester: Semester!
   semesterConfig: SemesterConfig!
   semesterConfigInput: SemesterConfigInput
+  newSemesterConfigDefaults: SemesterConfigInput!
   annyBookings(room: String): [AnnyBooking!]!
   allAnnyBookings: [AnnyBooking!]!
   constraintForAncode(ancode: Int!): Constraints
@@ -1188,7 +1190,7 @@ input EmailsInput {
   lbaba: String!
 }
 
-type SetSemesterConfigInputResult {
+type SaveSemesterConfigResult {
   ok: Boolean!
   warnings: [String!]!
 }

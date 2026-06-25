@@ -68,6 +68,7 @@
 			label: 'Vorbereitung',
 			items: [
 				{ href: '/config', label: 'Semester-Konfiguration' },
+				{ href: '/config/new', label: 'Neues Semester anlegen' },
 				{ href: '/exam/examsToPlan', label: 'Zu planende ZPA-Prüfungen' },
 				{ href: '/exam/examsNotToPlan', label: 'Nicht zu planende ZPA-Prüfungen' },
 				{ href: '/exam/examsPlaningStatusUnknown', label: 'Nicht zugeordnete ZPA-Prüfungen' },
