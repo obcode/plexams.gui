@@ -184,7 +184,10 @@
 								<tbody>
 									{#each slot.exams as e}
 										<tr>
-											<td><a class="link" href="/exam/constraints/{e.ancode}">{e.ancode}</a></td>
+											<td
+												><a class="link" href="/exam/examsToPlan?ancode={e.ancode}">{e.ancode}</a
+												></td
+											>
 											<td>{e.module}</td>
 											<td class="text-right tabular-nums">{e.studentRegsCount}</td>
 											<td>

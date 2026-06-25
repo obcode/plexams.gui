@@ -57,6 +57,15 @@ export async function load() {
 				isRepeaterExam
 				groups
 			}
+			semesterConfig {
+				days {
+					number
+					date
+				}
+			}
+			rooms {
+				name
+			}
 		}
 	`;
 
@@ -82,5 +91,9 @@ export async function load() {
 		}))
 	].sort((a, b) => a.ancode - b.ancode);
 
-	return { items };
+	return {
+		items,
+		days: data.semesterConfig?.days ?? [],
+		rooms: (data.rooms ?? []).map((/** @type {any} */ r) => r.name)
+	};
 }
