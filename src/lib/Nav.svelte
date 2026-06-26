@@ -29,6 +29,30 @@
 		});
 	}
 
+	// Ergebnis-Toast / Fehler-Dialog des Banner-Buttons
+	let genResult: { changes: any[] } | null = null;
+	let genError = '';
+	const KIND_BADGE: Record<string, string> = {
+		added: 'badge-success',
+		removed: 'badge-error',
+		changed: 'badge-warning'
+	};
+	const KIND_LABEL: Record<string, string> = {
+		added: 'neu',
+		removed: 'entfernt',
+		changed: 'geändert'
+	};
+
+	async function runRegenerate() {
+		genError = '';
+		const { changes, error } = await regenerateGeneratedExams();
+		if (error) {
+			genError = error;
+			return;
+		}
+		genResult = { changes };
+	}
+
 	function dotClass(level: string) {
 		if (level === 'ok') return 'bg-success';
 		if (level === 'warning') return 'bg-warning';
@@ -472,13 +496,62 @@
 				<span class="opacity-60">· {fmtChangedAt($generatedExamsState.changedAt)}</span>
 			{/if}
 			<div class="flex-1"></div>
-			<button
-				class="btn btn-warning btn-xs"
-				disabled={$regenerating}
-				on:click={regenerateGeneratedExams}
-			>
+			<button class="btn btn-warning btn-xs" disabled={$regenerating} on:click={runRegenerate}>
 				{$regenerating ? 'generiert …' : 'neu generieren'}
 			</button>
 		</div>
 	{/if}
 </header>
+
+<!-- Ergebnis-Toast nach dem Generieren -->
+{#if genResult}
+	<div class="toast toast-end z-[60]">
+		<div class="alert alert-success max-w-md flex-col items-start gap-2 shadow-lg">
+			<div class="flex w-full items-center gap-2">
+				<span class="font-medium">Generiert: {genResult.changes.length} Änderung(en)</span>
+				<div class="flex-1"></div>
+				<button class="btn btn-ghost btn-xs" on:click={() => (genResult = null)}>schließen</button>
+			</div>
+			{#if genResult.changes.length}
+				<ul class="flex max-h-72 w-full flex-col gap-1 overflow-y-auto text-sm">
+					{#each genResult.changes as c}
+						<li class="rounded border border-base-300/40 bg-base-100/40 p-1.5">
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">
+									{KIND_LABEL[c.kind] ?? c.kind}
+								</span>
+								<span class="font-mono tabular-nums">{c.ancode}</span>
+								<span class="text-base-content">{c.module}</span>
+							</div>
+							{#if (c.details ?? []).length}
+								<ul class="mt-1 ml-1 list-inside list-disc text-xs text-base-content/70">
+									{#each c.details as d}
+										<li>{d}</li>
+									{/each}
+								</ul>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{:else}
+				<span class="text-sm opacity-70">nichts geändert</span>
+			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- Fehler-Dialog -->
+{#if genError}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h2 class="flex items-center gap-2 text-lg font-semibold">
+				<span class="badge badge-error badge-sm">Fehler</span> Generieren fehlgeschlagen
+			</h2>
+			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{genError}</p>
+			<div class="modal-action">
+				<button class="btn btn-sm" on:click={() => (genError = '')}>schließen</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (genError = '')}></button>
+	</div>
+{/if}

@@ -516,6 +516,7 @@ type Mutation {
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
   setPlaner(name: String!, email: String!): Planer!
+  generateGeneratedExams: GenerateGeneratedExamsResult!
 
   """ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam."""
   addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
@@ -888,6 +889,7 @@ type Query {
   semester: Semester!
   planer: Planer!
   mutationLogNames: [String!]!
+  generatedExamsState: GeneratedExamsState!
   mutationLog(
     name: String
     type: String
@@ -1343,6 +1345,25 @@ type SaveSemesterConfigResult {
 type Planer {
   name: String!
   email: String!
+}
+
+"""Zustand der generierten Prüfungen (Cache). dirty=true → veraltet."""
+type GeneratedExamsState {
+  dirty: Boolean!
+  reason: String
+  changedAt: Time
+}
+
+type GeneratedExamsChange {
+  ancode: Int!
+  module: String!
+  kind: String!
+  details: [String!]!
+}
+
+type GenerateGeneratedExamsResult {
+  state: GeneratedExamsState!
+  changes: [GeneratedExamsChange!]!
 }
 
 """Filter über ein einzelnes Mutation-Argument (key=value)."""

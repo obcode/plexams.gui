@@ -11,9 +11,17 @@ export async function POST() {
 			gql`
 				mutation {
 					generateGeneratedExams {
-						dirty
-						reason
-						changedAt
+						state {
+							dirty
+							reason
+							changedAt
+						}
+						changes {
+							ancode
+							module
+							kind
+							details
+						}
 					}
 				}
 			`

@@ -32,17 +32,25 @@ export async function checkGeneratedExams() {
 	}
 }
 
-/** Generierte Prüfungen neu erzeugen (schnell). Liefert den neuen Zustand. */
+/**
+ * Generierte Prüfungen neu erzeugen (schnell). Setzt den neuen Zustand und
+ * liefert die Änderungsliste bzw. einen Fehler für die Anzeige.
+ * @returns {Promise<{ changes: any[], error: string | null }>}
+ */
 export async function regenerateGeneratedExams() {
-	if (!browser) return;
+	if (!browser) return { changes: [], error: null };
 	regenerating.set(true);
 	try {
 		const res = await fetch('/api/generateGeneratedExams', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
-		if (d?.generateGeneratedExams) generatedExamsState.set(d.generateGeneratedExams);
-		else await checkGeneratedExams();
-	} catch {
-		await checkGeneratedExams();
+		if (!res.ok || d?.error) {
+			return { changes: [], error: d?.error || `Fehler (HTTP ${res.status})` };
+		}
+		const r = d.generateGeneratedExams;
+		if (r?.state) generatedExamsState.set(r.state);
+		return { changes: r?.changes ?? [], error: null };
+	} catch (e) {
+		return { changes: [], error: e instanceof Error ? e.message : String(e) };
 	} finally {
 		regenerating.set(false);
 	}
