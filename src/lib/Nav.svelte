@@ -128,6 +128,7 @@
 				{ section: 'Weitere' },
 				{ href: '/plan/annyBookings', label: '📅 Anny-Buchungen' },
 				{ href: '/nta/semester', label: '♿ NTA' },
+				{ href: '/log', label: '🧾 Mutations-Log' },
 				{ section: 'Konfiguration' },
 				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
 				{ href: '/config/new', label: '➕ Neues Semester anlegen' }

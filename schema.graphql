@@ -888,6 +888,15 @@ type Query {
   allSemesterNames: [Semester!]!
   semester: Semester!
   planer: Planer!
+  mutationLogNames: [String!]!
+  mutationLog(
+    name: String
+    ancode: Int
+    args: [ArgFilterInput!]
+    since: Time
+    until: Time
+    limit: Int
+  ): [MutationLogEntry!]!
   semesterConfig: SemesterConfig!
   semesterConfigInput: SemesterConfigInput
   newSemesterConfigDefaults: SemesterConfigInput!
@@ -1334,6 +1343,28 @@ type SaveSemesterConfigResult {
 type Planer {
   name: String!
   email: String!
+}
+
+"""Filter über ein einzelnes Mutation-Argument (key=value)."""
+input ArgFilterInput {
+  key: String
+  value: String
+}
+
+type MutationLogArg {
+  key: String!
+  value: String!
+}
+
+"""Ein Audit-Log-Eintrag. type ∈ mutation | subscription."""
+type MutationLogEntry {
+  time: Time!
+  name: String!
+  type: String!
+  args: [MutationLogArg!]!
+  ancodes: [Int!]!
+  error: String
+  durationMs: Int!
 }
 
 type SemesterConfig {
