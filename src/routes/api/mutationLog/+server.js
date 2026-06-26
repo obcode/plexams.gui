@@ -5,15 +5,20 @@ import { gqlErrorMessage } from '$lib/gqlError';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const { name, ancode, key, value, since, until, limit } = await request.json();
+	const { name, ancode, args, since, until, limit } = await request.json();
 
-	// datetime-local („2026-06-26T05:00") → volles RFC3339, das der Time-Scalar erwartet
+	// datetime-local kommt schon als ISO/UTC vom Client; sicherheitshalber normalisieren
 	/** @param {string} v */
 	const toISO = (v) => {
 		if (!v) return null;
 		const d = new Date(v);
 		return Number.isNaN(d.getTime()) ? null : d.toISOString();
 	};
+
+	// nur vollständige key=value-Paare an den Server geben
+	const pairs = (Array.isArray(args) ? args : [])
+		.map((/** @type {any} */ p) => ({ key: p.key?.trim() || null, value: p.value?.trim() || null }))
+		.filter((/** @type {any} */ p) => p.key || p.value);
 
 	const query = gql`
 		query (
@@ -49,7 +54,7 @@ export async function POST({ request }) {
 	const variables = {
 		name: name || null,
 		ancode: ancode === '' || ancode == null ? null : Number(ancode),
-		args: key || value ? [{ key: key || null, value: value || null }] : null,
+		args: pairs.length ? pairs : null,
 		since: toISO(since),
 		until: toISO(until),
 		limit: Number(limit) || 200

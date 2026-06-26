@@ -8,8 +8,8 @@
 	// Filter
 	let name = '';
 	let ancode = '';
-	let argKey = '';
-	let argValue = '';
+	/** @type {{key:string, value:string}[]} mehrere Parameter-Paare (UND) */
+	let params = [{ key: '', value: '' }];
 	let since = '';
 	let until = '';
 	let limit = 200;
@@ -17,14 +17,19 @@
 	let loading = false;
 	let error = '';
 
-	// datetime-local ist Ortszeit → hier (im Browser) zu ISO/UTC machen, damit
-	// der Time-Scalar des Servers korrekt filtert.
+	// datetime-local ist Ortszeit → im Browser zu ISO/UTC machen, damit der
+	// Time-Scalar des Servers korrekt filtert (Server läuft UTC).
 	/** @param {string} v */
 	const toISO = (v) => {
 		if (!v) return '';
 		const d = new Date(v);
 		return Number.isNaN(d.getTime()) ? '' : d.toISOString();
 	};
+
+	const addParam = () => (params = [...params, { key: '', value: '' }]);
+	/** @param {number} i */
+	const rmParam = (i) =>
+		(params = params.length > 1 ? params.filter((_, j) => j !== i) : [{ key: '', value: '' }]);
 
 	async function apply() {
 		if (loading) return;
@@ -37,8 +42,7 @@
 				body: JSON.stringify({
 					name,
 					ancode,
-					key: argKey,
-					value: argValue,
+					args: params.filter((p) => p.key.trim() || p.value.trim()),
 					since: toISO(since),
 					until: toISO(until),
 					limit
@@ -60,15 +64,39 @@
 	function reset() {
 		name = '';
 		ancode = '';
-		argKey = '';
-		argValue = '';
+		params = [{ key: '', value: '' }];
 		since = '';
 		until = '';
 		limit = 200;
 		logs = data.initial;
 	}
 
-	const hasFilter = () => !!(name || ancode || argKey || argValue || since || until);
+	$: hasFilter = !!(
+		name ||
+		ancode ||
+		since ||
+		until ||
+		params.some((p) => p.key.trim() || p.value.trim())
+	);
+
+	// Klick-Filter aus der Tabelle
+	/** @param {number} a */
+	function filterByAncode(a) {
+		ancode = String(a);
+		apply();
+	}
+	/** @param {string} key @param {string} value */
+	function filterByArg(key, value) {
+		// leere erste Zeile ersetzen, sonst anhängen (kein Duplikat)
+		const empty = params.findIndex((p) => !p.key.trim() && !p.value.trim());
+		const exists = params.some((p) => p.key === key && p.value === value);
+		if (!exists) {
+			if (empty >= 0) params[empty] = { key, value };
+			else params = [...params, { key, value }];
+			params = params;
+		}
+		apply();
+	}
 
 	/** @param {string} iso */
 	function fmt(iso) {
@@ -118,26 +146,6 @@
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Parameter (key)</span>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-36"
-					bind:value={argKey}
-					on:keydown={onEnter}
-					placeholder="z. B. program"
-				/>
-			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Wert</span>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-32"
-					bind:value={argValue}
-					on:keydown={onEnter}
-					placeholder="z. B. GS"
-				/>
-			</label>
-			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">von</span>
 				<input type="datetime-local" class="input input-bordered input-sm" bind:value={since} />
 			</label>
@@ -154,10 +162,45 @@
 					on:keydown={onEnter}
 				/>
 			</label>
+		</div>
+
+		<!-- Parameter-Paare (UND) -->
+		<div class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60"
+				>Parameter (key = Wert, UND-verknüpft)</span
+			>
+			{#each params as p, i}
+				<div class="flex items-center gap-2">
+					<input
+						type="text"
+						class="input input-bordered input-sm w-40"
+						bind:value={p.key}
+						on:keydown={onEnter}
+						placeholder="key, z. B. program"
+					/>
+					<span class="text-base-content/40">=</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm w-40"
+						bind:value={p.value}
+						on:keydown={onEnter}
+						placeholder="Wert, z. B. GS"
+					/>
+					<button class="btn btn-ghost btn-xs" title="Zeile entfernen" on:click={() => rmParam(i)}>
+						✕
+					</button>
+					{#if i === params.length - 1}
+						<button class="btn btn-ghost btn-xs" on:click={addParam}>+ Parameter</button>
+					{/if}
+				</div>
+			{/each}
+		</div>
+
+		<div class="flex items-center gap-2">
 			<button class="btn btn-primary btn-sm" disabled={loading} on:click={apply}>
 				{loading ? 'lädt …' : 'Filtern'}
 			</button>
-			{#if hasFilter()}
+			{#if hasFilter}
 				<button class="btn btn-ghost btn-sm" on:click={reset}>zurücksetzen</button>
 			{/if}
 		</div>
@@ -195,9 +238,13 @@
 						<td>
 							<div class="flex flex-wrap gap-1">
 								{#each l.args ?? [] as a}
-									<span class="badge badge-ghost badge-sm">
+									<button
+										class="badge badge-ghost badge-sm hover:badge-primary"
+										title="nach {a.key} = {a.value} filtern"
+										on:click={() => filterByArg(a.key, a.value)}
+									>
 										<span class="text-base-content/50">{a.key}:</span>&nbsp;{a.value}
-									</span>
+									</button>
 								{/each}
 							</div>
 							{#if l.error}
@@ -207,7 +254,13 @@
 						<td>
 							<div class="flex flex-wrap gap-1">
 								{#each l.ancodes ?? [] as a}
-									<span class="badge badge-outline badge-xs tabular-nums">{a}</span>
+									<button
+										class="badge badge-outline badge-xs tabular-nums hover:badge-primary"
+										title="nach Ancode {a} filtern"
+										on:click={() => filterByAncode(a)}
+									>
+										{a}
+									</button>
 								{/each}
 							</div>
 						</td>
