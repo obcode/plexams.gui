@@ -168,7 +168,8 @@
 			label: 'E-Mails',
 			items: [
 				{ href: '/email', label: '📧 E-Mails versenden' },
-				{ href: '/email/attachments', label: '📎 Anhänge (Deckblätter, Bilder)' }
+				{ href: '/email/attachments', label: '📎 Anhänge (Deckblätter, Bilder)' },
+				{ href: '/email/specialInterests', label: '⭐ Special Interests' }
 			]
 		},
 		{

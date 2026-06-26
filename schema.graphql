@@ -523,6 +523,8 @@ type Mutation {
   setExamDuration(ancode: Int!, duration: Int!): Boolean!
   removeExamDuration(ancode: Int!): Boolean!
   setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
+  upsertSpecialInterest(input: SpecialInterestInput!): SpecialInterest!
+  deleteSpecialInterest(name: String!): Boolean!
 
   """ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam."""
   addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
@@ -898,6 +900,7 @@ type Query {
   generatedExamsState: GeneratedExamsState!
   examDurationOverrides: [ExamDurationOverride!]!
   generationConfig: GenerationConfig!
+  specialInterests: [SpecialInterest!]!
   mutationLog(
     name: String
     type: String
@@ -1391,6 +1394,18 @@ input GenerationConfigInput {
   weightPreferExamDays: Float
   weightDistribution: Float
   weightDaySpan: Float
+}
+
+type SpecialInterest {
+  name: String!
+  filename: String
+  ancodes: [Int!]!
+}
+
+input SpecialInterestInput {
+  name: String!
+  filename: String
+  ancodes: [Int!]
 }
 
 type ExamDurationOverride {
