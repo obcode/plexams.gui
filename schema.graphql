@@ -465,6 +465,7 @@ type ImportMucDaiResult {
   examsCreated: Int!
   examsExisting: Int!
   examsSkippedFK07: Int!
+  examsRemoved: Int!
 }
 
 type Mutation {

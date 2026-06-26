@@ -14,6 +14,7 @@ export async function POST({ request }) {
 				examsCreated
 				examsExisting
 				examsSkippedFK07
+				examsRemoved
 			}
 		}
 	`;

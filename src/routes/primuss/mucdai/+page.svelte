@@ -331,8 +331,8 @@
 				>
 			</div>
 			<div class="text-sm">
-				{importResult.examsCreated} neu · {importResult.examsExisting} vorhanden · {importResult.examsSkippedFK07}
-				FK07 übersprungen
+				{importResult.examsCreated} neu · {importResult.examsRemoved} entfernt · {importResult.examsExisting}
+				unverändert · {importResult.examsSkippedFK07} FK07 verknüpft
 			</div>
 			{#if (importResult.programs ?? []).length}
 				<div class="text-xs opacity-80">Studiengänge: {importResult.programs.join(', ')}</div>
