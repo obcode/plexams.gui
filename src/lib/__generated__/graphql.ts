@@ -46,6 +46,12 @@ export type AnnyBooking = {
   updatedAt: Scalars['Time']['output'];
 };
 
+/** Filter über ein einzelnes Mutation-Argument (key=value). */
+export type ArgFilterInput = {
+  key?: InputMaybe<Scalars['String']['input']>;
+  value?: InputMaybe<Scalars['String']['input']>;
+};
+
 /** BalanceReport: are all invigilators within ±tolerance of their target minutes. */
 export type BalanceReport = {
   __typename?: 'BalanceReport';
@@ -557,7 +563,6 @@ export type Mutation = {
    */
   prePlanInvigilationInSlot: Scalars['Boolean']['output'];
   prePlanRoom: Scalars['Boolean']['output'];
-  rebuildConnectedExam: ConnectedExam;
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
@@ -811,11 +816,6 @@ export type MutationPrePlanRoomArgs = {
 };
 
 
-export type MutationRebuildConnectedExamArgs = {
-  zpaAncode: Scalars['Int']['input'];
-};
-
-
 export type MutationRemoveNtaRoomAloneWaiverArgs = {
   ancode: Scalars['Int']['input'];
   mtknr: Scalars['String']['input'];
@@ -982,6 +982,24 @@ export type MutationUpsertStudyProgramArgs = {
 
 export type MutationZpaExamsToPlanArgs = {
   input: Array<Scalars['Int']['input']>;
+};
+
+export type MutationLogArg = {
+  __typename?: 'MutationLogArg';
+  key: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+/** Ein Audit-Log-Eintrag. type ∈ mutation | subscription | cli. */
+export type MutationLogEntry = {
+  __typename?: 'MutationLogEntry';
+  ancodes: Array<Scalars['Int']['output']>;
+  args: Array<MutationLogArg>;
+  durationMs: Scalars['Int']['output'];
+  error?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  time: Scalars['Time']['output'];
+  type: Scalars['String']['output'];
 };
 
 export type Nta = {
@@ -1352,6 +1370,8 @@ export type Query = {
   invigilatorsForDay?: Maybe<InvigilatorsForDay>;
   invigilatorsWithReq: Array<Invigilator>;
   mucdaiExams: Array<MucDaiExam>;
+  mutationLog: Array<MutationLogEntry>;
+  mutationLogNames: Array<Scalars['String']['output']>;
   newSemesterConfigDefaults: SemesterConfigInput;
   nta?: Maybe<NtaWithRegs>;
   /** All accepted NTA room-alone waivers of the semester. */
@@ -1484,6 +1504,17 @@ export type QueryInvigilatorArgs = {
 
 export type QueryInvigilatorsForDayArgs = {
   day: Scalars['Int']['input'];
+};
+
+
+export type QueryMutationLogArgs = {
+  ancode?: InputMaybe<Scalars['Int']['input']>;
+  args?: InputMaybe<Array<ArgFilterInput>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  since?: InputMaybe<Scalars['Time']['input']>;
+  type?: InputMaybe<Scalars['String']['input']>;
+  until?: InputMaybe<Scalars['Time']['input']>;
 };
 
 

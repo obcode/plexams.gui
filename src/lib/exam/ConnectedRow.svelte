@@ -1,6 +1,6 @@
 <script>
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
-	// Aktionen (add/remove/fix/rebuild) liefern das aktualisierte ConnectedExam,
+	// Aktionen (add/remove/fix) liefern das aktualisierte ConnectedExam,
 	// das per `updated`-Event nach oben gereicht und im State ersetzt wird.
 	import { createEventDispatcher } from 'svelte';
 	import { LEVEL, warningsOf } from '$lib/exam/connected.js';
@@ -68,7 +68,6 @@
 	/** @param {string} program @param {number} fromAncode @param {number} toAncode */
 	const fix = (program, fromAncode, toAncode) =>
 		call('fixPrimussAncode', { program, fromAncode, toAncode });
-	const rebuild = () => call('rebuildConnectedExam', {});
 
 	async function manualAdd() {
 		if (!addProgram || !addAncode) return;
@@ -152,14 +151,6 @@
 			<!-- Zeilen-Aktionen -->
 			<div class="flex shrink-0 items-center gap-1">
 				{#if busy}<span class="loading loading-spinner loading-xs"></span>{/if}
-				<button
-					class="btn btn-ghost btn-xs"
-					disabled={busy}
-					title="Zuordnung neu berechnen"
-					on:click={rebuild}
-				>
-					↻ neu bauen
-				</button>
 				<button
 					class="btn btn-ghost btn-xs"
 					class:btn-active={editing}

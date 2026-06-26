@@ -521,7 +521,6 @@ type Mutation {
   addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
   removePrimussAncode(zpaAncode: Int!, program: String!): ConnectedExam!
   fixPrimussAncode(zpaAncode: Int!, program: String!, fromAncode: Int!, toAncode: Int!): ConnectedExam!
-  rebuildConnectedExam(zpaAncode: Int!): ConnectedExam!
   createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
   seedStudyProgramsFromConfig: Int!
   upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
