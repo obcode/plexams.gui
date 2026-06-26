@@ -520,6 +520,7 @@ type Mutation {
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
   setPlaner(name: String!, email: String!): Planer!
   generateGeneratedExams: GenerateGeneratedExamsResult!
+  generateStudentRegs: GenerateStudentRegsResult!
   setExamDuration(ancode: Int!, duration: Int!): Boolean!
   removeExamDuration(ancode: Int!): Boolean!
   setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
@@ -900,6 +901,10 @@ type Query {
   planer: Planer!
   mutationLogNames: [String!]!
   generatedExamsState: GeneratedExamsState!
+  studentRegsState: StudentRegsState!
+  students: [Student!]!
+  studentByMtknr(mtknr: String!): Student
+  studentsByName(regex: String!): [Student!]!
   examDurationOverrides: [ExamDurationOverride!]!
   generationConfig: GenerationConfig!
   specialInterests: [SpecialInterest!]!
@@ -1441,6 +1446,33 @@ input AdditionalExamInput {
   date: String!
   time: String
   rooms: [AdditionalExamRoomInput!]
+}
+
+type StudentRegsState {
+  dirty: Boolean!
+  reason: String
+  changedAt: Time
+}
+
+type GenerateStudentRegsResult {
+  state: StudentRegsState!
+  studentCount: Int!
+}
+
+type StudentReg {
+  program: String!
+  reg: Int!
+}
+
+type Student {
+  mtknr: String!
+  name: String!
+  program: String!
+  group: String!
+  regs: [Int!]!
+  regsWithProgram: [StudentReg!]!
+  nta: NTA
+  zpaStudent: ZPAStudent
 }
 
 type ExamDurationOverride {

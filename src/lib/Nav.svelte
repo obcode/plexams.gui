@@ -14,6 +14,12 @@
 		checkGeneratedExams,
 		regenerateGeneratedExams
 	} from '$lib/generatedExams/store';
+	import {
+		studentRegsState,
+		regeneratingStudents,
+		checkStudentRegs,
+		regenerateStudentRegs
+	} from '$lib/studentRegs/store';
 
 	/** @param {string | null} iso */
 	function fmtChangedAt(iso: string | null) {
@@ -51,6 +57,19 @@
 			return;
 		}
 		genResult = { changes };
+	}
+
+	// StudentRegs: Ergebnis-Toast / Fehler-Dialog
+	let stuResult: { studentCount: number } | null = null;
+	let stuError = '';
+	async function runRegenerateStudents() {
+		stuError = '';
+		const { studentCount, error } = await regenerateStudentRegs();
+		if (error) {
+			stuError = error;
+			return;
+		}
+		stuResult = { studentCount };
 	}
 
 	function dotClass(level: string) {
@@ -100,14 +119,19 @@
 		semester = await response.json();
 	}
 
+	function checkStaleStates() {
+		checkGeneratedExams();
+		checkStudentRegs();
+	}
+
 	onMount(() => {
 		getSemester();
-		// „Generierte Prüfungen veraltet?" — beim Laden, bei Tab-Fokus und im
-		// leichten Intervall prüfen (reine Read-Query, nicht write-gelockt).
-		checkGeneratedExams();
-		const onFocus = () => checkGeneratedExams();
+		// „… veraltet?" — beim Laden, bei Tab-Fokus und im leichten Intervall
+		// prüfen (reine Read-Queries, nicht write-gelockt).
+		checkStaleStates();
+		const onFocus = () => checkStaleStates();
 		window.addEventListener('focus', onFocus);
-		const iv = setInterval(checkGeneratedExams, 20000);
+		const iv = setInterval(checkStaleStates, 20000);
 		return () => {
 			window.removeEventListener('focus', onFocus);
 			clearInterval(iv);
@@ -185,6 +209,7 @@
 				{ section: 'Weitere' },
 				{ href: '/plan/annyBookings', label: '📅 Anny-Buchungen' },
 				{ href: '/nta/semester', label: '♿ NTA' },
+				{ href: '/students', label: '🎓 Studierende' },
 				{ href: '/log', label: '🧾 Mutations-Log' },
 				{ section: 'Konfiguration' },
 				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
@@ -216,7 +241,7 @@
 	let lastCheckedPath = '';
 	$: if (pathname && pathname !== lastCheckedPath) {
 		lastCheckedPath = pathname;
-		checkGeneratedExams();
+		checkStaleStates();
 	}
 	$: activeHref = menus
 		.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
@@ -504,6 +529,30 @@
 			</button>
 		</div>
 	{/if}
+
+	<!-- Banner: StudentRegs veraltet -->
+	{#if $studentRegsState.dirty}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
+		>
+			<span>⚠</span>
+			<span class="font-medium">StudentRegs sind veraltet</span>
+			{#if $studentRegsState.reason}
+				<span class="opacity-70">— zuletzt: {$studentRegsState.reason}</span>
+			{/if}
+			{#if $studentRegsState.changedAt}
+				<span class="opacity-60">· {fmtChangedAt($studentRegsState.changedAt)}</span>
+			{/if}
+			<div class="flex-1"></div>
+			<button
+				class="btn btn-warning btn-xs"
+				disabled={$regeneratingStudents}
+				on:click={runRegenerateStudents}
+			>
+				{$regeneratingStudents ? 'generiert …' : 'neu generieren'}
+			</button>
+		</div>
+	{/if}
 </header>
 
 <!-- Ergebnis-Toast nach dem Generieren -->
@@ -556,5 +605,31 @@
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={() => (genError = '')}></button>
+	</div>
+{/if}
+
+<!-- StudentRegs: Toast nach dem Generieren -->
+{#if stuResult}
+	<div class="toast toast-end z-[60]">
+		<div class="alert alert-success shadow-lg">
+			<span class="font-medium">{stuResult.studentCount} Studierende generiert</span>
+			<button class="btn btn-ghost btn-xs" on:click={() => (stuResult = null)}>schließen</button>
+		</div>
+	</div>
+{/if}
+
+<!-- StudentRegs: Fehler-Dialog -->
+{#if stuError}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h2 class="flex items-center gap-2 text-lg font-semibold">
+				<span class="badge badge-error badge-sm">Fehler</span> StudentRegs-Generieren fehlgeschlagen
+			</h2>
+			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{stuError}</p>
+			<div class="modal-action">
+				<button class="btn btn-sm" on:click={() => (stuError = '')}>schließen</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (stuError = '')}></button>
 	</div>
 {/if}

@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 	import { checkGeneratedExams } from '$lib/generatedExams/store';
+	import { checkStudentRegs } from '$lib/studentRegs/store';
 
 	// Generische Terminal-Ausgabe für argumentlose Streaming-Subscriptions
 	// (LogLine: level/text, PROGRESS in-place, endet mit DONE). Mehrere Aktionen
@@ -113,9 +114,11 @@
 					running = false;
 					done = true;
 					dispatch('done', { field, blocked });
-					// Subscriptions (z. B. importExamsFromZPA) können „generierte
-					// Prüfungen" invalidieren → Banner-Zustand sofort neu prüfen.
+					// Subscriptions (z. B. importExamsFromZPA/importStudentsFromZPA)
+					// können generierte Prüfungen / StudentRegs invalidieren →
+					// Banner-Zustände sofort neu prüfen.
 					checkGeneratedExams();
+					checkStudentRegs();
 				}
 			}
 		);
