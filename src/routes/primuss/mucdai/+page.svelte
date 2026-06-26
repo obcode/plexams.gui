@@ -6,22 +6,71 @@
 	$: programs = [...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
 		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
 	);
+
+	// gleiche Prüfung (gleicher ZPA-Ancode; sonst primussAncode) über mehrere
+	// Studiengänge zu einer Zeile gruppieren
+	$: groups = (() => {
+		/** @type {Map<string, any>} */
+		const m = new Map();
+		for (const e of data.mucdaiExams) {
+			const key = e.ancode != null ? `a${e.ancode}` : `p${e.primussAncode}`;
+			let g = m.get(key);
+			if (!g) {
+				g = {
+					ancode: e.ancode,
+					primussAncode: e.primussAncode,
+					module: e.module,
+					mainExamer: e.mainExamer,
+					examType: e.examType,
+					duration: e.duration,
+					isRepeaterExam: e.isRepeaterExam,
+					plannedBy: e.plannedBy,
+					planEntry: e.planEntry,
+					/** @type {string[]} */
+					programs: [],
+					/** @type {Set<number>} */
+					primussAncodes: new Set()
+				};
+				m.set(key, g);
+			}
+			g.programs.push(e.program);
+			g.primussAncodes.add(e.primussAncode);
+		}
+		return [...m.values()].map((g) => ({
+			...g,
+			programs: g.programs.sort((/** @type {string} */ a, /** @type {string} */ b) =>
+				a.localeCompare(b)
+			),
+			primussList: [...g.primussAncodes].sort(
+				(/** @type {number} */ a, /** @type {number} */ b) => a - b
+			)
+		}));
+	})();
+
 	/** @type {string} */
 	let program = '';
-	$: exams = data.mucdaiExams.filter((/** @type {any} */ e) => !program || e.program === program);
+	let fk07Only = false;
+	/** @type {'ancode' | 'time'} */
+	let sortBy = 'ancode';
+
+	/** @param {any} g → Zeitstempel (ms) für Sortierung; ohne Zeit ans Ende */
+	function timeMs(g) {
+		const pe = g.planEntry;
+		const iso = pe?.externalTime ?? (pe && pe.slotNumber != null ? pe.starttime : null);
+		if (!iso) return Infinity;
+		const t = new Date(iso).getTime();
+		return Number.isNaN(t) ? Infinity : t;
+	}
+
+	$: filtered = groups
+		.filter((g) => !program || g.programs.includes(program))
+		.filter((g) => !fk07Only || g.plannedBy === 'FK07')
+		.sort((a, b) => {
+			if (sortBy === 'time') return timeMs(a) - timeMs(b) || (a.ancode ?? 0) - (b.ancode ?? 0);
+			return (a.ancode ?? a.primussAncode) - (b.ancode ?? b.primussAncode);
+		});
 
 	// --- Zeit-Helfer (Berlin) ---
-	/** @param {string} iso → HH:MM */
-	const hhmm = (iso) => {
-		const d = new Date(iso);
-		return Number.isNaN(d.getTime())
-			? ''
-			: d.toLocaleTimeString('de-DE', {
-					timeZone: 'Europe/Berlin',
-					hour: '2-digit',
-					minute: '2-digit'
-				});
-	};
 	/** @param {string} iso → „13.07. 08:30" */
 	const dateTime = (iso) => {
 		const d = new Date(iso);
@@ -163,84 +212,102 @@
 			Noch keine MUC.DAI-Prüfungen — oben eine CSV importieren.
 		</div>
 	{:else}
-		<!-- Programm-Filter -->
-		<div class="flex flex-wrap items-center gap-1">
-			<span class="text-sm text-base-content/50">Studiengang:</span>
-			<button
-				class="badge gap-1 {program === '' ? 'badge-primary' : 'badge-ghost'}"
-				on:click={() => (program = '')}>alle</button
-			>
-			{#each programs as p}
+		<!-- Filter + Sortierung -->
+		<div
+			class="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-base-300 bg-base-100 p-3"
+		>
+			<div class="flex flex-wrap items-center gap-1">
+				<span class="text-sm text-base-content/50">Studiengang:</span>
 				<button
-					class="badge gap-1 {program === p ? 'badge-primary' : 'badge-ghost'}"
-					on:click={() => (program = p)}>{p}</button
+					class="badge gap-1 {program === '' ? 'badge-primary' : 'badge-ghost'}"
+					on:click={() => (program = '')}>alle</button
 				>
-			{/each}
+				{#each programs as p}
+					<button
+						class="badge gap-1 {program === p ? 'badge-primary' : 'badge-ghost'}"
+						on:click={() => (program = p)}>{p}</button
+					>
+				{/each}
+			</div>
+			<label class="flex cursor-pointer items-center gap-2 text-sm">
+				<input type="checkbox" class="toggle toggle-sm" bind:checked={fk07Only} />
+				<span>nur FK07</span>
+			</label>
+			<div class="flex-1"></div>
+			<div class="flex items-center gap-1 text-sm">
+				<span class="text-base-content/50">Sortierung:</span>
+				<button
+					class="badge gap-1 {sortBy === 'ancode' ? 'badge-primary' : 'badge-ghost'}"
+					on:click={() => (sortBy = 'ancode')}>Ancode</button
+				>
+				<button
+					class="badge gap-1 {sortBy === 'time' ? 'badge-primary' : 'badge-ghost'}"
+					on:click={() => (sortBy = 'time')}>Zeit</button
+				>
+			</div>
 		</div>
+
+		<span class="text-xs text-base-content/40">{filtered.length} Prüfungen</span>
 
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
 				<thead>
 					<tr>
-						<th>AnCode</th>
+						<th>Primuss</th>
 						<th>Modul</th>
 						<th>Prüfer:in</th>
 						<th>Art</th>
 						<th>zuständig</th>
 						<th>ZPA-Ancode</th>
-						<th>meine Zeit</th>
-						<th>externe Zeit</th>
+						<th>Zeit</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody>
-					{#each exams as e}
-						<tr class="hover {e.plannedBy !== 'FK07' ? 'opacity-70' : ''}">
-							<td class="font-mono tabular-nums">{e.primussAncode}</td>
+					{#each filtered as g (g.ancode != null ? `a${g.ancode}` : `p${g.primussAncode}`)}
+						<tr class="hover {g.plannedBy !== 'FK07' ? 'opacity-70' : ''}">
+							<td class="font-mono tabular-nums">{g.primussList.join(', ')}</td>
 							<td>
-								<div class="font-medium">{e.module}</div>
+								<div class="font-medium">{g.module}</div>
 								<div class="flex flex-wrap items-center gap-1">
-									<span class="badge badge-ghost badge-xs">{e.program}</span>
-									{#if e.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
+									{#each g.programs as p}
+										<span class="badge badge-ghost badge-xs">{p}</span>
+									{/each}
+									{#if g.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
 								</div>
 							</td>
-							<td class="text-sm">{e.mainExamer}</td>
-							<td class="text-sm text-base-content/70">{e.examType}</td>
+							<td class="text-sm">{g.mainExamer}</td>
+							<td class="text-sm text-base-content/70">{g.examType}</td>
 							<td>
 								<span
-									class="badge badge-sm {e.plannedBy === 'FK07' ? 'badge-info' : 'badge-ghost'}"
+									class="badge badge-sm {g.plannedBy === 'FK07' ? 'badge-info' : 'badge-ghost'}"
 								>
-									{e.plannedBy}
+									{g.plannedBy}
 								</span>
 							</td>
 							<td class="tabular-nums">
-								{#if e.ancode != null}
-									{e.ancode}
+								{#if g.ancode != null}
+									{g.ancode}
 								{:else}
 									<span class="badge badge-warning badge-sm">noch nicht angelegt</span>
 								{/if}
 							</td>
 							<td class="text-sm tabular-nums">
-								{#if e.planEntry && e.planEntry.slotNumber != null}
-									Tag {e.planEntry.dayNumber} · Slot {e.planEntry.slotNumber}
-									{#if e.planEntry.starttime}
-										<span class="text-base-content/50">({hhmm(e.planEntry.starttime)})</span>
-									{/if}
-								{:else}
-									<span class="text-base-content/30">—</span>
-								{/if}
-							</td>
-							<td class="text-sm tabular-nums">
-								{#if e.planEntry?.externalTime}
-									{dateTime(e.planEntry.externalTime)}
+								{#if g.planEntry?.externalTime}
+									{dateTime(g.planEntry.externalTime)}
+								{:else if g.planEntry && g.planEntry.slotNumber != null}
+									{dateTime(g.planEntry.starttime)}
+									<span class="text-base-content/50"
+										>({g.planEntry.dayNumber}/{g.planEntry.slotNumber})</span
+									>
 								{:else}
 									<span class="text-base-content/30">—</span>
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
-								{#if e.ancode != null}
-									<button class="btn btn-ghost btn-xs" on:click={() => openTime(e)}>
-										externe Zeit …
+								{#if g.plannedBy !== 'FK07' && g.ancode != null}
+									<button class="btn btn-ghost btn-xs" on:click={() => openTime(g)}>
+										Zeit setzen
 									</button>
 								{/if}
 							</td>
@@ -274,13 +341,13 @@
 	</div>
 {/if}
 
-<!-- externe Zeit setzen -->
+<!-- Zeit setzen -->
 {#if timeFor}
 	<div class="modal modal-open">
 		<div class="modal-box max-w-md">
-			<h2 class="text-lg font-semibold">Externe Zeit — {timeFor.module}</h2>
+			<h2 class="text-lg font-semibold">Zeit setzen — {timeFor.module}</h2>
 			<p class="text-sm text-base-content/50">
-				{timeFor.program} · Ancode {timeFor.ancode} · zuständig {timeFor.plannedBy}
+				{(timeFor.programs ?? []).join(', ')} · Ancode {timeFor.ancode} · zuständig {timeFor.plannedBy}
 			</p>
 			<div class="mt-3 flex flex-wrap items-end gap-3">
 				<label class="flex flex-col gap-1">
