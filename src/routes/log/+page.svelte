@@ -5,6 +5,16 @@
 	let logs = data.initial;
 	const names = data.names;
 
+	// Quelle/Typ client-seitig filtern (Backend hat dafür kein Argument)
+	let typeFilter = 'alle';
+	$: typeCounts = {
+		mutation: logs.filter((/** @type {any} */ l) => l.type === 'mutation').length,
+		subscription: logs.filter((/** @type {any} */ l) => l.type === 'subscription').length,
+		cli: logs.filter((/** @type {any} */ l) => l.type === 'cli').length
+	};
+	$: shownLogs =
+		typeFilter === 'alle' ? logs : logs.filter((/** @type {any} */ l) => l.type === typeFilter);
+
 	// Filter
 	let name = '';
 	let ancode = '';
@@ -119,8 +129,40 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Mutations-Audit-Log</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{logs.length}</span>
+		<span class="badge badge-primary badge-lg tabular-nums">{shownLogs.length}</span>
 		<span class="text-sm text-base-content/50">neueste zuerst</span>
+		<div class="flex-1"></div>
+		<div class="flex flex-wrap items-center gap-1">
+			<span class="text-sm text-base-content/50">Quelle:</span>
+			<button
+				class="badge gap-1 tabular-nums {typeFilter === 'alle' ? 'badge-primary' : 'badge-ghost'}"
+				on:click={() => (typeFilter = 'alle')}
+			>
+				alle {logs.length}
+			</button>
+			<button
+				class="badge gap-1 tabular-nums {typeFilter === 'mutation'
+					? 'badge-neutral'
+					: 'badge-ghost'}"
+				on:click={() => (typeFilter = 'mutation')}
+			>
+				Mutation {typeCounts.mutation}
+			</button>
+			<button
+				class="badge gap-1 tabular-nums {typeFilter === 'subscription'
+					? 'badge-info'
+					: 'badge-ghost'}"
+				on:click={() => (typeFilter = 'subscription')}
+			>
+				Subscription {typeCounts.subscription}
+			</button>
+			<button
+				class="badge gap-1 tabular-nums {typeFilter === 'cli' ? 'badge-secondary' : 'badge-ghost'}"
+				on:click={() => (typeFilter = 'cli')}
+			>
+				CLI {typeCounts.cli}
+			</button>
+		</div>
 	</div>
 
 	<!-- Filter -->
@@ -224,12 +266,14 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each logs as l}
+				{#each shownLogs as l}
 					<tr class="hover {l.error ? 'bg-error/10' : ''}">
 						<td class="tabular-nums whitespace-nowrap text-sm">{fmt(l.time)}</td>
 						<td class="font-medium">{l.name}</td>
 						<td>
-							{#if l.type === 'subscription'}
+							{#if l.type === 'cli'}
+								<span class="badge badge-secondary badge-sm">CLI</span>
+							{:else if l.type === 'subscription'}
 								<span class="badge badge-info badge-sm">Subscription</span>
 							{:else}
 								<span class="badge badge-neutral badge-sm">Mutation</span>

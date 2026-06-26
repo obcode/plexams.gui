@@ -1356,7 +1356,7 @@ type MutationLogArg {
   value: String!
 }
 
-"""Ein Audit-Log-Eintrag. type ∈ mutation | subscription."""
+"""Ein Audit-Log-Eintrag. type ∈ mutation | subscription | cli."""
 type MutationLogEntry {
   time: Time!
   name: String!
