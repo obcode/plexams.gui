@@ -891,6 +891,7 @@ type Query {
   mutationLogNames: [String!]!
   mutationLog(
     name: String
+    type: String
     ancode: Int
     args: [ArgFilterInput!]
     since: Time

@@ -5,7 +5,7 @@ import { gqlErrorMessage } from '$lib/gqlError';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const { name, ancode, args, since, until, limit } = await request.json();
+	const { name, type, ancode, args, since, until, limit } = await request.json();
 
 	// datetime-local kommt schon als ISO/UTC vom Client; sicherheitshalber normalisieren
 	/** @param {string} v */
@@ -23,6 +23,7 @@ export async function POST({ request }) {
 	const query = gql`
 		query (
 			$name: String
+			$type: String
 			$ancode: Int
 			$args: [ArgFilterInput!]
 			$since: Time
@@ -31,6 +32,7 @@ export async function POST({ request }) {
 		) {
 			mutationLog(
 				name: $name
+				type: $type
 				ancode: $ancode
 				args: $args
 				since: $since
@@ -53,6 +55,7 @@ export async function POST({ request }) {
 
 	const variables = {
 		name: name || null,
+		type: type || null,
 		ancode: ancode === '' || ancode == null ? null : Number(ancode),
 		args: pairs.length ? pairs : null,
 		since: toISO(since),

@@ -5,15 +5,13 @@
 	let logs = data.initial;
 	const names = data.names;
 
-	// Quelle/Typ client-seitig filtern (Backend hat dafür kein Argument)
+	// Quelle/Typ wird serverseitig gefiltert (kombinierbar mit den übrigen Filtern)
 	let typeFilter = 'alle';
-	$: typeCounts = {
-		mutation: logs.filter((/** @type {any} */ l) => l.type === 'mutation').length,
-		subscription: logs.filter((/** @type {any} */ l) => l.type === 'subscription').length,
-		cli: logs.filter((/** @type {any} */ l) => l.type === 'cli').length
+	/** @param {string} t */
+	const setType = (t) => {
+		typeFilter = t;
+		apply();
 	};
-	$: shownLogs =
-		typeFilter === 'alle' ? logs : logs.filter((/** @type {any} */ l) => l.type === typeFilter);
 
 	// Filter
 	let name = '';
@@ -51,6 +49,7 @@
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					name,
+					type: typeFilter === 'alle' ? '' : typeFilter,
 					ancode,
 					args: params.filter((p) => p.key.trim() || p.value.trim()),
 					since: toISO(since),
@@ -73,6 +72,7 @@
 
 	function reset() {
 		name = '';
+		typeFilter = 'alle';
 		ancode = '';
 		params = [{ key: '', value: '' }];
 		since = '';
@@ -83,6 +83,7 @@
 
 	$: hasFilter = !!(
 		name ||
+		typeFilter !== 'alle' ||
 		ancode ||
 		since ||
 		until ||
@@ -130,39 +131,20 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Mutations-Audit-Log</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{shownLogs.length}</span>
+		<span class="badge badge-primary badge-lg tabular-nums">{logs.length}</span>
 		<span class="text-sm text-base-content/50">neueste zuerst</span>
 		<div class="flex-1"></div>
-		<div class="flex flex-wrap items-center gap-1">
-			<span class="text-sm text-base-content/50">Quelle:</span>
-			<button
-				class="badge gap-1 tabular-nums {typeFilter === 'alle' ? 'badge-primary' : 'badge-ghost'}"
-				on:click={() => (typeFilter = 'alle')}
-			>
-				alle {logs.length}
-			</button>
-			<button
-				class="badge gap-1 tabular-nums {typeFilter === 'mutation'
-					? 'badge-neutral'
-					: 'badge-ghost'}"
-				on:click={() => (typeFilter = 'mutation')}
-			>
-				Mutation {typeCounts.mutation}
-			</button>
-			<button
-				class="badge gap-1 tabular-nums {typeFilter === 'subscription'
-					? 'badge-info'
-					: 'badge-ghost'}"
-				on:click={() => (typeFilter = 'subscription')}
-			>
-				Subscription {typeCounts.subscription}
-			</button>
-			<button
-				class="badge gap-1 tabular-nums {typeFilter === 'cli' ? 'badge-secondary' : 'badge-ghost'}"
-				on:click={() => (typeFilter = 'cli')}
-			>
-				CLI {typeCounts.cli}
-			</button>
+		<!-- Quelle als Tabs (serverseitig gefiltert) -->
+		<div class="tabs tabs-boxed tabs-sm">
+			{#each [['alle', 'alle'], ['mutation', 'Mutation'], ['subscription', 'Subscription'], ['cli', 'CLI']] as [val, label]}
+				<button
+					class="tab {typeFilter === val ? 'tab-active' : ''}"
+					on:click={() => setType(val)}
+					disabled={loading}
+				>
+					{label}
+				</button>
+			{/each}
 		</div>
 	</div>
 
@@ -267,7 +249,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each shownLogs as l}
+				{#each logs as l}
 					<tr class="hover {l.error ? 'bg-error/10' : ''}">
 						<td class="tabular-nums whitespace-nowrap text-sm">{fmt(l.time)}</td>
 						<td class="font-medium">{l.name}</td>
