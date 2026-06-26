@@ -13,6 +13,7 @@ export async function load() {
 					category
 					active
 					retired
+					externalExamsBase
 				}
 			}
 		`

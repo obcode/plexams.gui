@@ -47,7 +47,8 @@
 			degree: '',
 			category: 'fk07',
 			active: true,
-			retired: false
+			retired: false,
+			externalExamsBase: ''
 		};
 		isNew = true;
 		editError = '';
@@ -60,7 +61,8 @@
 			degree: p.degree ?? '',
 			category: p.category || 'misc',
 			active: !!p.active,
-			retired: !!p.retired
+			retired: !!p.retired,
+			externalExamsBase: p.externalExamsBase ?? ''
 		};
 		isNew = false;
 		editError = '';
@@ -93,7 +95,11 @@
 				degree: (editing.degree ?? '').trim() || null,
 				category: editing.category || 'misc',
 				active: !!editing.active,
-				retired: !!editing.retired
+				retired: !!editing.retired,
+				externalExamsBase:
+					editing.externalExamsBase === '' || editing.externalExamsBase == null
+						? null
+						: Number(editing.externalExamsBase)
 			});
 			closeEdit();
 			await invalidateAll();
@@ -116,7 +122,8 @@
 				degree: p.degree ?? null,
 				category: p.category || 'misc',
 				active: !p.active,
-				retired: !!p.retired
+				retired: !!p.retired,
+				externalExamsBase: p.externalExamsBase ?? null
 			});
 			await invalidateAll();
 		} catch (e) {
@@ -237,6 +244,14 @@
 												ausgelaufen
 											</span>
 										{/if}
+										{#if p.externalExamsBase != null}
+											<span
+												class="badge badge-ghost badge-sm ml-1 tabular-nums"
+												title="Basis-Ancode — lokaler ZPA-Ancode = Basis + Primuss-Ancode"
+											>
+												Basis {p.externalExamsBase}
+											</span>
+										{/if}
 									</td>
 									<td class="text-sm text-base-content/70">{p.degree || '—'}</td>
 									<td>
@@ -307,6 +322,22 @@
 					<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.active} />
 					<span>aktiv</span>
 				</label>
+				{#if editing.category !== 'fk07'}
+					<label class="flex flex-col gap-1">
+						<span class="text-xs font-medium text-base-content/60"
+							>Basis-Ancode (externe Prüfungen)</span
+						>
+						<input
+							type="number"
+							class="input input-bordered input-sm w-40"
+							bind:value={editing.externalExamsBase}
+							placeholder="z. B. 9000"
+						/>
+						<span class="text-xs text-base-content/40">
+							lokaler ZPA-Ancode = Basis + Primuss-Ancode
+						</span>
+					</label>
+				{/if}
 				{#if editing.category === 'fk07'}
 					<label class="flex cursor-pointer items-center gap-2">
 						<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.retired} />

@@ -1245,6 +1245,7 @@ type StudyProgram {
   category: String!
   active: Boolean!
   retired: Boolean!
+  externalExamsBase: Int
 }
 
 input StudyProgramInput {
@@ -1254,6 +1255,7 @@ input StudyProgramInput {
   category: String!
   active: Boolean!
   retired: Boolean
+  externalExamsBase: Int
 }
 
 """
