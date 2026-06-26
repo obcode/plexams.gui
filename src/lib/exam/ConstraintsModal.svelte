@@ -53,12 +53,14 @@
 	// Formularzustand
 	let form = {
 		notPlannedByMe: !!c.notPlannedByMe,
+		doNotPublish: !!c.doNotPublish,
 		online: !!c.online,
 		exahm: !!rc.exahm,
 		seb: !!rc.seb,
 		lab: !!rc.lab,
 		placesWithSocket: !!rc.placesWithSocket,
 		maxStudents: rc.maxStudents ?? 0,
+		additionalSeats: rc.additionalSeats ?? 0,
 		comments: rc.comments ?? '',
 		kdpJiraURL: rc.kdpJiraURL ?? '',
 		/** @type {Set<string>} ausgewählte Sperrtage (date-part) */
@@ -105,9 +107,10 @@
 		const excludeDays = [...form.excludeDays].map((d) => dateByPart[d]).filter(Boolean);
 
 		const constraints = form.notPlannedByMe
-			? { notPlannedByMe: true }
+			? { notPlannedByMe: true, doNotPublish: form.doNotPublish }
 			: {
 					notPlannedByMe: false,
+					doNotPublish: form.doNotPublish,
 					online: form.online,
 					exahm: form.exahm,
 					seb: form.seb,
@@ -118,6 +121,7 @@
 					possibleDays: c.possibleDays ?? [],
 					sameSlot: form.sameSlot,
 					maxStudents: Number(form.maxStudents) || null,
+					additionalSeats: Number(form.additionalSeats) || null,
 					kdpJiraURL: form.kdpJiraURL.trim() || null,
 					comments: form.comments.trim() || null
 				};
@@ -137,6 +141,7 @@
 			dispatch('saved', {
 				ancode: exam.ancode,
 				notPlannedByMe: form.notPlannedByMe,
+				doNotPublish: form.doNotPublish,
 				online: form.notPlannedByMe ? false : form.online,
 				excludeDays: form.notPlannedByMe ? [] : excludeDays,
 				possibleDays: form.notPlannedByMe ? [] : (c.possibleDays ?? []),
@@ -151,6 +156,7 @@
 							seb: form.seb,
 							kdpJiraURL: form.kdpJiraURL.trim() || null,
 							maxStudents: Number(form.maxStudents) || null,
+							additionalSeats: Number(form.additionalSeats) || null,
 							comments: form.comments.trim() || null
 						}
 			});
@@ -173,6 +179,12 @@
 			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={form.notPlannedByMe} />
 			<span class="font-medium">nicht von mir geplant</span>
 			<span class="text-xs text-base-content/50">(dann sind keine weiteren Constraints nötig)</span>
+		</label>
+
+		<label class="mt-1 flex cursor-pointer items-center gap-2">
+			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={form.doNotPublish} />
+			<span class="font-medium">nicht veröffentlichen</span>
+			<span class="text-xs text-base-content/50">(Prüfung nicht ins ZPA hochladen)</span>
 		</label>
 
 		<fieldset
@@ -212,6 +224,15 @@
 						type="number"
 						class="input input-bordered input-sm w-28"
 						bind:value={form.maxStudents}
+					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Platz-Puffer</span>
+					<input
+						type="number"
+						class="input input-bordered input-sm w-28"
+						bind:value={form.additionalSeats}
+						title="zusätzliche Plätze (additionalSeats)"
 					/>
 				</label>
 				<label class="flex flex-1 flex-col gap-1">

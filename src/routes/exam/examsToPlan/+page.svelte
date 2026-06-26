@@ -64,12 +64,14 @@
 			rc.placesWithSocket ||
 			(rc.allowedRooms ?? []).length ||
 			rc.maxStudents ||
+			rc.additionalSeats ||
 			rc.comments ||
 			rc.kdpJiraURL);
 	/** @param {any} c */
 	const hasConstraints = (c) =>
 		!!c &&
 		(c.notPlannedByMe ||
+			c.doNotPublish ||
 			c.online ||
 			(c.excludeDays ?? []).length ||
 			(c.possibleDays ?? []).length ||
@@ -367,6 +369,11 @@
 				{#if e.status === 'toPlan'}
 					{@const c = e.constraints}
 					<div class="flex w-72 shrink-0 flex-wrap items-center gap-1 self-stretch text-xs">
+						{#if c?.doNotPublish}
+							<span class="badge badge-error badge-outline badge-sm" title="nicht ins ZPA hochladen"
+								>nicht veröffentlichen</span
+							>
+						{/if}
 						{#if c?.notPlannedByMe}
 							<span class="badge badge-neutral badge-sm">nicht von mir geplant</span>
 						{:else}
@@ -408,6 +415,10 @@
 							{/each}
 							{#if c?.roomConstraints?.maxStudents}<span class="badge badge-ghost badge-sm"
 									>max {c.roomConstraints.maxStudents}</span
+								>{/if}
+							{#if c?.roomConstraints?.additionalSeats}<span
+									class="badge badge-ghost badge-sm"
+									title="Platz-Puffer">+{c.roomConstraints.additionalSeats} Plätze</span
 								>{/if}
 							{#if !hasConstraints(c)}<span class="text-base-content/30">keine</span>{/if}
 						{/if}

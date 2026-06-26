@@ -27,6 +27,7 @@ export async function load() {
 				constraints {
 					ancode
 					notPlannedByMe
+					doNotPublish
 					online
 					excludeDays
 					possibleDays
@@ -39,6 +40,7 @@ export async function load() {
 						seb
 						kdpJiraURL
 						maxStudents
+						additionalSeats
 						comments
 					}
 				}

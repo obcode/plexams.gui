@@ -114,6 +114,7 @@ type ConnectedExamWarning {
 type Constraints {
   ancode: Int!
   notPlannedByMe: Boolean!
+  doNotPublish: Boolean!
   excludeDays: [Time!]
   possibleDays: [Time!]
   fixedDay: Time
@@ -126,6 +127,7 @@ type Constraints {
 input ConstraintsInput {
   allowedRooms: [String!]
   notPlannedByMe: Boolean
+  doNotPublish: Boolean
   excludeDays: [Time!]
   possibleDays: [Time!]
   fixedDay: Time
@@ -138,6 +140,7 @@ input ConstraintsInput {
   seb: Boolean
   kdpJiraURL: String
   maxStudents: Int
+  additionalSeats: Int
   comments: String
 }
 
@@ -1085,6 +1088,7 @@ type RoomConstraints {
   seb: Boolean!
   kdpJiraURL: String
   maxStudents: Int
+  additionalSeats: Int
   comments: String
 }
 
