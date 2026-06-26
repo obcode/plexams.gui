@@ -84,10 +84,19 @@ export async function load() {
 				plannedDayNumber
 				plannedSlotNumber
 			}
+			examDurationOverrides {
+				ancode
+				duration
+			}
 		}
 	`;
 
 	const data = await request(env.PLEXAMS_SERVER, query);
+
+	// Ancode → manuell gesetzte Dauer (nur bei ZPA-Dauer 0 relevant)
+	/** @type {Record<number, number>} */
+	const durOverride = {};
+	for (const o of data.examDurationOverrides ?? []) durOverride[o.ancode] = o.duration;
 
 	// „vorgeplant": es gibt eine planEntry (Slot im Plan) ODER eine Vorplanung.
 	// Ancode → { slot?, preplanned } ; slot = {dayNumber, slotNumber} wenn bekannt.
@@ -116,14 +125,16 @@ export async function load() {
 			status: 'toPlan',
 			constraints: x.constraints ?? null,
 			slot: planned[x.zpaExam.ancode]?.slot ?? null,
-			preplanned: !!planned[x.zpaExam.ancode]?.preplanned
+			preplanned: !!planned[x.zpaExam.ancode]?.preplanned,
+			durationOverride: durOverride[x.zpaExam.ancode] ?? null
 		})),
 		...(data.notToPlan ?? []).map((/** @type {any} */ e) => ({
 			...e,
 			status: 'notToPlan',
 			constraints: null,
 			slot: planned[e.ancode]?.slot ?? null,
-			preplanned: !!planned[e.ancode]?.preplanned
+			preplanned: !!planned[e.ancode]?.preplanned,
+			durationOverride: durOverride[e.ancode] ?? null
 		})),
 		...(data.unknown ?? []).map((/** @type {any} */ e) => ({
 			...e,

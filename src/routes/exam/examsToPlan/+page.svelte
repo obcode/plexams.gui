@@ -87,10 +87,71 @@
 		return `${WD[dt.getUTCDay()]}, ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
 	};
 
-	// „Dauer 0": zu planen, nicht notPlannedByMe, keine Dauer hinterlegt
+	// „Dauer 0": zu planen, nicht notPlannedByMe, keine Dauer (auch kein Override)
 	/** @param {any} e */
 	const isDurZero = (e) =>
-		e.status === 'toPlan' && !e.constraints?.notPlannedByMe && !(e.duration > 0);
+		e.status === 'toPlan' &&
+		!e.constraints?.notPlannedByMe &&
+		!(e.duration > 0) &&
+		!(e.durationOverride > 0);
+
+	// Dauer-Override setzen/entfernen (nur bei ZPA-Dauer 0). Aktualisiert lokal.
+	/** @type {Record<number, number|string>} */
+	let durInput = {};
+	/** @param {any} e */
+	async function setDur(e) {
+		const v = Number(durInput[e.ancode]);
+		if (!v || busy.has(e.ancode)) return;
+		busy = new Set(busy).add(e.ancode);
+		actionError = '';
+		try {
+			const res = await fetch('/api/setExamDuration', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ancode: e.ancode, duration: v })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			e.durationOverride = v;
+			items = items;
+			durInput[e.ancode] = '';
+		} catch (err) {
+			actionError = err instanceof Error ? err.message : String(err);
+		} finally {
+			const s = new Set(busy);
+			s.delete(e.ancode);
+			busy = s;
+		}
+	}
+	/** @param {any} e */
+	async function rmDur(e) {
+		if (busy.has(e.ancode)) return;
+		busy = new Set(busy).add(e.ancode);
+		actionError = '';
+		try {
+			const res = await fetch('/api/removeExamDuration', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ancode: e.ancode })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			e.durationOverride = null;
+			items = items;
+		} catch (err) {
+			actionError = err instanceof Error ? err.message : String(err);
+		} finally {
+			const s = new Set(busy);
+			s.delete(e.ancode);
+			busy = s;
+		}
+	}
 	$: durZeroCount = items.filter(isDurZero).length;
 
 	// --- Filter ---
@@ -354,8 +415,33 @@
 						<span class="text-base-content/50">· {e.examTypeFull} ·</span>
 						{#if e.duration > 0}
 							<span class="tabular-nums text-base-content/50">{e.duration} min</span>
+						{:else if e.durationOverride > 0}
+							<span
+								class="badge badge-success badge-sm tabular-nums"
+								title="manuell gesetzte Dauer"
+							>
+								{e.durationOverride} min
+							</span>
+							<button
+								class="btn btn-ghost btn-xs"
+								disabled={busy.has(e.ancode)}
+								title="Dauer-Override entfernen"
+								on:click={() => rmDur(e)}>✕</button
+							>
 						{:else}
 							<span class="badge badge-error badge-sm" title="keine Dauer hinterlegt">Dauer 0</span>
+							<input
+								type="number"
+								class="input input-bordered input-xs w-16 tabular-nums"
+								placeholder="min"
+								bind:value={durInput[e.ancode]}
+								disabled={busy.has(e.ancode)}
+							/>
+							<button
+								class="btn btn-ghost btn-xs"
+								disabled={busy.has(e.ancode) || !durInput[e.ancode]}
+								on:click={() => setDur(e)}>setzen</button
+							>
 						{/if}
 					</div>
 					<div class="mt-1 flex flex-wrap items-center gap-1">
