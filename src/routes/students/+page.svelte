@@ -1,4 +1,8 @@
 <script>
+	export let data;
+	/** @param {string} program @param {number} reg */
+	const examInfo = (program, reg) => data.examByKey?.[`${program}/${reg}`];
+
 	let q = '';
 	/** @type {any[]} */
 	let students = [];
@@ -105,21 +109,30 @@
 					<div class="mb-1 text-xs font-medium text-base-content/50">
 						Anmeldungen ({(s.regsWithProgram ?? s.regs ?? []).length})
 					</div>
-					<div class="flex flex-wrap gap-1">
-						{#if (s.regsWithProgram ?? []).length}
+					{#if (s.regsWithProgram ?? []).length}
+						<div class="flex flex-col gap-0.5">
 							{#each s.regsWithProgram as r}
-								<span class="badge badge-ghost badge-sm tabular-nums">
-									{r.program}/{r.reg}
-								</span>
+								{@const info = examInfo(r.program, r.reg)}
+								<div class="flex flex-wrap items-baseline gap-x-2 text-sm">
+									<span class="badge badge-ghost badge-sm tabular-nums">{r.program}/{r.reg}</span>
+									{#if info}
+										<span>{info.module}</span>
+										<span class="text-base-content/50">· {info.mainExamer}</span>
+									{:else}
+										<span class="text-base-content/30">— Modul unbekannt</span>
+									{/if}
+								</div>
 							{/each}
-						{:else}
+						</div>
+					{:else}
+						<div class="flex flex-wrap gap-1">
 							{#each s.regs ?? [] as a}
 								<span class="badge badge-ghost badge-sm tabular-nums">{a}</span>
 							{:else}
 								<span class="text-base-content/40">—</span>
 							{/each}
-						{/if}
-					</div>
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/each}
