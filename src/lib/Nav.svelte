@@ -8,6 +8,26 @@
 		zpaSummary,
 		runZpaCheck
 	} from '$lib/validation/store';
+	import {
+		generatedExamsState,
+		regenerating,
+		checkGeneratedExams,
+		regenerateGeneratedExams
+	} from '$lib/generatedExams/store';
+
+	/** @param {string | null} iso */
+	function fmtChangedAt(iso: string | null) {
+		if (!iso) return '';
+		const d = new Date(iso);
+		if (Number.isNaN(d.getTime())) return '';
+		return d.toLocaleString('de-DE', {
+			timeZone: 'Europe/Berlin',
+			day: '2-digit',
+			month: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	}
 
 	function dotClass(level: string) {
 		if (level === 'ok') return 'bg-success';
@@ -58,6 +78,16 @@
 
 	onMount(() => {
 		getSemester();
+		// „Generierte Prüfungen veraltet?" — beim Laden, bei Tab-Fokus und im
+		// leichten Intervall prüfen (reine Read-Query, nicht write-gelockt).
+		checkGeneratedExams();
+		const onFocus = () => checkGeneratedExams();
+		window.addEventListener('focus', onFocus);
+		const iv = setInterval(checkGeneratedExams, 20000);
+		return () => {
+			window.removeEventListener('focus', onFocus);
+			clearInterval(iv);
+		};
 	});
 
 	type MenuLink = { href: string; label: string };
@@ -420,4 +450,28 @@
 			</ul>
 		</div>
 	</div>
+
+	<!-- Banner: generierte Prüfungen veraltet -->
+	{#if $generatedExamsState.dirty}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
+		>
+			<span>⚠</span>
+			<span class="font-medium">Generierte Prüfungen sind veraltet</span>
+			{#if $generatedExamsState.reason}
+				<span class="opacity-70">— zuletzt: {$generatedExamsState.reason}</span>
+			{/if}
+			{#if $generatedExamsState.changedAt}
+				<span class="opacity-60">· {fmtChangedAt($generatedExamsState.changedAt)}</span>
+			{/if}
+			<div class="flex-1"></div>
+			<button
+				class="btn btn-warning btn-xs"
+				disabled={$regenerating}
+				on:click={regenerateGeneratedExams}
+			>
+				{$regenerating ? 'generiert …' : 'neu generieren'}
+			</button>
+		</div>
+	{/if}
 </header>
