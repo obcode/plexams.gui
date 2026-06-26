@@ -113,6 +113,7 @@
 		const d = new Date(iso);
 		if (Number.isNaN(d.getTime())) return iso;
 		return d.toLocaleString('de-DE', {
+			timeZone: 'Europe/Berlin',
 			day: '2-digit',
 			month: '2-digit',
 			year: '2-digit',
