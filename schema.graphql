@@ -522,6 +522,7 @@ type Mutation {
   generateGeneratedExams: GenerateGeneratedExamsResult!
   setExamDuration(ancode: Int!, duration: Int!): Boolean!
   removeExamDuration(ancode: Int!): Boolean!
+  setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
 
   """ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam."""
   addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
@@ -896,6 +897,7 @@ type Query {
   mutationLogNames: [String!]!
   generatedExamsState: GeneratedExamsState!
   examDurationOverrides: [ExamDurationOverride!]!
+  generationConfig: GenerationConfig!
   mutationLog(
     name: String
     type: String
@@ -1357,6 +1359,40 @@ type Planer {
 }
 
 """Zustand der generierten Prüfungen (Cache). dirty=true → veraltet."""
+type GenerationConfig {
+  timelagMin: Int
+  iterations: Int
+  startTemp: Float
+  endTemp: Float
+  toleranceMin: Int
+  maxSpanHours: Float
+  weightMinuteBalance: Float
+  weightBeyondTolerance: Float
+  weightOverTargetFactor: Float
+  weightCoverage: Float
+  weightMaxDays: Float
+  weightPreferExamDays: Float
+  weightDistribution: Float
+  weightDaySpan: Float
+}
+
+input GenerationConfigInput {
+  timelagMin: Int
+  iterations: Int
+  startTemp: Float
+  endTemp: Float
+  toleranceMin: Int
+  maxSpanHours: Float
+  weightMinuteBalance: Float
+  weightBeyondTolerance: Float
+  weightOverTargetFactor: Float
+  weightCoverage: Float
+  weightMaxDays: Float
+  weightPreferExamDays: Float
+  weightDistribution: Float
+  weightDaySpan: Float
+}
+
 type ExamDurationOverride {
   ancode: Int!
   duration: Int!

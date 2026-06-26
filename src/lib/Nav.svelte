@@ -160,6 +160,7 @@
 				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
 				{ href: '/plan/invigilation', label: '⏰ Zeitplan' },
 				{ href: '/plan/invigilation/generate', label: '✨ Generierung' },
+				{ href: '/config/generation', label: '⚙️ Generierungs-Parameter' },
 				{ href: '/plan/invigilation/validate', label: '✅ Validierung' }
 			]
 		},
