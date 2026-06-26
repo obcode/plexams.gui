@@ -184,6 +184,13 @@
 	}
 
 	$: pathname = $page.url.pathname;
+	// bei jedem Seitenwechsel den „veraltet"-Zustand neu prüfen (im SPA feuert
+	// window.focus nicht, und der Intervall hätte bis zu 20 s Latenz)
+	let lastCheckedPath = '';
+	$: if (pathname && pathname !== lastCheckedPath) {
+		lastCheckedPath = pathname;
+		checkGeneratedExams();
+	}
 	$: activeHref = menus
 		.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
 		.reduce(
