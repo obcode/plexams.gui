@@ -66,8 +66,8 @@
 		.filter((g) => !program || g.programs.includes(program))
 		.filter((g) => !fk07Only || g.plannedBy === 'FK07')
 		.sort((a, b) => {
-			if (sortBy === 'time') return timeMs(a) - timeMs(b) || (a.ancode ?? 0) - (b.ancode ?? 0);
-			return (a.ancode ?? a.primussAncode) - (b.ancode ?? b.primussAncode);
+			if (sortBy === 'time') return timeMs(a) - timeMs(b) || a.primussList[0] - b.primussList[0];
+			return a.primussList[0] - b.primussList[0];
 		});
 
 	// --- Zeit-Helfer (Berlin) ---
@@ -238,7 +238,7 @@
 				<span class="text-base-content/50">Sortierung:</span>
 				<button
 					class="badge gap-1 {sortBy === 'ancode' ? 'badge-primary' : 'badge-ghost'}"
-					on:click={() => (sortBy = 'ancode')}>Ancode</button
+					on:click={() => (sortBy = 'ancode')}>Primuss-Ancode</button
 				>
 				<button
 					class="badge gap-1 {sortBy === 'time' ? 'badge-primary' : 'badge-ghost'}"
