@@ -177,6 +177,7 @@
 			items: [
 				{ section: 'ZPA' },
 				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
+				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
 				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
 				{ section: 'Primuss' },
 				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
