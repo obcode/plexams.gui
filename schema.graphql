@@ -455,6 +455,16 @@ type MucDaiExam {
   isRepeaterExam: Boolean!
   program: String!
   plannedBy: String!
+  ancode: Int
+  planEntry: PlanEntry
+}
+
+type ImportMucDaiResult {
+  programs: [String!]!
+  examsImported: Int!
+  examsCreated: Int!
+  examsExisting: Int!
+  examsSkippedFK07: Int!
 }
 
 type Mutation {
@@ -679,6 +689,8 @@ type Mutation {
   zpaExamsToPlan(input: [Int!]!): [ZPAExam!]!
   addZpaExamToPlan(ancode: Int!): Boolean!
   rmZpaExamFromPlan(ancode: Int!): Boolean!
+  importMucDaiExams(csv: String!): ImportMucDaiResult!
+  setExternalExamTime(ancode: Int!, date: String!, time: String!): Boolean!
 }
 
 type NTA {

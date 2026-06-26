@@ -1,26 +1,31 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 
-export async function load({ params }) {
-	const query = gql`
-		query {
-			mucdaiExams {
-				primussAncode
-				module
-				mainExamer
-				mainExamerID
-				examType
-				duration
-				isRepeaterExam
-				program
-				plannedBy
+export async function load() {
+	const data = await request(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				mucdaiExams {
+					primussAncode
+					module
+					mainExamer
+					mainExamerID
+					examType
+					duration
+					isRepeaterExam
+					program
+					plannedBy
+					ancode
+					planEntry {
+						dayNumber
+						slotNumber
+						starttime
+						externalTime
+					}
+				}
 			}
-		}
-	`;
-
-	const data = await request(env.PLEXAMS_SERVER, query);
-
-	return {
-		mucdaiExams: data.mucdaiExams
-	};
+		`
+	);
+	return { mucdaiExams: data.mucdaiExams ?? [] };
 }
