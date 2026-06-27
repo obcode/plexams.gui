@@ -145,6 +145,7 @@
 		if (togglingReadOnly) return;
 		togglingReadOnly = true;
 		semesterError = '';
+		semesterErrorTitle = 'Schutz ändern fehlgeschlagen';
 		try {
 			const res = await fetch('/api/setSemesterReadOnly', {
 				method: 'POST',
@@ -168,6 +169,7 @@
 	// Cache; ein voller Reload entspricht client.resetStore()).
 	let switchingSemester = false;
 	let semesterError = '';
+	let semesterErrorTitle = 'Aktion fehlgeschlagen';
 
 	// Workspace = Datenbank. id ist der DB-Name (Schaltschlüssel), semester das
 	// logische Semester (Anzeige). schemaVersion == null ⇒ DB ohne Daten.
@@ -184,6 +186,7 @@
 		if (!override && name === currentSem?.id) return;
 		switchingSemester = true;
 		semesterError = '';
+		semesterErrorTitle = 'Semesterwechsel fehlgeschlagen';
 		try {
 			const res = await fetch('/api/setSemester', {
 				method: 'POST',
@@ -220,6 +223,7 @@
 		if (wsCreating || !wsNameValid || !wsFromSemester) return;
 		wsCreating = true;
 		semesterError = '';
+		semesterErrorTitle = 'Workspace anlegen fehlgeschlagen';
 		try {
 			const res = await fetch('/api/createWorkspace', {
 				method: 'POST',
@@ -861,6 +865,14 @@
 				Legt eine neue (leere) Datenbank an, die auf einem vorhandenen Semester basiert. Danach wird
 				direkt hineingewechselt — die Daten müssen noch importiert werden.
 			</p>
+			{#if readOnly}
+				<div class="mt-2 alert alert-warning py-2 text-sm">
+					<span>
+						Die aktuelle DB „{currentSem?.id}" ist geschützt (read-only). Das Backend lehnt das
+						Anlegen ab, solange der Schutz aktiv ist — zuerst im Semester-Menü „🔓 Schutz aufheben".
+					</span>
+				</div>
+			{/if}
 			<div class="mt-3 flex flex-col gap-3">
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Name der neuen DB</span>
@@ -909,7 +921,8 @@
 	<div class="modal modal-open">
 		<div class="modal-box">
 			<h2 class="flex items-center gap-2 text-lg font-semibold">
-				<span class="badge badge-error badge-sm">Fehler</span> Semesterwechsel fehlgeschlagen
+				<span class="badge badge-error badge-sm">Fehler</span>
+				{semesterErrorTitle}
 			</h2>
 			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{semesterError}</p>
 			<div class="modal-action">
