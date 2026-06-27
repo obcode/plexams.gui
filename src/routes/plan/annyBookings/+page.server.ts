@@ -15,6 +15,8 @@ type AnnyBooking = {
 	room: string | null;
 	note: string;
 	canceledAt: string | null;
+	personalizationName: string | null;
+	mine: boolean;
 };
 
 type Interval = {
@@ -110,6 +112,15 @@ export async function load() {
 				room
 				note
 				canceledAt
+				personalizationName
+				mine
+			}
+			annyConfig {
+				personalizationNames
+			}
+			rooms {
+				name
+				requestWith
 			}
 			semesterConfig {
 				days {
@@ -253,8 +264,35 @@ export async function load() {
 		})
 		.sort((a, b) => (a.day === b.day ? a.slot - b.slot : a.day - b.day));
 
+	// Alle (nicht stornierten) Buchungen als flache Liste für die „wer wann was"-
+	// Ansicht — über alle Räume und Personen, nach Startzeit sortiert.
+	const bookings = ((data.allAnnyBookings || []) as AnnyBooking[])
+		.filter((b) => !b.canceledAt)
+		.map((b) => ({
+			number: b.number,
+			room: b.room,
+			personalizationName: b.personalizationName,
+			startDate: b.startDate,
+			endDate: b.endDate,
+			description: b.description,
+			status: b.status,
+			isBlocker: b.isBlocker,
+			note: b.note,
+			mine: !!b.mine
+		}))
+		.sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+
+	const personalizationNames: string[] = data.annyConfig?.personalizationNames || [];
+	const annyRooms: string[] = ((data.rooms || []) as Array<{ name: string; requestWith: string }>)
+		.filter((r) => r.requestWith === 'ANNY')
+		.map((r) => r.name)
+		.sort((a, b) => a.localeCompare(b));
+
 	return {
 		slots,
-		roomOrder
+		roomOrder,
+		bookings,
+		personalizationNames,
+		annyRooms
 	};
 }

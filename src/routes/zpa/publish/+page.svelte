@@ -14,14 +14,14 @@
 	/** @type {{ field: string, title: string, desc: string }[]} */
 	const downloads = [
 		{
-			field: 'importExamsFromZPA',
-			title: 'Prüfungen',
-			desc: 'Prüfungen aus dem ZPA holen und cachen'
-		},
-		{
 			field: 'importTeachersFromZPA',
 			title: 'Dozierende',
 			desc: 'Dozierende aus dem ZPA holen und cachen'
+		},
+		{
+			field: 'importExamsFromZPA',
+			title: 'Prüfungen',
+			desc: 'Prüfungen aus dem ZPA holen und cachen'
 		},
 		{
 			field: 'importInvigilatorRequirementsFromZPA',
