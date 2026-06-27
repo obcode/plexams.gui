@@ -863,16 +863,9 @@
 			<h2 class="text-lg font-semibold">Neuen Workspace anlegen</h2>
 			<p class="mt-1 text-sm text-base-content/60">
 				Legt eine neue (leere) Datenbank an, die auf einem vorhandenen Semester basiert. Danach wird
-				direkt hineingewechselt — die Daten müssen noch importiert werden.
+				direkt hineingewechselt — die Daten müssen noch importiert werden. Funktioniert auch, während
+				das Quell-Semester geschützt ist.
 			</p>
-			{#if readOnly}
-				<div class="mt-2 alert alert-warning py-2 text-sm">
-					<span>
-						Die aktuelle DB „{currentSem?.id}" ist geschützt (read-only). Das Backend lehnt das
-						Anlegen ab, solange der Schutz aktiv ist — zuerst im Semester-Menü „🔓 Schutz aufheben".
-					</span>
-				</div>
-			{/if}
 			<div class="mt-3 flex flex-col gap-3">
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Name der neuen DB</span>
