@@ -113,13 +113,44 @@
 		return `${name}: ${base}${counts}${part} · klicken zum Prüfen`;
 	}
 
+	type Sem = { id: string; compatible: boolean; readOnly: boolean; schemaVersion: number | null };
 	let semester = 'unknown';
-	let allSemesters: string[] = [];
+	let currentSem: Sem | null = null;
+	let allSemesters: Sem[] = [];
+	$: readOnly = !!currentSem?.readOnly;
 	async function getSemester() {
 		const response = await fetch('/api/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
-		if (d?.current) semester = d.current;
+		if (d?.current) {
+			currentSem = d.current;
+			semester = d.current.id;
+		}
 		if (Array.isArray(d?.all)) allSemesters = d.all;
+	}
+
+	// DB-Schutz (read-only) umschalten → bei Erfolg neu laden
+	let togglingReadOnly = false;
+	async function toggleReadOnly(value: boolean) {
+		if (togglingReadOnly) return;
+		togglingReadOnly = true;
+		semesterError = '';
+		try {
+			const res = await fetch('/api/setSemesterReadOnly', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ readOnly: value })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			window.location.reload();
+		} catch (e) {
+			semesterError = e instanceof Error ? e.message : String(e);
+		} finally {
+			togglingReadOnly = false;
+		}
 	}
 
 	// Semester umschalten → bei Erfolg alles neu laden (graphql-request hat keinen
@@ -521,6 +552,7 @@
 					<span class="loading loading-spinner loading-xs"></span>
 				{/if}
 				{semester}
+				{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 				<svg
 					class="h-3 w-3 opacity-60"
 					fill="none"
@@ -538,17 +570,45 @@
 			>
 				{#each allSemesters as s}
 					<li>
-						<button
-							class="rounded-lg tabular-nums {s === semester
-								? 'bg-primary/15 font-medium text-primary'
-								: ''}"
-							disabled={switchingSemester}
-							on:click={() => switchSemester(s)}
-						>
-							{s}
-						</button>
+						{#if !s.compatible}
+							<span
+								class="rounded-lg tabular-nums text-base-content/30"
+								title="inkompatibel (keine Config)"
+							>
+								{s.id} <span class="text-warning">⚠ inkompatibel</span>
+							</span>
+						{:else}
+							<button
+								class="flex items-center gap-1 rounded-lg tabular-nums {s.id === semester
+									? 'bg-primary/15 font-medium text-primary'
+									: ''}"
+								disabled={switchingSemester}
+								on:click={() => switchSemester(s.id)}
+							>
+								<span>{s.id}</span>
+								{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
+							</button>
+						{/if}
 					</li>
 				{/each}
+
+				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
+				<li>
+					{#if readOnly}
+						<button
+							class="rounded-lg"
+							disabled={togglingReadOnly}
+							on:click={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
+						>
+					{:else}
+						<button
+							class="rounded-lg"
+							disabled={togglingReadOnly}
+							on:click={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
+						>
+					{/if}
+				</li>
+
 				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Replay / Test</li>
 				<li>
 					<button class="rounded-lg" disabled={switchingSemester} on:click={openReplay}>
@@ -639,6 +699,21 @@
 				on:click={runRegenerateStudents}
 			>
 				{$regeneratingStudents ? 'generiert …' : 'neu generieren'}
+			</button>
+		</div>
+	{/if}
+
+	<!-- Banner: Semester read-only -->
+	{#if readOnly}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-error/40 bg-error/15 px-3 py-1.5 text-sm text-error-content"
+		>
+			<span>🔒</span>
+			<span class="font-medium">Dieses Semester ist geschützt (nur lesen)</span>
+			<span class="opacity-70">— Schreibvorgänge werden vom Backend abgelehnt.</span>
+			<div class="flex-1"></div>
+			<button class="btn btn-error btn-xs" disabled={togglingReadOnly} on:click={() => toggleReadOnly(false)}>
+				{togglingReadOnly ? '…' : 'Schutz aufheben'}
 			</button>
 		</div>
 	{/if}

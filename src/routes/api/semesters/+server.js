@@ -12,17 +12,20 @@ export async function GET() {
 				query {
 					semester {
 						id
+						compatible
+						readOnly
+						schemaVersion
 					}
 					allSemesterNames {
 						id
+						compatible
+						readOnly
+						schemaVersion
 					}
 				}
 			`
 		);
-		return json({
-			current: data.semester?.id ?? '',
-			all: (data.allSemesterNames ?? []).map((/** @type {any} */ s) => s.id)
-		});
+		return json({ current: data.semester ?? null, all: data.allSemesterNames ?? [] });
 	} catch (e) {
 		return json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
