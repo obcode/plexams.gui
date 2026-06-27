@@ -126,15 +126,21 @@
 	// Cache; ein voller Reload entspricht client.resetStore()).
 	let switchingSemester = false;
 	let semesterError = '';
-	async function switchSemester(name: string) {
-		if (switchingSemester || name === semester) return;
+	// Replay/Test: echtes Semester, aber Daten in eine andere Ziel-DB
+	let replayOpen = false;
+	let replaySemester = '';
+	let replayDatabase = '';
+
+	async function switchSemester(semester_: string, database?: string) {
+		if (switchingSemester) return;
+		if (!database && semester_ === semester) return;
 		switchingSemester = true;
 		semesterError = '';
 		try {
 			const res = await fetch('/api/setSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name })
+				body: JSON.stringify({ semester: semester_, database: database || null })
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
@@ -147,6 +153,17 @@
 		} finally {
 			switchingSemester = false;
 		}
+	}
+
+	function openReplay() {
+		replaySemester = semester;
+		replayDatabase = '';
+		replayOpen = true;
+	}
+	function startReplay() {
+		if (!replaySemester || !replayDatabase.trim()) return;
+		replayOpen = false;
+		switchSemester(replaySemester, replayDatabase.trim());
 	}
 
 	function checkStaleStates() {
@@ -532,6 +549,12 @@
 						</button>
 					</li>
 				{/each}
+				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Replay / Test</li>
+				<li>
+					<button class="rounded-lg" disabled={switchingSemester} on:click={openReplay}>
+						🧪 in Test-DB …
+					</button>
+				</li>
 			</ul>
 		</div>
 
@@ -697,6 +720,50 @@
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={() => (stuError = '')}></button>
+	</div>
+{/if}
+
+<!-- Replay / Test: Ziel-DB wählen -->
+{#if replayOpen}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-md">
+			<h2 class="text-lg font-semibold">Replay / Test-Datenbank</h2>
+			<p class="mt-1 text-sm text-base-content/60">
+				Das Semester bleibt echt (für ZPA), die Daten landen in der angegebenen Ziel-DB.
+			</p>
+			<div class="mt-3 flex flex-col gap-3">
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Semester</span>
+					<select class="select select-bordered select-sm" bind:value={replaySemester}>
+						{#each allSemesters as s}
+							<option value={s}>{s}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Ziel-Datenbank</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm"
+						bind:value={replayDatabase}
+						placeholder="z. B. 2026-SS-Test"
+					/>
+				</label>
+			</div>
+			<div class="modal-action">
+				<button class="btn btn-ghost btn-sm" on:click={() => (replayOpen = false)}>Abbrechen</button
+				>
+				<button
+					class="btn btn-primary btn-sm"
+					disabled={switchingSemester || !replayDatabase.trim()}
+					on:click={startReplay}
+				>
+					{switchingSemester ? 'wechselt …' : 'wechseln'}
+				</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (replayOpen = false)}
+		></button>
 	</div>
 {/if}
 
