@@ -36,6 +36,12 @@
 	}
 	/** @type {string | null} */
 	let errorMsg = null;
+	// Aussagekräftige Fehlermeldungen vom Reporter/error-Kanal (ERROR-Level-Zeilen),
+	// z. B. ZPA-Status + Antworttext — gesammelt und prominent als Alert gezeigt.
+	/** @type {string[]} */
+	let errorTexts = [];
+	/** ANSI-Codes entfernen, damit die Klartext-Meldung lesbar ist. */
+	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
 	/** @type {any} */
 	let convert = null;
@@ -67,6 +73,7 @@
 		lines = [];
 		current = null;
 		errorMsg = null;
+		errorTexts = [];
 		status = 'running';
 
 		try {
@@ -105,7 +112,15 @@
 							current = null;
 						}
 						lines = [...lines, { html, text }];
-						if (line.level === 'DONE') status = 'done';
+						if (line.level === 'ERROR') {
+							// Reporter-/error-Kanal: aussagekräftige Meldung prominent zeigen
+							// und die Operation als fehlgeschlagen markieren (kein „fertig").
+							errorTexts = [...errorTexts, stripAnsi(text)];
+							errorMsg = errorTexts.join('\n');
+							status = 'error';
+						} else if (line.level === 'DONE') {
+							if (status !== 'error') status = 'done';
+						}
 					}
 					scrollToBottom();
 				},
@@ -195,7 +210,7 @@
 
 	{#if errorMsg}
 		<div class="alert alert-error py-2 text-sm">
-			<span>{errorMsg}</span>
+			<span class="whitespace-pre-wrap break-words">{errorMsg}</span>
 		</div>
 	{/if}
 

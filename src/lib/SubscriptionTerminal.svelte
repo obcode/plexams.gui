@@ -22,6 +22,12 @@
 	let blocked = false;
 	/** @type {string | null} */
 	let errorMsg = null;
+	// Aussagekräftige Fehlermeldungen vom Reporter/error-Kanal (ERROR-Level-Zeilen,
+	// die keine reine Sperrmeldung sind) — prominent als Alert statt nur im Terminal.
+	/** @type {string[]} */
+	let errorTexts = [];
+	/** ANSI-Codes entfernen, damit die Klartext-Meldung lesbar ist. */
+	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
 	/** @type {{ level: string, html: string }[]} */
 	let lines = [];
@@ -54,6 +60,7 @@
 		lines = [];
 		current = null;
 		errorMsg = null;
+		errorTexts = [];
 		blocked = false;
 		done = false;
 		running = true;
@@ -89,7 +96,16 @@
 							current = null;
 						}
 						lines = [...lines, { level: line.level, html }];
-						if (line.level === 'ERROR' && isBlockedMessage(text)) blocked = true;
+						if (line.level === 'ERROR') {
+							// Sperrmeldung → eigener Hinweis; sonst aussagekräftige
+							// Reporter-/error-Meldung prominent als Fehler-Alert zeigen.
+							if (isBlockedMessage(text)) {
+								blocked = true;
+							} else {
+								errorTexts = [...errorTexts, stripAnsi(text)];
+								errorMsg = errorTexts.join('\n');
+							}
+						}
 						if (line.level === 'DONE') done = true;
 					}
 					scrollToBottom();
@@ -128,6 +144,7 @@
 		lines = [];
 		current = null;
 		errorMsg = null;
+		errorTexts = [];
 		blocked = false;
 		done = false;
 	}
@@ -169,7 +186,9 @@
 		</div>
 	{/if}
 	{#if errorMsg}
-		<div class="alert alert-error py-2 text-sm" transition:fade><span>{errorMsg}</span></div>
+		<div class="alert alert-error py-2 text-sm" transition:fade>
+			<span class="whitespace-pre-wrap break-words">{errorMsg}</span>
+		</div>
 	{/if}
 
 	{#if lines.length || current}
