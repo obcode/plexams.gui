@@ -12,12 +12,14 @@ export async function GET() {
 				query {
 					semester {
 						id
+						semester
 						compatible
 						readOnly
 						schemaVersion
 					}
 					allSemesterNames {
 						id
+						semester
 						compatible
 						readOnly
 						schemaVersion

@@ -16,6 +16,7 @@ export async function load() {
 				query {
 					semester {
 						id
+						semester
 						compatible
 						readOnly
 					}

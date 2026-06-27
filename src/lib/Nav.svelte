@@ -113,13 +113,22 @@
 		return `${name}: ${base}${counts}${part} · klicken zum Prüfen`;
 	}
 
-	type Sem = { id: string; compatible: boolean; readOnly: boolean; schemaVersion: number | null };
+	type Sem = {
+		id: string;
+		semester: string;
+		compatible: boolean;
+		readOnly: boolean;
+		schemaVersion: number | null;
+	};
 	let semester = 'unknown';
 	let currentSem: Sem | null = null;
 	let allSemesters: Sem[] = [];
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	$: readOnly = ($page.data?.readOnly ?? currentSem?.readOnly) ?? false;
+	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
+	$: logicalSem =
+		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '';
 	async function getSemester() {
 		const response = await fetch('/api/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
@@ -159,21 +168,26 @@
 	// Cache; ein voller Reload entspricht client.resetStore()).
 	let switchingSemester = false;
 	let semesterError = '';
-	// Replay/Test: echtes Semester, aber Daten in eine andere Ziel-DB
+	// Replay/Test: zu einer Ziel-DB (name) wechseln, optional mit logischem
+	// Semester-Override (nur nötig, wenn die DB noch kein Semester gespeichert hat).
 	let replayOpen = false;
-	let replaySemester = '';
-	let replayDatabase = '';
+	let replayName = '';
+	let replayOverride = '';
 
-	async function switchSemester(semester_: string, database?: string) {
+	/**
+	 * @param name DB-Label (aus allSemesterNames)
+	 * @param override optionaler logischer Semester-Override
+	 */
+	async function switchSemester(name: string, override?: string) {
 		if (switchingSemester) return;
-		if (!database && semester_ === semester) return;
+		if (!override && name === currentSem?.id) return;
 		switchingSemester = true;
 		semesterError = '';
 		try {
 			const res = await fetch('/api/setSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ semester: semester_, database: database || null })
+				body: JSON.stringify({ name, semester: override || null })
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
@@ -189,14 +203,14 @@
 	}
 
 	function openReplay() {
-		replaySemester = semester;
-		replayDatabase = '';
+		replayName = currentSem?.id ?? semester;
+		replayOverride = '';
 		replayOpen = true;
 	}
 	function startReplay() {
-		if (!replaySemester || !replayDatabase.trim()) return;
+		if (!replayName) return;
 		replayOpen = false;
-		switchSemester(replaySemester, replayDatabase.trim());
+		switchSemester(replayName, replayOverride.trim() || undefined);
 	}
 
 	function checkStaleStates() {
@@ -554,6 +568,8 @@
 					<span class="loading loading-spinner loading-xs"></span>
 				{/if}
 				{semester}
+				{#if logicalSem}<span class="opacity-70" title="logisches Semester">→ {logicalSem}</span
+					>{/if}
 				{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 				<svg
 					class="h-3 w-3 opacity-60"
@@ -806,12 +822,13 @@
 		<div class="modal-box max-w-md">
 			<h2 class="text-lg font-semibold">Replay / Test-Datenbank</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				Das Semester bleibt echt (für ZPA), die Daten landen in der angegebenen Ziel-DB.
+				Zu einer Ziel-Datenbank wechseln. Das logische Semester wird normalerweise aus der DB
+				übernommen; ein Override ist nur nötig, wenn die DB noch kein Semester gespeichert hat.
 			</p>
 			<div class="mt-3 flex flex-col gap-3">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Semester</span>
-					<select class="select select-bordered select-sm" bind:value={replaySemester}>
+					<span class="text-xs font-medium text-base-content/60">Ziel-Datenbank</span>
+					<select class="select select-bordered select-sm" bind:value={replayName}>
 						{#each allSemesters as s}
 							<option value={s.id} disabled={!s.compatible}>
 								{s.id}{!s.compatible ? ' (inkompatibel)' : ''}
@@ -820,12 +837,12 @@
 					</select>
 				</label>
 				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Ziel-Datenbank</span>
+					<span class="text-xs font-medium text-base-content/60">Semester-Override (optional)</span>
 					<input
 						type="text"
 						class="input input-bordered input-sm"
-						bind:value={replayDatabase}
-						placeholder="z. B. 2026-SS-Test"
+						bind:value={replayOverride}
+						placeholder="z. B. 2026 SS — nur bei leerer DB"
 					/>
 				</label>
 			</div>
@@ -834,7 +851,7 @@
 				>
 				<button
 					class="btn btn-primary btn-sm"
-					disabled={switchingSemester || !replayDatabase.trim()}
+					disabled={switchingSemester || !replayName}
 					on:click={startReplay}
 				>
 					{switchingSemester ? 'wechselt …' : 'wechseln'}

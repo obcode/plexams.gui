@@ -5,18 +5,21 @@ import { gqlErrorMessage } from '$lib/gqlError';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const { semester, database } = await request.json();
+	// name = DB-Label (aus allSemesterNames), semester = optionaler logischer
+	// Override (nur nötig, wenn die Ziel-DB noch kein Semester gespeichert hat).
+	const { name, semester } = await request.json();
 	const mutation = gql`
-		mutation ($semester: String!, $database: String) {
-			setSemester(semester: $semester, database: $database) {
+		mutation ($name: String!, $semester: String) {
+			setSemester(name: $name, semester: $semester) {
 				id
+				semester
 			}
 		}
 	`;
 	try {
 		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, {
-			semester: String(semester),
-			database: database ? String(database).trim() : null
+			name: String(name),
+			semester: semester ? String(semester).trim() : null
 		});
 		return json(data);
 	} catch (e) {
