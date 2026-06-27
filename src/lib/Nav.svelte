@@ -813,7 +813,9 @@
 					<span class="text-xs font-medium text-base-content/60">Semester</span>
 					<select class="select select-bordered select-sm" bind:value={replaySemester}>
 						{#each allSemesters as s}
-							<option value={s}>{s}</option>
+							<option value={s.id} disabled={!s.compatible}>
+								{s.id}{!s.compatible ? ' (inkompatibel)' : ''}
+							</option>
 						{/each}
 					</select>
 				</label>
