@@ -114,9 +114,39 @@
 	}
 
 	let semester = 'unknown';
+	let allSemesters: string[] = [];
 	async function getSemester() {
-		const response = await fetch('/api/semester', { method: 'GET' });
-		semester = await response.json();
+		const response = await fetch('/api/semesters', { method: 'GET' });
+		const d = await response.json().catch(() => ({}));
+		if (d?.current) semester = d.current;
+		if (Array.isArray(d?.all)) allSemesters = d.all;
+	}
+
+	// Semester umschalten → bei Erfolg alles neu laden (graphql-request hat keinen
+	// Cache; ein voller Reload entspricht client.resetStore()).
+	let switchingSemester = false;
+	let semesterError = '';
+	async function switchSemester(name: string) {
+		if (switchingSemester || name === semester) return;
+		switchingSemester = true;
+		semesterError = '';
+		try {
+			const res = await fetch('/api/setSemester', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ name })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			window.location.reload();
+		} catch (e) {
+			semesterError = e instanceof Error ? e.message : String(e);
+		} finally {
+			switchingSemester = false;
+		}
 	}
 
 	function checkStaleStates() {
@@ -461,13 +491,49 @@
 			</ul>
 		</div>
 
-		<!-- Semester -->
-		<span
-			class="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary sm:inline-flex"
-		>
-			<span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
-			{semester}
-		</span>
+		<!-- Semester-Umschalter -->
+		<div class="dropdown dropdown-end hidden sm:block">
+			<div
+				tabindex="0"
+				role="button"
+				title="Semester wechseln"
+				class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20"
+			>
+				<span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
+				{#if switchingSemester}
+					<span class="loading loading-spinner loading-xs"></span>
+				{/if}
+				{semester}
+				<svg
+					class="h-3 w-3 opacity-60"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke="currentColor"
+					stroke-width="2.5"
+				>
+					<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+				</svg>
+			</div>
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<ul
+				tabindex="0"
+				class="menu dropdown-content z-50 mt-3 max-h-96 w-44 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+			>
+				{#each allSemesters as s}
+					<li>
+						<button
+							class="rounded-lg tabular-nums {s === semester
+								? 'bg-primary/15 font-medium text-primary'
+								: ''}"
+							disabled={switchingSemester}
+							on:click={() => switchSemester(s)}
+						>
+							{s}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
 
 		<!-- Hamburger (Mobile/Tablet) -->
 		<div class="dropdown dropdown-end lg:hidden">
@@ -631,5 +697,22 @@
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={() => (stuError = '')}></button>
+	</div>
+{/if}
+
+<!-- Semester-Wechsel: Fehler-Dialog -->
+{#if semesterError}
+	<div class="modal modal-open">
+		<div class="modal-box">
+			<h2 class="flex items-center gap-2 text-lg font-semibold">
+				<span class="badge badge-error badge-sm">Fehler</span> Semesterwechsel fehlgeschlagen
+			</h2>
+			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{semesterError}</p>
+			<div class="modal-action">
+				<button class="btn btn-sm" on:click={() => (semesterError = '')}>schließen</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (semesterError = '')}
+		></button>
 	</div>
 {/if}
