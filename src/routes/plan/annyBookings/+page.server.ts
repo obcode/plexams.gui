@@ -278,9 +278,19 @@ export async function load() {
 			status: b.status,
 			isBlocker: b.isBlocker,
 			note: b.note,
-			mine: !!b.mine
+			mine: !!b.mine,
+			// Vorberechnet für die Kalenderansicht (Berlin-Zeit).
+			dateKey: toDateKey(b.startDate),
+			startMin: toMinutes(b.startDate),
+			endMin: toMinutes(b.endDate)
 		}))
 		.sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+
+	// Prüfungszeitraum = konfigurierte Prüfungstage (sortiert nach Datum).
+	const examDays = Array.from(dayMap.entries())
+		.map(([dayNumber, date]) => ({ dayNumber, date: String(date || '').slice(0, 10) }))
+		.filter((d) => d.date)
+		.sort((a, b) => a.date.localeCompare(b.date));
 
 	const personalizationNames: string[] = data.annyConfig?.personalizationNames || [];
 	const annyRooms: string[] = ((data.rooms || []) as Array<{ name: string; requestWith: string }>)
@@ -292,6 +302,7 @@ export async function load() {
 		slots,
 		roomOrder,
 		bookings,
+		examDays,
 		personalizationNames,
 		annyRooms
 	};

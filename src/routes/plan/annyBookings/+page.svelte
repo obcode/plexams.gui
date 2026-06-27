@@ -8,20 +8,31 @@
 	$: slots = data.slots || [];
 	$: roomOrder = data.roomOrder || [];
 	$: annyRooms = data.annyRooms || [];
+	$: examDays = data.examDays || [];
 
-	/** @type {'list' | 'matrix'} */
-	let view = 'list';
+	/** @type {'calendar' | 'list' | 'matrix'} */
+	let view = 'calendar';
 
-	// --- Liste: Filter ---
-	let onlyMine = false;
+	// --- Filter (Kalender + Liste), Defaults: nur meine + nur Prüfungszeitraum ---
+	let onlyMine = true;
+	let onlyExamPeriod = true;
 	let roomFilter = 'all';
 	let q = '';
+
+	$: examMin = examDays.length ? examDays[0].date : null;
+	$: examMax = examDays.length ? examDays[examDays.length - 1].date : null;
+	/** @param {any} b */
+	const inExamPeriod = (b) =>
+		!examMin || !examMax || (b.dateKey && b.dateKey >= examMin && b.dateKey <= examMax);
+
 	$: mineCount = bookings.filter((/** @type {any} */ b) => b.mine).length;
 	$: roomsInBookings = [
 		...new Set(bookings.map((/** @type {any} */ b) => b.room).filter(Boolean))
 	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
+
 	$: filtered = bookings.filter((/** @type {any} */ b) => {
 		if (onlyMine && !b.mine) return false;
+		if (onlyExamPeriod && !inExamPeriod(b)) return false;
 		if (roomFilter !== 'all' && b.room !== roomFilter) return false;
 		if (q.trim()) {
 			const t = q.trim().toLowerCase();
@@ -30,6 +41,118 @@
 			if (!hay.includes(t)) return false;
 		}
 		return true;
+	});
+
+	// --- Raum-Farben (kategoriale Palette für die Kalenderansicht) ---
+	const PALETTE = [
+		'#60a5fa',
+		'#f87171',
+		'#34d399',
+		'#fbbf24',
+		'#a78bfa',
+		'#f472b6',
+		'#22d3ee',
+		'#fb923c',
+		'#4ade80',
+		'#e879f9',
+		'#2dd4bf',
+		'#facc15'
+	];
+	$: roomColors = Object.fromEntries(
+		roomsInBookings.map((/** @type {string} */ r, /** @type {number} */ i) => [
+			r,
+			PALETTE[i % PALETTE.length]
+		])
+	);
+	$: legendRooms = [
+		...new Set(filtered.map((/** @type {any} */ b) => b.room).filter(Boolean))
+	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
+
+	// --- Kalender aufbauen ---
+	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	/** @param {string} dateKey → „Mo 06.07." */
+	function dayLabel(dateKey) {
+		const [y, m, d] = dateKey.split('-').map(Number);
+		if (!y) return dateKey;
+		const dt = new Date(Date.UTC(y, m - 1, d));
+		return `${WD[dt.getUTCDay()]} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
+	}
+	/** @param {number} min */
+	const hhmm = (min) =>
+		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+
+	// Spalten = Prüfungstage; ohne Prüfungszeitraum-Filter auch Tage außerhalb.
+	$: calendarDates = (() => {
+		const set = new Set(examDays.map((/** @type {any} */ d) => d.date));
+		if (!onlyExamPeriod || set.size === 0) {
+			for (const b of filtered) if (b.dateKey) set.add(b.dateKey);
+		}
+		return [...set].sort();
+	})();
+
+	$: calBookings = filtered.filter(
+		(/** @type {any} */ b) =>
+			b.startMin != null &&
+			b.endMin != null &&
+			b.room &&
+			b.dateKey &&
+			calendarDates.includes(b.dateKey)
+	);
+	/** @param {string | null} room */
+	const colorOf = (room) => (room && roomColors[room]) || '#94a3b8';
+
+	const PX_PER_MIN = 0.7;
+	$: timeRange = (() => {
+		let lo = Infinity;
+		let hi = -Infinity;
+		for (const b of calBookings) {
+			if (b.startMin == null || b.endMin == null) continue;
+			lo = Math.min(lo, b.startMin);
+			hi = Math.max(hi, b.endMin);
+		}
+		if (!Number.isFinite(lo)) {
+			lo = 8 * 60;
+			hi = 18 * 60;
+		}
+		lo = Math.floor(lo / 60) * 60;
+		hi = Math.ceil(hi / 60) * 60;
+		if (hi - lo < 120) hi = lo + 120;
+		return { lo, hi };
+	})();
+	$: totalHeight = (timeRange.hi - timeRange.lo) * PX_PER_MIN;
+	$: hourMarks = (() => {
+		const out = [];
+		for (let h = Math.ceil(timeRange.lo / 60); h <= Math.floor(timeRange.hi / 60); h += 1)
+			out.push(h);
+		return out;
+	})();
+
+	// Pro Tag überlappungsfrei in „Spuren" (lanes) packen.
+	$: calendar = calendarDates.map((date) => {
+		const dayBookings = calBookings
+			.filter((/** @type {any} */ b) => b.dateKey === date)
+			.sort(
+				(/** @type {any} */ a, /** @type {any} */ b) => a.startMin - b.startMin || a.endMin - b.endMin
+			);
+		/** @type {number[]} */
+		const laneEnds = [];
+		const placed = dayBookings.map((/** @type {any} */ b) => {
+			let lane = laneEnds.findIndex((end) => end <= b.startMin);
+			if (lane === -1) {
+				lane = laneEnds.length;
+				laneEnds.push(b.endMin);
+			} else {
+				laneEnds[lane] = b.endMin;
+			}
+			return { ...b, lane };
+		});
+		return {
+			date,
+			label: dayLabel(date),
+			dayNumber: examDays.find((/** @type {any} */ d) => d.date === date)?.dayNumber,
+			bookings: placed,
+			lanes: Math.max(1, laneEnds.length)
+		};
 	});
 
 	// --- Slot-Matrix: Filter ---
@@ -90,15 +213,6 @@
 		}
 	}
 
-	/** @param {string | Date | null | undefined} date */
-	function fmtDate(date) {
-		if (!date) return '--';
-		const raw = String(date);
-		const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-		if (m) return `${m[3]}.${m[2]}.${m[1]}`;
-		const d = new Date(raw);
-		return Number.isNaN(d.getTime()) ? raw : d.toLocaleDateString('de-DE');
-	}
 	/** @param {string | Date | null | undefined} value */
 	function fmtTime(value) {
 		if (!value) return '--:--';
@@ -112,6 +226,15 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
+	}
+	/** @param {string | Date | null | undefined} date */
+	function fmtDate(date) {
+		if (!date) return '--';
+		const raw = String(date);
+		const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+		if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+		const d = new Date(raw);
+		return Number.isNaN(d.getTime()) ? raw : d.toLocaleDateString('de-DE');
 	}
 </script>
 
@@ -160,9 +283,7 @@
 					on:keydown={(e) => e.key === 'Enter' && addName()}
 					placeholder="Name hinzufügen (z. B. Vorname Nachname)"
 				/>
-				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} on:click={addName}>
-					＋
-				</button>
+				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} on:click={addName}>＋</button>
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={savingNames || !namesDirty}
@@ -190,22 +311,27 @@
 
 	<!-- Ansicht umschalten -->
 	<div class="tabs tabs-boxed w-fit">
+		<button class="tab {view === 'calendar' ? 'tab-active' : ''}" on:click={() => (view = 'calendar')}>
+			📅 Kalender
+		</button>
 		<button class="tab {view === 'list' ? 'tab-active' : ''}" on:click={() => (view = 'list')}>
-			Liste (wer wann was)
+			Liste
 		</button>
 		<button class="tab {view === 'matrix' ? 'tab-active' : ''}" on:click={() => (view = 'matrix')}>
 			Slot-Matrix
 		</button>
 	</div>
 
-	{#if view === 'list'}
-		<!-- Filter -->
-		<div
-			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
-		>
+	{#if view !== 'matrix'}
+		<!-- Gemeinsame Filter für Kalender + Liste -->
+		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
 				<input type="checkbox" class="toggle toggle-secondary toggle-sm" bind:checked={onlyMine} />
 				<span>nur meine</span>
+			</label>
+			<label class="flex cursor-pointer items-center gap-2 text-sm">
+				<input type="checkbox" class="toggle toggle-primary toggle-sm" bind:checked={onlyExamPeriod} />
+				<span>nur Prüfungszeitraum</span>
 			</label>
 			<select class="select select-bordered select-sm" bind:value={roomFilter}>
 				<option value="all">alle Räume</option>
@@ -222,7 +348,92 @@
 			<div class="flex-1"></div>
 			<span class="text-sm text-base-content/50 tabular-nums">{filtered.length} angezeigt</span>
 		</div>
+	{/if}
 
+	{#if view === 'calendar'}
+		<!-- Raum-Legende -->
+		{#if legendRooms.length}
+			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+				{#each legendRooms as r}
+					<span class="flex items-center gap-1 text-xs">
+						<span
+							class="inline-block h-3 w-3 rounded-sm"
+							style="background:{roomColors[r]}"
+						></span>
+						<span class="font-mono">{r}</span>
+					</span>
+				{/each}
+			</div>
+		{/if}
+
+		{#if calBookings.length === 0}
+			<div class="rounded-lg border border-base-300 p-8 text-center text-sm text-base-content/50">
+				Keine Buchungen im gewählten Zeitraum.
+			</div>
+		{:else}
+			<div class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-2">
+				<div class="flex min-w-fit">
+					<!-- Zeit-Spalte -->
+					<div class="shrink-0 pr-1" style="width:3rem">
+						<div class="h-6"></div>
+						<div class="relative" style="height:{totalHeight}px">
+							{#each hourMarks as h}
+								<div
+									class="absolute right-1 text-[10px] text-base-content/40"
+									style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN - 6}px"
+								>
+									{h}:00
+								</div>
+							{/each}
+						</div>
+					</div>
+					<!-- Tages-Spalten -->
+					<div class="flex flex-1 gap-1">
+						{#each calendar as day}
+							<div class="min-w-[130px] flex-1">
+								<div class="h-6 text-center text-xs font-medium tabular-nums">
+									{day.label}
+									{#if day.dayNumber}<span class="text-base-content/40">· T{day.dayNumber}</span>{/if}
+								</div>
+								<div
+									class="relative rounded border-l border-base-200 bg-base-200/20"
+									style="height:{totalHeight}px"
+								>
+									{#each hourMarks as h}
+										<div
+											class="absolute inset-x-0 border-t border-base-200/60"
+											style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN}px"
+										></div>
+									{/each}
+									{#each day.bookings as b}
+										<div
+											class="absolute overflow-hidden rounded px-1 py-0.5 text-[10px] leading-tight"
+											style="top:{(b.startMin - timeRange.lo) * PX_PER_MIN}px; height:{Math.max(
+												(b.endMin - b.startMin) * PX_PER_MIN,
+												16
+											)}px; left:calc({(b.lane / day.lanes) * 100}% + 1px); width:calc({100 /
+												day.lanes}% - 2px); background:{colorOf(b.room)}; color:#1e1e2e; outline:{b.mine
+												? '2px solid currentColor'
+												: 'none'}"
+											title={`${b.room} · ${fmtTime(b.startDate)}–${fmtTime(b.endDate)}${
+												b.personalizationName ? ' · ' + b.personalizationName : ''
+											}${b.description ? ' · ' + b.description : ''}`}
+										>
+											<div class="font-mono font-semibold">{b.room}</div>
+											<div class="tabular-nums">{fmtTime(b.startDate)}</div>
+											{#if (b.endMin - b.startMin) * PX_PER_MIN > 34 && b.personalizationName}
+												<div class="truncate">{b.personalizationName}</div>
+											{/if}
+										</div>
+									{/each}
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
+	{:else if view === 'list'}
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
 				<thead>
@@ -249,7 +460,15 @@
 								<td class="tabular-nums whitespace-nowrap">
 									{fmtTime(b.startDate)}–{fmtTime(b.endDate)}
 								</td>
-								<td class="font-mono whitespace-nowrap">{b.room ?? '—'}</td>
+								<td class="font-mono whitespace-nowrap">
+									<span class="inline-flex items-center gap-1">
+										<span
+											class="inline-block h-2.5 w-2.5 rounded-sm"
+											style="background:{colorOf(b.room)}"
+										></span>
+										{b.room ?? '—'}
+									</span>
+								</td>
 								<td class="whitespace-nowrap">
 									{b.personalizationName ?? '—'}
 									{#if b.mine}<span class="badge badge-secondary badge-xs ml-1">meine</span>{/if}
@@ -267,9 +486,7 @@
 		</div>
 	{:else}
 		<!-- Slot-Matrix: T-Raum-Abdeckung je Prüfungsslot -->
-		<div
-			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
-		>
+		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
 				<input type="checkbox" class="toggle toggle-primary toggle-sm" bind:checked={hideEmpty} />
 				<span>nur Slots mit T-Raum-Abdeckung</span>
