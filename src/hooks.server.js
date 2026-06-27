@@ -11,10 +11,11 @@ import { json } from '@sveltejs/kit';
  * @type {Set<string>}
  */
 const READ_POST_PATHS = new Set([
-	// Ausnahmen: dürfen den Schutz selbst ändern bzw. das Semester wechseln,
-	// auch wenn die DB read-only ist.
+	// Ausnahmen: dürfen den Schutz selbst ändern, das Semester wechseln bzw. eine
+	// neue Workspace-DB anlegen — auch wenn die aktuelle DB read-only ist.
 	'/api/setSemester',
 	'/api/setSemesterReadOnly',
+	'/api/createWorkspace',
 	// reine Lese-Abfragen:
 	'/api/conflictingAncodes',
 	'/api/plan/roomsWithFreeSeatsForSlot',

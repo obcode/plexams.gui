@@ -168,15 +168,16 @@
 	// Cache; ein voller Reload entspricht client.resetStore()).
 	let switchingSemester = false;
 	let semesterError = '';
-	// Replay/Test: zu einer Ziel-DB (name) wechseln, optional mit logischem
-	// Semester-Override (nur nötig, wenn die DB noch kein Semester gespeichert hat).
-	let replayOpen = false;
-	let replayName = '';
-	let replayOverride = '';
+
+	// Workspace = Datenbank. id ist der DB-Name (Schaltschlüssel), semester das
+	// logische Semester (Anzeige). schemaVersion == null ⇒ DB ohne Daten.
+	/** @param s {Sem} */
+	const noData = (s: Sem | null) => !!s && s.compatible && s.schemaVersion == null;
 
 	/**
-	 * @param name DB-Label (aus allSemesterNames)
-	 * @param override optionaler logischer Semester-Override
+	 * @param name DB-Name (= id aus allSemesterNames)
+	 * @param override optionaler logischer Semester-Override (nur für noch nicht
+	 *   gestempelte DB)
 	 */
 	async function switchSemester(name: string, override?: string) {
 		if (switchingSemester) return;
@@ -202,15 +203,42 @@
 		}
 	}
 
-	function openReplay() {
-		replayName = currentSem?.id ?? semester;
-		replayOverride = '';
-		replayOpen = true;
+	// Neuen Test-Workspace (DB) anlegen und hineinwechseln.
+	let wsOpen = false;
+	let wsName = '';
+	let wsFromSemester = '';
+	let wsCreating = false;
+	$: wsNameValid = /^[A-Za-z0-9 _-]+$/.test(wsName.trim());
+
+	function openNewWorkspace() {
+		wsName = '';
+		wsFromSemester = currentSem?.id ?? allSemesters[0]?.id ?? '';
+		semesterError = '';
+		wsOpen = true;
 	}
-	function startReplay() {
-		if (!replayName) return;
-		replayOpen = false;
-		switchSemester(replayName, replayOverride.trim() || undefined);
+	async function createWorkspace() {
+		if (wsCreating || !wsNameValid || !wsFromSemester) return;
+		wsCreating = true;
+		semesterError = '';
+		try {
+			const res = await fetch('/api/createWorkspace', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ database: wsName.trim(), fromSemester: wsFromSemester })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			// angelegt → dorthin wechseln (setSemester + voller Reload)
+			wsOpen = false;
+			await switchSemester(wsName.trim());
+		} catch (e) {
+			semesterError = e instanceof Error ? e.message : String(e);
+		} finally {
+			wsCreating = false;
+		}
 	}
 
 	function checkStaleStates() {
@@ -567,9 +595,10 @@
 				{#if switchingSemester}
 					<span class="loading loading-spinner loading-xs"></span>
 				{/if}
-				{semester}
-				{#if logicalSem}<span class="opacity-70" title="logisches Semester">→ {logicalSem}</span
+				<span class="tabular-nums">{semester}</span>
+				{#if logicalSem}<span class="opacity-70" title="logisches Semester">· {logicalSem}</span
 					>{/if}
+				{#if noData(currentSem)}<span class="text-warning" title="DB ohne Daten">· ⚠</span>{/if}
 				{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 				<svg
 					class="h-3 w-3 opacity-60"
@@ -584,27 +613,34 @@
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
 				tabindex="0"
-				class="menu dropdown-content z-50 mt-3 max-h-96 w-44 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+				class="menu dropdown-content z-50 mt-3 max-h-96 w-64 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
 			>
 				{#each allSemesters as s}
 					<li>
 						{#if !s.compatible}
 							<span
-								class="rounded-lg tabular-nums text-base-content/30"
+								class="rounded-lg text-base-content/30"
 								title="inkompatibel (keine Config)"
 							>
-								{s.id} <span class="text-warning">⚠ inkompatibel</span>
+								<span class="font-medium tabular-nums">{s.id}</span>
+								<span class="text-warning">⚠ inkompatibel</span>
 							</span>
 						{:else}
 							<button
-								class="flex items-center gap-1 rounded-lg tabular-nums {s.id === semester
-									? 'bg-primary/15 font-medium text-primary'
+								class="flex flex-col items-start gap-0 rounded-lg {s.id === semester
+									? 'bg-primary/15 text-primary'
 									: ''}"
 								disabled={switchingSemester}
 								on:click={() => switchSemester(s.id)}
 							>
-								<span>{s.id}</span>
-								{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
+								<span class="flex items-center gap-1">
+									<span class="font-medium tabular-nums">{s.id}</span>
+									{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
+								</span>
+								<span class="text-xs text-base-content/50">
+									{#if s.semester}Semester {s.semester}{:else}— kein Semester{/if}
+									{#if noData(s)}· <span class="text-warning">⚠ keine Daten</span>{/if}
+								</span>
 							</button>
 						{/if}
 					</li>
@@ -627,10 +663,10 @@
 					{/if}
 				</li>
 
-				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Replay / Test</li>
+				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
 				<li>
-					<button class="rounded-lg" disabled={switchingSemester} on:click={openReplay}>
-						🧪 in Test-DB …
+					<button class="rounded-lg" disabled={switchingSemester} on:click={openNewWorkspace}>
+						🧪 Neuen Workspace anlegen …
 					</button>
 				</li>
 			</ul>
@@ -816,50 +852,55 @@
 	</div>
 {/if}
 
-<!-- Replay / Test: Ziel-DB wählen -->
-{#if replayOpen}
+<!-- Neuen Test-Workspace (DB) anlegen -->
+{#if wsOpen}
 	<div class="modal modal-open">
 		<div class="modal-box max-w-md">
-			<h2 class="text-lg font-semibold">Replay / Test-Datenbank</h2>
+			<h2 class="text-lg font-semibold">Neuen Workspace anlegen</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				Zu einer Ziel-Datenbank wechseln. Das logische Semester wird normalerweise aus der DB
-				übernommen; ein Override ist nur nötig, wenn die DB noch kein Semester gespeichert hat.
+				Legt eine neue (leere) Datenbank an, die auf einem vorhandenen Semester basiert. Danach wird
+				direkt hineingewechselt — die Daten müssen noch importiert werden.
 			</p>
 			<div class="mt-3 flex flex-col gap-3">
 				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Ziel-Datenbank</span>
-					<select class="select select-bordered select-sm" bind:value={replayName}>
+					<span class="text-xs font-medium text-base-content/60">Name der neuen DB</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm"
+						bind:value={wsName}
+						placeholder="z. B. test-v2"
+					/>
+					{#if wsName.trim() && !wsNameValid}
+						<span class="text-xs text-error">
+							Erlaubt: Buchstaben, Ziffern, Leerzeichen, „-" und „_".
+						</span>
+					{/if}
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">für Semester</span>
+					<select class="select select-bordered select-sm" bind:value={wsFromSemester}>
 						{#each allSemesters as s}
 							<option value={s.id} disabled={!s.compatible}>
-								{s.id}{!s.compatible ? ' (inkompatibel)' : ''}
+								{s.id}{s.semester ? ` · ${s.semester}` : ''}{!s.compatible
+									? ' (inkompatibel)'
+									: ''}
 							</option>
 						{/each}
 					</select>
 				</label>
-				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Semester-Override (optional)</span>
-					<input
-						type="text"
-						class="input input-bordered input-sm"
-						bind:value={replayOverride}
-						placeholder="z. B. 2026 SS — nur bei leerer DB"
-					/>
-				</label>
 			</div>
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={() => (replayOpen = false)}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" on:click={() => (wsOpen = false)}>Abbrechen</button>
 				<button
 					class="btn btn-primary btn-sm"
-					disabled={switchingSemester || !replayName}
-					on:click={startReplay}
+					disabled={wsCreating || switchingSemester || !wsNameValid || !wsFromSemester}
+					on:click={createWorkspace}
 				>
-					{switchingSemester ? 'wechselt …' : 'wechseln'}
+					{wsCreating || switchingSemester ? 'legt an …' : 'anlegen & wechseln'}
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (replayOpen = false)}
-		></button>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (wsOpen = false)}></button>
 	</div>
 {/if}
 
