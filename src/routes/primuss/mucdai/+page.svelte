@@ -347,7 +347,9 @@
 		<div class="modal-box max-w-md">
 			<h2 class="text-lg font-semibold">Zeit setzen — {timeFor.module}</h2>
 			<p class="text-sm text-base-content/50">
-				{(timeFor.programs ?? []).join(', ')} · Ancode {timeFor.ancode} · zuständig {timeFor.plannedBy}
+				{timeFor.mainExamer} · Primuss {(timeFor.primussList ?? [timeFor.primussAncode]).join(', ')}
+				· ZPA-Ancode
+				{timeFor.ancode} · {(timeFor.programs ?? []).join(', ')} · zuständig {timeFor.plannedBy}
 			</p>
 			<div class="mt-3 flex flex-wrap items-end gap-3">
 				<label class="flex flex-col gap-1">
