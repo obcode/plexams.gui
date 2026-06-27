@@ -9,6 +9,7 @@
 	import { slide } from 'svelte/transition';
 	import { tick } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	// nach einer Generierung neu laden: invalidateAll frischt die Load-Daten
 	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
@@ -275,13 +276,13 @@
 				EXaHM-Belegung.
 			</p>
 			<div class="flex flex-wrap items-center gap-2 border-t border-base-300 pt-2">
-				<button
+				<WriteButton
 					class="btn btn-outline btn-error btn-sm"
 					disabled={data.roomsBlocked || resetBusy}
 					on:click={resetRooms}
 				>
 					{resetBusy ? 'Setzt zurück…' : 'Generierte Räume zurücksetzen'}
-				</button>
+				</WriteButton>
 				<span class="text-xs text-base-content/50">
 					entfernt die generierte Raumzuteilung; vorgeplante (📌) Räume bleiben erhalten.
 				</span>
@@ -487,7 +488,7 @@
 														`${day.number}-${slot.number}-${roomName}`
 													)}
 													{@const isBlocked = blockedReason !== undefined}
-													<button
+													<WriteButton
 														class="flex h-5 w-5 items-center justify-center rounded text-[10px] {isBlocked
 															? 'bg-error/20 text-error line-through'
 															: planned
@@ -499,9 +500,9 @@
 														on:click={() => toggleBlock(day.number, slot.number, roomName)}
 													>
 														{slot.number}
-													</button>
+													</WriteButton>
 												{/each}
-												<button
+												<WriteButton
 													class="ml-0.5 text-[9px] {dayAllBlocked
 														? 'text-error'
 														: 'text-base-content/30 hover:text-error'}"
@@ -511,7 +512,7 @@
 													on:click={() => toggleBlockDay(day.number, roomName)}
 												>
 													Tag
-												</button>
+												</WriteButton>
 											</div>
 										</td>
 									{/each}

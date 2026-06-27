@@ -1,5 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -193,8 +194,8 @@
 								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(ex)}
 									>Bearbeiten</button
 								>
-								<button class="btn btn-ghost btn-xs text-error" on:click={() => del(ex)}
-									>Löschen</button
+								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(ex)}
+									>Löschen</WriteButton
 								>
 							</td>
 						</tr>
@@ -290,9 +291,9 @@
 				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
-				<button class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
-				</button>
+				</WriteButton>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>

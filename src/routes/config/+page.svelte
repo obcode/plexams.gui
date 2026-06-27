@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -105,9 +106,9 @@
 				<span class="text-xs font-medium text-base-content/60">E-Mail</span>
 				<input type="email" class="input input-bordered input-sm w-72" bind:value={planerEmail} />
 			</label>
-			<button class="btn btn-primary btn-sm" disabled={planerSaving} on:click={savePlaner}>
+			<WriteButton class="btn btn-primary btn-sm" disabled={planerSaving} on:click={savePlaner}>
 				{planerSaving ? 'speichert …' : 'Planer speichern'}
-			</button>
+			</WriteButton>
 			{#if planerSavedAt}
 				<span class="text-xs text-success">gespeichert ({planerSavedAt})</span>
 			{/if}
@@ -127,9 +128,9 @@
 	<SemesterConfigForm bind:this={formComp} config={data.config} />
 
 	<div class="flex items-center gap-3">
-		<button class="btn btn-primary" disabled={saving} on:click={save}>
+		<WriteButton class="btn btn-primary" disabled={saving} on:click={save}>
 			{saving ? 'speichert …' : 'Speichern'}
-		</button>
+		</WriteButton>
 		<span class="text-xs text-base-content/50">
 			Validierungsfehler (z. B. ungültiger Zeitraum oder Slot) meldet der Server.
 		</span>

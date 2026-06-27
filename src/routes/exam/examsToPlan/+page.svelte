@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -378,15 +379,15 @@
 				<!-- Status -->
 				<div class="flex w-40 shrink-0 items-center gap-2">
 					{#if e.status === 'unknown'}
-						<button
+						<WriteButton
 							class="btn btn-success btn-xs"
 							disabled={busy.has(e.ancode)}
-							on:click={() => setStatus(e, 'toPlan')}>planen</button
+							on:click={() => setStatus(e, 'toPlan')}>planen</WriteButton
 						>
-						<button
+						<WriteButton
 							class="btn btn-error btn-xs"
 							disabled={busy.has(e.ancode)}
-							on:click={() => setStatus(e, 'notToPlan')}>nicht</button
+							on:click={() => setStatus(e, 'notToPlan')}>nicht</WriteButton
 						>
 					{:else}
 						<input
@@ -422,11 +423,11 @@
 							>
 								{e.durationOverride} min
 							</span>
-							<button
+							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode)}
 								title="Dauer-Override entfernen"
-								on:click={() => rmDur(e)}>✕</button
+								on:click={() => rmDur(e)}>✕</WriteButton
 							>
 						{:else}
 							<span class="badge badge-error badge-sm" title="keine Dauer hinterlegt">Dauer 0</span>
@@ -437,10 +438,10 @@
 								bind:value={durInput[e.ancode]}
 								disabled={busy.has(e.ancode)}
 							/>
-							<button
+							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode) || !durInput[e.ancode]}
-								on:click={() => setDur(e)}>setzen</button
+								on:click={() => setDur(e)}>setzen</WriteButton
 							>
 						{/if}
 					</div>

@@ -2,6 +2,7 @@
 	export let data;
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	let days = data.days;
 	// mtknr -> NTA, to mark NTA students sitting in a room
@@ -347,13 +348,13 @@
 				</span>
 			{/if}
 			<div class="ml-auto flex flex-wrap items-center gap-1">
-				<button
+				<WriteButton
 					class="btn btn-outline btn-error btn-xs"
 					disabled={data.invigilationsBlocked || resetBusy}
 					on:click={resetInvigilations}
 				>
 					{resetBusy ? 'Setzt zurück…' : 'Generierte Aufsichten zurücksetzen'}
-				</button>
+				</WriteButton>
 				<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
 				<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>
 			</div>
@@ -477,7 +478,7 @@
 										<!-- Reserve vorplanen / fixieren -->
 										{@const rKey = entryKey(day.number, s.time.number, null)}
 										{#if slot.reservePrePlanned}
-											<button
+											<WriteButton
 												class="badge badge-success badge-sm gap-1"
 												disabled={busy.has(rKey)}
 												title="Reserve aus der Vorplanung entfernen"
@@ -490,10 +491,10 @@
 													)}
 											>
 												🔒 fixiert ✕
-											</button>
+											</WriteButton>
 										{:else}
 											{#if slot.reserve}
-												<button
+												<WriteButton
 													class="badge badge-ghost badge-sm"
 													disabled={busy.has(rKey)}
 													title="aktuelle Reserve in die Vorplanung übernehmen"
@@ -506,7 +507,7 @@
 														)}
 												>
 													📌 fixieren
-												</button>
+												</WriteButton>
 											{/if}
 											<button
 												class="badge badge-ghost badge-sm"
@@ -522,7 +523,7 @@
 														<option value={c.id}>{c.shortname}</option>
 													{/each}
 												</select>
-												<button
+												<WriteButton
 													class="btn btn-primary btn-xs"
 													disabled={!pickSel || busy.has(rKey)}
 													on:click={() =>
@@ -532,7 +533,7 @@
 															null,
 															(v) => (slot.reservePrePlanned = v),
 															(t) => (slot.reserve = t)
-														)}>vorplanen</button
+														)}>vorplanen</WriteButton
 												>
 											</div>
 										{/if}
@@ -654,7 +655,7 @@
 															class="flex flex-wrap items-center gap-1 border-t border-base-300 pt-1.5"
 														>
 															{#if r.prePlanned}
-																<button
+																<WriteButton
 																	class="badge badge-success badge-sm gap-1"
 																	disabled={busy.has(rKey)}
 																	title="aus der Vorplanung entfernen"
@@ -667,10 +668,10 @@
 																		)}
 																>
 																	🔒 fixiert ✕
-																</button>
+																</WriteButton>
 															{:else}
 																{#if r.invigilator}
-																	<button
+																	<WriteButton
 																		class="badge badge-ghost badge-sm"
 																		disabled={busy.has(rKey)}
 																		title="aktuelle Aufsicht in die Vorplanung übernehmen"
@@ -683,7 +684,7 @@
 																			)}
 																	>
 																		📌 fixieren
-																	</button>
+																	</WriteButton>
 																{/if}
 																<button
 																	class="badge badge-ghost badge-sm"
@@ -704,7 +705,7 @@
 																		<option value={c.id}>{c.shortname}</option>
 																	{/each}
 																</select>
-																<button
+																<WriteButton
 																	class="btn btn-primary btn-xs"
 																	disabled={!pickSel || busy.has(rKey)}
 																	on:click={() =>
@@ -714,7 +715,7 @@
 																			r.name,
 																			(v) => (r.prePlanned = v),
 																			(t) => (r.invigilator = t)
-																		)}>✓</button
+																		)}>✓</WriteButton
 																>
 															</div>
 														{/if}

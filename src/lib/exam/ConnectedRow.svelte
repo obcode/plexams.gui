@@ -4,6 +4,7 @@
 	// das per `updated`-Event nach oben gereicht und im State ersetzt wird.
 	import { createEventDispatcher } from 'svelte';
 	import { LEVEL, warningsOf } from '$lib/exam/connected.js';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	/** @type {any} */
 	export let exam;
@@ -121,22 +122,22 @@
 								class="input input-bordered input-xs w-20 tabular-nums"
 								bind:value={fixTo[p.program]}
 							/>
-							<button
+							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy || Number(fixTo[p.program]) === p.ancode}
 								title="umnummerieren {p.ancode} → {fixTo[p.program]}"
 								on:click={() => fix(p.program, p.ancode, Number(fixTo[p.program]))}
 							>
 								↻ Nr.
-							</button>
-							<button
+							</WriteButton>
+							<WriteButton
 								class="btn btn-ghost btn-xs text-error"
 								disabled={busy}
 								title="entfernen"
 								on:click={() => remove(p.program)}
 							>
 								✕
-							</button>
+							</WriteButton>
 						{:else}
 							<span class="font-mono tabular-nums text-base-content/50">{p.ancode}</span>
 						{/if}
@@ -167,14 +168,14 @@
 				{#each exam.otherPrimussExams as o}
 					<span class="badge badge-outline badge-xs">{o.program}/{o.ancode}</span>
 					{#if editing && !connectedProgs.has(o.program)}
-						<button
+						<WriteButton
 							class="btn btn-ghost btn-xs"
 							disabled={busy}
 							title="{o.program}/{o.ancode} hinzufügen"
 							on:click={() => add(o.program, o.ancode)}
 						>
 							＋
-						</button>
+						</WriteButton>
 					{/if}
 				{/each}
 			</div>
@@ -203,13 +204,13 @@
 						<option value={e.ancode}>{e.ancode} — {e.module} ({e.mainExamer})</option>
 					{/each}
 				</select>
-				<button
+				<WriteButton
 					class="btn btn-xs"
 					disabled={busy || !addProgram || !addAncode}
 					on:click={manualAdd}
 				>
 					＋ hinzufügen
-				</button>
+				</WriteButton>
 			</div>
 		{/if}
 	</div>
@@ -229,9 +230,9 @@
 				>
 					<span>{w.message}</span>
 					{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
-						<button class="btn btn-xs" disabled={busy} on:click={() => add(w.program, w.ancode)}>
+						<WriteButton class="btn btn-xs" disabled={busy} on:click={() => add(w.program, w.ancode)}>
 							＋ {w.program}/{w.ancode} hinzufügen
-						</button>
+						</WriteButton>
 					{/if}
 				</div>
 			{/each}
@@ -253,14 +254,14 @@
 					<li class="flex flex-wrap items-center gap-2">
 						<span>{w.message}</span>
 						{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
-							<button
+							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy}
 								title="{w.program}/{w.ancode} hinzufügen"
 								on:click={() => add(w.program, w.ancode)}
 							>
 								＋ hinzufügen
-							</button>
+							</WriteButton>
 						{/if}
 					</li>
 				{/each}

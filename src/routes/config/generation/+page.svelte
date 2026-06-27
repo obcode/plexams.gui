@@ -1,4 +1,6 @@
 <script>
+	import WriteButton from '$lib/WriteButton.svelte';
+
 	export let data;
 
 	const NUM_FIELDS = [
@@ -105,8 +107,8 @@
 	</div>
 
 	<div class="flex items-center gap-3">
-		<button class="btn btn-primary" disabled={saving} on:click={save}>
+		<WriteButton class="btn btn-primary" disabled={saving} on:click={save}>
 			{saving ? 'speichert …' : 'Speichern'}
-		</button>
+		</WriteButton>
 	</div>
 </div>

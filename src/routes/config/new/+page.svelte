@@ -1,5 +1,6 @@
 <script>
 	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -116,13 +117,13 @@
 	<SemesterConfigForm bind:this={formComp} config={data.defaults} />
 
 	<div class="flex items-center gap-3">
-		<button
+		<WriteButton
 			class="btn btn-primary"
 			disabled={creating || !nameOk || !!createdName}
 			on:click={create}
 		>
 			{creating ? 'legt an …' : 'Semester anlegen'}
-		</button>
+		</WriteButton>
 		<span class="text-xs text-base-content/50">
 			Existiert schon eine Config für den Namen, meldet der Server einen Fehler.
 		</span>

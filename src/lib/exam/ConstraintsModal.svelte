@@ -1,6 +1,7 @@
 <script>
 	// Constraints-Editor als Popup. Ersetzt die alte Seite /exam/constraints/<ancode>.
 	import { createEventDispatcher } from 'svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	/** @type {any} */
 	export let exam;
@@ -336,9 +337,9 @@
 			<button class="btn btn-ghost btn-sm" disabled={saving} on:click={() => dispatch('close')}>
 				Abbrechen
 			</button>
-			<button class="btn btn-primary btn-sm" disabled={saving} on:click={save}>
+			<WriteButton class="btn btn-primary btn-sm" disabled={saving} on:click={save}>
 				{saving ? 'speichert …' : 'Speichern'}
-			</button>
+			</WriteButton>
 		</div>
 	</div>
 	<button class="modal-backdrop" aria-label="schließen" on:click={() => dispatch('close')}></button>

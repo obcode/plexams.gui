@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines Raums. Beim
 	// Bearbeiten ist der name (Schlüssel) gesperrt. deactivated ist NICHT Teil
@@ -186,9 +187,9 @@
 		<button class="btn btn-ghost btn-sm" on:click={() => dispatch('cancel')} disabled={saving}>
 			Abbrechen
 		</button>
-		<button class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
+		<WriteButton class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Anlegen'}
-		</button>
+		</WriteButton>
 	</div>
 </div>

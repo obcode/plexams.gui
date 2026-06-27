@@ -1,5 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -191,9 +192,9 @@
 		{/if}
 		<span class="text-sm text-base-content/50">global, semesterübergreifend</span>
 		<div class="flex-1"></div>
-		<button class="btn btn-outline btn-sm" disabled={seeding} on:click={seed}>
+		<WriteButton class="btn btn-outline btn-sm" disabled={seeding} on:click={seed}>
 			{seeding ? 'füllt …' : 'fehlende aus Config anlegen'}
-		</button>
+		</WriteButton>
 		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Studiengang</button>
 	</div>
 
@@ -267,8 +268,8 @@
 										<button class="btn btn-ghost btn-xs" on:click={() => openEdit(p)}
 											>Bearbeiten</button
 										>
-										<button class="btn btn-ghost btn-xs text-error" on:click={() => del(p)}
-											>Löschen</button
+										<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(p)}
+											>Löschen</WriteButton
 										>
 									</td>
 								</tr>
@@ -355,9 +356,9 @@
 				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
-				<button class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
-				</button>
+				</WriteButton>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>

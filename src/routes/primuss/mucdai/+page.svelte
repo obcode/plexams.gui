@@ -1,5 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -372,9 +373,9 @@
 				>
 					Abbrechen
 				</button>
-				<button class="btn btn-primary btn-sm" on:click={saveTime} disabled={timeSaving}>
+				<WriteButton class="btn btn-primary btn-sm" on:click={saveTime} disabled={timeSaving}>
 					{timeSaving ? 'speichert …' : 'Speichern'}
-				</button>
+				</WriteButton>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={() => (timeFor = null)}

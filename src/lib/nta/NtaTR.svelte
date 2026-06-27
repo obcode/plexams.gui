@@ -1,4 +1,5 @@
 <script>
+	import { page } from '$app/stores';
 	import { createEventDispatcher } from 'svelte';
 
 	/** @type {any} */
@@ -32,6 +33,7 @@
 				type="checkbox"
 				class="toggle toggle-sm toggle-success"
 				checked={!nta.deactivated}
+				disabled={$page.data?.readOnly}
 				on:change={() => dispatch('toggle', nta)}
 			/>
 			<span class="text-xs {nta.deactivated ? 'text-error' : 'text-success'}">

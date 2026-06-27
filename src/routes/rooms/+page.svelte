@@ -1,4 +1,5 @@
 <script>
+	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import RoomForm from '$lib/room/RoomForm.svelte';
@@ -215,6 +216,7 @@
 									type="checkbox"
 									class="toggle toggle-sm toggle-success"
 									checked={!room.deactivated}
+									disabled={$page.data?.readOnly}
 									on:change={() => toggleRoom(room)}
 								/>
 								<span class="text-xs {room.deactivated ? 'text-error' : 'text-success'}">

@@ -117,7 +117,9 @@
 	let semester = 'unknown';
 	let currentSem: Sem | null = null;
 	let allSemesters: Sem[] = [];
-	$: readOnly = !!currentSem?.readOnly;
+	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
+	// liefert nur noch die Auswahlliste fürs Dropdown.
+	$: readOnly = ($page.data?.readOnly ?? currentSem?.readOnly) ?? false;
 	async function getSemester() {
 		const response = await fetch('/api/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));

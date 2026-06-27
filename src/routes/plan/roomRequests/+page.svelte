@@ -4,6 +4,7 @@
 	import RoomRequestToggles from '$lib/room/RoomRequestToggles.svelte';
 	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -342,10 +343,10 @@
 			{#if preview}
 				<span class="text-sm text-base-content/60">{preview.length} Raum-Slots</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-primary btn-sm" disabled={applying} on:click={() => applyPreview(false)}>
+				<WriteButton class="btn btn-primary btn-sm" disabled={applying} on:click={() => applyPreview(false)}>
 					{#if applying}<span class="loading loading-spinner loading-xs"></span>{/if}
 					Übernehmen
-				</button>
+				</WriteButton>
 			{/if}
 		</div>
 
@@ -650,14 +651,14 @@
 					<button class="btn btn-ghost btn-sm" on:click={() => (modalOpen = false)} disabled={mSaving}>
 						Abbrechen
 					</button>
-					<button
+					<WriteButton
 						class="btn btn-primary btn-sm gap-2"
 						on:click={saveModal}
 						disabled={mSaving || !modalValid}
 					>
 						{#if mSaving}<span class="loading loading-spinner loading-xs"></span>{/if}
 						{modalMode === 'edit' ? 'Speichern' : 'Hinzufügen'}
-					</button>
+					</WriteButton>
 				</div>
 			</div>
 		</div>

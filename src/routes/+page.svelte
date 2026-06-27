@@ -1,4 +1,6 @@
 <script>
+	import { page } from '$app/stores';
+
 	export let data;
 
 	/** @type {any} */
@@ -105,7 +107,7 @@
 								type="checkbox"
 								class="checkbox checkbox-sm mt-0.5"
 								checked={cond.done}
-								disabled={busy.has(cond.key)}
+								disabled={busy.has(cond.key) || $page.data?.readOnly}
 								on:change={() => toggle(cond)}
 							/>
 							<span

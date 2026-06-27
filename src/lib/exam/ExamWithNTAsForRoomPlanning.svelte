@@ -1,5 +1,6 @@
 <script>
 	import { classifyRoom } from '$lib/room/roomCategories';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	/** @type {any} */
 	export let plannedExam;
@@ -316,7 +317,7 @@
 							? 'opacity-30'
 							: ''}"
 					>
-						<button
+						<WriteButton
 							class="btn btn-ghost btn-xs btn-circle text-base transition-opacity {room.prePlanned
 								? ''
 								: 'opacity-25 hover:opacity-100'}"
@@ -327,7 +328,7 @@
 								room.prePlanned ? removePrePlan(exam.ancode, room) : prePlanRoom(exam.ancode, room)}
 						>
 							📌
-						</button>
+						</WriteButton>
 						{#if room.handicap}
 							<span class="flex flex-wrap items-center gap-1">
 								<span class="badge badge-neutral badge-sm">NTA</span>
@@ -410,7 +411,7 @@
 						{:else}
 							<div class="flex max-h-56 flex-col gap-1 overflow-y-auto">
 								{#each pickerCandidates as c}
-									<button
+									<WriteButton
 										class="flex flex-col items-start gap-0.5 rounded border border-base-300 px-2 py-1 text-left text-xs hover:bg-base-200 {c.dimReason
 											? 'opacity-70'
 											: ''}"
@@ -438,7 +439,7 @@
 													Stud.{i < c.usedBy.length - 1 ? '; ' : ''}{/each}
 											</div>
 										{/if}
-									</button>
+									</WriteButton>
 								{/each}
 							</div>
 						{/if}

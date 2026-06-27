@@ -1,5 +1,7 @@
 <script>
+	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -326,13 +328,13 @@
 		<button class="btn btn-outline btn-sm" on:click={validate} disabled={validating || generating}>
 			{validating ? 'validiert …' : 'Validieren'}
 		</button>
-		<button
+		<WriteButton
 			class="btn btn-secondary btn-sm"
 			on:click={generate}
 			disabled={validating || generating}
 		>
 			{generating ? 'generiert …' : 'Zuordnung generieren'}
-		</button>
+		</WriteButton>
 		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
 	</div>
 
@@ -532,7 +534,7 @@
 									<select
 										class="select select-bordered select-xs"
 										value={slotValue(e)}
-										disabled={busy.has(e.id)}
+										disabled={busy.has(e.id) || $page.data?.readOnly}
 										on:change={(ev) => setSlot(e, ev.currentTarget.value)}
 									>
 										<option value="">— nicht zugeordnet</option>
@@ -545,7 +547,9 @@
 							<td>
 								{#if e.ancode}
 									<span class="badge badge-success badge-sm tabular-nums">✓ {e.ancode}</span>
-									<button class="btn btn-ghost btn-xs" on:click={() => disconnect(e)}>Lösen</button>
+									<WriteButton class="btn btn-ghost btn-xs" on:click={() => disconnect(e)}
+										>Lösen</WriteButton
+									>
 								{:else}
 									<span class="badge badge-sm {data.zpaPresent ? 'badge-warning' : 'badge-ghost'}">
 										nicht zugeordnet
@@ -558,8 +562,8 @@
 							<td class="text-right whitespace-nowrap">
 								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button
 								>
-								<button class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
-									>Löschen</button
+								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
+									>Löschen</WriteButton
 								>
 							</td>
 						</tr>
@@ -650,9 +654,9 @@
 				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
-				<button class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
-				</button>
+				</WriteButton>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
@@ -697,13 +701,13 @@
 										<td class="text-sm">{s.mainExamer}</td>
 										<td class="text-sm text-base-content/70">{s.examType}</td>
 										<td class="text-right">
-											<button
+											<WriteButton
 												class="btn btn-primary btn-xs"
 												disabled={connecting}
 												on:click={() => connect(s.ancode)}
 											>
 												verknüpfen
-											</button>
+											</WriteButton>
 										</td>
 									</tr>
 								{/each}
@@ -726,13 +730,13 @@
 							bind:value={manualAncode}
 						/>
 					</label>
-					<button
+					<WriteButton
 						class="btn btn-outline btn-sm"
 						disabled={connecting || !manualAncode}
 						on:click={() => connect(manualAncode)}
 					>
 						verknüpfen
-					</button>
+					</WriteButton>
 				</div>
 			{/if}
 

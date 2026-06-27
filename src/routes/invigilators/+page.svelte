@@ -1,5 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -98,13 +99,13 @@
 				bind:value={reason}
 			/>
 		</label>
-		<button
+		<WriteButton
 			class="btn btn-neutral btn-sm"
 			disabled={!teacherID || !reason.trim() || busy}
 			on:click={add}
 		>
 			{busy ? 'speichert…' : 'permanent ausschließen'}
-		</button>
+		</WriteButton>
 	</div>
 
 	{#if error}
@@ -127,9 +128,9 @@
 							<td class="font-medium">{p.name}</td>
 							<td class="text-base-content/70">{p.reason}</td>
 							<td class="text-right">
-								<button class="btn btn-ghost btn-xs text-error" on:click={() => remove(p)}>
+								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => remove(p)}>
 									aufheben
-								</button>
+								</WriteButton>
 							</td>
 						</tr>
 					{/each}

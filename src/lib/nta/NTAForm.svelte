@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines NTA. Beim Bearbeiten
 	// ist die mtknr (Schlüssel) gesperrt. exams/deactivated/lastSemester sind
@@ -207,9 +208,9 @@
 		<button class="btn btn-ghost btn-sm" on:click={() => dispatch('cancel')} disabled={saving}>
 			Abbrechen
 		</button>
-		<button class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
+		<WriteButton class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
-		</button>
+		</WriteButton>
 	</div>
 </div>

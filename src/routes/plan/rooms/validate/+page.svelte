@@ -2,6 +2,7 @@
 	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
 	import { roomValidators } from '$lib/validation/validators';
 	import { onMount } from 'svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	/** @type {any} */
 	let group;
@@ -93,10 +94,10 @@
 						<span class="badge badge-outline badge-xs">Prüfung {w.ancode}</span>
 						<span class="badge badge-outline badge-xs">MtkNr {w.mtknr}</span>
 						<span class="min-w-0 flex-1 break-words text-base-content/70">{w.reason}</span>
-						<button
+						<WriteButton
 							class="btn btn-ghost btn-xs"
 							disabled={removeBusy === `${w.mtknr}-${w.ancode}`}
-							on:click={() => removeWaiver(w)}>zurücknehmen</button
+							on:click={() => removeWaiver(w)}>zurücknehmen</WriteButton
 						>
 					</div>
 				{/each}
