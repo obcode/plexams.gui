@@ -504,8 +504,9 @@
 
 	/** Badges für die Tabellen-Anzeige der Constraints. @param {any} e */
 	function conBadges(e) {
-		const c = e.constraints;
-		if (!c) return [];
+		// kein early-return bei fehlenden constraints — notSameSlot/canShareSlot
+		// liegen direkt auf e und müssen auch ohne sonstige Constraints erscheinen.
+		const c = e.constraints || {};
 		const rc = c.roomConstraints || {};
 		/** @type {{ t: string, cls: string }[]} */
 		const out = [];
