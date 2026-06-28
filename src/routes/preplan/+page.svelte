@@ -373,6 +373,32 @@
 		}
 	}
 
+	/** Slot fixieren/lösen. Fixieren nur möglich, wenn ein Slot gesetzt ist.
+	 * @param {any} e @param {boolean} fixed */
+	async function setFixed(e, fixed) {
+		if (busy.has(e.id)) return;
+		busy = new Set(busy).add(e.id);
+		listError = '';
+		try {
+			const res = await fetch('/api/setPreplanExamFixed', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ id: e.id, fixed })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+			}
+			await invalidateAll();
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		} finally {
+			const set = new Set(busy);
+			set.delete(e.id);
+			busy = set;
+		}
+	}
+
 	// ZPA-Ancode-Zuordnung
 	/** @type {any} */
 	let suggestFor = null;
@@ -579,7 +605,6 @@
 	let validationKind = '';
 	let validating = false;
 	let generating = false;
-	let keepAssigned = true;
 
 	$: unassignedSet = new Set(validation?.unassignedIDs ?? []);
 
@@ -610,9 +635,7 @@
 		if (validating || generating) return;
 		if (
 			!confirm(
-				keepAssigned
-					? 'Zuordnung generieren? Manuell gesetzte Slots bleiben fix, nur unzugeordnete werden platziert.'
-					: 'Zuordnung komplett neu generieren? Bestehende Slot-Zuordnungen werden überschrieben.'
+				'Automatisch verteilen? Alle nicht-fixierten Prüfungen werden neu verteilt (auch bereits gesetzte). Nur 🔒 fixierte Prüfungen bleiben auf ihrem Slot.'
 			)
 		)
 			return;
@@ -622,7 +645,7 @@
 			const res = await fetch('/api/generatePreplanAssignment', {
 				method: 'POST',
 				headers: jsonHeaders,
-				body: JSON.stringify({ keepAssigned })
+				body: JSON.stringify({ keepAssigned: false })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -645,13 +668,9 @@
 		<h1 class="text-2xl font-semibold">SEB/EXaHM-Vorplanung</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.exams.length}</span>
 		<div class="flex-1"></div>
-		<label
-			class="flex cursor-pointer items-center gap-1 text-sm"
-			title="Manuell gesetzte Slots fix lassen, nur unzugeordnete platzieren"
-		>
-			<input type="checkbox" class="checkbox checkbox-xs" bind:checked={keepAssigned} />
-			<span>gesetzte behalten</span>
-		</label>
+		<span class="text-xs text-base-content/50">
+			🤖 verteilt alle <strong>nicht</strong>-fixierten Prüfungen neu; 🔒 fixierte bleiben.
+		</span>
 		<button class="btn btn-outline btn-sm" on:click={validate} disabled={validating || generating}>
 			{validating ? 'prüft …' : '✔ Prüfen'}
 		</button>
@@ -659,6 +678,7 @@
 			class="btn btn-secondary btn-sm"
 			on:click={generate}
 			disabled={validating || generating}
+			title="Verteilt alle nicht-fixierten Prüfungen neu (auch bereits gesetzte); fixierte bleiben."
 		>
 			{generating ? 'verteilt …' : '🤖 Automatisch verteilen'}
 		</WriteButton>
@@ -785,6 +805,7 @@
 													<span class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 														{ex.examKind}
 													</span>
+													{#if ex.isFixed}<span title="fixiert">🔒</span>{/if}
 													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">{ex.module}</span>
 													<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
 													{#if ex.programs?.length}
@@ -922,10 +943,31 @@
 							<td class="tabular-nums text-base-content/70">{e.duration ?? '—'}</td>
 							<td>
 								<div class="flex items-center gap-1">
+									{#if e.isFixed}
+										<WriteButton
+											class="btn btn-ghost btn-xs"
+											title="fixiert — klicken zum Lösen"
+											disabled={busy.has(e.id)}
+											on:click={() => setFixed(e, false)}
+										>
+											🔒
+										</WriteButton>
+									{:else}
+										<WriteButton
+											class="btn btn-ghost btn-xs opacity-40"
+											title={slotValue(e)
+												? 'Slot fixieren (bleibt bei „Automatisch verteilen")'
+												: 'erst einen Slot setzen, dann fixierbar'}
+											disabled={busy.has(e.id) || !slotValue(e)}
+											on:click={() => setFixed(e, true)}
+										>
+											🔓
+										</WriteButton>
+									{/if}
 									<select
 										class="select select-bordered select-xs"
 										value={slotValue(e)}
-										disabled={busy.has(e.id) || $page.data?.readOnly}
+										disabled={busy.has(e.id) || e.isFixed || $page.data?.readOnly}
 										on:change={(ev) => setSlot(e, ev.currentTarget.value)}
 									>
 										<option value="">— nicht zugeordnet</option>
@@ -933,7 +975,7 @@
 											<option value="{s.dayNumber}-{s.slotNumber}">{slotLabel(s)}</option>
 										{/each}
 									</select>
-									{#if slotValue(e)}
+									{#if slotValue(e) && !e.isFixed}
 										<WriteButton
 											class="btn btn-ghost btn-xs text-error"
 											title="Slot-Zuordnung aufheben"

@@ -17,6 +17,7 @@ export async function load() {
 					duration
 					plannedDayNumber
 					plannedSlotNumber
+					isFixed
 					ancode
 					notes
 					constraints {
