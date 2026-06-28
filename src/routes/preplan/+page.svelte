@@ -635,7 +635,7 @@
 						<option value="SEB">SEB</option>
 					</select>
 				</label>
-				<label class="flex flex-col gap-1 sm:col-span-2">
+				<div class="flex flex-col gap-1 sm:col-span-2">
 					<span class="text-xs font-medium text-base-content/60">Prüfer/in (Nachname, Vorname)</span>
 					<input
 						type="text"
@@ -649,7 +649,7 @@
 							<option value={o.id}>{o.label}</option>
 						{/each}
 					</select>
-				</label>
+				</div>
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Modul</span>
 					<input type="text" class="input input-bordered input-sm" bind:value={editing.module} />
