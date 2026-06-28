@@ -77,6 +77,9 @@
 				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
 			)
 		: teacherOptions;
+	$: selectedExamerLabel = editing
+		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ?? '')
+		: '';
 
 	function openAdd() {
 		editing = {
@@ -759,19 +762,38 @@
 					</select>
 				</label>
 				<div class="flex flex-col gap-1 sm:col-span-2">
-					<span class="text-xs font-medium text-base-content/60">Prüfer/in (Nachname, Vorname)</span>
+					<div class="flex items-baseline gap-2">
+						<span class="text-xs font-medium text-base-content/60">Prüfer/in (Nachname, Vorname)</span>
+						{#if selectedExamerLabel}
+							<span class="text-xs text-primary">✓ {selectedExamerLabel}</span>
+						{:else}
+							<span class="text-xs text-error">— noch keine/r gewählt</span>
+						{/if}
+					</div>
 					<input
 						type="text"
 						class="input input-bordered input-sm"
 						bind:value={examerQuery}
 						placeholder="suchen (Nachname) …"
 					/>
-					<select class="select select-bordered select-sm" size="5" bind:value={editing.examerID}>
-						<option value={0}>— wählen</option>
+					<div class="max-h-60 divide-y divide-base-200 overflow-y-auto rounded-lg border border-base-300">
 						{#each examerFiltered as o}
-							<option value={o.id}>{o.label}</option>
+							<button
+								type="button"
+								class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-base-200 {Number(
+									editing.examerID
+								) === o.id
+									? 'bg-primary/15 font-medium text-primary'
+									: ''}"
+								on:click={() => (editing.examerID = o.id)}
+							>
+								<span class="w-3 text-center">{Number(editing.examerID) === o.id ? '✓' : ''}</span>
+								<span>{o.label}</span>
+							</button>
+						{:else}
+							<div class="px-3 py-2 text-sm text-base-content/40">keine Treffer</div>
 						{/each}
-					</select>
+					</div>
 				</div>
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Modul</span>
