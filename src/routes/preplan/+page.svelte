@@ -22,6 +22,21 @@
 	}
 	/** @type {Record<string, string>} */
 	const STATUS_DOT = { neutral: '⚪', red: '🔴', green: '🟢', yellow: '🟡' };
+	// „eingeschränkt auf: …" — Räume, auf die die Preplan-Prüfungen dieses Slots/dieser
+	// Art per roomConstraints.allowedRooms begrenzt sind (begrenzt seatsAvailable/rooms
+	// serverseitig; hier nur zur Anzeige aus den Constraints abgeleitet).
+	/** @param {any} slot @param {string} kind */
+	function restrictedRooms(slot, kind) {
+		/** @type {Set<string>} */
+		const rooms = new Set();
+		for (const e of data.exams) {
+			if (e.examKind !== kind) continue;
+			if (e.plannedDayNumber !== slot.dayNumber || e.plannedSlotNumber !== slot.slotNumber) continue;
+			for (const r of e.constraints?.roomConstraints?.allowedRooms ?? []) rooms.add(r);
+		}
+		return [...rooms].sort((a, b) => a.localeCompare(b));
+	}
+
 	/** @param {string} level */
 	const statusBorder = (level) =>
 		level === 'red'
@@ -610,6 +625,13 @@
 										<div class="mt-1 tabular-nums text-base-content/70">
 											gebucht {k.need.seatsBooked} / verfügbar {k.need.seatsAvailable}
 										</div>
+
+										{@const restricted = restrictedRooms(slot, k.label)}
+										{#if restricted.length}
+											<div class="mt-1 text-xs text-base-content/60">
+												eingeschränkt auf: <span class="font-medium">{restricted.join(', ')}</span>
+											</div>
+										{/if}
 
 										{#if st.level === 'yellow' && k.need.roomsToBook.length}
 											<div class="mt-1 text-xs text-warning">
