@@ -729,6 +729,9 @@
 											{#if k.need.examCount > 0}
 												{@const st = roomStatus(k.need)}
 												{@const restricted = restrictedRooms(en.slot, k.label)}
+												{@const booked = (k.need.rooms || []).filter(
+													(/** @type {string} */ r) => !(k.need.roomsToBook || []).includes(r)
+												)}
 												<div class="mt-1 flex flex-wrap items-center gap-x-1">
 													<span>{STATUS_DOT[st.level]}</span>
 													<span class="font-medium">{k.label}</span>
@@ -741,10 +744,13 @@
 														<span class="text-error">Kapazität!</span>
 													{/if}
 												</div>
+												{#if booked.length}
+													<div class="text-base-content/50">gebucht: {booked.join(', ')}</div>
+												{/if}
 												{#if restricted.length}
-													<div class="text-base-content/50">nur: {restricted.join(', ')}</div>
-												{:else if k.need.rooms.length}
-													<div class="text-base-content/50">frei: {k.need.rooms.join(', ')}</div>
+													<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
+												{:else if !booked.length && k.need.rooms.length}
+													<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
 												{/if}
 											{/if}
 										{/each}
