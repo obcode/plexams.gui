@@ -279,7 +279,6 @@
 				{ href: '/exam/examsToPlan', label: '📝 ZPA-Prüfungen planen' },
 				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
 				{ section: 'Computer-Prüfungen' },
-				{ href: '/exam/kdp', label: '💻 EXaHM/SEB' },
 				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
 				{ section: 'Anmeldungen' },
 				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' }
