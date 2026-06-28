@@ -224,6 +224,28 @@
 	}
 	const closeEdit = () => (editing = null);
 
+	// Studiengänge gruppiert: FK07 → MUC.DAI → Misc (sonstige Kategorien am Ende).
+	/** @type {Record<string, string>} */
+	const CAT_LABEL = { fk07: 'FK07', mucdai: 'MUC.DAI', misc: 'Misc' };
+	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
+	$: programGroups = (() => {
+		/** @type {Map<string, any[]>} */
+		const byCat = new Map();
+		for (const sp of data.studyPrograms ?? []) {
+			const c = sp.category ?? 'misc';
+			if (!byCat.has(c)) byCat.set(c, []);
+			byCat.get(c)?.push(sp);
+		}
+		const cats = [
+			...CAT_ORDER.filter((c) => byCat.has(c)),
+			...[...byCat.keys()].filter((c) => !CAT_ORDER.includes(c))
+		];
+		return cats.map((c) => ({
+			label: CAT_LABEL[c] ?? c,
+			items: (byCat.get(c) ?? []).sort((a, b) => a.shortname.localeCompare(b.shortname))
+		}));
+	})();
+
 	/** @param {string} sn */
 	function toggleProgram(sn) {
 		editing.programs = editing.programs.includes(sn)
@@ -1002,18 +1024,29 @@
 			<div class="mt-3 flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Studiengänge</span>
 				<div
-					class="flex max-h-40 flex-wrap gap-x-4 gap-y-1 overflow-y-auto rounded-lg border border-base-300 p-2"
+					class="flex max-h-56 flex-col divide-y divide-base-200 overflow-y-auto rounded-lg border border-base-300"
 				>
-					{#each data.studyPrograms as sp}
-						<label class="flex cursor-pointer items-center gap-1 text-sm">
-							<input
-								type="checkbox"
-								class="checkbox checkbox-xs"
-								checked={editing.programs.includes(sp.shortname)}
-								on:change={() => toggleProgram(sp.shortname)}
-							/>
-							<span class="font-mono">{sp.shortname}</span>
-						</label>
+					{#each programGroups as g}
+						<div class="flex items-start gap-2 p-2">
+							<span
+								class="w-16 shrink-0 pt-0.5 text-[10px] font-medium tracking-wide text-base-content/50 uppercase"
+							>
+								{g.label}
+							</span>
+							<div class="flex flex-wrap gap-x-4 gap-y-1">
+								{#each g.items as sp}
+									<label class="flex cursor-pointer items-center gap-1 text-sm">
+										<input
+											type="checkbox"
+											class="checkbox checkbox-xs"
+											checked={editing.programs.includes(sp.shortname)}
+											on:change={() => toggleProgram(sp.shortname)}
+										/>
+										<span class="font-mono">{sp.shortname}</span>
+									</label>
+								{/each}
+							</div>
+						</div>
 					{/each}
 				</div>
 			</div>
