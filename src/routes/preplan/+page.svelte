@@ -55,6 +55,24 @@
 	let isNew = false;
 	let editError = '';
 	let saving = false;
+	let examerQuery = '';
+
+	// Prüfende als „Nachname, Vorname" (letztes Token = Nachname; Titel bleiben beim
+	// Vornamen) — alphabetisch nach Nachname, im Editor durchsuchbar.
+	/** @param {string} full */
+	function examerLabel(full) {
+		const parts = (full ?? '').trim().split(/\s+/);
+		if (parts.length < 2) return full ?? '';
+		return `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
+	}
+	$: teacherOptions = (data.teachers ?? [])
+		.map((/** @type {any} */ t) => ({ id: t.id, label: examerLabel(t.fullname) }))
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label));
+	$: examerFiltered = examerQuery.trim()
+		? teacherOptions.filter((/** @type {any} */ o) =>
+				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
+			)
+		: teacherOptions;
 
 	function openAdd() {
 		editing = {
@@ -69,6 +87,7 @@
 		};
 		isNew = true;
 		editError = '';
+		examerQuery = '';
 	}
 	/** @param {any} e */
 	function openEdit(e) {
@@ -84,6 +103,7 @@
 		};
 		isNew = false;
 		editError = '';
+		examerQuery = '';
 	}
 	const closeEdit = () => (editing = null);
 
@@ -615,12 +635,18 @@
 						<option value="SEB">SEB</option>
 					</select>
 				</label>
-				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Prüfer/in</span>
-					<select class="select select-bordered select-sm" bind:value={editing.examerID}>
+				<label class="flex flex-col gap-1 sm:col-span-2">
+					<span class="text-xs font-medium text-base-content/60">Prüfer/in (Nachname, Vorname)</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm"
+						bind:value={examerQuery}
+						placeholder="suchen (Nachname) …"
+					/>
+					<select class="select select-bordered select-sm" size="5" bind:value={editing.examerID}>
 						<option value={0}>— wählen</option>
-						{#each data.teachers as t}
-							<option value={t.id}>{t.fullname}</option>
+						{#each examerFiltered as o}
+							<option value={o.id}>{o.label}</option>
 						{/each}
 					</select>
 				</label>
@@ -662,7 +688,6 @@
 								on:change={() => toggleProgram(sp.shortname)}
 							/>
 							<span class="font-mono">{sp.shortname}</span>
-							{#if sp.name}<span class="text-base-content/50">{sp.name}</span>{/if}
 						</label>
 					{/each}
 				</div>
