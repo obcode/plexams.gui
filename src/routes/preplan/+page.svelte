@@ -597,9 +597,20 @@
 				return;
 			}
 			await invalidateAll();
+			syncConPairs();
 		} catch (e) {
 			conNotSame = prev;
 			conError = e instanceof Error ? e.message : String(e);
+		}
+	}
+
+	// nach Refetch die lokale Paar-Auswahl mit der Server-Wahrheit abgleichen
+	function syncConPairs() {
+		if (!conEditing) return;
+		const fresh = data.exams.find((/** @type {any} */ x) => x.id === conEditing.id);
+		if (fresh) {
+			conNotSame = [...(fresh.notSameSlot || [])];
+			conCanShare = [...(fresh.canShareSlot || [])];
 		}
 	}
 
@@ -622,6 +633,7 @@
 				return;
 			}
 			await invalidateAll();
+			syncConPairs();
 		} catch (e) {
 			conCanShare = prev;
 			conError = e instanceof Error ? e.message : String(e);
