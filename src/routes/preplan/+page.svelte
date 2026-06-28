@@ -64,6 +64,88 @@
 			? `${e.plannedDayNumber}-${e.plannedSlotNumber}`
 			: '';
 
+	// ---- Wochen-Kalender der eingeplanten Slots ----
+	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+	/** @param {string} iso */
+	const dateObj = (iso) => {
+		const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
+		return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
+	};
+	/** @param {Date} dt → Mo=1 … So=7 */
+	const isoWeekday = (dt) => ((dt.getUTCDay() + 6) % 7) + 1;
+	/** @param {Date} dt → Montag der Woche */
+	const mondayOf = (dt) => {
+		const m = new Date(dt);
+		m.setUTCDate(dt.getUTCDate() - (isoWeekday(dt) - 1));
+		return m;
+	};
+	/** @param {Date} dt → ISO-Kalenderwoche */
+	function isoWeekNum(dt) {
+		const d = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
+		d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3); // Donnerstag dieser Woche
+		const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+		firstThu.setUTCDate(firstThu.getUTCDate() - ((firstThu.getUTCDay() + 6) % 7) + 3);
+		return 1 + Math.round((d.getTime() - firstThu.getTime()) / 604800000);
+	}
+	/** @param {Date} dt */
+	const ddmm = (dt) =>
+		`${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}.`;
+	/** @param {Date} monday @param {number} col */
+	const colDate = (monday, col) => {
+		const d = new Date(monday);
+		d.setUTCDate(monday.getUTCDate() + (col - 1));
+		return d;
+	};
+
+	$: calendar = (() => {
+		const planned = (data.overview ?? []).filter(
+			(/** @type {any} */ s) => s.dayNumber != null && s.starttime
+		);
+		/** @type {Map<string, any>} */
+		const weeks = new Map();
+		/** @type {Set<number>} */
+		const usedWd = new Set();
+		for (const s of planned) {
+			const dt = dateObj(s.starttime);
+			if (!dt) continue;
+			const wd = isoWeekday(dt);
+			usedWd.add(wd);
+			const mon = mondayOf(dt);
+			const key = mon.toISOString().slice(0, 10);
+			if (!weeks.has(key)) weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
+			const w = weeks.get(key);
+			if (!w.byDay.has(wd)) w.byDay.set(wd, []);
+			const slotExams = (data.exams ?? []).filter(
+				(/** @type {any} */ e) =>
+					e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
+			);
+			w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
+		}
+		for (const w of weeks.values())
+			for (const arr of w.byDay.values())
+				arr.sort((/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber);
+		const weekList = [...weeks.values()].sort(
+			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+		);
+		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
+		return { weekList, cols };
+	})();
+	$: unplanned = (data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null);
+
+	/** @type {Record<string, number>} */
+	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
+	/** @param {any} slot → „schlimmster" Raum-Status der Arten (für die Slot-Färbung) */
+	function worstLevel(slot) {
+		let lv = 'neutral';
+		for (const need of [slot.exahm, slot.seb]) {
+			if (need.examCount > 0) {
+				const l = roomStatus(need).level;
+				if (LEVEL_RANK[l] > LEVEL_RANK[lv]) lv = l;
+			}
+		}
+		return lv;
+	}
+
 	let listError = '';
 	/** @type {Set<number>} */
 	let busy = new Set();
@@ -574,97 +656,112 @@
 		</div>
 	{/if}
 
-	<!-- Vorplanungs-Übersicht: Raumbedarf + Überschneidungen je Slot -->
-	{#if data.overview.length}
-		<div class="flex flex-col gap-2">
-			<h2 class="text-lg font-semibold">Übersicht — Raumbedarf & Überschneidungen</h2>
-			<div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
-				{#each data.overview as slot}
-					{@const isBucket = slot.dayNumber == null}
+	<!-- Kalender: eingeplante Prüfungen & Räume, je Woche (Mo–Fr) -->
+	<div class="flex flex-col gap-3">
+		<h2 class="text-lg font-semibold">Kalender — eingeplante Prüfungen & Räume</h2>
+
+		{#if unplanned.length}
+			<div class="rounded-lg border border-warning bg-warning/10 p-3">
+				<div class="mb-1 flex items-center gap-2 text-sm font-medium">
+					⚠ Noch nicht eingeplant
+					<span class="badge badge-warning badge-sm tabular-nums">{unplanned.length}</span>
+				</div>
+				<div class="flex flex-wrap gap-2">
+					{#each unplanned as e}
+						<span
+							class="flex items-center gap-1 rounded border border-base-300 bg-base-100 px-2 py-1 text-xs"
+						>
+							<span class="badge badge-xs {e.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+								{e.examKind}
+							</span>
+							<span class="font-medium">{e.module}</span>
+							<span class="text-base-content/50">
+								· {examerLabel(e.examerName)} · {e.expectedStudents}
+							</span>
+						</span>
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		{#if calendar.weekList.length === 0}
+			<div class="rounded-lg border border-base-300 p-6 text-center text-sm text-base-content/50">
+				Noch keine Prüfungen in Slots eingeplant.
+			</div>
+		{:else}
+			{#each calendar.weekList as w}
+				<div class="flex flex-col gap-1">
+					<div class="text-sm font-medium text-base-content/70">
+						KW {w.weekNum} · {ddmm(w.monday)}–{ddmm(
+							colDate(w.monday, calendar.cols[calendar.cols.length - 1])
+						)}
+					</div>
 					<div
-						class="flex flex-col gap-2 rounded-lg border p-3 {isBucket
-							? 'border-warning bg-warning/10'
-							: 'border-base-300 bg-base-100'}"
+						class="grid gap-2"
+						style="grid-template-columns: repeat({calendar.cols.length}, minmax(0, 1fr))"
 					>
-						<div class="font-medium">
-							{#if isBucket}
-								⚠ Ohne Slot — noch zuzuordnen
-							{:else}
-								{slotLabel(slot)}
-								<span class="ml-1 text-xs font-normal text-base-content/50">
-									· Tag {slot.dayNumber} / Slot {slot.slotNumber}
-								</span>
-							{/if}
-						</div>
-
-						<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-							{#each [{ label: 'EXaHM', color: 'badge-info', need: slot.exahm }, { label: 'SEB', color: 'badge-error', need: slot.seb }] as k}
-								{#if k.need.examCount > 0}
-									{@const st = roomStatus(k.need)}
-								{@const restricted = restrictedRooms(slot, k.label)}
-									<div class="rounded border p-2 text-sm {statusBorder(st.level)}">
-										<div class="flex flex-wrap items-center gap-2">
-											<span class="badge {k.color} badge-sm">{k.label}</span>
-											<span class="tabular-nums">{k.need.examCount} Prüfung(en)</span>
-											<span class="text-base-content/50">·</span>
-											<span class="tabular-nums">{k.need.seatsNeeded} Plätze nötig</span>
-											<div class="flex-1"></div>
-											<span
-												class="font-medium {st.level === 'red'
-													? 'text-error'
-													: st.level === 'yellow'
-														? 'text-warning'
-														: st.level === 'green'
-															? 'text-success'
-															: 'text-base-content/50'}"
-											>
-												{STATUS_DOT[st.level]}
-												{st.text}
-											</span>
-										</div>
-
-										<div class="mt-1 tabular-nums text-base-content/70">
-											gebucht {k.need.seatsBooked} / verfügbar {k.need.seatsAvailable}
-										</div>
-
-										{#if restricted.length}
-											<div class="mt-1 text-xs text-base-content/60">
-												eingeschränkt auf: <span class="font-medium">{restricted.join(', ')}</span>
+						{#each calendar.cols as col}
+							{@const date = colDate(w.monday, col)}
+							{@const entries = w.byDay.get(col) || []}
+							<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-1.5">
+								<div class="text-xs font-medium tabular-nums">{WD2[col]} {ddmm(date)}</div>
+								{#each entries as en}
+									<div
+										class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
+											worstLevel(en.slot)
+										)}"
+									>
+										<div class="font-medium tabular-nums">{en.time} Uhr</div>
+										{#each en.exams as ex}
+											<div class="mt-0.5 flex items-center gap-1">
+												<span
+													class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}"
+												>
+													{ex.examKind}
+												</span>
+												<span class="truncate" title="{ex.module} · {examerLabel(ex.examerName)}">
+													{ex.module}
+												</span>
+												<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
 											</div>
-										{/if}
-
-										{#if st.level === 'yellow' && k.need.roomsToBook.length}
-											<div class="mt-1 text-xs text-warning">
-												noch buchen: <span class="font-medium">{k.need.roomsToBook.join(', ')}</span>
-											</div>
-										{/if}
-										{#if k.need.rooms.length}
-											<div class="mt-1 text-xs text-base-content/60">
-												Vorschlag ({k.need.roomsSuggested}): {k.need.rooms.join(', ')}
-											</div>
-										{/if}
+										{/each}
+										{#each [{ label: 'EXaHM', need: en.slot.exahm }, { label: 'SEB', need: en.slot.seb }] as k}
+											{#if k.need.examCount > 0}
+												{@const st = roomStatus(k.need)}
+												{@const restricted = restrictedRooms(en.slot, k.label)}
+												<div class="mt-1 flex flex-wrap items-center gap-x-1">
+													<span>{STATUS_DOT[st.level]}</span>
+													<span class="font-medium">{k.label}</span>
+													<span class="tabular-nums text-base-content/60">
+														{k.need.seatsBooked}/{k.need.seatsNeeded} Pl.
+													</span>
+													{#if st.level === 'yellow' && k.need.roomsToBook.length}
+														<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
+													{:else if st.level === 'red'}
+														<span class="text-error">Kapazität!</span>
+													{/if}
+												</div>
+												{#if restricted.length}
+													<div class="text-base-content/50">nur: {restricted.join(', ')}</div>
+												{:else if k.need.rooms.length}
+													<div class="text-base-content/50">frei: {k.need.rooms.join(', ')}</div>
+												{/if}
+											{/if}
+										{/each}
+										{#each en.slot.conflicts as c}
+											<div class="mt-0.5 text-warning">⚠ {c.program}: {c.modules.join(', ')}</div>
+										{/each}
 									</div>
-								{/if}
-							{/each}
-						</div>
-
-						{#if slot.conflicts.length}
-							<div class="flex flex-col gap-1">
-								{#each slot.conflicts as c}
-									<div class="alert alert-warning py-1 text-xs">
-										<span>
-											Studiengang <strong>{c.program}</strong> mehrfach im Slot:
-											{c.modules.join(', ')}
-										</span>
-									</div>
+								{:else}
+									<div class="py-2 text-center text-base-content/20">—</div>
 								{/each}
 							</div>
-						{/if}
+						{/each}
 					</div>
-				{/each}
-			</div>
-		</div>
-	{/if}
+				</div>
+			{/each}
+		{/if}
+	</div>
 
 	{#if data.exams.length === 0}
 		<div class="text-sm text-base-content/50">Noch keine SEB/EXaHM-Vorplanungen angelegt.</div>
