@@ -518,6 +518,8 @@
 			out.push({ t: `Räume: ${rc.allowedRooms.join(', ')}`, cls: 'badge-ghost' });
 		if ((c.sameSlot || []).length)
 			out.push({ t: `=Slot: ${c.sameSlot.map(moduleOf).join(', ')}`, cls: 'badge-ghost' });
+		if ((e.notSameSlot || []).length)
+			out.push({ t: `≠Slot: ${e.notSameSlot.map(moduleOf).join(', ')}`, cls: 'badge-warning' });
 		if (c.fixedDay) out.push({ t: 'fixer Tag', cls: 'badge-ghost' });
 		return out;
 	}
@@ -528,6 +530,9 @@
 	let conForm = null;
 	let conSaving = false;
 	let conError = '';
+	// Konfliktpartner („nicht gleichzeitig") — eigene Mutation, sofort gespeichert.
+	/** @type {number[]} */
+	let conNotSame = [];
 
 	/** @param {any} e */
 	function openConstraints(e) {
@@ -543,6 +548,7 @@
 			allowedRooms: (rc.allowedRooms || []).join(', '),
 			sameSlot: [...(c.sameSlot || [])]
 		};
+		conNotSame = [...(e.notSameSlot || [])];
 		conError = '';
 	}
 	const closeConstraints = () => (conEditing = null);
@@ -552,6 +558,31 @@
 		conForm.sameSlot = conForm.sameSlot.includes(id)
 			? conForm.sameSlot.filter((/** @type {number} */ x) => x !== id)
 			: [...conForm.sameSlot, id];
+	}
+
+	/** Konfliktpartner sofort setzen/entfernen (eigene Mutation). @param {number} otherID */
+	async function toggleNotSame(otherID) {
+		const want = !conNotSame.includes(otherID);
+		const prev = conNotSame;
+		conNotSame = want ? [...conNotSame, otherID] : conNotSame.filter((x) => x !== otherID);
+		conError = '';
+		try {
+			const res = await fetch('/api/setPreplanExamNotSameSlot', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ id: conEditing.id, otherID, conflict: want })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				conNotSame = prev; // zurücksetzen
+				conError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+		} catch (e) {
+			conNotSame = prev;
+			conError = e instanceof Error ? e.message : String(e);
+		}
 	}
 
 	async function saveConstraints() {
@@ -1349,6 +1380,35 @@
 								class="checkbox checkbox-xs"
 								checked={conForm.sameSlot.includes(o.id)}
 								on:change={() => toggleSameSlot(o.id)}
+							/>
+							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+								{o.examKind}
+							</span>
+							<span>{o.module}</span>
+							<span class="text-base-content/40">· {examerDisplay(o)}</span>
+						</label>
+					{:else}
+						<span class="text-sm text-base-content/40">— keine weiteren Prüfungen</span>
+					{/each}
+				</div>
+			</div>
+
+			<!-- notSameSlot: Konfliktpartner („nicht gleichzeitig") -->
+			<div class="mt-3 flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">
+					nicht gleichzeitig wie (Konfliktpartner)
+					<span class="text-base-content/40">— wird sofort gespeichert</span>
+				</span>
+				<div
+					class="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg border border-base-300 p-2"
+				>
+					{#each data.exams.filter((/** @type {any} */ x) => x.id !== conEditing.id) as o}
+						<label class="flex cursor-pointer items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								class="checkbox checkbox-xs"
+								checked={conNotSame.includes(o.id)}
+								on:change={() => toggleNotSame(o.id)}
 							/>
 							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 								{o.examKind}

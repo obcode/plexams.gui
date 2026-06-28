@@ -18,6 +18,7 @@ export async function load() {
 					plannedDayNumber
 					plannedSlotNumber
 					isFixed
+					notSameSlot
 					ancode
 					notes
 					constraints {
