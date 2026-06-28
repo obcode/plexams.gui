@@ -553,6 +553,18 @@
 	}
 	const closeConstraints = () => (conEditing = null);
 
+	// Konfliktpartner-Kandidaten: nur andere Prüfungen mit gemeinsamem Studiengang
+	// (ohne gemeinsamen Studiengang kann es keinen Slot-Konflikt geben).
+	$: notSameCandidates = conEditing
+		? data.exams.filter(
+				(/** @type {any} */ x) =>
+					x.id !== conEditing.id &&
+					(conEditing.programs ?? []).some((/** @type {string} */ p) =>
+						(x.programs ?? []).includes(p)
+					)
+			)
+		: [];
+
 	/** @param {number} id */
 	function toggleSameSlot(id) {
 		conForm.sameSlot = conForm.sameSlot.includes(id)
@@ -1402,7 +1414,7 @@
 				<div
 					class="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg border border-base-300 p-2"
 				>
-					{#each data.exams.filter((/** @type {any} */ x) => x.id !== conEditing.id) as o}
+					{#each notSameCandidates as o}
 						<label class="flex cursor-pointer items-center gap-2 text-sm">
 							<input
 								type="checkbox"
@@ -1415,9 +1427,12 @@
 							</span>
 							<span>{o.module}</span>
 							<span class="text-base-content/40">· {examerDisplay(o)}</span>
+							<span class="text-base-content/40">· {(o.programs ?? []).join(', ')}</span>
 						</label>
 					{:else}
-						<span class="text-sm text-base-content/40">— keine weiteren Prüfungen</span>
+						<span class="text-sm text-base-content/40">
+							— keine Prüfungen mit gemeinsamem Studiengang
+						</span>
 					{/each}
 				</div>
 			</div>
