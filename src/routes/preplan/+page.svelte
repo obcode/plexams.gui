@@ -297,6 +297,112 @@
 		}
 	}
 
+	// ---- Constraints-Editor (pro Preplan-Prüfung) ----
+	$: examById = new Map(data.exams.map((/** @type {any} */ e) => [e.id, e]));
+	/** @param {number} id → Modulname der verknüpften Preplan-Prüfung */
+	const moduleOf = (id) => examById.get(id)?.module ?? `#${id}`;
+
+	/** Badges für die Tabellen-Anzeige der Constraints. @param {any} e */
+	function conBadges(e) {
+		const c = e.constraints;
+		if (!c) return [];
+		const rc = c.roomConstraints || {};
+		/** @type {{ t: string, cls: string }[]} */
+		const out = [];
+		if (rc.exahm) out.push({ t: 'EXaHM', cls: 'badge-info' });
+		if (rc.seb) out.push({ t: 'SEB', cls: 'badge-error' });
+		if (rc.lab) out.push({ t: 'Labor', cls: 'badge-neutral' });
+		if (rc.placesWithSocket) out.push({ t: 'Steckdosen', cls: 'badge-ghost' });
+		if (c.online) out.push({ t: 'Online', cls: 'badge-info' });
+		if ((rc.allowedRooms || []).length)
+			out.push({ t: `Räume: ${rc.allowedRooms.join(', ')}`, cls: 'badge-ghost' });
+		if ((c.sameSlot || []).length)
+			out.push({ t: `=Slot: ${c.sameSlot.map(moduleOf).join(', ')}`, cls: 'badge-ghost' });
+		if (c.fixedDay) out.push({ t: 'fixer Tag', cls: 'badge-ghost' });
+		return out;
+	}
+
+	/** @type {any} */
+	let conEditing = null;
+	/** @type {any} */
+	let conForm = null;
+	let conSaving = false;
+	let conError = '';
+
+	/** @param {any} e */
+	function openConstraints(e) {
+		const c = e.constraints || {};
+		const rc = c.roomConstraints || {};
+		conEditing = e;
+		conForm = {
+			exahm: !!rc.exahm,
+			seb: !!rc.seb,
+			lab: !!rc.lab,
+			placesWithSocket: !!rc.placesWithSocket,
+			online: !!c.online,
+			allowedRooms: (rc.allowedRooms || []).join(', '),
+			sameSlot: [...(c.sameSlot || [])]
+		};
+		conError = '';
+	}
+	const closeConstraints = () => (conEditing = null);
+
+	/** @param {number} id */
+	function toggleSameSlot(id) {
+		conForm.sameSlot = conForm.sameSlot.includes(id)
+			? conForm.sameSlot.filter((/** @type {number} */ x) => x !== id)
+			: [...conForm.sameSlot, id];
+	}
+
+	async function saveConstraints() {
+		if (conSaving) return;
+		conSaving = true;
+		conError = '';
+		const c = conEditing.constraints || {};
+		const rc = c.roomConstraints || {};
+		// editierte Felder überschreiben, alles andere unverändert übernehmen.
+		const constraints = {
+			notPlannedByMe: c.notPlannedByMe ?? false,
+			doNotPublish: c.doNotPublish ?? false,
+			online: conForm.online,
+			fixedDay: c.fixedDay ?? null,
+			fixedTime: c.fixedTime ?? null,
+			excludeDays: c.excludeDays ?? [],
+			possibleDays: c.possibleDays ?? [],
+			sameSlot: conForm.sameSlot.map(Number),
+			allowedRooms: conForm.allowedRooms
+				.split(/[\s,]+/)
+				.map((/** @type {string} */ s) => s.trim())
+				.filter(Boolean),
+			exahm: conForm.exahm,
+			seb: conForm.seb,
+			lab: conForm.lab,
+			placesWithSocket: conForm.placesWithSocket,
+			kdpJiraURL: rc.kdpJiraURL ?? null,
+			maxStudents: rc.maxStudents ?? null,
+			additionalSeats: rc.additionalSeats ?? null,
+			comments: rc.comments ?? null
+		};
+		try {
+			const res = await fetch('/api/setPreplanExamConstraints', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ id: conEditing.id, constraints })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				conError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			closeConstraints();
+			await invalidateAll();
+		} catch (e) {
+			conError = e instanceof Error ? e.message : String(e);
+		} finally {
+			conSaving = false;
+		}
+	}
+
 	// Zuordnung generieren & validieren
 	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[]}|null} */
 	let validation = null;
@@ -404,6 +510,10 @@
 			Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
 			<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren → erneut
 			validieren, bis alles ok.
+		</span>
+		<span class="text-xs opacity-80">
+			Constraints (Raum-Einschränkung, gleicher Slot …) werden beim Verknüpfen mit der ZPA-Prüfung
+			automatisch übernommen.
 		</span>
 	</div>
 
@@ -566,6 +676,13 @@
 							<td>
 								<div class="font-medium">{e.module}</div>
 								{#if e.notes}<div class="text-xs text-base-content/50">{e.notes}</div>{/if}
+								{#if conBadges(e).length}
+									<div class="mt-1 flex flex-wrap gap-1">
+										{#each conBadges(e) as b}
+											<span class="badge {b.cls} badge-xs">{b.t}</span>
+										{/each}
+									</div>
+								{/if}
 							</td>
 							<td class="text-sm">{e.examerName}</td>
 							<td>
@@ -610,8 +727,10 @@
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button
-								>
+								<button class="btn btn-ghost btn-xs" on:click={() => openConstraints(e)}>
+									Constraints
+								</button>
+								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
 									>Löschen</WriteButton
 								>
@@ -802,5 +921,103 @@
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={closeSuggest}></button>
+	</div>
+{/if}
+
+<!-- Constraints-Editor (pro Preplan-Prüfung) -->
+{#if conEditing}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-2xl">
+			<h2 class="text-lg font-semibold">Constraints — {conEditing.module}</h2>
+			<p class="mt-1 text-sm text-base-content/60">
+				{conEditing.examKind} · {conEditing.examerName}
+			</p>
+			<div class="mt-1 text-xs text-base-content/50">
+				Constraints werden beim Verknüpfen mit der ZPA-Prüfung automatisch übernommen.
+			</div>
+
+			<!-- Raum-Einschränkungen -->
+			<div class="mt-3 flex flex-col gap-2 rounded-lg border border-base-300 p-3">
+				<span class="text-xs font-medium text-base-content/60">Raum-Einschränkung</span>
+				<div class="flex flex-wrap gap-x-4 gap-y-1">
+					<label class="flex cursor-pointer items-center gap-1 text-sm">
+						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.exahm} />
+						<span>EXaHM</span>
+					</label>
+					<label class="flex cursor-pointer items-center gap-1 text-sm">
+						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.seb} />
+						<span>SEB</span>
+					</label>
+					<label class="flex cursor-pointer items-center gap-1 text-sm">
+						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.lab} />
+						<span>Labor</span>
+					</label>
+					<label class="flex cursor-pointer items-center gap-1 text-sm">
+						<input
+							type="checkbox"
+							class="checkbox checkbox-xs"
+							bind:checked={conForm.placesWithSocket}
+						/>
+						<span>Steckdosen</span>
+					</label>
+					<label class="flex cursor-pointer items-center gap-1 text-sm">
+						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.online} />
+						<span>Online</span>
+					</label>
+				</div>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">
+						erlaubte Räume (Komma-getrennt, leer = keine Einschränkung)
+					</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm"
+						bind:value={conForm.allowedRooms}
+						placeholder="z. B. R1.046, R1.049"
+					/>
+				</label>
+			</div>
+
+			<!-- sameSlot: andere Preplan-Prüfungen -->
+			<div class="mt-3 flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">
+					gleicher Slot wie (andere Vorplanungs-Prüfungen)
+				</span>
+				<div
+					class="flex max-h-40 flex-col gap-1 overflow-y-auto rounded-lg border border-base-300 p-2"
+				>
+					{#each data.exams.filter((/** @type {any} */ x) => x.id !== conEditing.id) as o}
+						<label class="flex cursor-pointer items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								class="checkbox checkbox-xs"
+								checked={conForm.sameSlot.includes(o.id)}
+								on:change={() => toggleSameSlot(o.id)}
+							/>
+							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+								{o.examKind}
+							</span>
+							<span>{o.module}</span>
+							<span class="text-base-content/40">· {o.examerName}</span>
+						</label>
+					{:else}
+						<span class="text-sm text-base-content/40">— keine weiteren Prüfungen</span>
+					{/each}
+				</div>
+			</div>
+
+			{#if conError}
+				<div class="alert alert-error mt-3 py-2 text-sm"><span>{conError}</span></div>
+			{/if}
+			<div class="modal-action">
+				<button class="btn btn-ghost btn-sm" on:click={closeConstraints} disabled={conSaving}>
+					Abbrechen
+				</button>
+				<WriteButton class="btn btn-primary btn-sm" on:click={saveConstraints} disabled={conSaving}>
+					{conSaving ? 'speichert …' : 'Speichern'}
+				</WriteButton>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={closeConstraints}></button>
 	</div>
 {/if}

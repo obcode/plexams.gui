@@ -19,6 +19,27 @@ export async function load() {
 					plannedSlotNumber
 					ancode
 					notes
+					constraints {
+						notPlannedByMe
+						doNotPublish
+						online
+						fixedDay
+						fixedTime
+						excludeDays
+						possibleDays
+						sameSlot
+						roomConstraints {
+							allowedRooms
+							exahm
+							seb
+							lab
+							placesWithSocket
+							kdpJiraURL
+							maxStudents
+							additionalSeats
+							comments
+						}
+					}
 				}
 				teachers(fromZPA: false) {
 					id
