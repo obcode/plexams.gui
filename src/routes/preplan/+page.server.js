@@ -200,12 +200,58 @@ export async function load() {
 			bookedRooms: s.dayNumber == null ? [] : bookedRoomsForSlot(s.starttime)
 		}));
 
+	// --- Kalender-Slots: alle Slot-Zeiten mit Prüfung ODER gebuchten Räumen ---
+	// Genutzte Räume eines Slots = decken einen Bedarf (rooms \ roomsToBook).
+	/** @param {any} ov */
+	function usedRoomsOf(ov) {
+		/** @type {Set<string>} */
+		const set = new Set();
+		for (const need of [ov?.exahm, ov?.seb]) {
+			for (const r of need?.rooms || []) if (!(need?.roomsToBook || []).includes(r)) set.add(r);
+		}
+		return set;
+	}
+	const overviewByKey = new Map(
+		overview
+			.filter((/** @type {any} */ s) => s.dayNumber != null)
+			.map((/** @type {any} */ s) => [`${s.dayNumber}-${s.slotNumber}`, s])
+	);
+	const emptyNeed = {
+		examCount: 0,
+		seatsNeeded: 0,
+		roomsSuggested: 0,
+		rooms: [],
+		seatsAvailable: 0,
+		seatsBooked: 0,
+		roomsToBook: []
+	};
+	const calendarSlots = [];
+	for (const cs of slots) {
+		const ov = overviewByKey.get(`${cs.dayNumber}-${cs.slotNumber}`);
+		const booked = bookedRoomsForSlot(cs.starttime);
+		const used = ov ? usedRoomsOf(ov) : new Set();
+		const freeRooms = booked.filter((/** @type {string} */ r) => !used.has(r));
+		const hasExam = !!ov && ((ov.exahm?.examCount || 0) > 0 || (ov.seb?.examCount || 0) > 0);
+		if (!hasExam && freeRooms.length === 0) continue;
+		calendarSlots.push({
+			dayNumber: cs.dayNumber,
+			slotNumber: cs.slotNumber,
+			starttime: cs.starttime,
+			exahm: ov?.exahm ?? emptyNeed,
+			seb: ov?.seb ?? emptyNeed,
+			conflicts: ov?.conflicts ?? [],
+			bookedRooms: booked,
+			freeRooms
+		});
+	}
+
 	return {
 		exams: data.preplanExams ?? [],
 		teachers,
 		studyPrograms: data.studyPrograms ?? [],
 		slots,
 		overview,
+		calendarSlots,
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
 		zpaPresent: (data.zpaExams ?? []).length > 0
 	};

@@ -100,7 +100,7 @@
 	};
 
 	$: calendar = (() => {
-		const planned = (data.overview ?? []).filter(
+		const planned = (data.calendarSlots ?? []).filter(
 			(/** @type {any} */ s) => s.dayNumber != null && s.starttime
 		);
 		/** @type {Map<string, any>} */
@@ -139,15 +139,6 @@
 
 	/** @type {Record<string, number>} */
 	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
-	/** @param {any} slot → Räume, die einen Bedarf decken (gebucht & genutzt) */
-	function usedRooms(slot) {
-		/** @type {Set<string>} */
-		const s = new Set();
-		for (const need of [slot.exahm, slot.seb]) {
-			for (const r of need.rooms || []) if (!(need.roomsToBook || []).includes(r)) s.add(r);
-		}
-		return s;
-	}
 	/** @param {any} slot → „schlimmster" Raum-Status der Arten (für die Slot-Färbung) */
 	function worstLevel(slot) {
 		let lv = 'neutral';
@@ -727,71 +718,59 @@
 							<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-1.5">
 								<div class="text-xs font-medium tabular-nums">{WD2[col]} {ddmm(date)}</div>
 								{#each entries as en}
-									{@const used = usedRooms(en.slot)}
-									{@const bookedUsed = (en.slot.bookedRooms || []).filter(
-										(/** @type {string} */ r) => used.has(r)
+									{@const usedBooked = (en.slot.bookedRooms || []).filter(
+										(/** @type {string} */ r) => !(en.slot.freeRooms || []).includes(r)
 									)}
-									{@const bookedFree = (en.slot.bookedRooms || []).filter(
-										(/** @type {string} */ r) => !used.has(r)
-									)}
-									<div
-										class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
-											worstLevel(en.slot)
-										)}"
-									>
-										<div class="font-medium tabular-nums">{en.time} Uhr</div>
-										{#each en.exams as ex}
-											<div class="mt-0.5 flex items-center gap-1">
-												<span
-													class="badge badge-xs {ex.examKind === 'SEB'
-														? 'badge-error'
-														: 'badge-info'}"
-												>
-													{ex.examKind}
-												</span>
-												<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">
-													{ex.module}
-												</span>
-												<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
-											</div>
-										{/each}
-										{#each [{ label: 'EXaHM', need: en.slot.exahm }, { label: 'SEB', need: en.slot.seb }] as k}
-											{#if k.need.examCount > 0}
-												{@const st = roomStatus(k.need)}
-												{@const restricted = restrictedRooms(en.slot, k.label)}
-												<div class="mt-1 flex flex-wrap items-center gap-x-1">
-													<span>{STATUS_DOT[st.level]}</span>
-													<span class="font-medium">{k.label}</span>
-													<span class="tabular-nums text-base-content/60">
-														{k.need.seatsBooked}/{k.need.seatsNeeded} Pl.
+									{#if en.exams.length}
+										<div
+											class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(worstLevel(en.slot))}"
+										>
+											<div class="font-medium tabular-nums">{en.time} Uhr</div>
+											{#each en.exams as ex}
+												<div class="mt-0.5 flex items-center gap-1">
+													<span class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+														{ex.examKind}
 													</span>
-													{#if st.level === 'yellow' && k.need.roomsToBook.length}
-														<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
-													{:else if st.level === 'red'}
-														<span class="text-error">Kapazität!</span>
-													{/if}
+													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">{ex.module}</span>
+													<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
 												</div>
-												{#if restricted.length}
-													<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
-												{:else if k.need.rooms.length}
-													<div class="text-base-content/40">
-														Vorschlag: {k.need.rooms.join(', ')}
+											{/each}
+											{#each [{ label: 'EXaHM', need: en.slot.exahm }, { label: 'SEB', need: en.slot.seb }] as k}
+												{#if k.need.examCount > 0}
+													{@const st = roomStatus(k.need)}
+													{@const restricted = restrictedRooms(en.slot, k.label)}
+													<div class="mt-1 flex flex-wrap items-center gap-x-1">
+														<span>{STATUS_DOT[st.level]}</span>
+														<span class="font-medium">{k.label}</span>
+														<span class="tabular-nums text-base-content/60">{k.need.seatsBooked}/{k.need.seatsNeeded} Pl.</span>
+														{#if st.level === 'yellow' && k.need.roomsToBook.length}
+															<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
+														{:else if st.level === 'red'}
+															<span class="text-error">Kapazität!</span>
+														{/if}
 													</div>
+													{#if restricted.length}
+														<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
+													{:else if k.need.rooms.length}
+														<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
+													{/if}
 												{/if}
+											{/each}
+											{#if usedBooked.length}
+												<div class="mt-1 text-base-content/50">🔌 genutzt: {usedBooked.join(', ')}</div>
 											{/if}
-										{/each}
-										{#if en.slot.bookedRooms && en.slot.bookedRooms.length}
-											<div class="mt-1 text-base-content/50">
-												🔌 {bookedUsed.join(', ')}{#if bookedFree.length}<span
-														class="text-base-content/30"
-														>{bookedUsed.length ? ' · ' : ''}{bookedFree.join(', ')} (ungenutzt)</span
-													>{/if}
-											</div>
-										{/if}
-										{#each en.slot.conflicts as c}
-											<div class="mt-0.5 text-warning">⚠ {c.program}: {c.modules.join(', ')}</div>
-										{/each}
-									</div>
+											{#each en.slot.conflicts as c}
+												<div class="mt-0.5 text-warning">⚠ {c.program}: {c.modules.join(', ')}</div>
+											{/each}
+										</div>
+									{/if}
+									{#if en.slot.freeRooms && en.slot.freeRooms.length}
+										<div
+											class="rounded border border-dashed border-base-300 bg-base-100 px-1.5 py-1 text-xs text-base-content/50"
+										>
+											<span class="tabular-nums">{en.time}</span> · 🔓 frei: {en.slot.freeRooms.join(', ')}
+										</div>
+									{/if}
 								{:else}
 									<div class="py-2 text-center text-base-content/20">—</div>
 								{/each}
