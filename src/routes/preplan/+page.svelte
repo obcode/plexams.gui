@@ -2,8 +2,35 @@
 	import { page } from '$app/stores';
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 
 	export let data;
+
+	// Ampel je Art und Slot (exakt nach Spec):
+	//  seatsNeeded == 0            → neutral (kein Bedarf)
+	//  seatsNeeded > seatsAvailable → rot   (Kapazität reicht nicht)
+	//  seatsBooked >= seatsNeeded   → grün  (genug gebucht)
+	//  sonst                        → gelb  (noch X Plätze buchen)
+	/** @param {any} n */
+	function roomStatus(n) {
+		if (!n || n.seatsNeeded === 0) return { level: 'neutral', text: 'kein Bedarf', deficit: 0 };
+		if (n.seatsNeeded > n.seatsAvailable)
+			return { level: 'red', text: 'Kapazität reicht nicht', deficit: 0 };
+		if (n.seatsBooked >= n.seatsNeeded) return { level: 'green', text: 'genug gebucht', deficit: 0 };
+		const deficit = n.seatsNeeded - n.seatsBooked;
+		return { level: 'yellow', text: `noch ${deficit} Plätze buchen`, deficit };
+	}
+	/** @type {Record<string, string>} */
+	const STATUS_DOT = { neutral: '⚪', red: '🔴', green: '🟢', yellow: '🟡' };
+	/** @param {string} level */
+	const statusBorder = (level) =>
+		level === 'red'
+			? 'border-error/50 bg-error/5'
+			: level === 'yellow'
+				? 'border-warning/50 bg-warning/5'
+				: level === 'green'
+					? 'border-success/40 bg-success/5'
+					: 'border-base-300';
 
 	/** @param {string} t */
 	const fmtTime = (t) => /(\d{2}:\d{2})/.exec(t ?? '')?.[1] ?? '';
@@ -326,17 +353,23 @@
 			<span>gesetzte behalten</span>
 		</label>
 		<button class="btn btn-outline btn-sm" on:click={validate} disabled={validating || generating}>
-			{validating ? 'validiert …' : 'Validieren'}
+			{validating ? 'prüft …' : '✔ Prüfen'}
 		</button>
 		<WriteButton
 			class="btn btn-secondary btn-sm"
 			on:click={generate}
 			disabled={validating || generating}
 		>
-			{generating ? 'generiert …' : 'Zuordnung generieren'}
+			{generating ? 'verteilt …' : '🤖 Automatisch verteilen'}
 		</WriteButton>
 		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
 	</div>
+
+	<!-- 🔌 Anny importieren → danach Übersicht (seatsBooked) neu laden -->
+	<SubscriptionTerminal
+		actions={[{ field: 'importAnnyBookings', label: '🔌 Anny-Buchungen importieren' }]}
+		on:done={() => invalidateAll()}
+	/>
 
 	<div class="alert alert-info flex-col items-start py-2 text-sm">
 		<span>
@@ -410,42 +443,35 @@
 						<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
 							{#each [{ label: 'EXaHM', color: 'badge-info', need: slot.exahm }, { label: 'SEB', color: 'badge-error', need: slot.seb }] as k}
 								{#if k.need.examCount > 0}
-									<div class="rounded border border-base-300 p-2 text-sm">
-										<div class="flex items-center gap-2">
+									{@const st = roomStatus(k.need)}
+									<div class="rounded border p-2 text-sm {statusBorder(st.level)}">
+										<div class="flex flex-wrap items-center gap-2">
 											<span class="badge {k.color} badge-sm">{k.label}</span>
 											<span class="tabular-nums">{k.need.examCount} Prüfung(en)</span>
+											<span class="text-base-content/50">·</span>
+											<span class="tabular-nums">{k.need.seatsNeeded} Plätze nötig</span>
+											<div class="flex-1"></div>
+											<span
+												class="font-medium {st.level === 'red'
+													? 'text-error'
+													: st.level === 'yellow'
+														? 'text-warning'
+														: st.level === 'green'
+															? 'text-success'
+															: 'text-base-content/50'}"
+											>
+												{STATUS_DOT[st.level]}
+												{st.text}
+											</span>
 										</div>
-										<div
-											class="mt-1 tabular-nums {k.need.seatsNeeded > k.need.seatsAvailable
-												? 'font-medium text-error'
-												: 'text-base-content/70'}"
-										>
-											{k.need.seatsNeeded} Plätze nötig · {k.need.seatsAvailable} verfügbar
-											{#if k.need.seatsNeeded > k.need.seatsAvailable}
-												<span class="text-error">⚠ Kapazität reicht nicht</span>
-											{/if}
+
+										<div class="mt-1 tabular-nums text-base-content/70">
+											gebucht {k.need.seatsBooked} / verfügbar {k.need.seatsAvailable}
 										</div>
-										<div
-											class="mt-1 flex flex-wrap items-center gap-x-2 tabular-nums {k.need
-												.seatsBooked < k.need.seatsNeeded
-												? 'font-medium text-warning'
-												: 'text-base-content/70'}"
-										>
-											<span>nötig {k.need.seatsNeeded}</span>
-											<span>· gebucht {k.need.seatsBooked}</span>
-											{#if k.need.seatsBooked < k.need.seatsNeeded}
-												<span class="badge badge-warning badge-sm">
-													noch zu buchen: {k.need.seatsNeeded - k.need.seatsBooked} Plätze
-												</span>
-											{:else}
-												<span class="badge badge-success badge-sm">gebucht</span>
-											{/if}
-										</div>
-										{#if k.need.roomsToBook.length}
+
+										{#if st.level === 'yellow' && k.need.roomsToBook.length}
 											<div class="mt-1 text-xs text-warning">
-												noch in Anny buchen: <span class="font-medium"
-													>{k.need.roomsToBook.join(', ')}</span
-												>
+												noch buchen: <span class="font-medium">{k.need.roomsToBook.join(', ')}</span>
 											</div>
 										{/if}
 										{#if k.need.rooms.length}
