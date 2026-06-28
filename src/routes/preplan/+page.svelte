@@ -517,7 +517,7 @@
 		if ((rc.allowedRooms || []).length)
 			out.push({ t: `Räume: ${rc.allowedRooms.join(', ')}`, cls: 'badge-ghost' });
 		if ((c.sameSlot || []).length)
-			out.push({ t: `=Slot: ${c.sameSlot.map(moduleOf).join(', ')}`, cls: 'badge-ghost' });
+			out.push({ t: `=Slot: ${c.sameSlot.map(moduleOf).join(', ')}`, cls: 'badge-info' });
 		if ((e.notSameSlot || []).length)
 			out.push({ t: `≠Slot: ${e.notSameSlot.map(moduleOf).join(', ')}`, cls: 'badge-warning' });
 		if ((e.canShareSlot || []).length)
