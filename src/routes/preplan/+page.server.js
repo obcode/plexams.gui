@@ -54,6 +54,9 @@ export async function load() {
 					category
 				}
 				semesterConfig {
+					days {
+						date
+					}
 					slots {
 						dayNumber
 						slotNumber
@@ -110,13 +113,24 @@ export async function load() {
 		.slice()
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 
-	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert)
+	// Prüfungszeitraum = konfigurierte Prüfungstage (z. B. 2026 SS: 13.–24.07.).
+	/** @param {string | null | undefined} v */
+	const dayKey = (v) => (String(v ?? '').match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] ?? null;
+	/** @type {Set<string>} */
+	const examDates = new Set(
+		(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => dayKey(d.date)).filter(Boolean)
+	);
+
+	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert) — nur innerhalb
+	// der Prüfungszeit (Datum aus starttime muss ein konfigurierter Prüfungstag sein).
 	/** @type {Map<string, any>} */
 	const slotMap = new Map();
 	for (const s of [
 		...(data.semesterConfig?.slots ?? []),
 		...(data.semesterConfig?.mucDaiSlots ?? [])
 	]) {
+		const dk = dayKey(s.starttime);
+		if (examDates.size && dk && !examDates.has(dk)) continue;
 		slotMap.set(`${s.dayNumber}-${s.slotNumber}`, s);
 	}
 	const slots = [...slotMap.values()].sort(
