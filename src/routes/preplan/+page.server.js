@@ -100,6 +100,7 @@ export async function load() {
 					startDate
 					endDate
 					canceledAt
+					mine
 				}
 			}
 		`
@@ -162,7 +163,9 @@ export async function load() {
 	/** @type {Map<string, {start:number,end:number}[]>} */
 	const annyByDayRoom = new Map();
 	for (const b of data.allAnnyBookings ?? []) {
-		if (!b.room || !String(b.room).startsWith('T') || b.canceledAt) continue;
+		// nur eigene Buchungen (mine) zählen — fremde Anny-Buchungen sind nicht „unsere"
+		// gebuchten Räume (entspricht der seatsBooked-Logik des Servers).
+		if (!b.mine || !b.room || !String(b.room).startsWith('T') || b.canceledAt) continue;
 		const dk = toDateKey(b.startDate);
 		const s = toMinutes(b.startDate);
 		const e = toMinutes(b.endDate);
