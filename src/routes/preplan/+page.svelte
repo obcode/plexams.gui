@@ -575,9 +575,10 @@
 							{#if isBucket}
 								⚠ Ohne Slot — noch zuzuordnen
 							{:else}
-								Tag {slot.dayNumber} · Slot {slot.slotNumber}{slot.starttime
-									? ` (${fmtTime(slot.starttime)})`
-									: ''}
+								{slotLabel(slot)}
+								<span class="ml-1 text-xs font-normal text-base-content/50">
+									· Tag {slot.dayNumber} / Slot {slot.slotNumber}
+								</span>
 							{/if}
 						</div>
 
