@@ -739,6 +739,16 @@
 											<option value="{s.dayNumber}-{s.slotNumber}">{slotLabel(s)}</option>
 										{/each}
 									</select>
+									{#if slotValue(e)}
+										<WriteButton
+											class="btn btn-ghost btn-xs text-error"
+											title="Slot-Zuordnung aufheben"
+											disabled={busy.has(e.id)}
+											on:click={() => setSlot(e, '')}
+										>
+											✕
+										</WriteButton>
+									{/if}
 								</div>
 							</td>
 							<td>
