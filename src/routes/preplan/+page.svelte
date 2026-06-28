@@ -824,7 +824,11 @@
 													<div class="mt-1 flex flex-wrap items-center gap-x-1">
 														<span>{STATUS_DOT[st.level]}</span>
 														<span class="font-medium">{k.label}</span>
-														<span class="tabular-nums text-base-content/60">{k.need.seatsBooked}/{k.need.seatsNeeded} Pl.</span>
+														<span
+														class="tabular-nums text-base-content/60"
+														title="genutzt / gebucht"
+														>{k.need.seatsNeeded}/{k.need.seatsBooked} Pl.</span
+													>
 														{#if st.level === 'yellow' && k.need.roomsToBook.length}
 															<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
 														{:else if st.level === 'red'}
