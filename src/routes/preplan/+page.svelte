@@ -811,6 +811,7 @@
 													</span>
 													{#if ex.isFixed}<span title="fixiert">🔒</span>{/if}
 													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">{ex.module}</span>
+													<span class="truncate text-base-content/50">{examerDisplay(ex)}</span>
 													<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
 													{#if ex.programs?.length}
 														<span class="truncate text-base-content/40">{ex.programs.join(', ')}</span>
