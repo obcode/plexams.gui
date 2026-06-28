@@ -912,13 +912,31 @@
 				SEB/EXaHM-Prüfung {isNew ? 'anlegen' : 'bearbeiten'}
 			</h2>
 			<div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-				<label class="flex flex-col gap-1">
+				<div class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Art</span>
-					<select class="select select-bordered select-sm w-32" bind:value={editing.examKind}>
-						<option value="EXaHM">EXaHM</option>
-						<option value="SEB">SEB</option>
-					</select>
-				</label>
+					<div class="flex gap-4">
+						<label class="flex cursor-pointer items-center gap-2 text-sm">
+							<input
+								type="radio"
+								class="radio radio-sm"
+								name="examKind"
+								value="EXaHM"
+								bind:group={editing.examKind}
+							/>
+							<span>EXaHM</span>
+						</label>
+						<label class="flex cursor-pointer items-center gap-2 text-sm">
+							<input
+								type="radio"
+								class="radio radio-sm"
+								name="examKind"
+								value="SEB"
+								bind:group={editing.examKind}
+							/>
+							<span>SEB</span>
+						</label>
+					</div>
+				</div>
 				<div class="flex flex-col gap-1 sm:col-span-2">
 					<div class="flex items-baseline gap-2">
 						<span class="text-xs font-medium text-base-content/60"
