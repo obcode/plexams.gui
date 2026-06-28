@@ -134,6 +134,15 @@
 
 	/** @type {Record<string, number>} */
 	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
+	/** @param {any} slot → Räume, die einen Bedarf decken (gebucht & genutzt) */
+	function usedRooms(slot) {
+		/** @type {Set<string>} */
+		const s = new Set();
+		for (const need of [slot.exahm, slot.seb]) {
+			for (const r of need.rooms || []) if (!(need.roomsToBook || []).includes(r)) s.add(r);
+		}
+		return s;
+	}
 	/** @param {any} slot → „schlimmster" Raum-Status der Arten (für die Slot-Färbung) */
 	function worstLevel(slot) {
 		let lv = 'neutral';
@@ -706,6 +715,9 @@
 							<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-1.5">
 								<div class="text-xs font-medium tabular-nums">{WD2[col]} {ddmm(date)}</div>
 								{#each entries as en}
+									{@const used = usedRooms(en.slot)}
+									{@const bookedUsed = (en.slot.bookedRooms || []).filter((/** @type {string} */ r) => used.has(r))}
+									{@const bookedFree = (en.slot.bookedRooms || []).filter((/** @type {string} */ r) => !used.has(r))}
 									<div
 										class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
 											worstLevel(en.slot)
@@ -729,9 +741,6 @@
 											{#if k.need.examCount > 0}
 												{@const st = roomStatus(k.need)}
 												{@const restricted = restrictedRooms(en.slot, k.label)}
-												{@const booked = (k.need.rooms || []).filter(
-													(/** @type {string} */ r) => !(k.need.roomsToBook || []).includes(r)
-												)}
 												<div class="mt-1 flex flex-wrap items-center gap-x-1">
 													<span>{STATUS_DOT[st.level]}</span>
 													<span class="font-medium">{k.label}</span>
@@ -744,16 +753,21 @@
 														<span class="text-error">Kapazität!</span>
 													{/if}
 												</div>
-												{#if booked.length}
-													<div class="text-base-content/50">gebucht: {booked.join(', ')}</div>
-												{/if}
 												{#if restricted.length}
 													<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
-												{:else if !booked.length && k.need.rooms.length}
+												{:else if k.need.rooms.length}
 													<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
 												{/if}
 											{/if}
 										{/each}
+										{#if en.slot.bookedRooms && en.slot.bookedRooms.length}
+											<div class="mt-1 text-base-content/50">
+												🔌 {bookedUsed.join(', ')}{#if bookedFree.length}<span
+														class="text-base-content/30"
+														>{bookedUsed.length ? ' · ' : ''}{bookedFree.join(', ')} (ungenutzt)</span
+													>{/if}
+											</div>
+										{/if}
 										{#each en.slot.conflicts as c}
 											<div class="mt-0.5 text-warning">⚠ {c.program}: {c.modules.join(', ')}</div>
 										{/each}
