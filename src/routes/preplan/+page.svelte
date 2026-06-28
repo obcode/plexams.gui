@@ -302,8 +302,12 @@
 
 	// ---- Constraints-Editor (pro Preplan-Prüfung) ----
 	$: examById = new Map(data.exams.map((/** @type {any} */ e) => [e.id, e]));
-	/** @param {number} id → Modulname der verknüpften Preplan-Prüfung */
-	const moduleOf = (id) => examById.get(id)?.module ?? `#${id}`;
+	/** @param {number} id → „Modul (Nachname, Vorname)" der verknüpften Preplan-Prüfung */
+	const moduleOf = (id) => {
+		const e = examById.get(id);
+		if (!e) return `#${id}`;
+		return e.examerName ? `${e.module} (${examerLabel(e.examerName)})` : e.module;
+	};
 
 	/** Badges für die Tabellen-Anzeige der Constraints. @param {any} e */
 	function conBadges(e) {
