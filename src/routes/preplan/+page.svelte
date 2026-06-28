@@ -16,7 +16,8 @@
 		if (!n || n.seatsNeeded === 0) return { level: 'neutral', text: 'kein Bedarf', deficit: 0 };
 		if (n.seatsNeeded > n.seatsAvailable)
 			return { level: 'red', text: 'Kapazität reicht nicht', deficit: 0 };
-		if (n.seatsBooked >= n.seatsNeeded) return { level: 'green', text: 'genug gebucht', deficit: 0 };
+		if (n.seatsBooked >= n.seatsNeeded)
+			return { level: 'green', text: 'genug gebucht', deficit: 0 };
 		const deficit = n.seatsNeeded - n.seatsBooked;
 		return { level: 'yellow', text: `noch ${deficit} Plätze buchen`, deficit };
 	}
@@ -31,7 +32,8 @@
 		const rooms = new Set();
 		for (const e of data.exams) {
 			if (e.examKind !== kind) continue;
-			if (e.plannedDayNumber !== slot.dayNumber || e.plannedSlotNumber !== slot.slotNumber) continue;
+			if (e.plannedDayNumber !== slot.dayNumber || e.plannedSlotNumber !== slot.slotNumber)
+				continue;
 			for (const r of e.constraints?.roomConstraints?.allowedRooms ?? []) rooms.add(r);
 		}
 		return [...rooms].sort((a, b) => a.localeCompare(b));
@@ -112,7 +114,8 @@
 			usedWd.add(wd);
 			const mon = mondayOf(dt);
 			const key = mon.toISOString().slice(0, 10);
-			if (!weeks.has(key)) weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
+			if (!weeks.has(key))
+				weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
 			const w = weeks.get(key);
 			if (!w.byDay.has(wd)) w.byDay.set(wd, []);
 			const slotExams = (data.exams ?? []).filter(
@@ -123,7 +126,9 @@
 		}
 		for (const w of weeks.values())
 			for (const arr of w.byDay.values())
-				arr.sort((/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber);
+				arr.sort(
+					(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
+				);
 		const weekList = [...weeks.values()].sort(
 			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
 		);
@@ -175,16 +180,23 @@
 		if (parts.length < 2) return full ?? '';
 		return `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
 	}
+	// teachers.shortname ist bereits „Nachname, Vorname" → direkt als Label nutzen.
 	$: teacherOptions = (data.teachers ?? [])
-		.map((/** @type {any} */ t) => ({ id: t.id, label: examerLabel(t.fullname) }))
+		.map((/** @type {any} */ t) => ({ id: t.id, label: t.shortname }))
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label));
+	$: teacherById = new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname]));
+	// Anzeige eines Prüfenden: sauberer shortname über die examerID, sonst der
+	// gespeicherte Snapshot (Voll-Name → „Nachname, …") als Fallback.
+	/** @param {any} e */
+	const examerDisplay = (e) => teacherById.get(e?.examerID) ?? examerLabel(e?.examerName ?? '');
 	$: examerFiltered = examerQuery.trim()
 		? teacherOptions.filter((/** @type {any} */ o) =>
 				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
 			)
 		: teacherOptions;
 	$: selectedExamerLabel = editing
-		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ?? '')
+		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ??
+			'')
 		: '';
 
 	function openAdd() {
@@ -412,7 +424,7 @@
 	const moduleOf = (id) => {
 		const e = examById.get(id);
 		if (!e) return `#${id}`;
-		return e.examerName ? `${e.module} (${examerLabel(e.examerName)})` : e.module;
+		return e.examerName ? `${e.module} (${examerDisplay(e)})` : e.module;
 	};
 
 	/** Badges für die Tabellen-Anzeige der Constraints. @param {any} e */
@@ -685,7 +697,7 @@
 							</span>
 							<span class="font-medium">{e.module}</span>
 							<span class="text-base-content/50">
-								· {examerLabel(e.examerName)} · {e.expectedStudents}
+								· {examerDisplay(e)} · {e.expectedStudents}
 							</span>
 						</span>
 					{/each}
@@ -716,8 +728,12 @@
 								<div class="text-xs font-medium tabular-nums">{WD2[col]} {ddmm(date)}</div>
 								{#each entries as en}
 									{@const used = usedRooms(en.slot)}
-									{@const bookedUsed = (en.slot.bookedRooms || []).filter((/** @type {string} */ r) => used.has(r))}
-									{@const bookedFree = (en.slot.bookedRooms || []).filter((/** @type {string} */ r) => !used.has(r))}
+									{@const bookedUsed = (en.slot.bookedRooms || []).filter(
+										(/** @type {string} */ r) => used.has(r)
+									)}
+									{@const bookedFree = (en.slot.bookedRooms || []).filter(
+										(/** @type {string} */ r) => !used.has(r)
+									)}
 									<div
 										class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
 											worstLevel(en.slot)
@@ -727,11 +743,13 @@
 										{#each en.exams as ex}
 											<div class="mt-0.5 flex items-center gap-1">
 												<span
-													class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}"
+													class="badge badge-xs {ex.examKind === 'SEB'
+														? 'badge-error'
+														: 'badge-info'}"
 												>
 													{ex.examKind}
 												</span>
-												<span class="truncate" title="{ex.module} · {examerLabel(ex.examerName)}">
+												<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">
 													{ex.module}
 												</span>
 												<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
@@ -756,7 +774,9 @@
 												{#if restricted.length}
 													<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
 												{:else if k.need.rooms.length}
-													<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
+													<div class="text-base-content/40">
+														Vorschlag: {k.need.rooms.join(', ')}
+													</div>
 												{/if}
 											{/if}
 										{/each}
@@ -831,7 +851,7 @@
 									</div>
 								{/if}
 							</td>
-							<td class="text-sm">{examerLabel(e.examerName)}</td>
+							<td class="text-sm">{examerDisplay(e)}</td>
 							<td>
 								<div class="flex flex-wrap gap-1">
 									{#each e.programs as p}
@@ -887,7 +907,8 @@
 								<button class="btn btn-ghost btn-xs" on:click={() => openConstraints(e)}>
 									Constraints
 								</button>
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button>
+								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button
+								>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
 									>Löschen</WriteButton
 								>
@@ -917,7 +938,9 @@
 				</label>
 				<div class="flex flex-col gap-1 sm:col-span-2">
 					<div class="flex items-baseline gap-2">
-						<span class="text-xs font-medium text-base-content/60">Prüfender (Nachname, Vorname)</span>
+						<span class="text-xs font-medium text-base-content/60"
+							>Prüfender (Nachname, Vorname)</span
+						>
 						{#if selectedExamerLabel}
 							<span class="text-xs text-primary">✓ {selectedExamerLabel}</span>
 						{:else}
@@ -930,7 +953,9 @@
 						bind:value={examerQuery}
 						placeholder="suchen (Nachname) …"
 					/>
-					<div class="max-h-60 divide-y divide-base-200 overflow-y-auto rounded-lg border border-base-300">
+					<div
+						class="max-h-60 divide-y divide-base-200 overflow-y-auto rounded-lg border border-base-300"
+					>
 						{#each examerFiltered as o}
 							<button
 								type="button"
@@ -1019,7 +1044,7 @@
 		<div class="modal-box max-w-2xl">
 			<h2 class="text-lg font-semibold">Ancode zuordnen</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				{suggestFor.examKind} · {suggestFor.module} · {examerLabel(suggestFor.examerName)}
+				{suggestFor.examKind} · {suggestFor.module} · {examerDisplay(suggestFor)}
 			</p>
 
 			{#if suggestLoading}
@@ -1106,7 +1131,7 @@
 		<div class="modal-box max-w-2xl">
 			<h2 class="text-lg font-semibold">Constraints — {conEditing.module}</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				{conEditing.examKind} · {examerLabel(conEditing.examerName)}
+				{conEditing.examKind} · {examerDisplay(conEditing)}
 			</p>
 			<div class="mt-1 text-xs text-base-content/50">
 				Constraints werden beim Verknüpfen mit der ZPA-Prüfung automatisch übernommen.
@@ -1174,7 +1199,7 @@
 								{o.examKind}
 							</span>
 							<span>{o.module}</span>
-							<span class="text-base-content/40">· {examerLabel(o.examerName)}</span>
+							<span class="text-base-content/40">· {examerDisplay(o)}</span>
 						</label>
 					{:else}
 						<span class="text-sm text-base-content/40">— keine weiteren Prüfungen</span>

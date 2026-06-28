@@ -43,7 +43,7 @@ export async function load() {
 				}
 				teachers(fromZPA: false) {
 					id
-					fullname
+					shortname
 				}
 				zpaExams {
 					ancode
@@ -107,7 +107,7 @@ export async function load() {
 
 	const teachers = (data.teachers ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.fullname.localeCompare(b.fullname));
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
 
 	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert)
 	/** @type {Map<string, any>} */
