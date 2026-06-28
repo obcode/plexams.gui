@@ -177,6 +177,10 @@
 			return ra - rb || a[0].localeCompare(b[0]);
 		});
 	})();
+	/** passt die Prüfung zum aktiven Studiengang-Filter? @param {any} ex */
+	const matchesProgFilter = (ex) =>
+		selectedPrograms.length > 0 &&
+		(ex.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p));
 	$: filteredExams = selectedPrograms.length
 		? data.exams.filter((/** @type {any} */ e) =>
 				(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
@@ -806,7 +810,13 @@
 										>
 											<div class="font-medium tabular-nums">{en.time} Uhr</div>
 											{#each en.exams as ex}
-												<div class="mt-0.5 flex items-center gap-1">
+												<div
+													class="mt-0.5 flex items-center gap-1 {selectedPrograms.length
+														? matchesProgFilter(ex)
+															? 'rounded bg-primary/15 px-0.5 font-medium'
+															: 'opacity-40'
+														: ''}"
+												>
 													<span class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 														{ex.examKind}
 													</span>
@@ -815,7 +825,11 @@
 													<span class="truncate text-base-content/50">{examerDisplay(ex)}</span>
 													<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
 													{#if ex.programs?.length}
-														<span class="truncate text-base-content/40">{ex.programs.join(', ')}</span>
+														<span class="truncate text-base-content/40">
+															{#each ex.programs as p, i}{i ? ', ' : ''}<span
+																	class={selectedPrograms.includes(p) ? 'font-semibold text-primary' : ''}>{p}</span
+																>{/each}
+														</span>
 													{/if}
 												</div>
 											{/each}
