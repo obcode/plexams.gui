@@ -52,13 +52,14 @@
 	/** @param {string} t */
 	const fmtTime = (t) => /(\d{2}:\d{2})/.exec(t ?? '')?.[1] ?? '';
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-	/** @param {any} s → „Mo 13.07., 08:30 Uhr" (Datum/Zeit stecken in starttime) */
+	/** @param {any} s → „Mo 13.07., 08:30 Uhr (1/1)" (Datum/Zeit stecken in starttime) */
 	const slotLabel = (s) => {
+		const ds = `(${s.dayNumber}/${s.slotNumber})`;
 		const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(String(s.starttime ?? ''));
 		if (!m) return `Tag ${s.dayNumber} · Slot ${s.slotNumber}`;
 		const [, y, mo, d, hm] = m;
 		const wd = WD[new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d))).getUTCDay()];
-		return `${wd} ${d}.${mo}., ${hm} Uhr`;
+		return `${wd} ${d}.${mo}., ${hm} Uhr ${ds}`;
 	};
 	/** @param {any} e */
 	const slotValue = (e) =>
