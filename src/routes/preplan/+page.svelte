@@ -601,6 +601,7 @@
 							{#each [{ label: 'EXaHM', color: 'badge-info', need: slot.exahm }, { label: 'SEB', color: 'badge-error', need: slot.seb }] as k}
 								{#if k.need.examCount > 0}
 									{@const st = roomStatus(k.need)}
+								{@const restricted = restrictedRooms(slot, k.label)}
 									<div class="rounded border p-2 text-sm {statusBorder(st.level)}">
 										<div class="flex flex-wrap items-center gap-2">
 											<span class="badge {k.color} badge-sm">{k.label}</span>
@@ -626,7 +627,6 @@
 											gebucht {k.need.seatsBooked} / verfügbar {k.need.seatsAvailable}
 										</div>
 
-										{@const restricted = restrictedRooms(slot, k.label)}
 										{#if restricted.length}
 											<div class="mt-1 text-xs text-base-content/60">
 												eingeschränkt auf: <span class="font-medium">{restricted.join(', ')}</span>
