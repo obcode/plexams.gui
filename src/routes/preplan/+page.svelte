@@ -755,7 +755,7 @@
 													</div>
 													{#if restricted.length}
 														<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
-													{:else if k.need.rooms.length}
+													{:else if k.need.rooms.length && k.need.seatsBooked === 0}
 														<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
 													{/if}
 												{/if}
