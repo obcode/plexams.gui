@@ -152,6 +152,37 @@
 		return lv;
 	}
 
+	// --- Filter der Prüfungstabelle nach Studiengang (Badges mit Anzahl) ---
+	/** @type {string[]} */
+	let selectedPrograms = [];
+	/** @param {string} p */
+	const toggleProgFilter = (p) =>
+		(selectedPrograms = selectedPrograms.includes(p)
+			? selectedPrograms.filter((x) => x !== p)
+			: [...selectedPrograms, p]);
+	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
+	$: catRank = new Map(
+		(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [
+			sp.shortname,
+			CAT_ORDER.indexOf(sp.category ?? 'misc')
+		])
+	);
+	$: programCounts = (() => {
+		/** @type {Map<string, number>} */
+		const m = new Map();
+		for (const e of data.exams) for (const p of e.programs ?? []) m.set(p, (m.get(p) ?? 0) + 1);
+		return [...m.entries()].sort((a, b) => {
+			const ra = catRank.get(a[0]) ?? 99;
+			const rb = catRank.get(b[0]) ?? 99;
+			return ra - rb || a[0].localeCompare(b[0]);
+		});
+	})();
+	$: filteredExams = selectedPrograms.length
+		? data.exams.filter((/** @type {any} */ e) =>
+				(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
+			)
+		: data.exams;
+
 	let listError = '';
 	/** @type {Set<number>} */
 	let busy = new Set();
@@ -811,6 +842,27 @@
 	{#if data.exams.length === 0}
 		<div class="text-sm text-base-content/50">Noch keine SEB/EXaHM-Vorplanungen angelegt.</div>
 	{:else}
+		<!-- Filter nach Studiengang -->
+		<div class="flex flex-wrap items-center gap-1">
+			<span class="mr-1 text-sm text-base-content/50">Studiengang:</span>
+			{#each programCounts as [prog, count]}
+				<button
+					class="badge gap-1 tabular-nums {selectedPrograms.includes(prog)
+						? 'badge-primary'
+						: 'badge-ghost'}"
+					on:click={() => toggleProgFilter(prog)}
+				>
+					<span class="font-mono">{prog}</span>
+					{count}
+				</button>
+			{/each}
+			{#if selectedPrograms.length}
+				<button class="btn btn-ghost btn-xs" on:click={() => (selectedPrograms = [])}>
+					✕ {filteredExams.length}/{data.exams.length}
+				</button>
+			{/if}
+		</div>
+
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
 				<thead>
@@ -827,7 +879,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each data.exams as e (e.id)}
+					{#each filteredExams as e (e.id)}
 						<tr
 							class="hover {unassignedSet.has(e.id)
 								? 'bg-error/10'
