@@ -723,8 +723,8 @@
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">{head}</span>
 				{#if validation.unassignedIDs.length}
-					<span class="badge badge-error badge-sm">
-						{validation.unassignedIDs.length} nicht zugeordnet
+					<span class="badge badge-warning badge-sm">
+						{validation.unassignedIDs.length} ohne Slot
 					</span>
 				{:else}
 					<span class="badge badge-success badge-sm">vollständig</span>
@@ -738,6 +738,10 @@
 						<li>{m}</li>
 					{/each}
 				</ul>
+			{:else if validation.unassignedIDs.length}
+				<div class="mt-1 text-sm">
+					Manche Prüfungen ohne Slot (kleine SEB ggf. gewollt; Engpässe siehe Hinweise).
+				</div>
 			{/if}
 		</div>
 	{/if}
@@ -903,14 +907,17 @@
 					{#each filteredExams as e (e.id)}
 						<tr
 							class="hover {unassignedSet.has(e.id)
-								? 'bg-error/10'
+								? 'bg-warning/10'
 								: data.zpaPresent && !e.ancode
 									? 'bg-warning/5'
 									: ''}"
 						>
 							<td>
 								{#if unassignedSet.has(e.id)}
-									<span class="mr-1" title="konnte nicht zugeordnet werden">⚠</span>
+									<span
+										class="mr-1"
+										title="ohne Slot — Details in den Hinweisen (kleine SEB ggf. gewollt)">⚠</span
+									>
 								{/if}
 								{#if e.examKind === 'SEB'}
 									<span class="badge badge-error badge-sm">SEB</span>
