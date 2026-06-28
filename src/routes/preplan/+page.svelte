@@ -123,7 +123,7 @@
 
 	async function save() {
 		if (!Number(editing.examerID)) {
-			editError = 'Prüfer/in wählen.';
+			editError = 'Prüfenden wählen.';
 			return;
 		}
 		if (!editing.module.trim()) {
@@ -648,7 +648,7 @@
 					<tr>
 						<th>Art</th>
 						<th>Modul</th>
-						<th>Prüfer/in</th>
+						<th>Prüfender</th>
 						<th>Studiengänge</th>
 						<th>Studis</th>
 						<th>Dauer</th>
@@ -687,7 +687,7 @@
 									</div>
 								{/if}
 							</td>
-							<td class="text-sm">{e.examerName}</td>
+							<td class="text-sm">{examerLabel(e.examerName)}</td>
 							<td>
 								<div class="flex flex-wrap gap-1">
 									{#each e.programs as p}
@@ -763,7 +763,7 @@
 				</label>
 				<div class="flex flex-col gap-1 sm:col-span-2">
 					<div class="flex items-baseline gap-2">
-						<span class="text-xs font-medium text-base-content/60">Prüfer/in (Nachname, Vorname)</span>
+						<span class="text-xs font-medium text-base-content/60">Prüfender (Nachname, Vorname)</span>
 						{#if selectedExamerLabel}
 							<span class="text-xs text-primary">✓ {selectedExamerLabel}</span>
 						{:else}
@@ -865,7 +865,7 @@
 		<div class="modal-box max-w-2xl">
 			<h2 class="text-lg font-semibold">Ancode zuordnen</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				{suggestFor.examKind} · {suggestFor.module} · {suggestFor.examerName}
+				{suggestFor.examKind} · {suggestFor.module} · {examerLabel(suggestFor.examerName)}
 			</p>
 
 			{#if suggestLoading}
@@ -884,7 +884,7 @@
 								<tr>
 									<th>Ancode</th>
 									<th>Modul</th>
-									<th>Prüfer/in</th>
+									<th>Prüfender</th>
 									<th>Typ</th>
 									<th></th>
 								</tr>
@@ -952,7 +952,7 @@
 		<div class="modal-box max-w-2xl">
 			<h2 class="text-lg font-semibold">Constraints — {conEditing.module}</h2>
 			<p class="mt-1 text-sm text-base-content/60">
-				{conEditing.examKind} · {conEditing.examerName}
+				{conEditing.examKind} · {examerLabel(conEditing.examerName)}
 			</p>
 			<div class="mt-1 text-xs text-base-content/50">
 				Constraints werden beim Verknüpfen mit der ZPA-Prüfung automatisch übernommen.
@@ -1020,7 +1020,7 @@
 								{o.examKind}
 							</span>
 							<span>{o.module}</span>
-							<span class="text-base-content/40">· {o.examerName}</span>
+							<span class="text-base-content/40">· {examerLabel(o.examerName)}</span>
 						</label>
 					{:else}
 						<span class="text-sm text-base-content/40">— keine weiteren Prüfungen</span>
