@@ -766,7 +766,8 @@
 							</span>
 							<span class="font-medium">{e.module}</span>
 							<span class="text-base-content/50">
-								· {examerDisplay(e)} · {e.expectedStudents}
+								· {examerDisplay(e)} · {e.expectedStudents}{#if e.programs?.length}
+									· {e.programs.join(', ')}{/if}
 							</span>
 						</span>
 					{/each}
