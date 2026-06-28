@@ -19,6 +19,7 @@ export async function load() {
 					plannedSlotNumber
 					isFixed
 					notSameSlot
+					canShareSlot
 					ancode
 					notes
 					constraints {
