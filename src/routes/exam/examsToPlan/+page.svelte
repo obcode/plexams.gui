@@ -30,6 +30,12 @@
 		const [, m, d] = (iso ?? '').slice(0, 10).split('-');
 		return m ? `${d}.${m}.` : '';
 	};
+	/** @param {any} e → „13.07. 08:30" (leer, wenn kein Slot bekannt) */
+	function slotLabel(e) {
+		if (!e.slot) return '';
+		const st = (startBySlot.get(e.slot.slotNumber) ?? '').slice(0, 5);
+		return `${ddmm(dateByDay.get(e.slot.dayNumber))} ${st}`.trim();
+	}
 	/** @param {any} e */
 	function slotTip(e) {
 		if (e.slot) {
@@ -488,7 +494,11 @@
 						<span class="font-mono text-lg font-semibold tabular-nums">{e.ancode}</span>
 						<span class="font-medium">{e.module}</span>
 						{#if e.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
-						{#if e.preplanned}<span title={slotTip(e)}>📌</span>{/if}
+						{#if e.preplanned}
+							<span class="badge badge-ghost badge-sm tabular-nums" title={slotTip(e)}>
+								📌{slotLabel(e) ? ` ${slotLabel(e)}` : ''}
+							</span>
+						{/if}
 					</div>
 					<div class="flex flex-wrap items-center gap-x-1 text-sm text-base-content/70">
 						<span>{e.mainExamer}</span>
