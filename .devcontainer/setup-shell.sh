@@ -59,3 +59,17 @@ if ! grep -q "starship init zsh" "$HOME_DIR/.zshrc"; then
 fi
 
 echo "Setup complete!"
+
+# --- Claude-Projektgedächtnis über Rebuilds erhalten -----------------------
+# ~/.claude liegt im flüchtigen Home; der Workspace auf einem persistenten
+# Volume. Memory unter ./.claude/memory (im Repo) per Symlink für Claude
+# sichtbar machen, damit es Rebuilds übersteht und versioniert bleibt.
+echo "Linking Claude project memory..."
+PROJ_KEY="$(printf '%s' "$WORKSPACE_DIR" | sed 's#[^a-zA-Z0-9]#-#g')"
+MEM_REPO="$WORKSPACE_DIR/.claude/memory"
+MEM_CLAUDE="$HOME_DIR/.claude/projects/$PROJ_KEY/memory"
+mkdir -p "$MEM_REPO" "$(dirname "$MEM_CLAUDE")"
+ln -sfn "$MEM_REPO" "$MEM_CLAUDE"
+if [ "$(id -u)" -eq 0 ]; then
+  chown -h "$TARGET_USER":"$TARGET_USER" "$MEM_CLAUDE" 2>/dev/null || true
+fi
