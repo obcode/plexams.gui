@@ -125,7 +125,7 @@
 	let allSemesters: Sem[] = [];
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
-	$: readOnly = ($page.data?.readOnly ?? currentSem?.readOnly) ?? false;
+	$: readOnly = $page.data?.readOnly ?? currentSem?.readOnly ?? false;
 	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
 	$: logicalSem =
 		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '';
@@ -275,11 +275,11 @@
 		{
 			label: 'Vorbereitung',
 			items: [
+				{ section: 'SEB/EXaHM-Prüfungen' },
+				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
 				{ section: 'ZPA-Prüfungen' },
 				{ href: '/exam/examsToPlan', label: '📝 ZPA-Prüfungen planen' },
 				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
-				{ section: 'Computer-Prüfungen' },
-				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
 				{ section: 'Anmeldungen' },
 				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' }
 			]
@@ -621,10 +621,7 @@
 				{#each allSemesters as s}
 					<li>
 						{#if !s.compatible}
-							<span
-								class="rounded-lg text-base-content/30"
-								title="inkompatibel (keine Config)"
-							>
+							<span class="rounded-lg text-base-content/30" title="inkompatibel (keine Config)">
 								<span class="font-medium tabular-nums">{s.id}</span>
 								<span class="text-warning">⚠ inkompatibel</span>
 							</span>
@@ -769,7 +766,11 @@
 			<span class="font-medium">Dieses Semester ist geschützt (nur lesen)</span>
 			<span class="opacity-70">— Schreibvorgänge werden vom Backend abgelehnt.</span>
 			<div class="flex-1"></div>
-			<button class="btn btn-error btn-xs" disabled={togglingReadOnly} on:click={() => toggleReadOnly(false)}>
+			<button
+				class="btn btn-error btn-xs"
+				disabled={togglingReadOnly}
+				on:click={() => toggleReadOnly(false)}
+			>
 				{togglingReadOnly ? '…' : 'Schutz aufheben'}
 			</button>
 		</div>
@@ -862,8 +863,8 @@
 			<h2 class="text-lg font-semibold">Neuen Workspace anlegen</h2>
 			<p class="mt-1 text-sm text-base-content/60">
 				Legt eine neue (leere) Datenbank an, die auf einem vorhandenen Semester basiert. Danach wird
-				direkt hineingewechselt — die Daten müssen noch importiert werden. Funktioniert auch, während
-				das Quell-Semester geschützt ist.
+				direkt hineingewechselt — die Daten müssen noch importiert werden. Funktioniert auch,
+				während das Quell-Semester geschützt ist.
 			</p>
 			<div class="mt-3 flex flex-col gap-3">
 				<label class="flex flex-col gap-1">
@@ -885,9 +886,7 @@
 					<select class="select select-bordered select-sm" bind:value={wsFromSemester}>
 						{#each allSemesters as s}
 							<option value={s.id} disabled={!s.compatible}>
-								{s.id}{s.semester ? ` · ${s.semester}` : ''}{!s.compatible
-									? ' (inkompatibel)'
-									: ''}
+								{s.id}{s.semester ? ` · ${s.semester}` : ''}{!s.compatible ? ' (inkompatibel)' : ''}
 							</option>
 						{/each}
 					</select>
@@ -904,7 +903,8 @@
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (wsOpen = false)}></button>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (wsOpen = false)}
+		></button>
 	</div>
 {/if}
 

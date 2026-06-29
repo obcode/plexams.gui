@@ -20,7 +20,7 @@ export const previousSemesterEmails = [
 	{
 		key: 'sendEmailExaHM',
 		title: 'EXaHM / SEB',
-		description: 'Information zu den Computer-Prüfungen (EXaHM / SEB)'
+		description: 'Information zu den EXaHM/SEB-Prüfungen'
 	}
 ];
 
@@ -67,7 +67,7 @@ export const roomEmails = [
 	{
 		key: 'sendEmailKdpExahm',
 		title: 'KDP / EXaHM',
-		description: 'CSV der Computer-Prüfungen (EXaHM/SEB) ans KDP — Anhang serverseitig erzeugt'
+		description: 'CSV der EXaHM/SEB-Prüfungen ans KDP — Anhang serverseitig erzeugt'
 	}
 ];
 
