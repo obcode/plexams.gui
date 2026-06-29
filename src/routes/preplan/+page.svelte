@@ -902,8 +902,8 @@
 												<div
 													class="mt-0.5 flex items-center gap-1 {selectedPrograms.length
 														? matchesProgFilter(ex)
-															? 'rounded bg-primary/15 px-0.5 font-medium'
-															: 'opacity-40'
+															? 'rounded bg-primary/25 px-1 py-0.5 font-semibold text-primary ring-1 ring-primary'
+															: 'opacity-25 grayscale'
 														: ''}"
 												>
 													<span class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
