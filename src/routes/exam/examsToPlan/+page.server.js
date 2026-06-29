@@ -85,6 +85,7 @@ export async function load() {
 			}
 			preplanExams {
 				ancode
+				isFixed
 				plannedDayNumber
 				plannedSlotNumber
 			}
@@ -107,8 +108,9 @@ export async function load() {
 	const durOverride = {};
 	for (const o of data.examDurationOverrides ?? []) durOverride[o.ancode] = o.duration;
 
-	// „vorgeplant": es gibt eine planEntry (Slot im Plan) ODER eine Vorplanung.
-	// Ancode → { slot?, preplanned } ; slot = {dayNumber, slotNumber} wenn bekannt.
+	// „vorgeplant": es gibt einen echten planEntry (Slot im Plan) ODER die
+	// verknüpfte Pre-Exam ist FIXIERT. Ein bloß vorläufiger (nicht-fixierter)
+	// Pre-Plan-Slot zählt NICHT — der kann beim „Automatisch verteilen" umziehen.
 	/** @type {Record<number, {slot: {dayNumber:number, slotNumber:number}|null, preplanned:boolean}>} */
 	const planned = {};
 	for (const pe of data.plannedExams ?? []) {
@@ -117,7 +119,7 @@ export async function load() {
 		}
 	}
 	for (const pp of data.preplanExams ?? []) {
-		if (pp.ancode == null) continue;
+		if (pp.ancode == null || !pp.isFixed) continue;
 		const slot =
 			pp.plannedSlotNumber != null
 				? { dayNumber: pp.plannedDayNumber, slotNumber: pp.plannedSlotNumber }
