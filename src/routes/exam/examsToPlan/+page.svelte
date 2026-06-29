@@ -52,8 +52,13 @@
 		total: items.length,
 		toPlan: items.filter((/** @type {any} */ e) => e.status === 'toPlan').length,
 		notToPlan: items.filter((/** @type {any} */ e) => e.status === 'notToPlan').length,
-		unknown: items.filter((/** @type {any} */ e) => e.status === 'unknown').length
+		unknown: items.filter((/** @type {any} */ e) => e.status === 'unknown').length,
+		// „zu planen", aber nicht von mir geplant
+		notMe: items.filter(
+			(/** @type {any} */ e) => e.status === 'toPlan' && e.constraints?.notPlannedByMe
+		).length
 	};
+	$: toPlanByMe = counts.toPlan - counts.notMe;
 
 	// --- Constraints-Helfer ---
 	/** @param {any} rc */
@@ -73,6 +78,16 @@
 		!!c &&
 		(c.notPlannedByMe ||
 			c.doNotPublish ||
+			c.online ||
+			(c.excludeDays ?? []).length ||
+			(c.possibleDays ?? []).length ||
+			(c.sameSlot ?? []).length ||
+			roomSet(c.roomConstraints));
+	// andere Constraints außer notPlannedByMe (das schließt alle anderen aus)
+	/** @param {any} c */
+	const hasOtherConstraints = (c) =>
+		!!c &&
+		(c.doNotPublish ||
 			c.online ||
 			(c.excludeDays ?? []).length ||
 			(c.possibleDays ?? []).length ||
@@ -161,7 +176,13 @@
 	let filterStatus = 'toPlan';
 	let cFilter = 'alle';
 	let durZero = false;
+	let nonFK07 = false;
 	let q = '';
+
+	// Prüfende außerhalb der FK07 (bekannte, abweichende Fakultät).
+	/** @param {any} e */
+	const isNonFK07 = (e) => !!e.examerFk && e.examerFk !== 'FK07';
+	$: nonFK07Count = items.filter(isNonFK07).length;
 
 	// „Dauer 0" blendet den Status-Filter aus; beim Ausschalten wieder herstellen
 	/** @type {string | null} */
@@ -207,6 +228,7 @@
 	$: filtered = items.filter((/** @type {any} */ e) => {
 		if (filterStatus && e.status !== filterStatus) return false;
 		if (durZero && !isDurZero(e)) return false;
+		if (nonFK07 && !isNonFK07(e)) return false;
 		if (cFilter !== 'alle' && !passesConstraint(e)) return false;
 		if (examType && e.examTypeFull !== examType) return false;
 		if (q.trim()) {
@@ -217,6 +239,53 @@
 		}
 		return true;
 	});
+
+	// „nicht von mir geplant"-Prüfungen ans Ende schieben (bleiben in „zu planen").
+	$: displayed = [...filtered].sort(
+		(/** @type {any} */ a, /** @type {any} */ b) =>
+			Number(!!a.constraints?.notPlannedByMe) - Number(!!b.constraints?.notPlannedByMe)
+	);
+
+	/** Toggle „nicht von mir geplant" — schließt andere Constraints aus. @param {any} e */
+	async function toggleNotMe(e) {
+		if (busy.has(e.ancode)) return;
+		const want = !e.constraints?.notPlannedByMe;
+		if (
+			want &&
+			hasOtherConstraints(e.constraints) &&
+			!confirm(
+				'„nicht von mir geplant" setzen? Andere Constraints dieser Prüfung werden dabei entfernt.'
+			)
+		)
+			return;
+		const prev = e.constraints;
+		// notPlannedByMe darf keine anderen Constraints haben → vollständig ersetzen
+		e.constraints = want ? { notPlannedByMe: true } : null;
+		items = items;
+		busy = new Set(busy).add(e.ancode);
+		actionError = '';
+		try {
+			const res = await fetch('/api/addConstraints', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ancode: e.ancode, constraints: { notPlannedByMe: want } })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				e.constraints = prev;
+				items = items;
+				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+			}
+		} catch (err) {
+			e.constraints = prev;
+			items = items;
+			actionError = err instanceof Error ? err.message : String(err);
+		} finally {
+			const s = new Set(busy);
+			s.delete(e.ancode);
+			busy = s;
+		}
+	}
 
 	/** @param {any} item @param {'toPlan'|'notToPlan'} target */
 	async function setStatus(item, target) {
@@ -302,9 +371,12 @@
 				class="badge badge-success gap-1 tabular-nums {filterStatus && filterStatus !== 'toPlan'
 					? 'opacity-40'
 					: ''}"
+				title={counts.notMe
+					? `${toPlanByMe} von mir, ${counts.notMe} nicht von mir geplant`
+					: 'zu planen'}
 				on:click={() => setStatusFilter('toPlan')}
 			>
-				✓ {counts.toPlan} zu planen
+				✓ {toPlanByMe}{counts.notMe ? ` +${counts.notMe}` : ''} zu planen
 			</button>
 			<button
 				class="badge badge-ghost gap-1 tabular-nums {filterStatus && filterStatus !== 'notToPlan'
@@ -328,6 +400,13 @@
 				on:click={toggleDurZero}
 			>
 				⏱ {durZeroCount} Dauer 0
+			</button>
+			<button
+				class="badge badge-neutral gap-1 tabular-nums {nonFK07 ? '' : 'badge-outline'}"
+				title="Prüfende außerhalb der FK07"
+				on:click={() => (nonFK07 = !nonFK07)}
+			>
+				🏛 {nonFK07Count} nicht FK07
 			</button>
 		</div>
 		<div class="flex-1"></div>
@@ -364,7 +443,7 @@
 
 	<!-- Liste -->
 	<div class="flex flex-col gap-1.5">
-		{#each filtered as e (e.ancode)}
+		{#each displayed as e (e.ancode)}
 			<div
 				class="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-l-4 border-base-200 p-3 {e.status ===
 				'unknown'
@@ -413,6 +492,10 @@
 					</div>
 					<div class="flex flex-wrap items-center gap-x-1 text-sm text-base-content/70">
 						<span>{e.mainExamer}</span>
+						{#if isNonFK07(e)}<span
+								class="badge badge-neutral badge-xs"
+								title="Prüfende außerhalb der FK07">{e.examerFk}</span
+							>{/if}
 						<span class="text-base-content/50">· {e.examTypeFull} ·</span>
 						{#if e.duration > 0}
 							<span class="tabular-nums text-base-content/50">{e.duration} min</span>
@@ -456,14 +539,29 @@
 				{#if e.status === 'toPlan'}
 					{@const c = e.constraints}
 					<div class="flex w-72 shrink-0 flex-wrap items-center gap-1 self-stretch text-xs">
-						{#if c?.doNotPublish}
-							<span class="badge badge-error badge-outline badge-sm" title="nicht ins ZPA hochladen"
-								>nicht veröffentlichen</span
-							>
-						{/if}
+						<!-- Toggle „nicht von mir geplant" (schließt andere Constraints aus) -->
+						<label
+							class="flex cursor-pointer items-center gap-1"
+							title="„nicht von mir geplant“ — wird geplant, aber von jemand anderem; schließt andere Constraints aus"
+						>
+							<input
+								type="checkbox"
+								class="toggle toggle-neutral toggle-xs"
+								checked={!!c?.notPlannedByMe}
+								disabled={busy.has(e.ancode)}
+								on:change={() => toggleNotMe(e)}
+							/>
+							<span class="text-base-content/60">nicht von mir</span>
+						</label>
 						{#if c?.notPlannedByMe}
-							<span class="badge badge-neutral badge-sm">nicht von mir geplant</span>
+							<span class="badge badge-neutral badge-sm">geplant von anderen</span>
 						{:else}
+							{#if c?.doNotPublish}
+								<span
+									class="badge badge-error badge-outline badge-sm"
+									title="nicht ins ZPA hochladen">nicht veröffentlichen</span
+								>
+							{/if}
 							{#if c?.online}<span class="badge badge-info badge-sm">Online</span>{/if}
 							{#if c?.roomConstraints?.exahm}<span class="badge badge-error badge-sm">EXaHM</span
 								>{/if}
@@ -508,8 +606,8 @@
 									title="Platz-Puffer">+{c.roomConstraints.additionalSeats} Plätze</span
 								>{/if}
 							{#if !hasConstraints(c)}<span class="text-base-content/30">keine</span>{/if}
+							<button class="btn btn-ghost btn-xs ml-auto" on:click={() => openEdit(e)}>✎</button>
 						{/if}
-						<button class="btn btn-ghost btn-xs ml-auto" on:click={() => openEdit(e)}>✎</button>
 					</div>
 				{/if}
 			</div>

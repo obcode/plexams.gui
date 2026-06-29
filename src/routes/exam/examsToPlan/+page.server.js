@@ -72,6 +72,10 @@ export async function load() {
 			rooms {
 				name
 			}
+			teachers(fromZPA: false) {
+				id
+				fk
+			}
 			plannedExams {
 				ancode
 				planEntry {
@@ -92,6 +96,11 @@ export async function load() {
 	`;
 
 	const data = await request(env.PLEXAMS_SERVER, query);
+
+	// Prüfer-ID → Fakultät (z. B. „FK07"), für den „nicht-FK07"-Filter.
+	/** @type {Record<number, string>} */
+	const fkById = {};
+	for (const t of data.teachers ?? []) fkById[t.id] = t.fk ?? '';
 
 	// Ancode → manuell gesetzte Dauer (nur bei ZPA-Dauer 0 relevant)
 	/** @type {Record<number, number>} */
@@ -124,6 +133,7 @@ export async function load() {
 			...x.zpaExam,
 			status: 'toPlan',
 			constraints: x.constraints ?? null,
+			examerFk: fkById[x.zpaExam.mainExamerID] ?? '',
 			slot: planned[x.zpaExam.ancode]?.slot ?? null,
 			preplanned: !!planned[x.zpaExam.ancode]?.preplanned,
 			durationOverride: durOverride[x.zpaExam.ancode] ?? null
@@ -132,6 +142,7 @@ export async function load() {
 			...e,
 			status: 'notToPlan',
 			constraints: null,
+			examerFk: fkById[e.mainExamerID] ?? '',
 			slot: planned[e.ancode]?.slot ?? null,
 			preplanned: !!planned[e.ancode]?.preplanned,
 			durationOverride: durOverride[e.ancode] ?? null
@@ -140,6 +151,7 @@ export async function load() {
 			...e,
 			status: 'unknown',
 			constraints: null,
+			examerFk: fkById[e.mainExamerID] ?? '',
 			primussAncodes: [],
 			slot: planned[e.ancode]?.slot ?? null,
 			preplanned: !!planned[e.ancode]?.preplanned
