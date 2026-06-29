@@ -1,0 +1,5 @@
+- [Validation write-lock](validation-write-lock.md) — backend blocks all mutations while any validation runs; why the nav indicator is on-demand, not polled
+- [Validation architecture](validation-architecture.md) — where the validation/generation UI lives and how to add a validator group
+- [Email sending architecture](email-sending-architecture.md) — where the e-mail-sending UI lives (EmailSender component, /email page) and how to reuse/add a sender
+- [NTA consolidation](nta-consolidation-plan.md) — NTA area is now 2 pages (Stammdaten /nta/all with add/edit/toggle, Semester /nta/semester); shared NTAForm + /api proxies
+- [UI design language](ui-design-language.md) — progressively modernize every touched page to one consistent daisyUI/theme-token look; no hard-coded colors
