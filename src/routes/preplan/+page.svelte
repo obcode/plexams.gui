@@ -1081,12 +1081,14 @@
 										</WriteButton>
 									{/if}
 									<select
-										class="select select-bordered select-xs"
+										class="select select-bordered select-xs {slotValue(e)
+											? ''
+											: 'select-warning text-warning'}"
 										value={slotValue(e)}
 										disabled={busy.has(e.id) || e.isFixed || $page.data?.readOnly}
 										on:change={(ev) => setSlot(e, ev.currentTarget.value)}
 									>
-										<option value="">— nicht zugeordnet</option>
+										<option value="" class="text-warning">— nicht zugeordnet</option>
 										{#each data.slots as s}
 											<option value="{s.dayNumber}-{s.slotNumber}">{slotLabel(s)}</option>
 										{/each}
