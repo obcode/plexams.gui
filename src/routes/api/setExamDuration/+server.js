@@ -8,7 +8,10 @@ export async function POST({ request }) {
 	const { ancode, duration } = await request.json();
 	const mutation = gql`
 		mutation ($ancode: Int!, $duration: Int!) {
-			setExamDuration(ancode: $ancode, duration: $duration)
+			setExamDuration(ancode: $ancode, duration: $duration) {
+				ancode
+				duration
+			}
 		}
 	`;
 	try {
