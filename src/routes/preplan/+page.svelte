@@ -782,20 +782,22 @@
 		on:done={() => invalidateAll()}
 	/>
 
-	<div class="alert alert-info flex-col items-start py-2 text-sm">
-		<span>
-			Diese Vorplanung liegt in der DB des <strong>betreffenden Semesters</strong> — plexams muss auf
-			dieses Semester gestartet sein.
-		</span>
-		<span class="text-xs opacity-80">
-			Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
-			<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren → erneut
-			validieren, bis alles ok.
-		</span>
-		<span class="text-xs opacity-80">
-			Constraints (Raum-Einschränkung, gleicher Slot …) werden beim Verknüpfen mit der ZPA-Prüfung
-			automatisch übernommen.
-		</span>
+	<div class="alert alert-info py-2 text-sm">
+		<div class="flex w-full flex-col gap-1">
+			<span>
+				Diese Vorplanung liegt in der DB des <strong>betreffenden Semesters</strong> — plexams muss auf
+				dieses Semester gestartet sein.
+			</span>
+			<span class="text-xs opacity-80">
+				Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
+				<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren →
+				erneut validieren, bis alles ok.
+			</span>
+			<span class="text-xs opacity-80">
+				Constraints (Raum-Einschränkung, gleicher Slot …) werden beim Verknüpfen mit der ZPA-Prüfung
+				automatisch übernommen.
+			</span>
+		</div>
 	</div>
 
 	{#if listError}
