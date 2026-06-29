@@ -403,6 +403,15 @@
 		}
 	}
 
+	// sameSlot-Gruppen: unvollständige (noch nicht alle Mitglieder verbunden) → Hinweis.
+	$: incompleteGroups = (data.sameSlotGroups ?? []).filter((/** @type {any} */ g) => !g.complete);
+	// sameSlot-Gruppe der aktuell zu verknüpfenden Pre-Prüfung (für Partner-Status).
+	$: suggestGroup = suggestFor
+		? (data.sameSlotGroups ?? []).find((/** @type {any} */ g) =>
+				g.members.some((/** @type {any} */ m) => m.id === suggestFor.id)
+			)
+		: null;
+
 	// ZPA-Ancode-Zuordnung
 	/** @type {any} */
 	let suggestFor = null;
@@ -510,11 +519,7 @@
 		const rc = c.roomConstraints || {};
 		/** @type {{ t: string, cls: string }[]} */
 		const out = [];
-		if (rc.exahm) out.push({ t: 'EXaHM', cls: 'badge-info' });
-		if (rc.seb) out.push({ t: 'SEB', cls: 'badge-error' });
-		if (rc.lab) out.push({ t: 'Labor', cls: 'badge-neutral' });
-		if (rc.placesWithSocket) out.push({ t: 'Steckdosen', cls: 'badge-ghost' });
-		if (c.online) out.push({ t: 'Online', cls: 'badge-info' });
+		// Pre-Exams: nur allowedRooms + die Slot-Relationen sind relevant.
 		if ((rc.allowedRooms || []).length)
 			out.push({ t: `Räume: ${rc.allowedRooms.join(', ')}`, cls: 'badge-ghost' });
 		if ((c.sameSlot || []).length)
@@ -523,7 +528,6 @@
 			out.push({ t: `≠Slot: ${e.notSameSlot.map(moduleOf).join(', ')}`, cls: 'badge-warning' });
 		if ((e.canShareSlot || []).length)
 			out.push({ t: `+Slot: ${e.canShareSlot.map(moduleOf).join(', ')}`, cls: 'badge-success' });
-		if (c.fixedDay) out.push({ t: 'fixer Tag', cls: 'badge-ghost' });
 		return out;
 	}
 
@@ -545,12 +549,8 @@
 		const c = e.constraints || {};
 		const rc = c.roomConstraints || {};
 		conEditing = e;
+		// Für Pre-Exams nimmt setPreplanExamConstraints nur sameSlot + allowedRooms an.
 		conForm = {
-			exahm: !!rc.exahm,
-			seb: !!rc.seb,
-			lab: !!rc.lab,
-			placesWithSocket: !!rc.placesWithSocket,
-			online: !!c.online,
 			allowedRooms: (rc.allowedRooms || []).join(', '),
 			sameSlot: [...(c.sameSlot || [])]
 		};
@@ -645,30 +645,13 @@
 		if (conSaving) return;
 		conSaving = true;
 		conError = '';
-		const c = conEditing.constraints || {};
-		const rc = c.roomConstraints || {};
-		// editierte Felder überschreiben, alles andere unverändert übernehmen.
+		// Pre-Exams: das Backend übernimmt nur sameSlot + allowedRooms (Rest ignoriert).
 		const constraints = {
-			notPlannedByMe: c.notPlannedByMe ?? false,
-			doNotPublish: c.doNotPublish ?? false,
-			online: conForm.online,
-			fixedDay: c.fixedDay ?? null,
-			fixedTime: c.fixedTime ?? null,
-			excludeDays: c.excludeDays ?? [],
-			possibleDays: c.possibleDays ?? [],
 			sameSlot: conForm.sameSlot.map(Number),
 			allowedRooms: conForm.allowedRooms
 				.split(/[\s,]+/)
 				.map((/** @type {string} */ s) => s.trim())
-				.filter(Boolean),
-			exahm: conForm.exahm,
-			seb: conForm.seb,
-			lab: conForm.lab,
-			placesWithSocket: conForm.placesWithSocket,
-			kdpJiraURL: rc.kdpJiraURL ?? null,
-			maxStudents: rc.maxStudents ?? null,
-			additionalSeats: rc.additionalSeats ?? null,
-			comments: rc.comments ?? null
+				.filter(Boolean)
 		};
 		try {
 			const res = await fetch('/api/setPreplanExamConstraints', {
@@ -836,6 +819,37 @@
 					Manche Prüfungen ohne Slot (kleine SEB ggf. gewollt; Engpässe siehe Hinweise).
 				</div>
 			{/if}
+		</div>
+	{/if}
+
+	<!-- sameSlot-Gruppen, die noch nicht vollständig verbunden sind -->
+	{#if incompleteGroups.length}
+		<div class="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+			<div class="flex items-center gap-2">
+				<span class="font-medium">⏳ Gleicher-Slot-Gruppen noch nicht vollständig verbunden</span>
+				<span class="badge badge-warning badge-sm tabular-nums">{incompleteGroups.length}</span>
+			</div>
+			<div class="text-xs text-base-content/60">
+				Der „gleicher Slot"-Constraint wird automatisch übernommen, sobald <strong>alle</strong>
+				Mitglieder einer Gruppe mit einer ZPA-Prüfung verbunden sind — kein manuelles Übernehmen nötig.
+			</div>
+			{#each incompleteGroups as g}
+				<div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-warning/20 pt-1.5">
+					{#each g.members as m}
+						<span class="flex items-center gap-1">
+							<span title={m.connected ? 'verbunden — Constraint aktiv' : 'noch nicht verbunden'}>
+								{m.connected ? '✓' : '⏳'}
+							</span>
+							<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+								{m.examKind}
+							</span>
+							<span class={m.connected ? '' : 'text-base-content/60'}>{m.module}</span>
+							{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">{m.ancode}</span
+								>{/if}
+						</span>
+					{/each}
+				</div>
+			{/each}
 		</div>
 	{/if}
 
@@ -1293,6 +1307,37 @@
 				{suggestFor.examKind} · {suggestFor.module} · {examerDisplay(suggestFor)}
 			</p>
 
+			{#if suggestGroup}
+				<div class="mt-2 rounded-lg border border-base-300 bg-base-200/40 p-2 text-sm">
+					<div class="mb-1 flex items-center gap-2 text-xs font-medium text-base-content/60">
+						=Slot-Partner
+						{#if suggestGroup.complete}
+							<span class="badge badge-success badge-xs">vollständig — Constraint aktiv</span>
+						{:else}
+							<span class="badge badge-warning badge-xs">unvollständig</span>
+						{/if}
+					</div>
+					<div class="flex flex-col gap-0.5">
+						{#each suggestGroup.members as m}
+							<div class="flex items-center gap-2 {m.id === suggestFor.id ? 'font-medium' : ''}">
+								<span title={m.connected ? 'verbunden — Constraint aktiv' : 'noch nicht verbunden'}>
+									{m.connected ? '✓' : '⏳'}
+								</span>
+								<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+									{m.examKind}
+								</span>
+								<span>{m.module}</span>
+								{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">{m.ancode}</span
+									>{/if}
+								<span class="text-xs {m.connected ? 'text-success' : 'text-base-content/40'}">
+									{m.connected ? 'Constraint aktiv' : 'wird automatisch übernommen, sobald verbunden'}
+								</span>
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+
 			{#if suggestLoading}
 				<div class="mt-4 flex items-center gap-2 text-sm text-base-content/60">
 					<span class="loading loading-spinner loading-sm"></span> lädt Vorschläge …
@@ -1383,35 +1428,8 @@
 				Constraints werden beim Verknüpfen mit der ZPA-Prüfung automatisch übernommen.
 			</div>
 
-			<!-- Raum-Einschränkungen -->
+			<!-- Raum-Einschränkung (für Pre-Exams nur allowedRooms relevant) -->
 			<div class="mt-3 flex flex-col gap-2 rounded-lg border border-base-300 p-3">
-				<span class="text-xs font-medium text-base-content/60">Raum-Einschränkung</span>
-				<div class="flex flex-wrap gap-x-4 gap-y-1">
-					<label class="flex cursor-pointer items-center gap-1 text-sm">
-						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.exahm} />
-						<span>EXaHM</span>
-					</label>
-					<label class="flex cursor-pointer items-center gap-1 text-sm">
-						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.seb} />
-						<span>SEB</span>
-					</label>
-					<label class="flex cursor-pointer items-center gap-1 text-sm">
-						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.lab} />
-						<span>Labor</span>
-					</label>
-					<label class="flex cursor-pointer items-center gap-1 text-sm">
-						<input
-							type="checkbox"
-							class="checkbox checkbox-xs"
-							bind:checked={conForm.placesWithSocket}
-						/>
-						<span>Steckdosen</span>
-					</label>
-					<label class="flex cursor-pointer items-center gap-1 text-sm">
-						<input type="checkbox" class="checkbox checkbox-xs" bind:checked={conForm.online} />
-						<span>Online</span>
-					</label>
-				</div>
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">
 						erlaubte Räume (Komma-getrennt, leer = keine Einschränkung)

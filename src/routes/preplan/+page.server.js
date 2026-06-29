@@ -108,6 +108,16 @@ export async function load() {
 					canceledAt
 					mine
 				}
+				preplanSameSlotGroups {
+					complete
+					members {
+						id
+						module
+						examKind
+						connected
+						ancode
+					}
+				}
 			}
 		`
 	);
@@ -272,6 +282,7 @@ export async function load() {
 		slots,
 		overview,
 		calendarSlots,
+		sameSlotGroups: data.preplanSameSlotGroups ?? [],
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
 		zpaPresent: (data.zpaExams ?? []).length > 0
 	};
