@@ -9,8 +9,10 @@
 
 	// „bereits gesendet": zugehörige Bedingung ist done. Solche Versände wandern
 	// nach unten, oben bleibt nur Offenes (oberste Karte = nächster Schritt).
+	// Reaktiv (referenziert conditionsDone), damit sich die Sortierung aktualisiert,
+	// sobald die async geladenen Bedingungen eintreffen.
 	/** @param {import('$lib/email/emails').EmailDef} email */
-	const isSent = (email) => {
+	$: isSent = (email) => {
 		const k = email.conditionKey || EMAIL_CONDITION[email.key];
 		return !!k && conditionsDone[k] === true;
 	};
