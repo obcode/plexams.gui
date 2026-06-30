@@ -44,5 +44,28 @@ export function load() {
 		})
 		.catch(() => false);
 
-	return { conditionsDone, allRequirementsPresent };
+	// Empfänger-Kandidaten für die Prüfungsplanungs-Info (Auswahl im UI).
+	const examPlanningMailRecipients = request(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				examPlanningMailRecipients {
+					category
+					teacher {
+						id
+						shortname
+						fullname
+						email
+					}
+					exams {
+						ancode
+					}
+				}
+			}
+		`
+	)
+		.then((/** @type {any} */ d) => d.examPlanningMailRecipients ?? [])
+		.catch(() => /** @type {any[]} */ ([]));
+
+	return { conditionsDone, allRequirementsPresent, examPlanningMailRecipients };
 }

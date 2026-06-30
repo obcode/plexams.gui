@@ -1,5 +1,6 @@
 <script>
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
 	import { emailGroups } from '$lib/email/emails';
 
 	export let data;
@@ -8,8 +9,11 @@
 	/** @type {Record<string, boolean>} */
 	let conditionsDone = {};
 	let allRequirementsPresent = false;
+	/** @type {any[]} */
+	let examPlanningMailRecipients = [];
 	$: data.conditionsDone.then((/** @type {Record<string, boolean>} */ v) => (conditionsDone = v));
 	$: data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
+	$: data.examPlanningMailRecipients.then((/** @type {any[]} */ v) => (examPlanningMailRecipients = v));
 
 	// Einzelversand mit Argumenten (wiederholbar, kein Gate)
 	let pdAncode = '';
@@ -36,6 +40,9 @@
 	{#each emailGroups as group}
 		<section class="flex flex-col gap-3">
 			<h2 class="text-lg font-semibold text-base-content/80">{group.title}</h2>
+			{#if group.id === 'constraints'}
+				<ExamPlanningInfoSender recipients={examPlanningMailRecipients} {conditionsDone} />
+			{/if}
 			<div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
 				{#each group.emails as email (email.key)}
 					<div class="flex flex-col gap-2">

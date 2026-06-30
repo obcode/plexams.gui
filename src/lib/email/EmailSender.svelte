@@ -33,12 +33,18 @@
 	 * versenden ist; optionaler Hinweistext dazu */
 	export let hideRealSend = false;
 	export let hideRealSendHint = 'kein Versand nötig';
+	/** wiederholbar: kein „bereits gesendet"-Block nach echtem Versand
+	 * (z. B. Versand an wechselnde Teilmengen) */
+	export let repeatable = false;
+	/** Text der Bestätigungs-Rückfrage vor dem echten Versand */
+	export let confirmText = 'Wirklich an alle Empfänger senden?';
 
 	// „bereits gesendet": zugehörige Bedingung ist done (oder gerade real
 	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
 	let sentOverride = false;
 	$: condKey = conditionKey || EMAIL_CONDITION[emailKey];
-	$: alreadySent = sentOverride || (condKey ? conditionsDone[condKey] === true : false);
+	$: alreadySent =
+		!repeatable && (sentOverride || (condKey ? conditionsDone[condKey] === true : false));
 
 	// --- Laufzeit-Status ---
 	let running = false;
@@ -241,7 +247,7 @@
 			</span>
 		{:else if confirming}
 			<div class="flex items-center gap-2 rounded-lg bg-error/10 px-2 py-1" transition:slide>
-				<span class="text-xs font-medium text-error">Wirklich an alle Empfänger senden?</span>
+				<span class="text-xs font-medium text-error">{confirmText}</span>
 				<button class="btn btn-error btn-xs" disabled={running} on:click={() => start(true)}>
 					Ja, senden
 				</button>
