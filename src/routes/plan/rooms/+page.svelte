@@ -21,13 +21,13 @@
 		await invalidateAll();
 	}
 
-	// Generierte Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.
+	// Aufbereitete Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.
 	let resetBusy = false;
 	async function resetRooms() {
 		if (resetBusy) return;
 		if (
 			!confirm(
-				'Alle generierten Räume zurücksetzen? Vorgeplante (📌) Räume bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+				'Alle aufbereiteten Räume zurücksetzen? Vorgeplante (📌) Räume bleiben erhalten. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -281,10 +281,10 @@
 					disabled={data.roomsBlocked || resetBusy}
 					on:click={resetRooms}
 				>
-					{resetBusy ? 'Setzt zurück…' : 'Generierte Räume zurücksetzen'}
+					{resetBusy ? 'Setzt zurück…' : 'Aufbereitete Räume zurücksetzen'}
 				</WriteButton>
 				<span class="text-xs text-base-content/50">
-					entfernt die generierte Raumzuteilung; vorgeplante (📌) Räume bleiben erhalten.
+					entfernt die aufbereitete Raumzuteilung; vorgeplante (📌) Räume bleiben erhalten.
 				</span>
 			</div>
 		</div>

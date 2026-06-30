@@ -297,13 +297,13 @@
 		}
 	}
 
-	// Generierte Aufsichten verwerfen (destruktiv) — Vorplanung (📌) bleibt.
+	// Aufbereitete Aufsichten verwerfen (destruktiv) — Vorplanung (📌) bleibt.
 	let resetBusy = false;
 	async function resetInvigilations() {
 		if (resetBusy) return;
 		if (
 			!confirm(
-				'Alle generierten Aufsichten zurücksetzen? Vorgeplante (📌) Aufsichten bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+				'Alle aufbereiteten Aufsichten zurücksetzen? Vorgeplante (📌) Aufsichten bleiben erhalten. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -353,7 +353,7 @@
 					disabled={data.invigilationsBlocked || resetBusy}
 					on:click={resetInvigilations}
 				>
-					{resetBusy ? 'Setzt zurück…' : 'Generierte Aufsichten zurücksetzen'}
+					{resetBusy ? 'Setzt zurück…' : 'Aufbereitete Aufsichten zurücksetzen'}
 				</WriteButton>
 				<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
 				<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>

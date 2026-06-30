@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 import { assembledExamsState } from '$lib/assembledExams/store';
 import { studentRegsState } from '$lib/studentRegs/store';
 
-// Vorbereitung in einem Schritt: generierte Prüfungen + StudentRegs zusammen
+// Vorbereitung in einem Schritt: aufbereitete Prüfungen + StudentRegs zusammen
 // erzeugen (generatePreparation). Aktualisiert beide Zustands-Stores.
 
 export const preparing = writable(false);

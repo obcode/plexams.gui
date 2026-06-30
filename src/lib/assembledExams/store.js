@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-// Zustand der „generierten Prüfungen" (Cache). dirty=true → veraltet, der
+// Zustand der „aufbereiteten Prüfungen" (Cache). dirty=true → veraltet, der
 // NavBar-Banner weist darauf hin. reason = zuletzt invalidierende Operation,
 // changedAt = Zeitpunkt (localtime vom Server).
 
@@ -33,7 +33,7 @@ export async function checkAssembledExams() {
 }
 
 /**
- * Generierte Prüfungen neu erzeugen (schnell). Setzt den neuen Zustand und
+ * Aufbereitete Prüfungen neu erzeugen (schnell). Setzt den neuen Zustand und
  * liefert die Änderungsliste bzw. einen Fehler für die Anzeige.
  * @returns {Promise<{ changes: any[], error: string | null }>}
  */

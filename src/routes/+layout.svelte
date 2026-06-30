@@ -7,7 +7,7 @@
 	import { checkAssembledExams } from '$lib/assembledExams/store';
 	import { checkStudentRegs } from '$lib/studentRegs/store';
 
-	// Nach jeder erfolgreichen Mutation (POST an /api/…) den „generierte
+	// Nach jeder erfolgreichen Mutation (POST an /api/…) den „aufbereitete
 	// Prüfungen veraltet?"-Zustand sofort neu prüfen. Reiner Beobachter: die
 	// Antwort wird unverändert durchgereicht.
 	if (browser && !(/** @type {any} */ (window).__geCheckPatched)) {

@@ -4,7 +4,7 @@ import { request as gqlrequest, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
 
 /**
- * Generierte Prüfungen UND StudentRegs in einem Schritt erzeugen.
+ * Aufbereitete Prüfungen UND StudentRegs in einem Schritt erzeugen.
  *
  * @type {import('./$types').RequestHandler}
  */
