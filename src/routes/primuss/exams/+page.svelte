@@ -55,14 +55,24 @@
 	// Suche nach Ancode / Modul / Prüfender — bei aktiver Suche über alle
 	// Studiengänge, sonst die Liste des gewählten Studiengangs.
 	let q = '';
+	// Fokus auf das Wesentliche: Prüfungen „zu planender Prüfender" und/oder
+	// noch nicht mit einer ZPA-Prüfung verbundene.
+	let onlyToPlan = false;
+	let onlyUnconnected = false;
 	$: ql = q.trim().toLowerCase();
 	$: searching = ql.length > 0;
 	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
-	$: displayedRows = searching
+	$: baseRows = searching
 		? allRows.filter((/** @type {any} */ e) =>
 				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
 			)
 		: rows;
+	$: displayedRows = baseRows
+		.filter((/** @type {any} */ e) => !onlyToPlan || e.toPlanExamer)
+		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
+	// offene (unverbundene) Prüfungen zu planender Prüfender — die eigentlich
+	// interessanten Fälle.
+	$: openToPlan = allRows.filter((/** @type {any} */ e) => e.toPlanExamer && !e.connected).length;
 
 	// Studiengänge nach Kategorie gruppieren: FK07 / MUC.DAI / Sonstige
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
@@ -262,9 +272,28 @@
 		/>
 	</div>
 
-	<div class="flex items-center gap-2 text-sm text-base-content/50">
-		<span class="tabular-nums">{displayedRows.length}</span>
-		<span>{searching ? 'Treffer (alle Studiengänge)' : 'Prüfungen'}</span>
+	<div class="flex flex-wrap items-center gap-3 text-sm">
+		<span class="text-base-content/50">
+			<span class="tabular-nums">{displayedRows.length}</span>
+			{searching ? 'Treffer (alle Studiengänge)' : 'Prüfungen'}
+		</span>
+		<button
+			class="badge gap-1 tabular-nums {onlyToPlan ? 'badge-primary' : 'badge-ghost'}"
+			title="nur Prüfungen zu planender Prüfender"
+			on:click={() => (onlyToPlan = !onlyToPlan)}
+		>
+			👤 zu planende Prüfende
+		</button>
+		<button
+			class="badge gap-1 tabular-nums {onlyUnconnected ? 'badge-warning' : 'badge-ghost'}"
+			title="nur noch nicht mit einer ZPA-Prüfung verbundene"
+			on:click={() => (onlyUnconnected = !onlyUnconnected)}
+		>
+			⚠ nicht verbunden
+		</button>
+		{#if openToPlan}
+			<span class="text-warning">{openToPlan} offen (zu planen &amp; nicht verbunden)</span>
+		{/if}
 		{#if searching}
 			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
 		{/if}
@@ -274,6 +303,7 @@
 		<table class="table table-zebra table-sm">
 			<thead>
 				<tr>
+					<th>Status</th>
 					<th>AnCode</th>
 					<th>Modul</th>
 					<th>Prüfender</th>
@@ -284,10 +314,32 @@
 			</thead>
 			<tbody>
 				{#each displayedRows as exam}
-					<tr class={exam.studentRegsCount == 0 ? 'text-base-content/40' : ''}>
+					<tr
+						class="{exam.studentRegsCount == 0 ? 'text-base-content/40' : ''} {exam.toPlanExamer &&
+						!exam.connected
+							? 'bg-warning/10'
+							: ''}"
+					>
+						<td>
+							{#if exam.connected}
+								<span class="badge badge-success badge-sm" title="mit ZPA-Prüfung verbunden">
+									✓ verbunden
+								</span>
+							{:else}
+								<span class="badge badge-warning badge-sm" title="noch nicht mit ZPA verbunden">
+									nicht verbunden
+								</span>
+							{/if}
+						</td>
 						<td class="tabular-nums">{exam.ancode}</td>
 						<td>{exam.module}</td>
-						<td>{exam.mainExamer}</td>
+						<td>
+							{exam.mainExamer}
+							{#if exam.toPlanExamer}
+								<span class="badge badge-info badge-xs" title="zu planende:r Prüfende:r">zu planen</span
+								>
+							{/if}
+						</td>
 						<td>{exam.examType}</td>
 						{#if searching}<td><span class="badge badge-ghost badge-sm">{exam.program}</span></td>{/if}
 						<td class="text-right tabular-nums">
@@ -296,7 +348,7 @@
 					</tr>
 				{:else}
 					<tr>
-						<td colspan={searching ? 6 : 5} class="py-6 text-center text-sm text-base-content/50">
+						<td colspan={searching ? 7 : 6} class="py-6 text-center text-sm text-base-content/50">
 							keine Treffer
 						</td>
 					</tr>
