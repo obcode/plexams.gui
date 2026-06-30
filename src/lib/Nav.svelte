@@ -8,18 +8,9 @@
 		zpaSummary,
 		runZpaCheck
 	} from '$lib/validation/store';
-	import {
-		generatedExamsState,
-		regenerating,
-		checkGeneratedExams,
-		regenerateGeneratedExams
-	} from '$lib/generatedExams/store';
-	import {
-		studentRegsState,
-		regeneratingStudents,
-		checkStudentRegs,
-		regenerateStudentRegs
-	} from '$lib/studentRegs/store';
+	import { generatedExamsState, checkGeneratedExams } from '$lib/generatedExams/store';
+	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
+	import { preparing, regeneratePreparation } from '$lib/prepare';
 
 	/** @param {string | null} iso */
 	function fmtChangedAt(iso: string | null) {
@@ -35,9 +26,10 @@
 		});
 	}
 
-	// Ergebnis-Toast / Fehler-Dialog des Banner-Buttons
-	let genResult: { changes: any[] } | null = null;
-	let genError = '';
+	// Ergebnis-Toast / Fehler-Dialog des „Generieren"-Buttons (Vorbereitung in
+	// einem Schritt: generierte Prüfungen + StudentRegs).
+	let prepResult: { changes: any[]; studentCount: number } | null = null;
+	let prepError = '';
 	const KIND_BADGE: Record<string, string> = {
 		added: 'badge-success',
 		removed: 'badge-error',
@@ -49,27 +41,14 @@
 		changed: 'geändert'
 	};
 
-	async function runRegenerate() {
-		genError = '';
-		const { changes, error } = await regenerateGeneratedExams();
+	async function runPrepare() {
+		prepError = '';
+		const { changes, studentCount, error } = await regeneratePreparation();
 		if (error) {
-			genError = error;
+			prepError = error;
 			return;
 		}
-		genResult = { changes };
-	}
-
-	// StudentRegs: Ergebnis-Toast / Fehler-Dialog
-	let stuResult: { studentCount: number } | null = null;
-	let stuError = '';
-	async function runRegenerateStudents() {
-		stuError = '';
-		const { studentCount, error } = await regenerateStudentRegs();
-		if (error) {
-			stuError = error;
-			return;
-		}
-		stuResult = { studentCount };
+		prepResult = { changes, studentCount };
 	}
 
 	function dotClass(level: string) {
@@ -713,46 +692,32 @@
 		</div>
 	</div>
 
-	<!-- Banner: generierte Prüfungen veraltet -->
-	{#if $generatedExamsState.dirty}
+	<!-- Banner: Vorbereitung veraltet (generierte Prüfungen und/oder StudentRegs) -->
+	{#if $generatedExamsState.dirty || $studentRegsState.dirty}
+		{@const reason = $generatedExamsState.dirty
+			? $generatedExamsState.reason
+			: $studentRegsState.reason}
+		{@const changedAt = $generatedExamsState.dirty
+			? $generatedExamsState.changedAt
+			: $studentRegsState.changedAt}
 		<div
 			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
 		>
 			<span>⚠</span>
-			<span class="font-medium">Generierte Prüfungen sind veraltet</span>
-			{#if $generatedExamsState.reason}
-				<span class="opacity-70">— zuletzt: {$generatedExamsState.reason}</span>
-			{/if}
-			{#if $generatedExamsState.changedAt}
-				<span class="opacity-60">· {fmtChangedAt($generatedExamsState.changedAt)}</span>
-			{/if}
+			<span class="font-medium">
+				{#if $generatedExamsState.dirty && $studentRegsState.dirty}
+					Generierte Prüfungen &amp; StudentRegs sind veraltet
+				{:else if $generatedExamsState.dirty}
+					Generierte Prüfungen sind veraltet
+				{:else}
+					StudentRegs sind veraltet
+				{/if}
+			</span>
+			{#if reason}<span class="opacity-70">— zuletzt: {reason}</span>{/if}
+			{#if changedAt}<span class="opacity-60">· {fmtChangedAt(changedAt)}</span>{/if}
 			<div class="flex-1"></div>
-			<button class="btn btn-warning btn-xs" disabled={$regenerating} on:click={runRegenerate}>
-				{$regenerating ? 'generiert …' : 'neu generieren'}
-			</button>
-		</div>
-	{/if}
-
-	<!-- Banner: StudentRegs veraltet -->
-	{#if $studentRegsState.dirty}
-		<div
-			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
-		>
-			<span>⚠</span>
-			<span class="font-medium">StudentRegs sind veraltet</span>
-			{#if $studentRegsState.reason}
-				<span class="opacity-70">— zuletzt: {$studentRegsState.reason}</span>
-			{/if}
-			{#if $studentRegsState.changedAt}
-				<span class="opacity-60">· {fmtChangedAt($studentRegsState.changedAt)}</span>
-			{/if}
-			<div class="flex-1"></div>
-			<button
-				class="btn btn-warning btn-xs"
-				disabled={$regeneratingStudents}
-				on:click={runRegenerateStudents}
-			>
-				{$regeneratingStudents ? 'generiert …' : 'neu generieren'}
+			<button class="btn btn-warning btn-xs" disabled={$preparing} on:click={runPrepare}>
+				{$preparing ? 'generiert …' : 'Generieren'}
 			</button>
 		</div>
 	{/if}
@@ -777,18 +742,20 @@
 	{/if}
 </header>
 
-<!-- Ergebnis-Toast nach dem Generieren -->
-{#if genResult}
+<!-- Ergebnis-Toast nach dem Generieren (Prüfungen + StudentRegs) -->
+{#if prepResult}
 	<div class="toast toast-end z-[60]">
 		<div class="alert alert-success max-w-md flex-col items-start gap-2 shadow-lg">
 			<div class="flex w-full items-center gap-2">
-				<span class="font-medium">Generiert: {genResult.changes.length} Änderung(en)</span>
+				<span class="font-medium">
+					Generiert: {prepResult.changes.length} Änderung(en) · {prepResult.studentCount} StudentRegs
+				</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" on:click={() => (genResult = null)}>schließen</button>
+				<button class="btn btn-ghost btn-xs" on:click={() => (prepResult = null)}>schließen</button>
 			</div>
-			{#if genResult.changes.length}
+			{#if prepResult.changes.length}
 				<ul class="flex max-h-72 w-full flex-col gap-1 overflow-y-auto text-sm">
-					{#each genResult.changes as c}
+					{#each prepResult.changes as c}
 						<li class="rounded border border-base-300/40 bg-base-100/40 p-1.5">
 							<div class="flex flex-wrap items-center gap-2">
 								<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">
@@ -808,51 +775,25 @@
 					{/each}
 				</ul>
 			{:else}
-				<span class="text-sm opacity-70">nichts geändert</span>
+				<span class="text-sm opacity-70">an den generierten Prüfungen nichts geändert</span>
 			{/if}
 		</div>
 	</div>
 {/if}
 
 <!-- Fehler-Dialog -->
-{#if genError}
+{#if prepError}
 	<div class="modal modal-open">
 		<div class="modal-box">
 			<h2 class="flex items-center gap-2 text-lg font-semibold">
 				<span class="badge badge-error badge-sm">Fehler</span> Generieren fehlgeschlagen
 			</h2>
-			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{genError}</p>
+			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{prepError}</p>
 			<div class="modal-action">
-				<button class="btn btn-sm" on:click={() => (genError = '')}>schließen</button>
+				<button class="btn btn-sm" on:click={() => (prepError = '')}>schließen</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (genError = '')}></button>
-	</div>
-{/if}
-
-<!-- StudentRegs: Toast nach dem Generieren -->
-{#if stuResult}
-	<div class="toast toast-end z-[60]">
-		<div class="alert alert-success shadow-lg">
-			<span class="font-medium">{stuResult.studentCount} Studierende generiert</span>
-			<button class="btn btn-ghost btn-xs" on:click={() => (stuResult = null)}>schließen</button>
-		</div>
-	</div>
-{/if}
-
-<!-- StudentRegs: Fehler-Dialog -->
-{#if stuError}
-	<div class="modal modal-open">
-		<div class="modal-box">
-			<h2 class="flex items-center gap-2 text-lg font-semibold">
-				<span class="badge badge-error badge-sm">Fehler</span> StudentRegs-Generieren fehlgeschlagen
-			</h2>
-			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{stuError}</p>
-			<div class="modal-action">
-				<button class="btn btn-sm" on:click={() => (stuError = '')}>schließen</button>
-			</div>
-		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (stuError = '')}></button>
+		<button class="modal-backdrop" aria-label="schließen" on:click={() => (prepError = '')}></button>
 	</div>
 {/if}
 
