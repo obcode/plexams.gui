@@ -12,7 +12,7 @@ import { browser } from '$app/environment';
 /** @type {import('svelte/store').Writable<GeneratedExamsState>} */
 export const assembledExamsState = writable({ dirty: false, reason: null, changedAt: null });
 
-export const regenerating = writable(false);
+export const regeneratingAssembled = writable(false);
 
 let inflight = false;
 
@@ -39,7 +39,7 @@ export async function checkAssembledExams() {
  */
 export async function regenerateAssembledExams() {
 	if (!browser) return { changes: [], error: null };
-	regenerating.set(true);
+	regeneratingAssembled.set(true);
 	try {
 		const res = await fetch('/api/generateAssembledExams', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
@@ -52,6 +52,6 @@ export async function regenerateAssembledExams() {
 	} catch (e) {
 		return { changes: [], error: e instanceof Error ? e.message : String(e) };
 	} finally {
-		regenerating.set(false);
+		regeneratingAssembled.set(false);
 	}
 }
