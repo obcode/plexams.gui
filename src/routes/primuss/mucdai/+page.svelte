@@ -57,6 +57,9 @@
 	let fk07Only = false;
 	/** @type {'ancode' | 'time'} */
 	let sortBy = 'ancode';
+	// Suche nach Prüfer:in / Modul / Ancode (ZPA & Primuss)
+	let q = '';
+	$: ql = q.trim().toLowerCase();
 
 	/** @param {any} g → Zeitstempel (ms) für Sortierung; ohne Zeit ans Ende */
 	function timeMs(g) {
@@ -70,6 +73,13 @@
 	$: filtered = groups
 		.filter((g) => !program || g.programs.includes(program))
 		.filter((g) => !fk07Only || g.plannedBy === 'FK07')
+		.filter(
+			(g) =>
+				!ql ||
+				`${g.ancode ?? ''} ${g.primussList.join(' ')} ${g.module} ${g.mainExamer}`
+					.toLowerCase()
+					.includes(ql)
+		)
 		.sort((a, b) => {
 			if (sortBy === 'time') return timeMs(a) - timeMs(b) || a.primussList[0] - b.primussList[0];
 			return a.primussList[0] - b.primussList[0];
@@ -341,6 +351,12 @@
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={fk07Only} />
 				<span>nur FK07</span>
 			</label>
+			<input
+				class="input input-bordered input-sm w-56"
+				type="text"
+				bind:value={q}
+				placeholder="suchen: Prüfer:in, Modul, AnCode …"
+			/>
 			<div class="flex-1"></div>
 			<div class="flex items-center gap-1 text-sm">
 				<span class="text-base-content/50">Sortierung:</span>
