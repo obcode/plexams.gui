@@ -262,7 +262,6 @@
 				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
 				{ href: '/plan/invigilation', label: '⏰ Zeitplan' },
 				{ href: '/plan/invigilation/generate', label: '✨ Einteilung' },
-				{ href: '/config/generation', label: '⚙️ Einteilungs-Parameter' },
 				{ href: '/plan/invigilation/validate', label: '✅ Validierung' }
 			]
 		},

@@ -2,6 +2,9 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
+	import WriteButton from '$lib/WriteButton.svelte';
+
+	export let data;
 
 	// --- Eingaben ---
 	let dryRun = true;
@@ -180,6 +183,62 @@
 		current && current.progress && current.progress.total
 			? Math.min(100, Math.round((current.progress.iteration / current.progress.total) * 100))
 			: 0;
+
+	// --- Globale Optimierer-Parameter (generationConfig) ---
+	const NUM_FIELDS = [
+		{ key: 'timelagMin', label: 'Zeitabstand (min)', int: true },
+		{ key: 'iterations', label: 'Iterationen', int: true },
+		{ key: 'startTemp', label: 'Start-Temperatur' },
+		{ key: 'endTemp', label: 'End-Temperatur' },
+		{ key: 'toleranceMin', label: 'Toleranz (min)', int: true },
+		{ key: 'maxSpanHours', label: 'max. Spanne (h)' }
+	];
+	const WEIGHTS = [
+		{ key: 'weightMinuteBalance', label: 'Minuten-Balance' },
+		{ key: 'weightBeyondTolerance', label: 'über Toleranz' },
+		{ key: 'weightOverTargetFactor', label: 'über Soll (Faktor)' },
+		{ key: 'weightCoverage', label: 'Abdeckung' },
+		{ key: 'weightMaxDays', label: 'max. Tage' },
+		{ key: 'weightPreferExamDays', label: 'Prüfungstage bevorzugen' },
+		{ key: 'weightDistribution', label: 'Verteilung' },
+		{ key: 'weightDaySpan', label: 'Tages-Spanne' }
+	];
+	const ALL_PARAMS = [...NUM_FIELDS, ...WEIGHTS];
+
+	/** @type {Record<string, any>} */
+	let cfgForm = {};
+	for (const f of ALL_PARAMS) cfgForm[f.key] = data.config?.[f.key] ?? 0;
+
+	let cfgSaving = false;
+	let cfgError = '';
+	let cfgSavedAt = '';
+
+	async function saveConfig() {
+		if (cfgSaving) return;
+		cfgSaving = true;
+		cfgError = '';
+		cfgSavedAt = '';
+		/** @type {Record<string, number>} */
+		const input = {};
+		for (const f of ALL_PARAMS) input[f.key] = Number(cfgForm[f.key]) || 0;
+		try {
+			const res = await fetch('/api/setGenerationConfig', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ input })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				cfgError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			cfgSavedAt = new Date().toLocaleTimeString('de-DE');
+		} catch (e) {
+			cfgError = e instanceof Error ? e.message : String(e);
+		} finally {
+			cfgSaving = false;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -245,6 +304,69 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Globale Optimierer-Parameter (selten geändert, daher eingeklappt) -->
+	<details class="collapse collapse-arrow border border-base-300 bg-base-100">
+		<summary class="collapse-title text-sm font-medium">
+			⚙️ Erweiterte Parameter
+			<span class="font-normal text-base-content/50">· global · Simulated Annealing &amp; Gewichte</span>
+		</summary>
+		<div class="collapse-content flex flex-col gap-3">
+			{#if cfgError}
+				<div class="alert alert-error py-2 text-sm"><span>{cfgError}</span></div>
+			{/if}
+			{#if cfgSavedAt}
+				<div class="alert alert-success py-2 text-sm">
+					<span>Parameter gespeichert ({cfgSavedAt}).</span>
+				</div>
+			{/if}
+
+			<div class="text-xs text-base-content/50">
+				Diese Werte gelten global für alle Läufe. „Iterationen" oben (Schieberegler) ist der Wert
+				für diesen Lauf.
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<div class="text-xs font-semibold text-base-content/60">Verfahren (Simulated Annealing)</div>
+				<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+					{#each NUM_FIELDS as f}
+						<label class="flex flex-col gap-1">
+							<span class="text-xs font-medium text-base-content/60">{f.label}</span>
+							<input
+								type="number"
+								step={f.int ? '1' : 'any'}
+								class="input input-bordered input-sm"
+								bind:value={cfgForm[f.key]}
+							/>
+						</label>
+					{/each}
+				</div>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<div class="text-xs font-semibold text-base-content/60">Gewichte</div>
+				<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+					{#each WEIGHTS as f}
+						<label class="flex flex-col gap-1">
+							<span class="text-xs font-medium text-base-content/60">{f.label}</span>
+							<input
+								type="number"
+								step="any"
+								class="input input-bordered input-sm"
+								bind:value={cfgForm[f.key]}
+							/>
+						</label>
+					{/each}
+				</div>
+			</div>
+
+			<div>
+				<WriteButton class="btn btn-outline btn-sm" disabled={cfgSaving} on:click={saveConfig}>
+					{cfgSaving ? 'speichert …' : 'Parameter speichern'}
+				</WriteButton>
+			</div>
+		</div>
+	</details>
 
 	<div class="flex items-center gap-3">
 		{#if running}
