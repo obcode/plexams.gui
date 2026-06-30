@@ -1,9 +1,18 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { conditionsDoneMap } from '$lib/email/emailConditions';
 
 export async function load({ params }) {
 	const query = gql`
 		query {
+			planningState {
+				phases {
+					conditions {
+						key
+						done
+					}
+				}
+			}
 			plannedExams {
 				ancode
 				zpaExam {
@@ -121,6 +130,8 @@ export async function load({ params }) {
 	const data = await request(env.PLEXAMS_SERVER, query);
 
 	return {
-		plannedExams: data.plannedExams
+		plannedExams: data.plannedExams,
+		// Vorbedingungen fürs Generieren (Gate des „Generieren"-Buttons)
+		conditions: conditionsDoneMap(data.planningState)
 	};
 }
