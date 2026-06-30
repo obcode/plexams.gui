@@ -52,6 +52,18 @@
 	$: exams = data.primussExams.filter((/** @type {any} */ p) => p.program == program);
 	$: rows = exams.length > 0 ? exams[0].exams : [];
 
+	// Suche nach Ancode / Modul / Prüfer:in — bei aktiver Suche über alle
+	// Studiengänge, sonst die Liste des gewählten Studiengangs.
+	let q = '';
+	$: ql = q.trim().toLowerCase();
+	$: searching = ql.length > 0;
+	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
+	$: displayedRows = searching
+		? allRows.filter((/** @type {any} */ e) =>
+				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
+			)
+		: rows;
+
 	// Studiengänge nach Kategorie gruppieren: FK07 / MUC.DAI / Sonstige
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
 		fk07: 'FK07',
@@ -221,25 +233,41 @@
 		</section>
 	{/if}
 
-	<!-- Studiengang-Auswahl, gruppiert nach Kategorie -->
-	<div class="flex flex-col gap-2">
-		{#each groups as group}
-			<div class="flex flex-wrap items-center gap-2">
-				<span class="w-20 text-sm font-medium text-base-content/60">{group.label}</span>
-				<div class="join flex-wrap">
-					{#each group.items as primussExam}
-						<input
-							type="radio"
-							name="program"
-							aria-label="{primussExam.program} ({primussExam.exams.length})"
-							bind:group={program}
-							value={primussExam.program}
-							class="btn btn-sm join-item"
-						/>
-					{/each}
+	<!-- Studiengang-Auswahl (bei aktiver Suche ausgegraut) + Suche -->
+	<div class="flex flex-wrap items-end justify-between gap-3">
+		<div class="flex flex-col gap-2 {searching ? 'pointer-events-none opacity-40' : ''}">
+			{#each groups as group}
+				<div class="flex flex-wrap items-center gap-2">
+					<span class="w-20 text-sm font-medium text-base-content/60">{group.label}</span>
+					<div class="join flex-wrap">
+						{#each group.items as primussExam}
+							<input
+								type="radio"
+								name="program"
+								aria-label="{primussExam.program} ({primussExam.exams.length})"
+								bind:group={program}
+								value={primussExam.program}
+								class="btn btn-sm join-item"
+							/>
+						{/each}
+					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		</div>
+		<input
+			class="input input-bordered input-sm w-64"
+			type="text"
+			bind:value={q}
+			placeholder="suchen: Prüfer:in, Modul, AnCode …"
+		/>
+	</div>
+
+	<div class="flex items-center gap-2 text-sm text-base-content/50">
+		<span class="tabular-nums">{displayedRows.length}</span>
+		<span>{searching ? 'Treffer (alle Studiengänge)' : 'Prüfungen'}</span>
+		{#if searching}
+			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
+		{/if}
 	</div>
 
 	<div class="overflow-x-auto rounded-lg border border-base-300">
@@ -250,18 +278,26 @@
 					<th>Modul</th>
 					<th>Prüfer:in</th>
 					<th>Art</th>
+					{#if searching}<th>Studiengang</th>{/if}
 					<th class="text-right">Anmeldungen</th>
 				</tr>
 			</thead>
 			<tbody>
-				{#each rows as exam}
+				{#each displayedRows as exam}
 					<tr class={exam.studentRegsCount == 0 ? 'text-base-content/40' : ''}>
 						<td class="tabular-nums">{exam.ancode}</td>
 						<td>{exam.module}</td>
 						<td>{exam.mainExamer}</td>
 						<td>{exam.examType}</td>
+						{#if searching}<td><span class="badge badge-ghost badge-sm">{exam.program}</span></td>{/if}
 						<td class="text-right tabular-nums">
 							{exam.studentRegsCount}
+						</td>
+					</tr>
+				{:else}
+					<tr>
+						<td colspan={searching ? 6 : 5} class="py-6 text-center text-sm text-base-content/50">
+							keine Treffer
 						</td>
 					</tr>
 				{/each}
