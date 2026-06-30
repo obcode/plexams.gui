@@ -175,8 +175,8 @@
 			{#if hasFirstImport}
 				<div class="alert alert-info py-2 text-sm">
 					<span>
-						Erstimport dabei — initiale Primuss-Daten als Sammelmail über
-						<a class="link" href="/email">E-Mails → Primuss-Daten (alle)</a> senden (nicht die Update-Mail).
+						Erstimport dabei — noch keine E-Mails. Nächster Schritt ist die
+						<a class="link" href="/exam/connected">Anmeldungszuordnung (ZPA ↔ Primuss)</a>.
 					</span>
 				</div>
 			{/if}
