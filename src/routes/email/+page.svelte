@@ -1,9 +1,20 @@
 <script>
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import EmailCard from '$lib/email/EmailCard.svelte';
 	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
 	import { emailGroups } from '$lib/email/emails';
+	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
 
 	export let data;
+
+	// „bereits gesendet": zugehörige Bedingung ist done. Solche Versände wandern
+	// nach unten, oben bleibt nur Offenes (oberste Karte = nächster Schritt).
+	/** @param {import('$lib/email/emails').EmailDef} email */
+	const isSent = (email) => {
+		const k = email.conditionKey || EMAIL_CONDITION[email.key];
+		return !!k && conditionsDone[k] === true;
+	};
+	$: sentEmails = emailGroups.flatMap((g) => g.emails).filter(isSent);
 
 	// Gestreamte Load-Daten: Seite rendert sofort, diese füllen sich nach.
 	/** @type {Record<string, boolean>} */
@@ -38,40 +49,22 @@
 	</div>
 
 	{#each emailGroups as group}
-		<section class="flex flex-col gap-3">
-			<h2 class="text-lg font-semibold text-base-content/80">{group.title}</h2>
-			{#if group.id === 'constraints'}
-				<ExamPlanningInfoSender recipients={examPlanningMailRecipients} {conditionsDone} />
-			{/if}
-			<div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
-				{#each group.emails as email (email.key)}
-					<div class="flex flex-col gap-2">
-						<EmailSender
-							emailKey={email.key}
-							title={email.title}
-							description={email.description}
-							extraArgs={email.extraArgs ?? {}}
-							conditionKey={email.conditionKey ?? ''}
-							{conditionsDone}
-							hideRealSend={email.key === 'sendEmailInvigilationsMissing' && allRequirementsPresent}
-							hideRealSendHint="alle Anforderungen vorhanden — kein Versand nötig"
-						/>
-						{#if email.links}
-							<div class="flex flex-wrap gap-2 px-1">
-								{#each email.links as link}
-									<a
-										href={link.href}
-										class="btn btn-sm gap-2 {link.primary ? 'btn-primary' : 'btn-outline'}"
-									>
-										{link.label}
-									</a>
-								{/each}
-							</div>
-						{/if}
+		{@const open = group.emails.filter((e) => !isSent(e))}
+		{#if open.length || group.id === 'constraints'}
+			<section class="flex flex-col gap-3">
+				<h2 class="text-lg font-semibold text-base-content/80">{group.title}</h2>
+				{#if group.id === 'constraints'}
+					<ExamPlanningInfoSender recipients={examPlanningMailRecipients} {conditionsDone} />
+				{/if}
+				{#if open.length}
+					<div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+						{#each open as email (email.key)}
+							<EmailCard {email} {conditionsDone} {allRequirementsPresent} />
+						{/each}
 					</div>
-				{/each}
-			</div>
-		</section>
+				{/if}
+			</section>
+		{/if}
 	{/each}
 
 	<!-- Einzelversand mit Parametern (wiederholbar) -->
@@ -176,4 +169,19 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Bereits gesendet: ganz unten, in Workflow-Reihenfolge -->
+	{#if sentEmails.length}
+		<section class="flex flex-col gap-3 border-t border-base-300 pt-4">
+			<h2 class="text-lg font-semibold text-base-content/50">
+				Bereits gesendet
+				<span class="badge badge-ghost badge-sm tabular-nums">{sentEmails.length}</span>
+			</h2>
+			<div class="grid grid-cols-1 gap-3 opacity-80 xl:grid-cols-2">
+				{#each sentEmails as email (email.key)}
+					<EmailCard {email} {conditionsDone} {allRequirementsPresent} />
+				{/each}
+			</div>
+		</section>
+	{/if}
 </div>
