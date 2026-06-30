@@ -27,15 +27,19 @@
 					isRepeaterExam: e.isRepeaterExam,
 					plannedBy: e.plannedBy,
 					planEntry: e.planEntry,
+					linkStatus: e.linkStatus,
 					/** @type {string[]} */
 					programs: [],
 					/** @type {Set<number>} */
-					primussAncodes: new Set()
+					primussAncodes: new Set(),
+					/** @type {{ program: string, primussAncode: number }[]} */
+					members: []
 				};
 				m.set(key, g);
 			}
 			g.programs.push(e.program);
 			g.primussAncodes.add(e.primussAncode);
+			g.members.push({ program: e.program, primussAncode: e.primussAncode });
 		}
 		return [...m.values()].map((g) => ({
 			...g,
@@ -185,6 +189,101 @@
 			timeSaving = false;
 		}
 	}
+
+	// --- ZPA-Verknüpfung: Status anzeigen / setzen / entfernen ---
+	/** @type {Record<string, { label: string, cls: string, title: string }>} */
+	const STATUS = {
+		external: { label: 'extern', cls: 'badge-info', title: 'extern angelegt & verknüpft' },
+		zpa: { label: 'ZPA', cls: 'badge-success', title: 'mit ZPA-Prüfung verknüpft' },
+		unresolved: { label: 'ungeklärt', cls: 'badge-warning', title: 'FK07 — unklar, Aktion nötig' }
+	};
+	const jsonHeaders = { 'content-type': 'application/json' };
+
+	/** @type {any} */
+	let linkFor = null;
+	/** @type {any[]} */
+	let candidates = [];
+	let candLoading = false;
+	let linking = false;
+	let linkError = '';
+
+	/** @param {any} g */
+	async function openLink(g) {
+		linkFor = g;
+		candidates = [];
+		linkError = '';
+		candLoading = true;
+		try {
+			const m = g.members[0];
+			const res = await fetch('/api/mucDaiZpaCandidates', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ program: m.program, primussAncode: m.primussAncode })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) linkError = d?.error || `Fehler (HTTP ${res.status})`;
+			else candidates = d.mucDaiZpaCandidates ?? [];
+		} catch (e) {
+			linkError = e instanceof Error ? e.message : String(e);
+		} finally {
+			candLoading = false;
+		}
+	}
+	const closeLink = () => (linkFor = null);
+
+	/** Alle Mitglieder (Studiengänge) der Gruppe auf denselben ZPA-Ancode setzen.
+	 * @param {number} zpaAncode */
+	async function linkTo(zpaAncode) {
+		if (!linkFor || linking) return;
+		linking = true;
+		linkError = '';
+		try {
+			for (const mem of linkFor.members) {
+				const res = await fetch('/api/setMucDaiZpaLink', {
+					method: 'POST',
+					headers: jsonHeaders,
+					body: JSON.stringify({ program: mem.program, primussAncode: mem.primussAncode, zpaAncode })
+				});
+				const d = await res.json().catch(() => ({}));
+				if (!res.ok || d?.error) {
+					linkError = d?.error || `Fehler (HTTP ${res.status})`;
+					return;
+				}
+			}
+			closeLink();
+			await invalidateAll();
+		} catch (e) {
+			linkError = e instanceof Error ? e.message : String(e);
+		} finally {
+			linking = false;
+		}
+	}
+
+	async function unlinkAll() {
+		if (!linkFor || linking) return;
+		linking = true;
+		linkError = '';
+		try {
+			for (const mem of linkFor.members) {
+				const res = await fetch('/api/removeMucDaiLink', {
+					method: 'POST',
+					headers: jsonHeaders,
+					body: JSON.stringify({ program: mem.program, primussAncode: mem.primussAncode })
+				});
+				const d = await res.json().catch(() => ({}));
+				if (!res.ok || d?.error) {
+					linkError = d?.error || `Fehler (HTTP ${res.status})`;
+					return;
+				}
+			}
+			closeLink();
+			await invalidateAll();
+		} catch (e) {
+			linkError = e instanceof Error ? e.message : String(e);
+		} finally {
+			linking = false;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -267,6 +366,7 @@
 						<th>Prüfer:in</th>
 						<th>Art</th>
 						<th>zuständig</th>
+						<th>Status</th>
 						<th>ZPA-Ancode</th>
 						<th>Zeit</th>
 						<th></th>
@@ -294,6 +394,15 @@
 									{g.plannedBy}
 								</span>
 							</td>
+							<td>
+								{#if STATUS[g.linkStatus]}
+									<span class="badge badge-sm {STATUS[g.linkStatus].cls}" title={STATUS[g.linkStatus].title}>
+										{STATUS[g.linkStatus].label}
+									</span>
+								{:else}
+									<span class="text-base-content/30">—</span>
+								{/if}
+							</td>
 							<td class="tabular-nums">
 								{#if g.ancode != null}
 									{g.ancode}
@@ -314,6 +423,19 @@
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
+								{#if g.linkStatus === 'unresolved'}
+									<WriteButton class="btn btn-warning btn-xs" on:click={() => openLink(g)}>
+										Verknüpfen
+									</WriteButton>
+								{:else}
+									<button
+										class="btn btn-ghost btn-xs"
+										title="ZPA-Verknüpfung ändern/entfernen"
+										on:click={() => openLink(g)}
+									>
+										Verknüpfung
+									</button>
+								{/if}
 								{#if g.plannedBy !== 'FK07' && g.ancode != null}
 									<button class="btn btn-ghost btn-xs" on:click={() => openTime(g)}>
 										Zeit setzen
@@ -388,5 +510,85 @@
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" on:click={() => (timeFor = null)}
 		></button>
+	</div>
+{/if}
+
+<!-- ZPA-Verknüpfung -->
+{#if linkFor}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-2xl">
+			<h2 class="text-lg font-semibold">ZPA-Verknüpfung — {linkFor.module}</h2>
+			<p class="text-sm text-base-content/50">
+				{linkFor.mainExamer} · Primuss {linkFor.primussList.join(', ')} · {linkFor.programs.join(
+					', '
+				)} · Status {STATUS[linkFor.linkStatus]?.label ?? linkFor.linkStatus}
+			</p>
+
+			{#if linkFor.ancode != null}
+				<div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+					<span>aktuell verknüpft mit ZPA-Ancode</span>
+					<span class="font-mono tabular-nums">{linkFor.ancode}</span>
+					<WriteButton
+						class="btn btn-outline btn-error btn-xs"
+						disabled={linking}
+						on:click={unlinkAll}
+					>
+						Verknüpfung entfernen
+					</WriteButton>
+					<span class="text-xs text-base-content/50">(fällt auf Auto-Erkennung zurück)</span>
+				</div>
+			{/if}
+
+			{#if linkError}
+				<div class="alert alert-error mt-3 py-2 text-sm"><span>{linkError}</span></div>
+			{/if}
+
+			<div class="mt-3 text-xs font-medium text-base-content/60">Vorschläge</div>
+			{#if candLoading}
+				<div class="mt-2 flex items-center gap-2 text-sm text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span> lädt Vorschläge …
+				</div>
+			{:else if candidates.length}
+				<div class="mt-1 overflow-x-auto rounded-lg border border-base-300">
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>Ancode</th>
+								<th>Modul</th>
+								<th>Prüfer:in</th>
+								<th>Art</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each candidates as c}
+								<tr class="hover {c.ancode === linkFor.ancode ? 'bg-success/10' : ''}">
+									<td class="font-mono tabular-nums">{c.ancode}</td>
+									<td>{c.module}</td>
+									<td class="text-sm">{c.mainExamer}</td>
+									<td class="text-sm text-base-content/70">{c.examTypeFull}</td>
+									<td class="text-right">
+										<WriteButton
+											class="btn btn-primary btn-xs"
+											disabled={linking || c.ancode === linkFor.ancode}
+											on:click={() => linkTo(c.ancode)}
+										>
+											{c.ancode === linkFor.ancode ? 'verknüpft' : 'verknüpfen'}
+										</WriteButton>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			{:else}
+				<div class="mt-2 text-sm text-base-content/50">Keine Vorschläge gefunden.</div>
+			{/if}
+
+			<div class="modal-action">
+				<button class="btn btn-ghost btn-sm" on:click={closeLink} disabled={linking}>Schließen</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" on:click={closeLink}></button>
 	</div>
 {/if}

@@ -19,6 +19,7 @@ export async function load() {
 						program
 						plannedBy
 						ancode
+						linkStatus
 						planEntry {
 							dayNumber
 							slotNumber
