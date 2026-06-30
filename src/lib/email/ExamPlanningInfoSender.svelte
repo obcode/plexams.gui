@@ -78,10 +78,11 @@
 	<div class="max-h-64 overflow-y-auto rounded-lg border border-base-200 divide-y divide-base-200">
 		{#each filtered as r (r.teacher.id)}
 			{@const noMail = !r.teacher?.email}
+			{@const hasExams = (r.exams?.length ?? 0) > 0}
 			<label
-				class="flex items-start gap-2 px-2 py-1 text-sm {noMail
-					? 'opacity-50'
-					: 'cursor-pointer hover:bg-base-200/50'}"
+				class="flex items-start gap-2 px-2 py-1 text-sm {noMail ? 'opacity-50 ' : 'cursor-pointer '}{hasExams
+					? 'bg-success/10 hover:bg-success/20'
+					: 'bg-warning/10 hover:bg-warning/20'}"
 			>
 				<input
 					type="checkbox"
@@ -110,9 +111,13 @@
 						{examList(r.exams) || '—'}
 					</div>
 				</div>
-				<span class="mt-0.5 shrink-0 tabular-nums text-base-content/40"
-					>{r.exams?.length ?? 0}&nbsp;Pr.</span
-				>
+				{#if hasExams}
+					<span class="mt-0.5 shrink-0 tabular-nums text-base-content/40"
+						>{r.exams.length}&nbsp;Pr.</span
+					>
+				{:else}
+					<span class="mt-0.5 shrink-0 font-medium text-warning">keine&nbsp;Pr.</span>
+				{/if}
 			</label>
 		{:else}
 			<div class="px-2 py-3 text-center text-sm text-base-content/40">keine Empfänger</div>
