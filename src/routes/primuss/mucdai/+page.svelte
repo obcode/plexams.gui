@@ -204,6 +204,14 @@
 		</label>
 	</div>
 
+	{#if data.loadError}
+		<div class="alert alert-error flex-col items-start py-2 text-sm">
+			<span class="font-medium">MUC.DAI-Prüfungen konnten nicht geladen werden (Backend-Fehler).</span
+			>
+			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
+		</div>
+	{/if}
+
 	{#if importError}
 		<div class="alert alert-error py-2 text-sm"><span>{importError}</span></div>
 	{/if}
