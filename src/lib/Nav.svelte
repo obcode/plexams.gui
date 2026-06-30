@@ -329,6 +329,7 @@
 				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
 				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
 				{ section: 'Primuss' },
+				{ href: '/primuss/import', label: '📥 Sammellisten importieren' },
 				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
 				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
 				{ href: '/students', label: '🎓 Studierende' },

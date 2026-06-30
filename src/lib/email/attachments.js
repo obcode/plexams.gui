@@ -48,11 +48,13 @@ export async function uploadAttachmentsZip({ kind, file }) {
 }
 
 /**
+ * Generischer Multipart-Upload an plexams.go (mit 409→blocked-Behandlung).
+ * Auch außerhalb der E-Mail-Anhänge nutzbar (z. B. Primuss-ZIP).
  * @param {string} url
  * @param {FormData} fd
  * @returns {Promise<{ ok: boolean, blocked: boolean, result?: any, error?: string }>}
  */
-async function postUpload(url, fd) {
+export async function postUpload(url, fd) {
 	let res;
 	try {
 		res = await fetch(url, { method: 'POST', body: fd });
