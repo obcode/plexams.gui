@@ -6,8 +6,12 @@
 	// Ersetzt die früheren Einzelversände „Constraints/Wünsche" + „Vorbereitete
 	// Prüfungen". Wiederholbar (Versand an Teilmengen / erneut möglich).
 
-	/** @type {Array<{ teacher: { id: number, shortname: string, fullname: string, email: string }, category: string, exams: any[] }>} */
+	/** @type {Array<{ teacher: { id: number, shortname: string, fullname: string, email: string, fk: string, isLBA: boolean }, category: string, exams: { ancode: number, module: string }[] }>} */
 	export let recipients = [];
+
+	/** @param {any[]} exams → „425 Statistik …, 486 Datenbanksysteme" */
+	const examList = (exams) =>
+		(exams ?? []).map((/** @type {any} */ e) => `${e.ancode} ${e.module}`).join(', ');
 	/** @type {Record<string, boolean>} */
 	export let conditionsDone = {};
 
@@ -75,24 +79,40 @@
 		{#each filtered as r (r.teacher.id)}
 			{@const noMail = !r.teacher?.email}
 			<label
-				class="flex items-center gap-2 px-2 py-1 text-sm {noMail
+				class="flex items-start gap-2 px-2 py-1 text-sm {noMail
 					? 'opacity-50'
 					: 'cursor-pointer hover:bg-base-200/50'}"
 			>
 				<input
 					type="checkbox"
-					class="checkbox checkbox-xs"
+					class="checkbox checkbox-xs mt-0.5"
 					checked={selected.has(r.teacher.id)}
 					disabled={noMail}
 					on:change={() => toggle(r.teacher.id)}
 				/>
-				<span class="min-w-0 flex-1 truncate">{r.teacher.shortname}</span>
-				<span class="tabular-nums text-base-content/40">{r.exams?.length ?? 0}&nbsp;Pr.</span>
-				{#if noMail}
-					<span class="text-xs text-warning">keine E-Mail — übersprungen</span>
-				{:else}
-					<span class="truncate text-xs text-base-content/40">{r.teacher.email}</span>
-				{/if}
+				<div class="min-w-0 flex-1">
+					<div class="flex flex-wrap items-center gap-x-2">
+						<span class="truncate font-medium">{r.teacher.shortname}</span>
+						{#if r.teacher.fk && r.teacher.fk !== 'FK07'}
+							<span class="badge badge-neutral badge-xs" title="andere Fakultät">{r.teacher.fk}</span
+							>
+						{/if}
+						{#if r.teacher.isLBA}
+							<span class="badge badge-info badge-xs" title="Lehrbeauftragte:r">LBA</span>
+						{/if}
+						{#if noMail}
+							<span class="text-xs text-warning">keine E-Mail — übersprungen</span>
+						{:else}
+							<span class="truncate text-xs text-base-content/40">{r.teacher.email}</span>
+						{/if}
+					</div>
+					<div class="truncate text-xs text-base-content/50" title={examList(r.exams)}>
+						{examList(r.exams) || '—'}
+					</div>
+				</div>
+				<span class="mt-0.5 shrink-0 tabular-nums text-base-content/40"
+					>{r.exams?.length ?? 0}&nbsp;Pr.</span
+				>
 			</label>
 		{:else}
 			<div class="px-2 py-3 text-center text-sm text-base-content/40">keine Empfänger</div>

@@ -56,9 +56,12 @@ export function load() {
 						shortname
 						fullname
 						email
+						fk
+						isLBA
 					}
 					exams {
 						ancode
+						module
 					}
 				}
 			}
