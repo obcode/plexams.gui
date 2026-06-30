@@ -179,6 +179,10 @@
 				Bereits gesendet
 				<span class="badge badge-ghost badge-sm tabular-nums">{sentEmails.length}</span>
 			</h2>
+			<p class="text-sm text-base-content/60">
+				Laut Workflow-Status erledigt — nur noch Probelauf. Zum erneuten Senden das Häkchen auf der
+				<a class="link" href="/">Startseite</a> zurücksetzen.
+			</p>
 			<div class="grid grid-cols-1 gap-3 opacity-80 xl:grid-cols-2">
 				{#each sentEmails as email (email.key)}
 					<EmailCard {email} {conditionsDone} {allRequirementsPresent} />
