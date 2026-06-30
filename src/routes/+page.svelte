@@ -14,8 +14,8 @@
 
 	/** @type {Record<string, string>} */
 	const AREA_LABEL = {
-		ROOMS: 'Raumgenerierung gesperrt — Raumplan veröffentlicht',
-		INVIGILATIONS: 'Aufsichtengenerierung gesperrt — Aufsichtenplan veröffentlicht'
+		ROOMS: 'Raumzuordnung gesperrt — Raumplan veröffentlicht',
+		INVIGILATIONS: 'Aufsichteneinteilung gesperrt — Aufsichtenplan veröffentlicht'
 	};
 
 	/** @param {any} cond */

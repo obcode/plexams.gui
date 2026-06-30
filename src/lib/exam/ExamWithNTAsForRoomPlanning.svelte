@@ -323,7 +323,7 @@
 								: 'opacity-25 hover:opacity-100'}"
 							title={room.prePlanned
 								? 'in Vorplanung fixiert – klicken zum Lösen'
-								: 'in Vorplanung fixieren (überlebt Neugenerierung)'}
+								: 'in Vorplanung fixieren (überlebt Neuzuordnung)'}
 							on:click={() =>
 								room.prePlanned ? removePrePlan(exam.ancode, room) : prePlanRoom(exam.ancode, room)}
 						>
@@ -444,7 +444,7 @@
 							</div>
 						{/if}
 						<div class="text-[10px] text-base-content/40">
-							Nach dem Vorplanen ggf. „Räume für Prüfungen generieren", damit es wirksam wird.
+							Nach dem Vorplanen ggf. „Räume für Prüfungen zuordnen", damit es wirksam wird.
 						</div>
 					</div>
 				{:else}

@@ -363,7 +363,7 @@
 		{#if data.invigilationsBlocked}
 			<div class="alert alert-warning py-2 text-sm">
 				<span>
-					🔒 Aufsichtengenerierung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
+					🔒 Aufsichteneinteilung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
 					Zurücksetzen/Ändern das Häkchen „Aufsichtenplan veröffentlicht" auf der Startseite lösen.
 				</span>
 			</div>
@@ -407,7 +407,7 @@
 				>keine Aufsicht / Reserve</span
 			>
 			<span class="text-base-content/60"
-				>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neugenerierung)</span
+				>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neueinteilung)</span
 			>
 		</div>
 

@@ -61,8 +61,8 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Generierungs-Parameter</h1>
-		<span class="text-sm text-base-content/50">global · Aufsichten-Generierung</span>
+		<h1 class="text-2xl font-semibold">Einteilungs-Parameter</h1>
+		<span class="text-sm text-base-content/50">global · Aufsichten-Einteilung</span>
 	</div>
 
 	{#if error}

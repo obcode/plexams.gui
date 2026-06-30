@@ -11,7 +11,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	// nach einer Generierung neu laden: invalidateAll frischt die Load-Daten
+	// nach einer Zuordnung neu laden: invalidateAll frischt die Load-Daten
 	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
 	// client-seitig nachladenden Slot-Komponenten neu ein.
 	let reloadKey = 0;
@@ -113,7 +113,7 @@
 			: baseRooms.filter((/** @type {string} */ r) => r === showRooms);
 
 	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
-	// Generierung in planned_rooms wirken).
+	// Zuordnung in planned_rooms wirken).
 	/** @type {Map<string, string>} */
 	let blockedMap = new Map(
 		data.blockedRooms.map((/** @type {any} */ b) => [
@@ -129,7 +129,7 @@
 
 	/** @param {number} n */
 	const prePlanWarn = (n) =>
-		`${n === 1 ? 'In diesem Slot ist dieser Raum' : `${n} betroffene Slots haben diesen Raum`} vorgeplant (📌). Beim Generieren wird er dort übersprungen. Trotzdem sperren?`;
+		`${n === 1 ? 'In diesem Slot ist dieser Raum' : `${n} betroffene Slots haben diesen Raum`} vorgeplant (📌). Beim Zuordnen wird er dort übersprungen. Trotzdem sperren?`;
 
 	/** @param {number} day @param {number} slot @param {string} room */
 	async function toggleBlock(day, slot, room) {
@@ -240,13 +240,13 @@
 			</div>
 		</div>
 
-		<!-- Generierung -->
+		<!-- Zuordnung -->
 		<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
-			<div class="text-sm font-medium">Generierung & Import</div>
+			<div class="text-sm font-medium">Zuordnung & Import</div>
 			{#if data.roomsBlocked}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						🔒 Raumgenerierung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das
+						🔒 Raumzuordnung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das
 						Häkchen „Raumplan veröffentlicht" auf der Startseite kurz lösen.
 					</span>
 				</div>
@@ -254,7 +254,7 @@
 			{#if needsRegen}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						Raum-Sperren geändert — bitte „Räume für Prüfungen generieren", damit sie berücksichtigt
+						Raum-Sperren geändert — bitte „Räume für Prüfungen zuordnen", damit sie berücksichtigt
 						werden.
 					</span>
 				</div>
@@ -263,7 +263,7 @@
 				actions={[
 					{
 						field: 'assignRoomsForExams',
-						label: 'Räume für Prüfungen generieren',
+						label: 'Räume für Prüfungen zuordnen',
 						primary: true,
 						disabled: data.roomsBlocked
 					},
@@ -377,9 +377,9 @@
 						{/each}
 					</div>
 					<div>
-						📌 = in die Vorplanung fixiert (überlebt die Neugenerierung) — auf das Pin-Symbol am
+						📌 = in die Vorplanung fixiert (überlebt die Neuzuordnung) — auf das Pin-Symbol am
 						Raum klicken zum Fixieren bzw. Lösen. „➕ Raum vorplanen" ordnet einer Prüfung von Hand
-						einen Raum zu (auch vor jeder Generierung); der Raum landet direkt fixiert in der
+						einen Raum zu (auch vor jeder Zuordnung); der Raum landet direkt fixiert in der
 						Vorplanung.
 					</div>
 				</div>
@@ -455,7 +455,7 @@
 				<p class="text-xs text-base-content/50">
 					Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer). Klick auf eine
 					Zelle sperrt/entsperrt den Raum für diesen Slot (durchgestrichen = gesperrt); danach neu
-					generieren.
+					zuordnen.
 				</p>
 				<div class="overflow-x-auto rounded-lg border border-base-300">
 					<table class="table table-zebra table-sm">

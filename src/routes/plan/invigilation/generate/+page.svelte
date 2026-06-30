@@ -184,7 +184,7 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufsichten generieren</h1>
+		<h1 class="text-2xl font-semibold">Aufsichten einteilen</h1>
 		{#if running}
 			<span class="badge badge-info gap-2">
 				<span class="loading loading-spinner loading-xs"></span> läuft …
@@ -252,7 +252,7 @@
 				<span class="loading loading-spinner loading-xs"></span> Abbrechen
 			</button>
 		{:else}
-			<button class="btn btn-primary btn-sm gap-2" on:click={start}>▶ Generierung starten</button>
+			<button class="btn btn-primary btn-sm gap-2" on:click={start}>▶ Einteilung starten</button>
 		{/if}
 		{#if current && current.progress}
 			<div class="flex flex-1 items-center gap-3">
@@ -281,7 +281,7 @@
 	>
 		{#if !lines.length && !current && !running}
 			<div class="text-base-content/40" style="color:#6c7086">
-				Bereit. Parameter wählen und „Generierung starten" drücken.
+				Bereit. Parameter wählen und „Einteilung starten" drücken.
 			</div>
 		{/if}
 		{#each lines as line}
