@@ -3,8 +3,6 @@
 /** @type {Record<string, string>} */
 export const EMAIL_CONDITION = {
 	sendEmailExaHM: 'exahmRequested',
-	sendEmailConstraints: 'constraintsRequested',
-	sendEmailPrepared: 'examsPrepared',
 	sendEmailDraft: 'draftSent',
 	sendEmailLbaRepeaters: 'lbaRepeatersSent',
 	sendEmailCoverPages: 'coverPagesSent',

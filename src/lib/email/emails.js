@@ -24,19 +24,13 @@ export const previousSemesterEmails = [
 	}
 ];
 
+// „Vorbereitung": Die früheren Einzelversände „Constraints/Wünsche" und
+// „Vorbereitete Prüfungen" sind entfallen (Subscriptions gibt es nicht mehr);
+// ersetzt durch den kombinierten Versand mit Empfänger-Auswahl
+// (ExamPlanningInfoSender → sendEmailExamPlanningInfo), der auf /email für diese
+// Gruppe gerendert wird.
 /** @type {EmailDef[]} */
-export const constraintEmails = [
-	{
-		key: 'sendEmailConstraints',
-		title: 'Constraints / Wünsche',
-		description: 'Aufforderung an die Prüfenden, ihre Constraints und Wünsche zu melden'
-	},
-	{
-		key: 'sendEmailPrepared',
-		title: 'Vorbereitete Prüfungen',
-		description: 'Rückmeldung zu den vorbereiteten, zu planenden Prüfungen'
-	}
-];
+export const constraintEmails = [];
 
 /** @type {EmailDef[]} */
 export const planningEmails = [

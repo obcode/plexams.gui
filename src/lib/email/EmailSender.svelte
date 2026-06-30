@@ -9,7 +9,7 @@
 	// werden. Streamt die LogLines der zugehörigen Subscription wie ein Terminal
 	// (ANSI im text möglich; PROGRESS-Zeilen werden in-place aktualisiert).
 
-	/** Subscription-Feldname, z. B. 'sendEmailConstraints'
+	/** Subscription-Feldname, z. B. 'sendEmailDraft'
 	 * @type {string} */
 	export let emailKey;
 	/** Überschrift der Karte
