@@ -47,6 +47,7 @@
 	$: programs = result?.programs ?? [];
 	$: skipped = result?.skipped ?? [];
 	$: affected = result?.affectedZpaAncodes ?? [];
+	$: hasFirstImport = programs.some((/** @type {any} */ p) => p.firstImport);
 
 	$: exams = data.primussExams.filter((/** @type {any} */ p) => p.program == program);
 	$: rows = exams.length > 0 ? exams[0].exams : [];
@@ -125,7 +126,14 @@
 					<tbody>
 						{#each programs as p}
 							<tr class="hover">
-								<td class="font-medium">{p.program}</td>
+								<td class="font-medium">
+									{p.program}
+									{#if p.firstImport}
+										<span class="badge badge-ghost badge-sm" title="initiale Primuss-Daten">
+											Erstimport
+										</span>
+									{/if}
+								</td>
 								<td class="text-right tabular-nums">{p.exams}</td>
 								<td class="text-right tabular-nums">{p.studentRegs}</td>
 								<td class="text-right tabular-nums">{p.conflicts}</td>
@@ -164,17 +172,23 @@
 				</div>
 			{/if}
 
-			<!-- Update-Mails nur an betroffene Prüfungen -->
-			<div class="flex items-center gap-2">
-				<h3 class="text-sm font-semibold">Update-Mails</h3>
-				{#if affected.length}
-					<span class="badge badge-info badge-sm tabular-nums">{affected.length} betroffen</span>
-				{/if}
-			</div>
+			{#if hasFirstImport}
+				<div class="alert alert-info py-2 text-sm">
+					<span>
+						Erstimport dabei — initiale Primuss-Daten als Sammelmail über
+						<a class="link" href="/email">E-Mails → Primuss-Daten (alle)</a> senden (nicht die Update-Mail).
+					</span>
+				</div>
+			{/if}
+
+			<!-- Update-Mails nur, wenn der Import etwas geändert hat -->
 			{#if affected.length}
+				<div class="flex items-center gap-2">
+					<h3 class="text-sm font-semibold">Update-Mails</h3>
+					<span class="badge badge-info badge-sm tabular-nums">{affected.length} betroffen</span>
+				</div>
 				<p class="text-xs text-base-content/60">
-					Nur die durch den Import betroffenen ZPA-Prüfungen — je Prüfung einzeln oder als
-					Sammelmail.
+					Nur die durch den Import <strong>geänderten</strong> ZPA-Prüfungen — je Prüfung einzeln senden.
 				</p>
 				<div class="flex flex-wrap items-center gap-1">
 					<span class="mr-1 text-sm text-base-content/50">betroffene Ancodes:</span>
@@ -187,7 +201,7 @@
 						</button>
 					{/each}
 				</div>
-				<div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
+				<div class="xl:w-1/2">
 					<EmailSender
 						emailKey="sendEmailPrimussData"
 						title="Update-Mail (gewählte Prüfung)"
@@ -202,15 +216,7 @@
 						repeatable
 						confirmText={`Update-Mail zu Ancode ${mailAncode} wirklich senden?`}
 					/>
-					<EmailSender
-						emailKey="sendEmailPrimussDataAll"
-						title="Update-Mails (alle betroffenen)"
-						description="Sammelversand der Primuss-Update-Mails."
-						repeatable
-					/>
 				</div>
-			{:else}
-				<p class="text-sm text-base-content/50">Keine betroffenen ZPA-Prüfungen aus diesem Import.</p>
 			{/if}
 		</section>
 	{/if}
