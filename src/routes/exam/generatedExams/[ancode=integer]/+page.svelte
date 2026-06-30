@@ -1,7 +1,7 @@
 <script>
 	export let data;
 
-	$: exam = data.generatedExam;
+	$: exam = data.assembledExam;
 	$: studentCount = exam
 		? exam.primussExams.reduce(
 				(/** @type {number} */ sum, /** @type {any} */ pe) => sum + pe.studentRegs.length,
@@ -24,7 +24,7 @@
 {#if exam}
 	<div class="mx-2 mt-4 flex flex-col gap-4">
 		<a href="/exam/generatedExams" class="link link-hover text-sm text-base-content/50">
-			← alle generierten Prüfungen
+			← alle aufbereiteten Prüfungen
 		</a>
 
 		<!-- Kopf -->

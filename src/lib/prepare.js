@@ -21,10 +21,10 @@ export async function regeneratePreparation() {
 			return { changes: [], studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
 		}
 		const r = d.generatePreparation;
-		if (r?.generatedExams?.state) generatedExamsState.set(r.generatedExams.state);
+		if (r?.assembledExams?.state) generatedExamsState.set(r.assembledExams.state);
 		if (r?.studentRegs?.state) studentRegsState.set(r.studentRegs.state);
 		return {
-			changes: r?.generatedExams?.changes ?? [],
+			changes: r?.assembledExams?.changes ?? [],
 			studentCount: r?.studentRegs?.studentCount ?? 0,
 			error: null
 		};

@@ -10,7 +10,7 @@ export async function GET() {
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
-					generatedExamsState {
+					assembledExamsState {
 						dirty
 						reason
 						changedAt

@@ -10,7 +10,7 @@ export async function POST() {
 			env.PLEXAMS_SERVER,
 			gql`
 				mutation {
-					generateGeneratedExams {
+					generateAssembledExams {
 						state {
 							dirty
 							reason

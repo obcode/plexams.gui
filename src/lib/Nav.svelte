@@ -240,7 +240,7 @@
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/exam/generatedExams', label: '📋 generierte Prüfungen mit Anmeldungen, etc.' },
+				{ href: '/exam/generatedExams', label: '📋 aufbereitete Prüfungen mit Anmeldungen, etc.' },
 				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
@@ -666,7 +666,7 @@
 		</div>
 	</div>
 
-	<!-- Banner: Vorbereitung veraltet (generierte Prüfungen und/oder StudentRegs) -->
+	<!-- Banner: Vorbereitung veraltet (aufbereitete Prüfungen und/oder StudentRegs) -->
 	{#if $generatedExamsState.dirty || $studentRegsState.dirty}
 		{@const reason = $generatedExamsState.dirty
 			? $generatedExamsState.reason
@@ -680,9 +680,9 @@
 			<span>⚠</span>
 			<span class="font-medium">
 				{#if $generatedExamsState.dirty && $studentRegsState.dirty}
-					Generierte Prüfungen &amp; StudentRegs sind veraltet
+					Aufbereitete Prüfungen &amp; StudentRegs sind veraltet
 				{:else if $generatedExamsState.dirty}
-					Generierte Prüfungen sind veraltet
+					Aufbereitete Prüfungen sind veraltet
 				{:else}
 					StudentRegs sind veraltet
 				{/if}

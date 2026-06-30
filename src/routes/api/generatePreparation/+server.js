@@ -15,7 +15,7 @@ export async function POST() {
 			gql`
 				mutation {
 					generatePreparation {
-						generatedExams {
+						assembledExams {
 							state {
 								dirty
 								reason

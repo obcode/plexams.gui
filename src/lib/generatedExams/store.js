@@ -24,7 +24,7 @@ export async function checkGeneratedExams() {
 		const res = await fetch('/api/generatedExamsState');
 		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
-		if (d?.generatedExamsState) generatedExamsState.set(d.generatedExamsState);
+		if (d?.assembledExamsState) generatedExamsState.set(d.assembledExamsState);
 	} catch {
 		/* ignore */
 	} finally {
@@ -46,7 +46,7 @@ export async function regenerateGeneratedExams() {
 		if (!res.ok || d?.error) {
 			return { changes: [], error: d?.error || `Fehler (HTTP ${res.status})` };
 		}
-		const r = d.generateGeneratedExams;
+		const r = d.generateAssembledExams;
 		if (r?.state) generatedExamsState.set(r.state);
 		return { changes: r?.changes ?? [], error: null };
 	} catch (e) {

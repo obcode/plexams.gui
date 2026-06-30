@@ -131,7 +131,7 @@
 					done = true;
 					dispatch('done', { field, blocked });
 					// Subscriptions (z. B. importExamsFromZPA/importStudentsFromZPA)
-					// können generierte Prüfungen / StudentRegs invalidieren →
+					// können aufbereitete Prüfungen / StudentRegs invalidieren →
 					// Banner-Zustände sofort neu prüfen.
 					checkGeneratedExams();
 					checkStudentRegs();

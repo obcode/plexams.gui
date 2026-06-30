@@ -92,7 +92,7 @@ async function loadStudents() {
 			for (const ancode of nta.regs) {
 				const examQuery = gql`
 					query {
-						generatedExam(ancode: ${ancode}) {
+						assembledExam(ancode: ${ancode}) {
 							ancode
 							zpaExam {
 								mainExamer
@@ -123,7 +123,7 @@ async function loadStudents() {
 				const roomData = await request(env.PLEXAMS_SERVER, roomQuery);
 
 				if (roomData?.plannedRoomForStudent?.room != null) {
-					examData.generatedExam.roomName = roomData.plannedRoomForStudent.room.name;
+					examData.assembledExam.roomName = roomData.plannedRoomForStudent.room.name;
 				}
 
 				const plannedExamQuery = gql`
@@ -140,24 +140,24 @@ async function loadStudents() {
 				const planData = await request(env.PLEXAMS_SERVER, plannedExamQuery);
 
 				if (planData?.plannedExam?.planEntry != null) {
-					examData.generatedExam.starttime = planData.plannedExam.planEntry.starttime;
+					examData.assembledExam.starttime = planData.plannedExam.planEntry.starttime;
 
-					if (examData.generatedExam.roomName != null) {
+					if (examData.assembledExam.roomName != null) {
 						const invigilatorQuery = gql`
 							query {
-								invigilator(room: "${examData.generatedExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
+								invigilator(room: "${examData.assembledExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
 									shortname
 								}
 							}
 						`;
 						const invigilatorData = await request(env.PLEXAMS_SERVER, invigilatorQuery);
 						if (invigilatorData?.invigilator?.shortname != null) {
-							examData.generatedExam.invigilator = invigilatorData.invigilator.shortname;
+							examData.assembledExam.invigilator = invigilatorData.invigilator.shortname;
 						}
 					}
 				}
 
-				exams.push(examData.generatedExam);
+				exams.push(examData.assembledExam);
 			}
 			nta.exams = exams;
 		}
