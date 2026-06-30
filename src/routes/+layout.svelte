@@ -4,7 +4,7 @@
 	import { themeChange } from 'theme-change';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { checkGeneratedExams } from '$lib/generatedExams/store';
+	import { checkAssembledExams } from '$lib/assembledExams/store';
 	import { checkStudentRegs } from '$lib/studentRegs/store';
 
 	// Nach jeder erfolgreichen Mutation (POST an /api/…) den „generierte
@@ -15,8 +15,8 @@
 		const origFetch = window.fetch.bind(window);
 		// Endpoints, die selbst nichts invalidieren (keine Re-Prüfung nötig)
 		const skip = [
-			'/api/generatedExamsState',
-			'/api/generateGeneratedExams',
+			'/api/assembledExamsState',
+			'/api/generateAssembledExams',
 			'/api/studentRegsState',
 			'/api/generateStudentRegs',
 			'/api/mutationLog'
@@ -32,7 +32,7 @@
 					url.includes('/api/') &&
 					!skip.some((s) => url.includes(s))
 				) {
-					checkGeneratedExams();
+					checkAssembledExams();
 					checkStudentRegs();
 				}
 			} catch {

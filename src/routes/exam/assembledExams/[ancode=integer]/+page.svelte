@@ -23,7 +23,7 @@
 
 {#if exam}
 	<div class="mx-2 mt-4 flex flex-col gap-4">
-		<a href="/exam/generatedExams" class="link link-hover text-sm text-base-content/50">
+		<a href="/exam/assembledExams" class="link link-hover text-sm text-base-content/50">
 			← alle aufbereiteten Prüfungen
 		</a>
 

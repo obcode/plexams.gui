@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 // Zustand der StudentRegs (Cache). dirty=true → veraltet (NavBar-Banner).
-// Spiegelt das Muster von $lib/generatedExams/store.
+// Spiegelt das Muster von $lib/assembledExams/store.
 
 /** @typedef {{ dirty: boolean, reason: string | null, changedAt: string | null }} StudentRegsState */
 

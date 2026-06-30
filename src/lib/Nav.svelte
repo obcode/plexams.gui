@@ -8,7 +8,7 @@
 		zpaSummary,
 		runZpaCheck
 	} from '$lib/validation/store';
-	import { generatedExamsState, checkGeneratedExams } from '$lib/generatedExams/store';
+	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
 	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
 
 	/** @param {string | null} iso */
@@ -199,7 +199,7 @@
 	}
 
 	function checkStaleStates() {
-		checkGeneratedExams();
+		checkAssembledExams();
 		checkStudentRegs();
 	}
 
@@ -240,7 +240,7 @@
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/exam/generatedExams', label: '📋 aufbereitete Prüfungen mit Anmeldungen, etc.' },
+				{ href: '/exam/assembledExams', label: '📋 aufbereitete Prüfungen mit Anmeldungen, etc.' },
 				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
@@ -667,21 +667,21 @@
 	</div>
 
 	<!-- Banner: Vorbereitung veraltet (aufbereitete Prüfungen und/oder StudentRegs) -->
-	{#if $generatedExamsState.dirty || $studentRegsState.dirty}
-		{@const reason = $generatedExamsState.dirty
-			? $generatedExamsState.reason
+	{#if $assembledExamsState.dirty || $studentRegsState.dirty}
+		{@const reason = $assembledExamsState.dirty
+			? $assembledExamsState.reason
 			: $studentRegsState.reason}
-		{@const changedAt = $generatedExamsState.dirty
-			? $generatedExamsState.changedAt
+		{@const changedAt = $assembledExamsState.dirty
+			? $assembledExamsState.changedAt
 			: $studentRegsState.changedAt}
 		<div
 			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
 		>
 			<span>⚠</span>
 			<span class="font-medium">
-				{#if $generatedExamsState.dirty && $studentRegsState.dirty}
+				{#if $assembledExamsState.dirty && $studentRegsState.dirty}
 					Aufbereitete Prüfungen &amp; StudentRegs sind veraltet
-				{:else if $generatedExamsState.dirty}
+				{:else if $assembledExamsState.dirty}
 					Aufbereitete Prüfungen sind veraltet
 				{:else}
 					StudentRegs sind veraltet
@@ -690,7 +690,7 @@
 			{#if reason}<span class="opacity-70">— zuletzt: {reason}</span>{/if}
 			{#if changedAt}<span class="opacity-60">· {fmtChangedAt(changedAt)}</span>{/if}
 			<div class="flex-1"></div>
-			<a class="btn btn-warning btn-xs" href="/exam/generatedExams">→ Generieren</a>
+			<a class="btn btn-warning btn-xs" href="/exam/assembledExams">→ Generieren</a>
 		</div>
 	{/if}
 

@@ -47,7 +47,7 @@
 
 	/** @param {number} ancode */
 	function gotoo(ancode) {
-		goto(`/exam/generatedExams/${ancode}`);
+		goto(`/exam/assembledExams/${ancode}`);
 	}
 
 	/** @param {any} exam */

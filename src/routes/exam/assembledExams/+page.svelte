@@ -1,7 +1,7 @@
 <script>
 	export let data;
-	import GeneratedExamsTable from '$lib/exam/GeneratedExamsTable.svelte';
-	import { generatedExamsState } from '$lib/generatedExams/store';
+	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
+	import { assembledExamsState } from '$lib/assembledExams/store';
 	import { studentRegsState } from '$lib/studentRegs/store';
 	import { preparing, regeneratePreparation } from '$lib/prepare';
 
@@ -12,7 +12,7 @@
 		!!data.conditions?.zpaImported &&
 		!!data.conditions?.primussImported &&
 		!!data.conditions?.zpaPrimussConnected;
-	$: stale = $generatedExamsState.dirty || $studentRegsState.dirty;
+	$: stale = $assembledExamsState.dirty || $studentRegsState.dirty;
 
 	/** @type {{ changes: any[]; studentCount: number } | null} */
 	let prepResult = null;
@@ -109,5 +109,5 @@
 		{/if}
 	</div>
 
-	<GeneratedExamsTable exams={data.plannedExams} />
+	<AssembledExamsTable exams={data.plannedExams} />
 </div>

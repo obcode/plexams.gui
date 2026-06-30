@@ -2,7 +2,7 @@
 	import { onDestroy, tick, createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-	import { checkGeneratedExams } from '$lib/generatedExams/store';
+	import { checkAssembledExams } from '$lib/assembledExams/store';
 	import { checkStudentRegs } from '$lib/studentRegs/store';
 
 	// Generische Terminal-Ausgabe für argumentlose Streaming-Subscriptions
@@ -133,7 +133,7 @@
 					// Subscriptions (z. B. importExamsFromZPA/importStudentsFromZPA)
 					// können aufbereitete Prüfungen / StudentRegs invalidieren →
 					// Banner-Zustände sofort neu prüfen.
-					checkGeneratedExams();
+					checkAssembledExams();
 					checkStudentRegs();
 				}
 			}

@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { generatedExamsState } from '$lib/generatedExams/store';
+import { assembledExamsState } from '$lib/assembledExams/store';
 import { studentRegsState } from '$lib/studentRegs/store';
 
 // Vorbereitung in einem Schritt: generierte Prüfungen + StudentRegs zusammen
@@ -21,7 +21,7 @@ export async function regeneratePreparation() {
 			return { changes: [], studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
 		}
 		const r = d.generatePreparation;
-		if (r?.assembledExams?.state) generatedExamsState.set(r.assembledExams.state);
+		if (r?.assembledExams?.state) assembledExamsState.set(r.assembledExams.state);
 		if (r?.studentRegs?.state) studentRegsState.set(r.studentRegs.state);
 		return {
 			changes: r?.assembledExams?.changes ?? [],
