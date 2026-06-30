@@ -262,7 +262,7 @@
 			<SubscriptionTerminal
 				actions={[
 					{
-						field: 'generateRoomsForExams',
+						field: 'assignRoomsForExams',
 						label: 'Räume für Prüfungen generieren',
 						primary: true,
 						disabled: data.roomsBlocked

@@ -307,7 +307,7 @@ export type Invigilation = {
 /**
  * InvigilationReport is the structured outcome of an invigilation generation run,
  * mirroring the textual report. It is delivered once on the final RESULT line of
- * the generateInvigilations subscription (also for dryRun, where nothing is
+ * the assignInvigilations subscription (also for dryRun, where nothing is
  * written to the database).
  */
 export type InvigilationReport = {
@@ -1837,18 +1837,18 @@ export type StudyProgramInput = {
 export type Subscription = {
 	__typename?: 'Subscription';
 	/**
-	 * generateInvigilations runs the automatic invigilation planning and streams its
+	 * assignInvigilations runs the automatic invigilation planning and streams its
 	 * output line by line (terminal style). With dryRun the optimizer only reports;
 	 * nothing is written to the database. seed and iterations override the config
 	 * defaults (0/null = keep config/default). The stream ends with a DONE line.
 	 */
-	generateInvigilations: LogLine;
+	assignInvigilations: LogLine;
 	/**
 	 * Assign rooms to all exams (rooms-for-exams) and stream the output. Recomputes
 	 * rooms-for-slots first, then writes the planned rooms; no separate
 	 * rooms-for-slots step needed.
 	 */
-	generateRoomsForExams: LogLine;
+	assignRoomsForExams: LogLine;
 	/**
 	 * Recompute the allowed rooms per slot (rooms-for-slots) and stream the output.
 	 * Writes only the derived slot→rooms cache; useful to preview it after editing

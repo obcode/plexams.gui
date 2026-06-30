@@ -40,7 +40,7 @@
 
 	const SUBSCRIPTION = `
 		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int) {
-			generateInvigilations(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
+			assignInvigilations(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
 				level
 				text
 				progress { iteration total bestCost balance unfilled }
@@ -119,7 +119,7 @@
 						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
 						return;
 					}
-					const line = msg.data && msg.data.generateInvigilations;
+					const line = msg.data && msg.data.assignInvigilations;
 					if (!line) return;
 					const html = convert.toHtml(line.text ?? '');
 					if (line.level === 'PROGRESS') {
