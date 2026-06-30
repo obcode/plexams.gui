@@ -1,7 +1,7 @@
 ---
 name: nta-consolidation-plan
 description: NTA area consolidated into 2 pages (DONE 2026-06-21) — structure + key facts
-metadata: 
+metadata:
   node_type: memory
   type: project
   originSessionId: 2e087d07-23fa-44a3-b6ca-b58331a587eb

@@ -254,7 +254,7 @@
 		</div>
 		<div>
 			<select class="select select-primary w-full max-w-xs my-2 mx-2" bind:value={showExamerID}>
-				<option selected value="all">Alle Prüfer:innen</option>
+				<option selected value="all">Alle Prüfende</option>
 				{#each allExamer as examer}
 					<option value={examer.mainExamerID}>{examer.mainExamer}</option>
 				{/each}

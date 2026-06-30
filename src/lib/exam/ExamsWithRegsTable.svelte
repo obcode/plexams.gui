@@ -100,7 +100,7 @@
 			<tr>
 				<th>AnCode</th>
 				<th>Module</th>
-				<th>Prüfer:in</th>
+				<th>Prüfender</th>
 				<th>Art</th>
 				<th>Gruppen</th>
 				<th>Anmeldungen</th>

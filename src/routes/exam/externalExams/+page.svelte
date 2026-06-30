@@ -15,7 +15,7 @@
 				<th>Studiengang</th>
 				<th>AnCode</th>
 				<th>Module</th>
-				<th>Prüfer:in</th>
+				<th>Prüfender</th>
 				<th>Dauer</th>
 			</tr>
 		</thead>

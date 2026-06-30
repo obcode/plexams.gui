@@ -57,7 +57,7 @@
 	let fk07Only = false;
 	/** @type {'ancode' | 'time'} */
 	let sortBy = 'ancode';
-	// Suche nach Prüfer:in / Modul / Ancode (ZPA & Primuss)
+	// Suche nach Prüfender / Modul / Ancode (ZPA & Primuss)
 	let q = '';
 	$: ql = q.trim().toLowerCase();
 
@@ -355,7 +355,7 @@
 				class="input input-bordered input-sm w-56"
 				type="text"
 				bind:value={q}
-				placeholder="suchen: Prüfer:in, Modul, AnCode …"
+				placeholder="suchen: Prüfender, Modul, AnCode …"
 			/>
 			<div class="flex-1"></div>
 			<div class="flex items-center gap-1 text-sm">
@@ -379,7 +379,7 @@
 					<tr>
 						<th>Primuss</th>
 						<th>Modul</th>
-						<th>Prüfer:in</th>
+						<th>Prüfender</th>
 						<th>Art</th>
 						<th>zuständig</th>
 						<th>Status</th>
@@ -571,7 +571,7 @@
 							<tr>
 								<th>Ancode</th>
 								<th>Modul</th>
-								<th>Prüfer:in</th>
+								<th>Prüfender</th>
 								<th>Art</th>
 								<th></th>
 							</tr>

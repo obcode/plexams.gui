@@ -90,7 +90,7 @@
 				class="input input-bordered input-sm"
 				type="text"
 				bind:value={searchTeacher}
-				placeholder="Prüfer:in"
+				placeholder="Prüfender"
 			/>
 		</div>
 
@@ -101,7 +101,7 @@
 						<th>Termin</th>
 						<th>AnCode</th>
 						<th>Modul</th>
-						<th>Prüfer:in</th>
+						<th>Prüfender</th>
 						<th>Dauer</th>
 						<th>Constraints</th>
 						<th>NTA</th>

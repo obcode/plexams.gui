@@ -1,7 +1,7 @@
 ---
 name: validation-architecture
-description: "How the validation UI (subscriptions, groups, nav indicator) is structured"
-metadata: 
+description: 'How the validation UI (subscriptions, groups, nav indicator) is structured'
+metadata:
   node_type: memory
   type: project
   originSessionId: 64695025-3401-4f38-9ba3-5dbc6da2c4b9

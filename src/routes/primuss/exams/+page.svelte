@@ -52,7 +52,7 @@
 	$: exams = data.primussExams.filter((/** @type {any} */ p) => p.program == program);
 	$: rows = exams.length > 0 ? exams[0].exams : [];
 
-	// Suche nach Ancode / Modul / Prüfer:in — bei aktiver Suche über alle
+	// Suche nach Ancode / Modul / Prüfender — bei aktiver Suche über alle
 	// Studiengänge, sonst die Liste des gewählten Studiengangs.
 	let q = '';
 	$: ql = q.trim().toLowerCase();
@@ -258,7 +258,7 @@
 			class="input input-bordered input-sm w-64"
 			type="text"
 			bind:value={q}
-			placeholder="suchen: Prüfer:in, Modul, AnCode …"
+			placeholder="suchen: Prüfender, Modul, AnCode …"
 		/>
 	</div>
 
@@ -276,7 +276,7 @@
 				<tr>
 					<th>AnCode</th>
 					<th>Modul</th>
-					<th>Prüfer:in</th>
+					<th>Prüfender</th>
 					<th>Art</th>
 					{#if searching}<th>Studiengang</th>{/if}
 					<th class="text-right">Anmeldungen</th>

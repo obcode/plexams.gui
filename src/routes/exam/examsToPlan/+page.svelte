@@ -443,7 +443,7 @@
 			class="input input-bordered input-sm w-56"
 			type="text"
 			bind:value={q}
-			placeholder="Ancode, Modul, Prüfer:in, Gruppe …"
+			placeholder="Ancode, Modul, Prüfender, Gruppe …"
 		/>
 	</div>
 

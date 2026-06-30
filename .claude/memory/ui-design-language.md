@@ -1,7 +1,7 @@
 ---
 name: ui-design-language
 description: Oliver wants the whole app progressively modernized to one consistent look
-metadata: 
+metadata:
   node_type: memory
   type: feedback
   originSessionId: 2e087d07-23fa-44a3-b6ca-b58331a587eb
@@ -12,6 +12,7 @@ Oliver wants the entire web app to look modern, sleek and "wie aus einem Guss" (
 **Why:** Older pages (written by him) look dated next to the newer ones; he wants visual consistency over time.
 
 **How to apply:** Match the established modern style used in the Aufsichten page (`/zpa/invigilator_requirements`), the email pages (`/email`, `/email/attachments`) and the redesigned NTA area:
+
 - page wrapper `mx-2 mt-4 flex flex-col gap-4`, heading `<h1 class="text-2xl font-semibold">` + a count badge — NOT the old `text-4xl text-center uppercase` banners.
 - cards/sections `rounded-lg border border-base-300 bg-base-100 p-4`.
 - filters/toolbars in a bordered bar; daisyUI inputs (`input-sm`, `select-sm`, `toggle`, `checkbox-sm`).

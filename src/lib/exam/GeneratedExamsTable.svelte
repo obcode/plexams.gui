@@ -94,7 +94,7 @@
 			/>
 		</label>
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Prüfer:in</span>
+			<span class="text-xs font-medium text-base-content/60">Prüfender</span>
 			<input
 				class="input input-bordered input-sm w-48"
 				type="text"
@@ -129,7 +129,7 @@
 					<th>Termin</th>
 					<th>AnCode</th>
 					<th>Modul</th>
-					<th>Prüfer:in</th>
+					<th>Prüfender</th>
 					<th>Dauer</th>
 					<th>Wdh.</th>
 					<th>Constraints</th>
