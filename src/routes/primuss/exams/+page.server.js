@@ -15,6 +15,7 @@ export async function load({ params }) {
 					presence
 					studentRegsCount
 					connected
+					plannedZPA
 				}
 			}
 			studyPrograms {

@@ -373,7 +373,7 @@
 			title="nur noch nicht mit einer ZPA-Prüfung verbundene"
 			on:click={() => (onlyUnconnected = !onlyUnconnected)}
 		>
-			⚠ nicht verbunden
+			⚠ unverbunden
 		</button>
 		{#if openFK07}
 			<span class="text-warning">{openFK07} offen (FK07 &amp; nicht verbunden)</span>
@@ -412,14 +412,13 @@
 							: ''}"
 					>
 						<td>
-							{#if exam.connected}
-								<span class="badge badge-success badge-sm" title="mit ZPA-Prüfung verbunden">
-									✓ verbunden
-								</span>
-							{:else}
+							{#if !exam.connected}
 								<div class="flex items-center gap-1">
-									<span class="badge badge-warning badge-sm" title="noch nicht mit ZPA verbunden">
-										nicht verbunden
+									<span
+										class="badge badge-warning badge-sm"
+										title="noch nicht mit einer ZPA-Prüfung verbunden"
+									>
+										unverbunden
 									</span>
 									<button
 										class="btn btn-ghost btn-xs"
@@ -430,6 +429,20 @@
 										＋ verbinden
 									</button>
 								</div>
+							{:else if exam.plannedZPA}
+								<span
+									class="badge badge-success badge-sm"
+									title="verbunden mit einer geplanten ZPA-Prüfung"
+								>
+									✓ verbunden (geplante ZPA-Prüfung)
+								</span>
+							{:else}
+								<span
+									class="badge badge-ghost badge-sm"
+									title="verbunden, aber die ZPA-Prüfung wird nicht geplant (extern/nicht zu planen)"
+								>
+									✓ verbunden (extern/nicht zu planen)
+								</span>
 							{/if}
 						</td>
 						<td class="tabular-nums">{exam.ancode}</td>
