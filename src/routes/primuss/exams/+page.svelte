@@ -83,12 +83,12 @@
 		{ key: 'nonfk07', label: 'nur Nicht-FK07' },
 		{ key: 'irrelevant', label: 'nur ≠ schriftl./prakt.' }
 	];
-	/** @param {any} e */
-	const viewMatch = (e) => {
-		if (view === 'fk07') return e.fk07 && e.studentRegsCount > 0;
-		if (view === 'zero') return e.studentRegsCount == 0;
-		if (view === 'nonfk07') return !e.fk07;
-		if (view === 'irrelevant') return !isRelevantType(e.examType);
+	/** @param {any} e @param {string} v */
+	const viewMatch = (e, v) => {
+		if (v === 'fk07') return e.fk07 && e.studentRegsCount > 0;
+		if (v === 'zero') return e.studentRegsCount == 0;
+		if (v === 'nonfk07') return !e.fk07;
+		if (v === 'irrelevant') return !isRelevantType(e.examType);
 		return true; // alle
 	};
 
@@ -97,8 +97,10 @@
 				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
 			)
 		: rows;
+	// view/onlyUnconnected wörtlich referenzieren, damit Svelte die Abhängigkeit
+	// erkennt und bei Auswahländerung neu filtert.
 	$: displayedRows = baseRows
-		.filter(viewMatch)
+		.filter((/** @type {any} */ e) => viewMatch(e, view))
 		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
 	$: openFK07 = allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length;
