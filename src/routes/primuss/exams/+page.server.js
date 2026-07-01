@@ -21,6 +21,9 @@ export async function load({ params }) {
 				category
 			}
 			zpaExams {
+				ancode
+				module
+				mainExamer
 				primussAncodes {
 					program
 					ancode
@@ -49,8 +52,14 @@ export async function load({ params }) {
 	// Mit einer ZPA-Prüfung verbundene Primuss-Anmeldungen: Schlüssel „program/ancode".
 	/** @type {Set<string>} */
 	const connected = new Set();
-	for (const z of data.zpaExams ?? [])
+	// ZPA-Prüfung je Ancode — Ziel-Vorschau beim Inline-Verbinden.
+	/** @type {Record<number, { ancode: number, module: string, mainExamer: string }>} */
+	const zpaByAncode = {};
+	for (const z of data.zpaExams ?? []) {
 		for (const p of z.primussAncodes ?? []) connected.add(`${p.program}/${p.ancode}`);
+		if (z.ancode != null)
+			zpaByAncode[z.ancode] = { ancode: z.ancode, module: z.module, mainExamer: z.mainExamer };
+	}
 
 	// „zu planende Prüfende": Prüfende der zu planenden ZPA-Prüfungen (ohne
 	// notPlannedByMe). Die Namensformate unterscheiden sich (ZPA „Nachname,
@@ -96,6 +105,7 @@ export async function load({ params }) {
 
 	return {
 		primussExams,
-		catByProgram
+		catByProgram,
+		zpaByAncode
 	};
 }

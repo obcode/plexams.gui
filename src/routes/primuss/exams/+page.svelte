@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { backendBase, postUpload } from '$lib/email/attachments';
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -89,6 +90,58 @@
 		label: CAT_LABEL[key],
 		items: data.primussExams.filter((/** @type {any} */ p) => catOf(p.program) === key)
 	})).filter((g) => g.items.length > 0);
+
+	// --- Inline mit einer ZPA-Prüfung verbinden (addPrimussAncode) ---
+	// Reuse der bestehenden Mutation von /exam/connected: eine Primuss-Anmeldung
+	// (program/ancode) an eine ZPA-Prüfung hängen. Ziel-Ancode vorbelegt mit dem
+	// Primuss-Ancode (Normalfall), Vorschau aus data.zpaByAncode.
+	/** @type {any} */
+	let connectExam = null;
+	/** @type {number | string} */
+	let connectTarget = '';
+	let connectBusy = false;
+	let connectError = '';
+
+	/** @param {any} exam */
+	function startConnect(exam) {
+		connectExam = exam;
+		connectTarget = exam.ancode;
+		connectError = '';
+	}
+	function cancelConnect() {
+		connectExam = null;
+		connectError = '';
+	}
+	$: connectPreview =
+		connectTarget !== '' ? (data.zpaByAncode?.[Number(connectTarget)] ?? null) : null;
+
+	async function doConnect() {
+		if (connectBusy || !connectExam || connectTarget === '') return;
+		connectBusy = true;
+		connectError = '';
+		try {
+			const res = await fetch('/api/addPrimussAncode', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					zpaAncode: Number(connectTarget),
+					program: connectExam.program,
+					primussAncode: connectExam.ancode
+				})
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				connectError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			connectExam = null;
+			await invalidateAll(); // „verbunden"-Flags neu berechnen
+		} catch (e) {
+			connectError = e instanceof Error ? e.message : String(e);
+		} finally {
+			connectBusy = false;
+		}
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -326,9 +379,19 @@
 									✓ verbunden
 								</span>
 							{:else}
-								<span class="badge badge-warning badge-sm" title="noch nicht mit ZPA verbunden">
-									nicht verbunden
-								</span>
+								<div class="flex items-center gap-1">
+									<span class="badge badge-warning badge-sm" title="noch nicht mit ZPA verbunden">
+										nicht verbunden
+									</span>
+									<button
+										class="btn btn-ghost btn-xs"
+										class:btn-active={connectExam === exam}
+										title="mit einer ZPA-Prüfung verbinden"
+										on:click={() => (connectExam === exam ? cancelConnect() : startConnect(exam))}
+									>
+										＋ verbinden
+									</button>
+								</div>
 							{/if}
 						</td>
 						<td class="tabular-nums">{exam.ancode}</td>
@@ -346,6 +409,46 @@
 							{exam.studentRegsCount}
 						</td>
 					</tr>
+					{#if connectExam === exam}
+						<tr class="bg-base-200/60">
+							<td colspan={searching ? 7 : 6}>
+								<div class="flex flex-wrap items-center gap-2 py-1">
+									<span class="text-sm">
+										Primuss <span class="font-mono tabular-nums">{exam.program}/{exam.ancode}</span>
+										verbinden mit ZPA-Ancode:
+									</span>
+									<input
+										type="number"
+										class="input input-bordered input-xs w-24 tabular-nums"
+										bind:value={connectTarget}
+									/>
+									{#if connectPreview}
+										<span class="text-sm text-success">
+											→ {connectPreview.module} · {connectPreview.mainExamer}
+										</span>
+									{:else}
+										<span class="text-sm text-warning">
+											keine ZPA-Prüfung mit Ancode {connectTarget}
+										</span>
+									{/if}
+									<WriteButton
+										class="btn btn-primary btn-xs"
+										disabled={connectBusy || connectTarget === '' || !connectPreview}
+										on:click={doConnect}
+									>
+										{connectBusy ? 'verbindet …' : '✓ verbinden'}
+									</WriteButton>
+									<button class="btn btn-ghost btn-xs" on:click={cancelConnect}>abbrechen</button>
+									{#if connectBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
+								</div>
+								{#if connectError}
+									<div class="alert alert-error mt-1 py-1.5 text-sm">
+										<span>{connectError}</span>
+									</div>
+								{/if}
+							</td>
+						</tr>
+					{/if}
 				{:else}
 					<tr>
 						<td colspan={searching ? 7 : 6} class="py-6 text-center text-sm text-base-content/50">
