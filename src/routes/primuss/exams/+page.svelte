@@ -60,17 +60,33 @@
 	// ZPA-Prüfung verbundene.
 	let onlyFK07 = false;
 	let onlyUnconnected = false;
+	let showHidden = false;
 	$: ql = q.trim().toLowerCase();
 	$: searching = ql.length > 0;
 	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
+
+	// Prüfung „relevant"? Art leer → ja; sonst nur schriftliche/praktische
+	// Prüfungen. Alles andere (Modularbeit, Präsentation, mündlich …) ist für die
+	// Planung uninteressant → dimmen/ausblenden.
+	/** @param {string} t */
+	const isRelevantType = (t) => !t || /schriftlich|praktisch/i.test(t);
+	// standardmäßig ausgeblendet: keine Anmeldungen ODER irrelevante Art.
+	/** @param {any} e */
+	const isHidden = (e) => e.studentRegsCount == 0 || !isRelevantType(e.examType);
+
 	$: baseRows = searching
 		? allRows.filter((/** @type {any} */ e) =>
 				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
 			)
 		: rows;
-	$: displayedRows = baseRows
+	// erst die Chips-Filter, dann Ausblenden (Zähler bezieht sich auf das Ergebnis).
+	$: filteredRows = baseRows
 		.filter((/** @type {any} */ e) => !onlyFK07 || e.fk07)
 		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
+	$: hiddenCount = filteredRows.filter(isHidden).length;
+	$: displayedRows = showHidden
+		? filteredRows
+		: filteredRows.filter((/** @type {any} */ e) => !isHidden(e));
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
 	$: openFK07 = allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length;
 
@@ -346,6 +362,15 @@
 		{#if openFK07}
 			<span class="text-warning">{openFK07} offen (FK07 &amp; nicht verbunden)</span>
 		{/if}
+		{#if hiddenCount || showHidden}
+			<button
+				class="badge gap-1 tabular-nums {showHidden ? 'badge-neutral' : 'badge-ghost'}"
+				title="ohne Anmeldungen oder Art ≠ schriftlich/praktisch"
+				on:click={() => (showHidden = !showHidden)}
+			>
+				{showHidden ? '🙈 ausgeblendete verstecken' : `👁 ${hiddenCount} ausgeblendet einblenden`}
+			</button>
+		{/if}
 		{#if searching}
 			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
 		{/if}
@@ -375,8 +400,7 @@
 			<tbody>
 				{#each displayedRows as exam}
 					<tr
-						class="{exam.studentRegsCount == 0 ? 'text-base-content/40' : ''} {exam.fk07 &&
-						!exam.connected
+						class="{isHidden(exam) ? 'text-base-content/40' : ''} {exam.fk07 && !exam.connected
 							? 'bg-warning/10'
 							: ''}"
 					>

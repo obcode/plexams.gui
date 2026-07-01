@@ -299,7 +299,7 @@
 				{ href: '/studyprograms', label: '🎓 Studiengänge' },
 				{ href: '/rooms', label: '🚪 Räume' },
 				{ href: '/nta/all', label: '♿ NTAs' },
-				{ href: '/invigilators', label: '👀 Aufsichten' }
+				{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
 			]
 		}
 	];
@@ -712,7 +712,6 @@
 		</div>
 	{/if}
 </header>
-
 
 <!-- Neuen Test-Workspace (DB) anlegen -->
 {#if wsOpen}

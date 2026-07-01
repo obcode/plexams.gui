@@ -53,31 +53,55 @@ export async function load({ params }) {
 	// FK07-Prüfende: alle Personen (Teacher) mit fk === „FK07". Die Namensformate
 	// unterscheiden sich (Teacher „Nachname, Vorname" vs. Primuss „Nachname I."),
 	// daher Abgleich über Nachname + erste Initiale; Primuss-Mehrfachnamen
-	// („A B./C D.") werden gesplittet.
-	/** @param {string} name → „nachname|i" aus „Nachname, Vorname" */
-	const teacherKey = (name) => {
-		const i = (name ?? '').indexOf(',');
-		if (i < 0) return '';
-		const ln = name.slice(0, i).trim().toLowerCase();
-		const fi = (name.slice(i + 1).trim()[0] ?? '').toLowerCase();
-		return ln ? `${ln}|${fi}` : '';
-	};
-	/** @type {Set<string>} */
+	// („A B./C D.") werden gesplittet. Umlaute werden transkribiert, weil die
+	// Personenliste ae/oe/ue/ss schreibt, Primuss aber ä/ö/ü/ß („Göller" vs.
+	// „Goeller"). Zusätzlich ein Fallback für einteilige Primuss-Namen ohne
+	// Initiale („Brockhaus"): matcht, wenn der Nachname eindeutig zu FK07 gehört
+	// (kein/e Namensvetter:in in einer anderen Fakultät).
+	/** @param {string} s */
+	const norm = (s) =>
+		(s ?? '')
+			.toLowerCase()
+			.replace(/ö/g, 'oe')
+			.replace(/ü/g, 'ue')
+			.replace(/ä/g, 'ae')
+			.replace(/ß/g, 'ss');
+
+	/** @type {Set<string>} „nachname|i" aller FK07-Prüfenden */
 	const fk07Keys = new Set();
+	/** @type {Map<string, Set<string>>} Nachname → Menge der Fakultäten */
+	const surnameFks = new Map();
 	for (const t of data.teachers ?? []) {
-		if (t.fk === 'FK07') {
-			const k = teacherKey(t.shortname);
-			if (k) fk07Keys.add(k);
-		}
+		const raw = t.shortname ?? '';
+		const ci = raw.indexOf(',');
+		if (ci < 0) continue;
+		const ln = norm(raw.slice(0, ci).trim());
+		const fi = norm(raw.slice(ci + 1).trim())[0] ?? '';
+		if (!ln) continue;
+		if (!surnameFks.has(ln)) surnameFks.set(ln, new Set());
+		surnameFks.get(ln)?.add(t.fk);
+		if (t.fk === 'FK07' && fi) fk07Keys.add(`${ln}|${fi}`);
 	}
+	/** @type {Set<string>} Nachnamen, die eindeutig (nur) zu FK07 gehören */
+	const fk07Surnames = new Set();
+	for (const [ln, fks] of surnameFks) {
+		if (fks.size === 1 && fks.has('FK07')) fk07Surnames.add(ln);
+	}
+
 	/** @param {string} name → matcht ein Primuss-Name eine:n FK07-Prüfende:n? */
 	const primussIsFK07 = (name) => {
 		for (const part of (name ?? '').split('/')) {
 			const toks = part.trim().split(/\s+/).filter(Boolean);
-			if (toks.length < 2) continue;
-			const fi = (toks[toks.length - 1].match(/[a-zäöüß]/i)?.[0] ?? '').toLowerCase();
-			const ln = toks.slice(0, -1).join(' ').toLowerCase();
-			if (ln && fk07Keys.has(`${ln}|${fi}`)) return true;
+			if (!toks.length) continue;
+			const last = toks[toks.length - 1];
+			const isInitial = /^[a-zäöüß]\.?$/i.test(last);
+			const surnameToks = isInitial && toks.length >= 2 ? toks.slice(0, -1) : toks;
+			const ln = norm(surnameToks.join(' '));
+			if (!ln) continue;
+			// präzise: Nachname + Initiale
+			if (isInitial && toks.length >= 2 && fk07Keys.has(`${ln}|${norm(last)[0]}`)) return true;
+			// Fallback: eindeutiger FK07-Nachname
+			if (fk07Surnames.has(ln)) return true;
 		}
 		return false;
 	};
