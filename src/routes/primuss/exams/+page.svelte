@@ -352,6 +352,14 @@
 		{/if}
 	</div>
 
+	<p class="max-w-3xl text-xs text-base-content/50">
+		<span class="badge badge-info badge-xs align-middle">👤 von dir zu planen</span> markiert Prüfungen,
+		deren Prüfende:r zu den ZPA-Prüfenden gehört, die
+		<strong>du selbst</strong> einplanst (nicht als „von anderen geplant" markiert). Der Abgleich läuft
+		über Nachname + erste Initiale, da ZPA („Nachname, Vorname") und Primuss („Nachname V.") die Namen
+		unterschiedlich schreiben — bei ungewöhnlichen Schreibweisen daher ohne Gewähr.
+	</p>
+
 	<div class="overflow-x-auto rounded-lg border border-base-300">
 		<table class="table table-zebra table-sm">
 			<thead>
@@ -399,8 +407,12 @@
 						<td>
 							{exam.mainExamer}
 							{#if exam.toPlanExamer}
-								<span class="badge badge-info badge-xs" title="zu planende:r Prüfende:r">zu planen</span
+								<span
+									class="badge badge-info badge-xs"
+									title="Prüfende:r, deren/dessen ZPA-Prüfungen du selbst einplanst — Abgleich über Nachname + Initiale"
 								>
+									👤 von dir zu planen
+								</span>
 							{/if}
 						</td>
 						<td>{exam.examType}</td>
