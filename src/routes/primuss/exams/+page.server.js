@@ -14,6 +14,7 @@ export async function load({ params }) {
 					examType
 					presence
 					studentRegsCount
+					connected
 				}
 			}
 			studyPrograms {
@@ -24,10 +25,6 @@ export async function load({ params }) {
 				ancode
 				module
 				mainExamer
-				primussAncodes {
-					program
-					ancode
-				}
 			}
 			zpaExamsToPlanWithConstraints {
 				zpaExam {
@@ -49,14 +46,10 @@ export async function load({ params }) {
 		catByProgram[sp.shortname] = sp.category;
 	}
 
-	// Mit einer ZPA-Prüfung verbundene Primuss-Anmeldungen: Schlüssel „program/ancode".
-	/** @type {Set<string>} */
-	const connected = new Set();
 	// ZPA-Prüfung je Ancode — Ziel-Vorschau beim Inline-Verbinden.
 	/** @type {Record<number, { ancode: number, module: string, mainExamer: string }>} */
 	const zpaByAncode = {};
 	for (const z of data.zpaExams ?? []) {
-		for (const p of z.primussAncodes ?? []) connected.add(`${p.program}/${p.ancode}`);
 		if (z.ancode != null)
 			zpaByAncode[z.ancode] = { ancode: z.ancode, module: z.module, mainExamer: z.mainExamer };
 	}
@@ -93,12 +86,12 @@ export async function load({ params }) {
 		return false;
 	};
 
-	// Flags je Primuss-Prüfung anreichern.
+	// „zu planen"-Flag je Primuss-Prüfung anreichern; `connected` kommt direkt
+	// vom Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen).
 	const primussExams = (data.primussExams ?? []).map((/** @type {any} */ pe) => ({
 		...pe,
 		exams: (pe.exams ?? []).map((/** @type {any} */ x) => ({
 			...x,
-			connected: connected.has(`${x.program}/${x.ancode}`),
 			toPlanExamer: primussToPlan(x.mainExamer)
 		}))
 	}));
