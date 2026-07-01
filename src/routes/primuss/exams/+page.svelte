@@ -56,9 +56,9 @@
 	// Suche nach Ancode / Modul / Prüfender — bei aktiver Suche über alle
 	// Studiengänge, sonst die Liste des gewählten Studiengangs.
 	let q = '';
-	// Fokus auf das Wesentliche: Prüfungen „zu planender Prüfender" und/oder
-	// noch nicht mit einer ZPA-Prüfung verbundene.
-	let onlyToPlan = false;
+	// Fokus auf das Wesentliche: FK07-Prüfungen und/oder noch nicht mit einer
+	// ZPA-Prüfung verbundene.
+	let onlyFK07 = false;
 	let onlyUnconnected = false;
 	$: ql = q.trim().toLowerCase();
 	$: searching = ql.length > 0;
@@ -69,11 +69,10 @@
 			)
 		: rows;
 	$: displayedRows = baseRows
-		.filter((/** @type {any} */ e) => !onlyToPlan || e.toPlanExamer)
+		.filter((/** @type {any} */ e) => !onlyFK07 || e.fk07)
 		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
-	// offene (unverbundene) Prüfungen zu planender Prüfender — die eigentlich
-	// interessanten Fälle.
-	$: openToPlan = allRows.filter((/** @type {any} */ e) => e.toPlanExamer && !e.connected).length;
+	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
+	$: openFK07 = allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length;
 
 	// Studiengänge nach Kategorie gruppieren: FK07 / MUC.DAI / Sonstige
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
@@ -331,11 +330,11 @@
 			{searching ? 'Treffer (alle Studiengänge)' : 'Prüfungen'}
 		</span>
 		<button
-			class="badge gap-1 tabular-nums {onlyToPlan ? 'badge-primary' : 'badge-ghost'}"
-			title="nur Prüfungen zu planender Prüfender"
-			on:click={() => (onlyToPlan = !onlyToPlan)}
+			class="badge gap-1 tabular-nums {onlyFK07 ? 'badge-primary' : 'badge-ghost'}"
+			title="nur Prüfungen mit FK07-Prüfenden"
+			on:click={() => (onlyFK07 = !onlyFK07)}
 		>
-			👤 zu planende Prüfende
+			🎓 FK07
 		</button>
 		<button
 			class="badge gap-1 tabular-nums {onlyUnconnected ? 'badge-warning' : 'badge-ghost'}"
@@ -344,8 +343,8 @@
 		>
 			⚠ nicht verbunden
 		</button>
-		{#if openToPlan}
-			<span class="text-warning">{openToPlan} offen (zu planen &amp; nicht verbunden)</span>
+		{#if openFK07}
+			<span class="text-warning">{openFK07} offen (FK07 &amp; nicht verbunden)</span>
 		{/if}
 		{#if searching}
 			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
@@ -353,11 +352,11 @@
 	</div>
 
 	<p class="max-w-3xl text-xs text-base-content/50">
-		<span class="badge badge-info badge-xs align-middle">👤 von dir zu planen</span> markiert Prüfungen,
-		deren Prüfende:r zu den ZPA-Prüfenden gehört, die
-		<strong>du selbst</strong> einplanst (nicht als „von anderen geplant" markiert). Der Abgleich läuft
-		über Nachname + erste Initiale, da ZPA („Nachname, Vorname") und Primuss („Nachname V.") die Namen
-		unterschiedlich schreiben — bei ungewöhnlichen Schreibweisen daher ohne Gewähr.
+		<span class="badge badge-info badge-xs align-middle">🎓 FK07</span> markiert Prüfungen, deren
+		Prüfende:r zur <strong>Fakultät 07</strong> gehört (Quelle: Personenliste des Backends,
+		<code>Teacher.fk</code>). Der Abgleich läuft über Nachname + erste Initiale, da die Namen in der
+		Personenliste („Nachname, Vorname") und in Primuss („Nachname V.") unterschiedlich geschrieben
+		werden — bei ungewöhnlichen Schreibweisen daher ohne Gewähr.
 	</p>
 
 	<div class="overflow-x-auto rounded-lg border border-base-300">
@@ -376,7 +375,7 @@
 			<tbody>
 				{#each displayedRows as exam}
 					<tr
-						class="{exam.studentRegsCount == 0 ? 'text-base-content/40' : ''} {exam.toPlanExamer &&
+						class="{exam.studentRegsCount == 0 ? 'text-base-content/40' : ''} {exam.fk07 &&
 						!exam.connected
 							? 'bg-warning/10'
 							: ''}"
@@ -406,12 +405,12 @@
 						<td>{exam.module}</td>
 						<td>
 							{exam.mainExamer}
-							{#if exam.toPlanExamer}
+							{#if exam.fk07}
 								<span
 									class="badge badge-info badge-xs"
-									title="Prüfende:r, deren/dessen ZPA-Prüfungen du selbst einplanst — Abgleich über Nachname + Initiale"
+									title="Prüfende:r der Fakultät 07 (Quelle: Teacher.fk) — Abgleich über Nachname + Initiale"
 								>
-									👤 von dir zu planen
+									🎓 FK07
 								</span>
 							{/if}
 						</td>

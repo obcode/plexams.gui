@@ -26,13 +26,9 @@ export async function load({ params }) {
 				module
 				mainExamer
 			}
-			zpaExamsToPlanWithConstraints {
-				zpaExam {
-					mainExamer
-				}
-				constraints {
-					notPlannedByMe
-				}
+			teachers {
+				shortname
+				fk
 			}
 		}
 	`;
@@ -54,12 +50,12 @@ export async function load({ params }) {
 			zpaByAncode[z.ancode] = { ancode: z.ancode, module: z.module, mainExamer: z.mainExamer };
 	}
 
-	// „zu planende Prüfende": Prüfende der zu planenden ZPA-Prüfungen (ohne
-	// notPlannedByMe). Die Namensformate unterscheiden sich (ZPA „Nachname,
-	// Vorname" vs. Primuss „Nachname I."), daher Abgleich über Nachname + erste
-	// Initiale; Primuss-Mehrfachnamen („A B./C D.") werden gesplittet.
+	// FK07-Prüfende: alle Personen (Teacher) mit fk === „FK07". Die Namensformate
+	// unterscheiden sich (Teacher „Nachname, Vorname" vs. Primuss „Nachname I."),
+	// daher Abgleich über Nachname + erste Initiale; Primuss-Mehrfachnamen
+	// („A B./C D.") werden gesplittet.
 	/** @param {string} name → „nachname|i" aus „Nachname, Vorname" */
-	const zpaKey = (name) => {
+	const teacherKey = (name) => {
 		const i = (name ?? '').indexOf(',');
 		if (i < 0) return '';
 		const ln = name.slice(0, i).trim().toLowerCase();
@@ -67,32 +63,32 @@ export async function load({ params }) {
 		return ln ? `${ln}|${fi}` : '';
 	};
 	/** @type {Set<string>} */
-	const toPlanKeys = new Set();
-	for (const e of data.zpaExamsToPlanWithConstraints ?? []) {
-		if (!e.constraints || e.constraints.notPlannedByMe === false) {
-			const k = zpaKey(e.zpaExam?.mainExamer);
-			if (k) toPlanKeys.add(k);
+	const fk07Keys = new Set();
+	for (const t of data.teachers ?? []) {
+		if (t.fk === 'FK07') {
+			const k = teacherKey(t.shortname);
+			if (k) fk07Keys.add(k);
 		}
 	}
-	/** @param {string} name → matcht ein Primuss-Name eine:n zu planende:n Prüfende:n? */
-	const primussToPlan = (name) => {
+	/** @param {string} name → matcht ein Primuss-Name eine:n FK07-Prüfende:n? */
+	const primussIsFK07 = (name) => {
 		for (const part of (name ?? '').split('/')) {
 			const toks = part.trim().split(/\s+/).filter(Boolean);
 			if (toks.length < 2) continue;
 			const fi = (toks[toks.length - 1].match(/[a-zäöüß]/i)?.[0] ?? '').toLowerCase();
 			const ln = toks.slice(0, -1).join(' ').toLowerCase();
-			if (ln && toPlanKeys.has(`${ln}|${fi}`)) return true;
+			if (ln && fk07Keys.has(`${ln}|${fi}`)) return true;
 		}
 		return false;
 	};
 
-	// „zu planen"-Flag je Primuss-Prüfung anreichern; `connected` kommt direkt
-	// vom Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen).
+	// „FK07"-Flag je Primuss-Prüfung anreichern; `connected` kommt direkt vom
+	// Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen).
 	const primussExams = (data.primussExams ?? []).map((/** @type {any} */ pe) => ({
 		...pe,
 		exams: (pe.exams ?? []).map((/** @type {any} */ x) => ({
 			...x,
-			toPlanExamer: primussToPlan(x.mainExamer)
+			fk07: primussIsFK07(x.mainExamer)
 		}))
 	}));
 
