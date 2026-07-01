@@ -58,35 +58,48 @@
 	let q = '';
 	// Fokus auf das Wesentliche: FK07-Prüfungen und/oder noch nicht mit einer
 	// ZPA-Prüfung verbundene.
-	let onlyFK07 = false;
+	// Ansicht-Voreinstellung (sich gegenseitig ausschließend); orthogonal dazu der
+	// „nicht verbunden"-Filter (gehört zum Verbinden-Workflow).
+	/** @type {'alle' | 'fk07' | 'zero' | 'nonfk07' | 'irrelevant'} */
+	let view = 'fk07';
 	let onlyUnconnected = false;
-	let showHidden = false;
 	$: ql = q.trim().toLowerCase();
 	$: searching = ql.length > 0;
 	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
 
 	// Prüfung „relevant"? Art leer → ja; sonst nur schriftliche/praktische
 	// Prüfungen. Alles andere (Modularbeit, Präsentation, mündlich …) ist für die
-	// Planung uninteressant → dimmen/ausblenden.
+	// Planung uninteressant → gedimmt.
 	/** @param {string} t */
 	const isRelevantType = (t) => !t || /schriftlich|praktisch/i.test(t);
-	// standardmäßig ausgeblendet: keine Anmeldungen ODER irrelevante Art.
+	// gedimmt dargestellt: keine Anmeldungen ODER irrelevante Art.
 	/** @param {any} e */
-	const isHidden = (e) => e.studentRegsCount == 0 || !isRelevantType(e.examType);
+	const isDimmed = (e) => e.studentRegsCount == 0 || !isRelevantType(e.examType);
+
+	const VIEWS = [
+		{ key: 'alle', label: 'alle' },
+		{ key: 'fk07', label: 'nur FK07 mit Anmeldungen' },
+		{ key: 'zero', label: 'nur mit 0 Anmeldungen' },
+		{ key: 'nonfk07', label: 'nur Nicht-FK07' },
+		{ key: 'irrelevant', label: 'nur ≠ schriftl./prakt.' }
+	];
+	/** @param {any} e */
+	const viewMatch = (e) => {
+		if (view === 'fk07') return e.fk07 && e.studentRegsCount > 0;
+		if (view === 'zero') return e.studentRegsCount == 0;
+		if (view === 'nonfk07') return !e.fk07;
+		if (view === 'irrelevant') return !isRelevantType(e.examType);
+		return true; // alle
+	};
 
 	$: baseRows = searching
 		? allRows.filter((/** @type {any} */ e) =>
 				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
 			)
 		: rows;
-	// erst die Chips-Filter, dann Ausblenden (Zähler bezieht sich auf das Ergebnis).
-	$: filteredRows = baseRows
-		.filter((/** @type {any} */ e) => !onlyFK07 || e.fk07)
+	$: displayedRows = baseRows
+		.filter(viewMatch)
 		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
-	$: hiddenCount = filteredRows.filter(isHidden).length;
-	$: displayedRows = showHidden
-		? filteredRows
-		: filteredRows.filter((/** @type {any} */ e) => !isHidden(e));
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
 	$: openFK07 = allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length;
 
@@ -345,13 +358,14 @@
 			<span class="tabular-nums">{displayedRows.length}</span>
 			{searching ? 'Treffer (alle Studiengänge)' : 'Prüfungen'}
 		</span>
-		<button
-			class="badge gap-1 tabular-nums {onlyFK07 ? 'badge-primary' : 'badge-ghost'}"
-			title="nur Prüfungen mit FK07-Prüfenden"
-			on:click={() => (onlyFK07 = !onlyFK07)}
-		>
-			🎓 FK07
-		</button>
+		<label class="flex items-center gap-1">
+			<span class="text-base-content/50">Ansicht:</span>
+			<select class="select select-bordered select-xs" bind:value={view}>
+				{#each VIEWS as v}
+					<option value={v.key}>{v.label}</option>
+				{/each}
+			</select>
+		</label>
 		<button
 			class="badge gap-1 tabular-nums {onlyUnconnected ? 'badge-warning' : 'badge-ghost'}"
 			title="nur noch nicht mit einer ZPA-Prüfung verbundene"
@@ -361,15 +375,6 @@
 		</button>
 		{#if openFK07}
 			<span class="text-warning">{openFK07} offen (FK07 &amp; nicht verbunden)</span>
-		{/if}
-		{#if hiddenCount || showHidden}
-			<button
-				class="badge gap-1 tabular-nums {showHidden ? 'badge-neutral' : 'badge-ghost'}"
-				title="ohne Anmeldungen oder Art ≠ schriftlich/praktisch"
-				on:click={() => (showHidden = !showHidden)}
-			>
-				{showHidden ? '🙈 ausgeblendete verstecken' : `👁 ${hiddenCount} ausgeblendet einblenden`}
-			</button>
 		{/if}
 		{#if searching}
 			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
@@ -400,7 +405,7 @@
 			<tbody>
 				{#each displayedRows as exam}
 					<tr
-						class="{isHidden(exam) ? 'text-base-content/40' : ''} {exam.fk07 && !exam.connected
+						class="{isDimmed(exam) ? 'text-base-content/40' : ''} {exam.fk07 && !exam.connected
 							? 'bg-warning/10'
 							: ''}"
 					>
