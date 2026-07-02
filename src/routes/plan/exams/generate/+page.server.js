@@ -71,6 +71,7 @@ export async function load() {
 						proximity
 						rating
 						canShareSlot
+						infoOnly
 						affectedStudents {
 							mtknr
 							name

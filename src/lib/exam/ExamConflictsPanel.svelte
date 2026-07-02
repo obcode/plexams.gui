@@ -19,6 +19,10 @@
 	/** @param {number} a @param {number} b → reihenfolge-unabhängiger Schlüssel */
 	const pairKey = (a, b) => [a, b].sort((x, y) => x - y).join('-');
 
+	// infoOnly=true: beide Prüfungen extern (andere FK) → nichts änderbar, nur Info.
+	$: ratable = conflicts.filter((/** @type {any} */ c) => !c.infoOnly);
+	$: infoConflicts = conflicts.filter((/** @type {any} */ c) => c.infoOnly);
+
 	const PROX = /** @type {Record<string, { label: string, cls: string }>} */ ({
 		SAME_SLOT: { label: 'gleicher Slot', cls: 'badge-error' },
 		ADJACENT: { label: 'direkt nacheinander', cls: 'badge-error' },
@@ -124,7 +128,7 @@
 		<div class="alert alert-error py-2 text-sm"><span>{actionError}</span></div>
 	{/if}
 
-	{#if conflicts.length}
+	{#if ratable.length}
 		<p class="max-w-3xl text-xs text-base-content/50">
 			Nach Schwere sortiert. Bewertung wirkt beim nächsten „Generieren": <strong>unerwünscht</strong>
 			zieht das Paar stärker auseinander, <strong>unzulässig</strong> erzwingt verschiedene Tage.
@@ -144,7 +148,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each conflicts as c (pairKey(c.ancode1, c.ancode2))}
+					{#each ratable as c (pairKey(c.ancode1, c.ancode2))}
 						{@const key = pairKey(c.ancode1, c.ancode2)}
 						{@const cur = c.rating ?? 'ACCEPTED'}
 						<tr class="hover">
@@ -269,8 +273,84 @@
 				</tbody>
 			</table>
 		</div>
-	{:else if !loadError}
+	{/if}
+
+	{#if !ratable.length && !infoConflicts.length && !loadError}
 		<div class="text-sm text-base-content/50">Keine Konflikte im aktuellen Plan.</div>
+	{/if}
+
+	<!-- Nur-Info-Konflikte: beide Prüfungen extern → nichts änderbar -->
+	{#if infoConflicts.length}
+		<section class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-200/40 p-3 opacity-80">
+			<div class="flex items-center gap-2">
+				<h3 class="font-semibold">Nur zur Info – betrifft zwei externe Prüfungen</h3>
+				<span class="badge badge-ghost badge-sm tabular-nums">{infoConflicts.length}</span>
+			</div>
+			<p class="max-w-3xl text-xs text-base-content/50">
+				Beide Prüfungen werden von anderen Fakultäten geplant — hier nichts änderbar. (Weitergabe an
+				die zuständigen Planer:innen folgt später.)
+			</p>
+			<div class="overflow-x-auto rounded-lg border border-base-200">
+				<table class="table table-sm">
+					<thead>
+						<tr>
+							<th>Nähe</th>
+							<th>Prüfung 1</th>
+							<th>Prüfung 2</th>
+							<th class="text-right">Stud.</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each infoConflicts as c (pairKey(c.ancode1, c.ancode2))}
+							{@const key = `i${pairKey(c.ancode1, c.ancode2)}`}
+							<tr class="hover">
+								<td>
+									<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
+										{PROX[c.proximity]?.label ?? c.proximity}
+									</span>
+								</td>
+								<td>
+									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
+									<div class="font-medium">{c.module1}</div>
+									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+								</td>
+								<td>
+									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
+									<div class="font-medium">{c.module2}</div>
+									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+								</td>
+								<td class="text-right tabular-nums">
+									<button
+										class="btn btn-ghost btn-xs gap-1"
+										on:click={() => toggleExpand(key)}
+										title="betroffene Studierende anzeigen"
+									>
+										{c.studentCount}
+										<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
+									</button>
+								</td>
+							</tr>
+							{#if expanded.has(key)}
+								<tr class="bg-base-200/40">
+									<td colspan="4">
+										<div class="flex flex-wrap gap-x-4 gap-y-1 py-1 text-sm">
+											{#each c.affectedStudents ?? [] as s}
+												<span>
+													<span class="font-mono text-xs tabular-nums text-base-content/50">{s.mtknr}</span>
+													{s.name}
+												</span>
+											{:else}
+												<span class="text-base-content/50">— keine Studierenden gelistet</span>
+											{/each}
+										</div>
+									</td>
+								</tr>
+							{/if}
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		</section>
 	{/if}
 
 	<!-- canShareSlot-Vorschläge (erkannte Parallelsektionen) -->
