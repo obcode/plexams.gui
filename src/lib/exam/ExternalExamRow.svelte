@@ -125,11 +125,6 @@
 				<span class="font-mono text-sm whitespace-nowrap tabular-nums">
 					{dateTime(exam.planEntry.externalTime)} Uhr
 				</span>
-				{#if outsidePeriod}
-					<span class="badge badge-ghost badge-sm" title="Zeit außerhalb des Prüfungszeitraums">
-						außerhalb des Prüfungszeitraums
-					</span>
-				{/if}
 			{:else}
 				<span class="badge badge-warning badge-sm">kein Termin</span>
 			{/if}
@@ -142,6 +137,11 @@
 			>
 				{saving ? '…' : hasTime ? 'ändern' : 'setzen'}
 			</WriteButton>
+			{#if outsidePeriod}
+				<span class="badge badge-ghost badge-sm" title="Zeit außerhalb des Prüfungszeitraums">
+					außerhalb des Prüfungszeitraums
+				</span>
+			{/if}
 		</div>
 		{#if error}<div class="mt-1 text-xs text-error">{error}</div>{/if}
 	</td>
