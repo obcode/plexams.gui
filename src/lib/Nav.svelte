@@ -235,12 +235,13 @@
 				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
 				{ section: 'Anmeldungen' },
 				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' },
-				{ href: '/exam/assembledExams', label: '📋 aufbereitete Prüfungen' }
+				{ href: '/exam/assembledExams', label: '📋 Aufbereitete Prüfungen' }
 			]
 		},
 		{
 			label: 'Terminplanung',
 			items: [
+				{ href: '/plan/external', label: '🌐 Externe Termine (MUC.DAI & andere FKs)' },
 				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
