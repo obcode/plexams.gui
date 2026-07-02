@@ -283,7 +283,7 @@
 	{#if infoConflicts.length}
 		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 			<summary class="collapse-title text-sm font-medium">
-				Nur zur Info – betrifft zwei externe Prüfungen
+				Nur zur Info – betrifft jeweils zwei externe Prüfungen
 				<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{infoConflicts.length}</span>
 			</summary>
 			<div class="collapse-content flex flex-col gap-2 opacity-80">
