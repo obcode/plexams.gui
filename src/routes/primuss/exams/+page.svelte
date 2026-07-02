@@ -430,20 +430,32 @@
 										＋ verbinden
 									</button>
 								</div>
-							{:else if exam.plannedZPA}
-								<span
-									class="badge badge-success badge-sm"
-									title="verbunden mit einer geplanten ZPA-Prüfung"
-								>
-									✓ verbunden (geplante ZPA-Prüfung)
-								</span>
 							{:else}
-								<span
-									class="badge badge-ghost badge-sm"
-									title="verbunden, aber die ZPA-Prüfung wird nicht geplant (extern/nicht zu planen)"
-								>
-									✓ verbunden (extern/nicht zu planen)
-								</span>
+								<div class="flex flex-wrap items-center gap-1">
+									{#if exam.plannedZPA}
+										<span
+											class="badge badge-success badge-sm"
+											title="verbunden mit einer geplanten ZPA-Prüfung"
+										>
+											✓ verbunden (geplante ZPA-Prüfung)
+										</span>
+									{:else}
+										<span
+											class="badge badge-ghost badge-sm"
+											title="verbunden, aber die ZPA-Prüfung wird nicht geplant (extern/nicht zu planen)"
+										>
+											✓ verbunden (extern/nicht zu planen)
+										</span>
+									{/if}
+									{#if exam.zpaAncode != null}
+										<span
+											class="badge badge-outline badge-sm tabular-nums"
+											title="ZPA-Ancode weicht vom Primuss-Ancode ab"
+										>
+											ZPA {exam.zpaAncode}
+										</span>
+									{/if}
+								</div>
 							{/if}
 						</td>
 						<td class="tabular-nums">{exam.ancode}</td>

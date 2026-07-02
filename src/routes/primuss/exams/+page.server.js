@@ -26,6 +26,10 @@ export async function load({ params }) {
 				ancode
 				module
 				mainExamer
+				primussAncodes {
+					program
+					ancode
+				}
 			}
 			teachers {
 				shortname
@@ -46,9 +50,15 @@ export async function load({ params }) {
 	// ZPA-Prüfung je Ancode — Ziel-Vorschau beim Inline-Verbinden.
 	/** @type {Record<number, { ancode: number, module: string, mainExamer: string }>} */
 	const zpaByAncode = {};
+	// verknüpfter ZPA-Ancode je Primuss-Prüfung („program/ancode" → ZPA-Ancode),
+	// um bei verbundenen Prüfungen einen abweichenden ZPA-Ancode anzuzeigen.
+	/** @type {Record<string, number>} */
+	const zpaAncodeByPrimuss = {};
 	for (const z of data.zpaExams ?? []) {
 		if (z.ancode != null)
 			zpaByAncode[z.ancode] = { ancode: z.ancode, module: z.module, mainExamer: z.mainExamer };
+		for (const p of z.primussAncodes ?? [])
+			zpaAncodeByPrimuss[`${p.program}/${p.ancode}`] = z.ancode;
 	}
 
 	// FK07-Prüfende: alle Personen (Teacher) mit fk === „FK07". Die Namensformate
@@ -108,13 +118,18 @@ export async function load({ params }) {
 	};
 
 	// „FK07"-Flag je Primuss-Prüfung anreichern; `connected` kommt direkt vom
-	// Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen).
+	// Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen). `zpaAncode`
+	// nur setzen, wenn er vom Primuss-Ancode abweicht (sonst nichts anzeigen).
 	const primussExams = (data.primussExams ?? []).map((/** @type {any} */ pe) => ({
 		...pe,
-		exams: (pe.exams ?? []).map((/** @type {any} */ x) => ({
-			...x,
-			fk07: primussIsFK07(x.mainExamer)
-		}))
+		exams: (pe.exams ?? []).map((/** @type {any} */ x) => {
+			const za = zpaAncodeByPrimuss[`${x.program}/${x.ancode}`];
+			return {
+				...x,
+				fk07: primussIsFK07(x.mainExamer),
+				zpaAncode: za != null && za !== x.ancode ? za : null
+			};
+		})
 	}));
 
 	return {
