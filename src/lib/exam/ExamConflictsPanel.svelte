@@ -50,6 +50,16 @@
 	$: ratable = working.filter((/** @type {any} */ c) => !c.infoOnly);
 	$: infoConflicts = working.filter((/** @type {any} */ c) => c.infoOnly);
 
+	// „auto" = alle betroffenen Studierenden sind autoAccepted (Wiederholer) →
+	// separate, eingeklappte Section. „nicht-auto" (mind. ein:e Studierende:r
+	// braucht eine Entscheidung) oben und offen.
+	/** @param {any} c */
+	const isAutoConflict = (c) =>
+		(c.affectedStudents?.length ?? 0) > 0 &&
+		c.affectedStudents.every((/** @type {any} */ s) => s.autoAccepted);
+	$: ratableNonAuto = ratable.filter((/** @type {any} */ c) => !isAutoConflict(c));
+	$: ratableAuto = ratable.filter(isAutoConflict);
+
 	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
 	// die Folgetag-Zahl steht rein informativ im Qualitäts-Panel, diagnostics.nextDay).
 	const PROX = /** @type {Record<string, { label: string, cls: string }>} */ ({
@@ -185,19 +195,7 @@
 			(die harte Sperre und die Strafe entfallen) — das ist nur bei <strong>fehlerhafter Anmeldung</strong>
 			sinnvoll, wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf.
 		</p>
-		<div class="overflow-x-auto rounded-lg border border-base-300">
-			<table class="table table-sm">
-				<thead>
-					<tr>
-						<th>Nähe</th>
-						<th>Prüfung 1</th>
-						<th>Prüfung 2</th>
-						<th class="text-right">Stud.</th>
-						<th>gleicher Slot</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each ratable as c (pairKey(c.ancode1, c.ancode2))}
+		{#snippet conflictRow(/** @type {any} */ c)}
 						{@const key = pairKey(c.ancode1, c.ancode2)}
 						<tr class="hover">
 							<td>
@@ -206,24 +204,24 @@
 								</span>
 							</td>
 							<td>
+								{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot1)}</div>{/if}
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 								<div class="font-medium">{c.module1}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-								{#if fmtSlot(c.slot1) || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+								{#if c.isRepeaterExam1 || (c.groups1 ?? []).length}
 									<div class="mt-0.5 flex flex-wrap items-center gap-1">
-										{#if fmtSlot(c.slot1)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot1)}</span>{/if}
 										{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 										{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
 								{/if}
 							</td>
 							<td>
+								{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot2)}</div>{/if}
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 								<div class="font-medium">{c.module2}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-								{#if fmtSlot(c.slot2) || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+								{#if c.isRepeaterExam2 || (c.groups2 ?? []).length}
 									<div class="mt-0.5 flex flex-wrap items-center gap-1">
-										{#if fmtSlot(c.slot2)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot2)}</span>{/if}
 										{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 										{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
@@ -340,10 +338,48 @@
 								</td>
 							</tr>
 						{/if}
-					{/each}
-				</tbody>
-			</table>
-		</div>
+		{/snippet}
+
+		{#if ratableNonAuto.length}
+		<details open class="collapse-arrow collapse border border-base-300 bg-base-100">
+			<summary class="collapse-title text-sm font-medium">
+				Zu prüfen (nicht automatisch akzeptiert)
+				<span class="badge badge-warning badge-sm ml-1 tabular-nums">{ratableNonAuto.length}</span>
+			</summary>
+			<div class="collapse-content">
+				<div class="overflow-x-auto rounded-lg border border-base-300">
+					<table class="table table-sm">
+						<thead><tr><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th><th>gleicher Slot</th></tr></thead>
+						<tbody>
+							{#each ratableNonAuto as c (pairKey(c.ancode1, c.ancode2))}
+								{@render conflictRow(c)}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</details>
+		{/if}
+		{#if ratableAuto.length}
+		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
+			<summary class="collapse-title text-sm font-medium">
+				Automatisch akzeptiert (Wiederholungen)
+				<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{ratableAuto.length}</span>
+			</summary>
+			<div class="collapse-content">
+				<div class="overflow-x-auto rounded-lg border border-base-300">
+					<table class="table table-sm">
+						<thead><tr><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th><th>gleicher Slot</th></tr></thead>
+						<tbody>
+							{#each ratableAuto as c (pairKey(c.ancode1, c.ancode2))}
+								{@render conflictRow(c)}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</details>
+		{/if}
 	{/if}
 
 	{#if !ratable.length && !infoConflicts.length && !loadError}
@@ -382,24 +418,24 @@
 									</span>
 								</td>
 								<td>
+									{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot1)}</div>{/if}
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 									<div class="font-medium">{c.module1}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-									{#if fmtSlot(c.slot1) || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+									{#if c.isRepeaterExam1 || (c.groups1 ?? []).length}
 										<div class="mt-0.5 flex flex-wrap items-center gap-1">
-											{#if fmtSlot(c.slot1)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot1)}</span>{/if}
 											{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 											{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
 									{/if}
 								</td>
 								<td>
+									{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot2)}</div>{/if}
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 									<div class="font-medium">{c.module2}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-									{#if fmtSlot(c.slot2) || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+									{#if c.isRepeaterExam2 || (c.groups2 ?? []).length}
 										<div class="mt-0.5 flex flex-wrap items-center gap-1">
-											{#if fmtSlot(c.slot2)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot2)}</span>{/if}
 											{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 											{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
