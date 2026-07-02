@@ -157,7 +157,8 @@
 			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong>pro
 			Studierendem</strong> zu akzeptieren (z. B. Wiederholer:innen) — das entfernt beim nächsten
 			„Generieren" nur deren Nähe-Strafe. „darf zeitgleich" erlaubt Parallelsektionen denselben Slot
-			(die harte Sperre und die Strafe entfallen).
+			(die harte Sperre und die Strafe entfallen) — das ist nur bei <strong>fehlerhafter Anmeldung</strong>
+			sinnvoll, wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf.
 		</p>
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
@@ -226,6 +227,7 @@
 									<WriteButton
 										class="btn btn-ghost btn-xs"
 										disabled={busy === `s${key}`}
+										title="nur bei fehlerhafter Anmeldung sinnvoll — wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf"
 										on:click={() => allowShare(c.ancode1, c.ancode2)}
 									>
 										＋ erlauben
