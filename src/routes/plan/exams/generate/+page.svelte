@@ -95,6 +95,24 @@
 					iterations
 					stoppedEarly
 					written
+					conflicts {
+						ancode1
+						module1
+						mainExamer1
+						ancode2
+						module2
+						mainExamer2
+						studentCount
+						proximity
+						rating
+						canShareSlot
+						infoOnly
+						affectedStudents {
+							mtknr
+							name
+							accepted
+						}
+					}
 					diagnostics {
 						students
 						pairs
@@ -537,9 +555,16 @@
 		</div>
 	{/if}
 
-	<!-- Konflikt-Bewertungs-Loop -->
+	<!-- Konflikt-Bewertungs-Loop — nach einem Lauf die Konflikte des gerade
+	     erzeugten Plans (examReport.conflicts, auch im Probelauf), sonst die des
+	     gespeicherten Plans (examScheduleConflicts aus dem Load). -->
 	<ExamConflictsPanel
-		conflicts={data.conflicts}
+		conflicts={examReport?.conflicts ?? data.conflicts}
+		sourceLabel={examReport?.conflicts
+			? examReport.written
+				? 'aus dem gerade geschriebenen Plan'
+				: 'aus dem letzten Probelauf (nicht gespeichert)'
+			: 'aus dem gespeicherten Plan'}
 		ratings={data.ratings}
 		suggestions={data.suggestions}
 		shareList={data.shareList}

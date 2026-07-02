@@ -15,13 +15,40 @@
 	/** @type {any[]} */
 	export let shareList = [];
 	export let loadError = '';
+	/** woher die angezeigten Konflikte stammen (Lauf-Snapshot vs. gespeichert) */
+	export let sourceLabel = '';
 
 	/** @param {number} a @param {number} b → reihenfolge-unabhängiger Schlüssel */
 	const pairKey = (a, b) => [a, b].sort((x, y) => x - y).join('-');
 
+	// Lokale, patchbare Kopie: die Konflikte können aus einem Lauf-Snapshot
+	// (examReport.conflicts) kommen, der sich bei Bewertungen nicht von selbst
+	// aktualisiert. Beim Wechsel der Quelle (neuer Lauf / frischer Load) neu
+	// aufsetzen, dazwischen optimistisch patchen.
+	/** @type {any[]} */
+	let working = [];
+	/** @type {any} */
+	let seenRef;
+	$: if (conflicts !== seenRef) {
+		seenRef = conflicts;
+		working = conflicts.map((/** @type {any} */ c) => ({
+			...c,
+			affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
+		}));
+	}
+	/** @param {number} a1 @param {number} a2 @param {(c:any)=>void} fn */
+	function patch(a1, a2, fn) {
+		const k = pairKey(a1, a2);
+		const w = working.find((/** @type {any} */ c) => pairKey(c.ancode1, c.ancode2) === k);
+		if (w) {
+			fn(w);
+			working = working;
+		}
+	}
+
 	// infoOnly=true: beide Prüfungen extern (andere FK) → nichts änderbar, nur Info.
-	$: ratable = conflicts.filter((/** @type {any} */ c) => !c.infoOnly);
-	$: infoConflicts = conflicts.filter((/** @type {any} */ c) => c.infoOnly);
+	$: ratable = working.filter((/** @type {any} */ c) => !c.infoOnly);
+	$: infoConflicts = working.filter((/** @type {any} */ c) => c.infoOnly);
 
 	const PROX = /** @type {Record<string, { label: string, cls: string }>} */ ({
 		SAME_SLOT: { label: 'gleicher Slot', cls: 'badge-error' },
@@ -38,8 +65,8 @@
 	let busy = '';
 	let actionError = '';
 
-	/** @param {string} path @param {any} body @param {string} key */
-	async function callMut(path, body, key) {
+	/** @param {string} path @param {any} body @param {string} key @param {(() => void)} [patchFn] */
+	async function callMut(path, body, key, patchFn) {
 		if (busy) return;
 		busy = key;
 		actionError = '';
@@ -54,6 +81,9 @@
 				actionError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
+			// optimistisch die Anzeige aktualisieren (Lauf-Snapshot ändert sich
+			// sonst nicht) und die Load-Daten (Vorschläge/Paare/Bewertungen) neu holen
+			patchFn?.();
 			await invalidateAll();
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : String(e);
@@ -67,21 +97,27 @@
 		callMut(
 			'setConflictRating',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, rating },
-			`r${pairKey(c.ancode1, c.ancode2)}`
+			`r${pairKey(c.ancode1, c.ancode2)}`,
+			() => patch(c.ancode1, c.ancode2, (w) => (w.rating = rating))
 		);
 	/** @param {any} c */
 	const accept = (c) =>
 		callMut(
 			'removeConflictRating',
 			{ ancode1: c.ancode1, ancode2: c.ancode2 },
-			`r${pairKey(c.ancode1, c.ancode2)}`
+			`r${pairKey(c.ancode1, c.ancode2)}`,
+			() => patch(c.ancode1, c.ancode2, (w) => (w.rating = null))
 		);
 	/** @param {number} a1 @param {number} a2 */
 	const allowShare = (a1, a2) =>
-		callMut('setExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`);
+		callMut('setExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
+			patch(a1, a2, (w) => (w.canShareSlot = true))
+		);
 	/** @param {number} a1 @param {number} a2 */
 	const removeShare = (a1, a2) =>
-		callMut('removeExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`);
+		callMut('removeExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
+			patch(a1, a2, (w) => (w.canShareSlot = false))
+		);
 
 	// aufgeklappte Konflikte (betroffene Studierende sichtbar)
 	let expanded = new Set();
@@ -93,26 +129,34 @@
 	}
 	// Per-Studierenden-Akzeptanz: nur die Nähe-Strafe dieses:r Studierenden
 	// entfällt (zeitgleich bleibt hart verboten — nur canShareSlot hebt das auf).
+	/** @param {any} w @param {string} mtknr @param {boolean} accepted */
+	const patchStudent = (w, mtknr, accepted) => {
+		const st = (w.affectedStudents ?? []).find((/** @type {any} */ x) => x.mtknr === mtknr);
+		if (st) st.accepted = accepted;
+	};
 	/** @param {any} c @param {any} s */
 	const acceptStudent = (c, s) =>
 		callMut(
 			'setConflictRating',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, rating: 'ACCEPTED', mtknr: s.mtknr },
-			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`
+			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
+			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, true))
 		);
 	/** @param {any} c @param {any} s */
 	const unacceptStudent = (c, s) =>
 		callMut(
 			'removeConflictRating',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
-			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`
+			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
+			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, false))
 		);
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-2">
+	<div class="flex flex-wrap items-baseline gap-2">
 		<h2 class="text-xl font-semibold">Konflikte des aktuellen Plans</h2>
-		<span class="badge badge-primary badge-lg tabular-nums">{conflicts.length}</span>
+		<span class="badge badge-primary badge-lg tabular-nums">{working.length}</span>
+		{#if sourceLabel}<span class="text-xs text-base-content/50">{sourceLabel}</span>{/if}
 	</div>
 
 	{#if loadError}
