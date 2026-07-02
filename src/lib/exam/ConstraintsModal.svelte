@@ -292,9 +292,13 @@
 				<div class="flex items-center gap-2">
 					<select class="select select-bordered select-sm w-72" bind:value={addSlotAncode}>
 						<option value="">Prüfung wählen …</option>
+						<!-- nur zu planende Prüfungen (inkl. externe/notPlannedByMe); die im
+						     ZPA nicht geplanten (notToPlan) und unbekannten werden ausgelassen -->
 						{#each allExams as e}
-							{#if e.ancode !== exam.ancode && !form.sameSlot.includes(e.ancode)}
-								<option value={e.ancode}>{e.ancode} — {e.module}</option>
+							{#if e.status === 'toPlan' && e.ancode !== exam.ancode && !form.sameSlot.includes(e.ancode)}
+								<option value={e.ancode}>
+									{e.ancode} — {e.module}{e.constraints?.notPlannedByMe ? ' · extern' : ''}
+								</option>
 							{/if}
 						{/each}
 					</select>
