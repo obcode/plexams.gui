@@ -109,52 +109,70 @@ async function loadStudents() {
 						}
 					}
 				`;
-				const examData = await request(env.PLEXAMS_SERVER, examQuery);
-
-				const roomQuery = gql`
-					query {
-						plannedRoomForStudent(ancode: ${ancode}, mtknr: "${nta.mtknr}") {
-							room {
-								name
-							}
-						}
-					}
-				`;
-				const roomData = await request(env.PLEXAMS_SERVER, roomQuery);
-
-				if (roomData?.plannedRoomForStudent?.room != null) {
-					examData.assembledExam.roomName = roomData.plannedRoomForStudent.room.name;
+				// Vor dem Generieren gibt es keine aufbereiteten Prüfungen —
+				// assembledExam(ancode) wirft dann („no documents"). Solche (und
+				// andere Teil-Query-Fehler) überspringen, statt die Seite mit 500
+				// abstürzen zu lassen; die Prüfungsdetails erscheinen nach dem
+				// Generieren.
+				let examData;
+				try {
+					examData = await request(env.PLEXAMS_SERVER, examQuery);
+				} catch {
+					continue;
 				}
+				if (!examData?.assembledExam) continue;
 
-				const plannedExamQuery = gql`
-					query {
-						plannedExam(ancode: ${ancode}) {
-							planEntry {
-								starttime
-								dayNumber
-								slotNumber
-							}
-						}
-					}
-				`;
-				const planData = await request(env.PLEXAMS_SERVER, plannedExamQuery);
-
-				if (planData?.plannedExam?.planEntry != null) {
-					examData.assembledExam.starttime = planData.plannedExam.planEntry.starttime;
-
-					if (examData.assembledExam.roomName != null) {
-						const invigilatorQuery = gql`
-							query {
-								invigilator(room: "${examData.assembledExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
-									shortname
+				// Raum/Slot/Aufsicht sind erst nach der Raum-/Aufsichtenplanung
+				// vorhanden; Teil-Query-Fehler ignorieren, die assembledExam-Basis
+				// bleibt trotzdem erhalten.
+				try {
+					const roomQuery = gql`
+						query {
+							plannedRoomForStudent(ancode: ${ancode}, mtknr: "${nta.mtknr}") {
+								room {
+									name
 								}
 							}
-						`;
-						const invigilatorData = await request(env.PLEXAMS_SERVER, invigilatorQuery);
-						if (invigilatorData?.invigilator?.shortname != null) {
-							examData.assembledExam.invigilator = invigilatorData.invigilator.shortname;
+						}
+					`;
+					const roomData = await request(env.PLEXAMS_SERVER, roomQuery);
+
+					if (roomData?.plannedRoomForStudent?.room != null) {
+						examData.assembledExam.roomName = roomData.plannedRoomForStudent.room.name;
+					}
+
+					const plannedExamQuery = gql`
+						query {
+							plannedExam(ancode: ${ancode}) {
+								planEntry {
+									starttime
+									dayNumber
+									slotNumber
+								}
+							}
+						}
+					`;
+					const planData = await request(env.PLEXAMS_SERVER, plannedExamQuery);
+
+					if (planData?.plannedExam?.planEntry != null) {
+						examData.assembledExam.starttime = planData.plannedExam.planEntry.starttime;
+
+						if (examData.assembledExam.roomName != null) {
+							const invigilatorQuery = gql`
+								query {
+									invigilator(room: "${examData.assembledExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
+										shortname
+									}
+								}
+							`;
+							const invigilatorData = await request(env.PLEXAMS_SERVER, invigilatorQuery);
+							if (invigilatorData?.invigilator?.shortname != null) {
+								examData.assembledExam.invigilator = invigilatorData.invigilator.shortname;
+							}
 						}
 					}
+				} catch {
+					// Raum/Slot/Aufsicht noch nicht verfügbar → ohne diese Details.
 				}
 
 				exams.push(examData.assembledExam);
