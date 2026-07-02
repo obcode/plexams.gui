@@ -168,4 +168,9 @@
 			</table>
 		</div>
 	{/if}
+
+	<!-- Scroll-Puffer: das native Datums-Popup öffnet nach unten und würde in den
+	     untersten Zeilen am Bildschirmrand abgeschnitten. Der Puffer erlaubt, die
+	     letzten Zeilen nach oben zu scrollen, sodass der Picker Platz hat. -->
+	<div class="h-96" aria-hidden="true"></div>
 </div>

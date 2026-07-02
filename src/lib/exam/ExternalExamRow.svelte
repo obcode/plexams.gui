@@ -122,8 +122,8 @@
 	<td class="align-top">
 		<div class="flex flex-wrap items-center gap-2">
 			{#if hasTime}
-				<span class="text-sm font-medium whitespace-nowrap tabular-nums">
-					{dateTime(exam.planEntry.externalTime)}
+				<span class="font-mono text-sm whitespace-nowrap tabular-nums">
+					{dateTime(exam.planEntry.externalTime)} Uhr
 				</span>
 				{#if outsidePeriod}
 					<span class="badge badge-ghost badge-sm" title="Zeit außerhalb des Prüfungszeitraums">
