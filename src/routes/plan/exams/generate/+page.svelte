@@ -102,6 +102,7 @@
 						mainExamer1
 						groups1
 						isRepeaterExam1
+						location1
 						slot1 {
 							dayNumber
 							slotNumber
@@ -112,6 +113,7 @@
 						mainExamer2
 						groups2
 						isRepeaterExam2
+						location2
 						slot2 {
 							dayNumber
 							slotNumber

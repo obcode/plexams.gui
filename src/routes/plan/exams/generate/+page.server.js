@@ -66,6 +66,7 @@ export async function load() {
 						mainExamer1
 						groups1
 						isRepeaterExam1
+						location1
 						slot1 {
 							dayNumber
 							slotNumber
@@ -76,6 +77,7 @@ export async function load() {
 						mainExamer2
 						groups2
 						isRepeaterExam2
+						location2
 						slot2 {
 							dayNumber
 							slotNumber

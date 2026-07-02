@@ -208,8 +208,9 @@
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 								<div class="font-medium">{c.module1}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-								{#if c.isRepeaterExam1 || (c.groups1 ?? []).length}
+								{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
 									<div class="mt-0.5 flex flex-wrap items-center gap-1">
+										{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location1}</span>{/if}
 										{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 										{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
@@ -220,8 +221,9 @@
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 								<div class="font-medium">{c.module2}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-								{#if c.isRepeaterExam2 || (c.groups2 ?? []).length}
+								{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
 									<div class="mt-0.5 flex flex-wrap items-center gap-1">
+										{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location2}</span>{/if}
 										{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 										{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
@@ -422,8 +424,9 @@
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 									<div class="font-medium">{c.module1}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-									{#if c.isRepeaterExam1 || (c.groups1 ?? []).length}
+									{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
 										<div class="mt-0.5 flex flex-wrap items-center gap-1">
+											{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location1}</span>{/if}
 											{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 											{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
@@ -434,8 +437,9 @@
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 									<div class="font-medium">{c.module2}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-									{#if c.isRepeaterExam2 || (c.groups2 ?? []).length}
+									{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
 										<div class="mt-0.5 flex flex-wrap items-center gap-1">
+											{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location2}</span>{/if}
 											{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
 											{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
