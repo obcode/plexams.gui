@@ -127,7 +127,19 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	let data;
+	try {
+		data = await request(env.PLEXAMS_SERVER, query);
+	} catch (e) {
+		// Einzelne planEntry.starttime werfen für externe Zeiten außerhalb des
+		// Prüfungszeitraums (Slot 0/0). GraphQL nullt dadurch nur den betroffenen
+		// planEntry und liefert die übrigen Daten trotzdem — die nutzen wir, statt
+		// die ganze Seite mit 500 abzubrechen (diese Prüfungen zeigen dann keinen
+		// Slot-Termin).
+		const resp = /** @type {any} */ (e)?.response;
+		if (resp?.data?.plannedExams) data = resp.data;
+		else throw e;
+	}
 
 	return {
 		plannedExams: data.plannedExams,
