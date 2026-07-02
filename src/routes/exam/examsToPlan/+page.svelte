@@ -328,12 +328,36 @@
 	/** @param {CustomEvent<any>} ev */
 	function onSaved(ev) {
 		const nc = ev.detail;
-		const it = items.find((/** @type {any} */ e) => e.ancode === nc.ancode);
-		if (it) {
-			it.constraints = nc;
-			items = items;
-		}
+		const it = byAncode.get(nc.ancode);
+		// sameSlot ist symmetrisch: setzt/entfernt man den Bezug an einer Prüfung,
+		// ändert das Backend auch die Partner. Diese hier lokal mitziehen, sonst
+		// zeigen sie den neuen/entfernten sameSlot erst nach einem Voll-Reload.
+		const oldSame = new Set((it?.constraints?.sameSlot ?? []).map(Number));
+		const newSame = new Set((nc.sameSlot ?? []).map(Number));
+		if (it) it.constraints = nc;
+		for (const p of newSame) if (!oldSame.has(p)) addSameSlotPartner(p, nc.ancode);
+		for (const p of oldSame) if (!newSame.has(p)) removeSameSlotPartner(p, nc.ancode);
+		items = items;
 		editExam = null;
+	}
+
+	/** @param {number} partner @param {number} ancode Partner-sameSlot um `ancode` ergänzen */
+	function addSameSlotPartner(partner, ancode) {
+		const it = byAncode.get(partner);
+		if (!it) return;
+		if (!it.constraints) it.constraints = { ancode: partner, sameSlot: [] };
+		if (!it.constraints.sameSlot) it.constraints.sameSlot = [];
+		if (!it.constraints.sameSlot.map(Number).includes(ancode))
+			it.constraints.sameSlot = [...it.constraints.sameSlot, ancode];
+	}
+
+	/** @param {number} partner @param {number} ancode `ancode` aus Partner-sameSlot entfernen */
+	function removeSameSlotPartner(partner, ancode) {
+		const it = byAncode.get(partner);
+		if (!it?.constraints?.sameSlot) return;
+		it.constraints.sameSlot = it.constraints.sameSlot.filter(
+			(/** @type {number} */ x) => Number(x) !== ancode
+		);
 	}
 
 	onMount(() => {
