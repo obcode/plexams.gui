@@ -281,16 +281,17 @@
 
 	<!-- Nur-Info-Konflikte: beide Prüfungen extern → nichts änderbar -->
 	{#if infoConflicts.length}
-		<section class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-200/40 p-3 opacity-80">
-			<div class="flex items-center gap-2">
-				<h3 class="font-semibold">Nur zur Info – betrifft zwei externe Prüfungen</h3>
-				<span class="badge badge-ghost badge-sm tabular-nums">{infoConflicts.length}</span>
-			</div>
-			<p class="max-w-3xl text-xs text-base-content/50">
-				Beide Prüfungen werden von anderen Fakultäten geplant — hier nichts änderbar. (Weitergabe an
-				die zuständigen Planer:innen folgt später.)
-			</p>
-			<div class="overflow-x-auto rounded-lg border border-base-200">
+		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
+			<summary class="collapse-title text-sm font-medium">
+				Nur zur Info – betrifft zwei externe Prüfungen
+				<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{infoConflicts.length}</span>
+			</summary>
+			<div class="collapse-content flex flex-col gap-2 opacity-80">
+				<p class="max-w-3xl text-xs text-base-content/50">
+					Beide Prüfungen werden von anderen Fakultäten geplant — hier nichts änderbar. (Weitergabe
+					an die zuständigen Planer:innen folgt später.)
+				</p>
+				<div class="overflow-x-auto rounded-lg border border-base-200">
 				<table class="table table-sm">
 					<thead>
 						<tr>
@@ -350,7 +351,8 @@
 					</tbody>
 				</table>
 			</div>
-		</section>
+		</div>
+		</details>
 	{/if}
 
 	<!-- canShareSlot-Vorschläge (erkannte Parallelsektionen) -->
