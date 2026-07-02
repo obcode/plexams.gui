@@ -101,10 +101,22 @@
 						module1
 						mainExamer1
 						groups1
+						isRepeaterExam1
+						slot1 {
+							dayNumber
+							slotNumber
+							starttime
+						}
 						ancode2
 						module2
 						mainExamer2
 						groups2
+						isRepeaterExam2
+						slot2 {
+							dayNumber
+							slotNumber
+							starttime
+						}
 						studentCount
 						proximity
 						canShareSlot
@@ -114,6 +126,8 @@
 							name
 							program
 							group
+							autoAccepted
+							decision
 							accepted
 						}
 					}
@@ -591,7 +605,7 @@
 				? 'aus dem gerade geschriebenen Plan'
 				: 'aus dem letzten Probelauf (nicht gespeichert)'
 			: 'aus dem gespeicherten Plan'}
-		acceptances={data.acceptances}
+		decisions={data.decisions}
 		suggestions={data.suggestions}
 		shareList={data.shareList}
 		loadError={data.conflictsError}

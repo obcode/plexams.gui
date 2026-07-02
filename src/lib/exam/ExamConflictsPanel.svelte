@@ -8,8 +8,8 @@
 
 	/** @type {any[]} */
 	export let conflicts = [];
-	/** @type {any[]} gespeicherte Per-Studierenden-Akzeptanzen */
-	export let acceptances = [];
+	/** @type {any[]} gespeicherte Per-Studierenden-Entscheidungen (ACCEPT/VETO) */
+	export let decisions = [];
 	/** @type {any[]} */
 	export let suggestions = [];
 	/** @type {any[]} */
@@ -107,28 +107,53 @@
 		s.has(key) ? s.delete(key) : s.add(key);
 		expanded = s;
 	}
-	// Per-Studierenden-Akzeptanz: nur die Nähe-Strafe dieses:r Studierenden
-	// entfällt (zeitgleich bleibt hart verboten — nur canShareSlot hebt das auf).
-	/** @param {any} w @param {string} mtknr @param {boolean} accepted */
-	const patchStudent = (w, mtknr, accepted) => {
-		const st = (w.affectedStudents ?? []).find((/** @type {any} */ x) => x.mtknr === mtknr);
-		if (st) st.accepted = accepted;
+	// Slot-Zeit (Berlin) je Prüfung, z. B. „Fr 24.07., 08:30".
+	/** @param {any} slot */
+	const fmtSlot = (slot) => {
+		const iso = slot?.starttime;
+		if (!iso) return '';
+		const d = new Date(iso);
+		return Number.isNaN(d.getTime())
+			? ''
+			: d.toLocaleString('de-DE', {
+					timeZone: 'Europe/Berlin',
+					weekday: 'short',
+					day: '2-digit',
+					month: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit'
+				});
 	};
-	/** @param {any} c @param {any} s */
-	const acceptStudent = (c, s) =>
+
+	// Per-Studierenden-Entscheidung: ACCEPT (Konflikt akzeptieren) oder VETO
+	// (automatische Akzeptanz bei Wiederholung aufheben). accepted = effektiver
+	// Zustand (ACCEPT oder auto ohne Veto).
+	/** @param {any} st */
+	const isAccepted = (st) =>
+		st.decision === 'ACCEPT' || (st.autoAccepted && st.decision !== 'VETO');
+	/** @param {any} w @param {string} mtknr @param {string|null} decision */
+	const patchDecision = (w, mtknr, decision) => {
+		const st = (w.affectedStudents ?? []).find((/** @type {any} */ x) => x.mtknr === mtknr);
+		if (st) {
+			st.decision = decision;
+			st.accepted = isAccepted(st);
+		}
+	};
+	/** @param {any} c @param {any} s @param {'ACCEPT'|'VETO'} decision */
+	const decide = (c, s, decision) =>
 		callMut(
-			'acceptStudentConflict',
-			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
+			'setStudentConflictDecision',
+			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr, decision },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
-			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, true))
+			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, decision))
 		);
 	/** @param {any} c @param {any} s */
-	const unacceptStudent = (c, s) =>
+	const clearDecision = (c, s) =>
 		callMut(
-			'removeStudentConflictAcceptance',
+			'removeStudentConflictDecision',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
-			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, false))
+			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
 		);
 </script>
 
@@ -184,9 +209,11 @@
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 								<div class="font-medium">{c.module1}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-								{#if (c.groups1 ?? []).length}
-									<div class="mt-0.5 flex flex-wrap gap-1">
-										{#each c.groups1 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+								{#if fmtSlot(c.slot1) || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+									<div class="mt-0.5 flex flex-wrap items-center gap-1">
+										{#if fmtSlot(c.slot1)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot1)}</span>{/if}
+										{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
+										{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
 								{/if}
 							</td>
@@ -194,9 +221,11 @@
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 								<div class="font-medium">{c.module2}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-								{#if (c.groups2 ?? []).length}
-									<div class="mt-0.5 flex flex-wrap gap-1">
-										{#each c.groups2 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+								{#if fmtSlot(c.slot2) || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+									<div class="mt-0.5 flex flex-wrap items-center gap-1">
+										{#if fmtSlot(c.slot2)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot2)}</span>{/if}
+										{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
+										{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 									</div>
 								{/if}
 							</td>
@@ -242,23 +271,55 @@
 										<span class="text-xs font-medium text-base-content/60">
 											Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
 											Studierenden heraus (zeitgleich bleibt hart verboten; nur „darf zeitgleich"
-											hebt das auf).
+											hebt das auf). Wiederholer:innen sind automatisch akzeptiert.
 										</span>
 										{#each c.affectedStudents ?? [] as s}
-											<div class="flex flex-wrap items-center gap-2 text-sm">
-												{#if s.accepted}
-													<span class="badge badge-success badge-sm">akzeptiert</span>
-												{/if}
+											<div
+												class="flex flex-wrap items-center gap-2 text-sm {s.accepted
+													? 'opacity-60'
+													: ''}"
+											>
+												<span class="w-4 text-center text-success">{s.accepted ? '✓' : ''}</span>
 												<span class="font-mono text-xs tabular-nums text-base-content/50">
 													{s.mtknr}
 												</span>
 												<span>{s.name}</span>
-												<span class="badge badge-ghost badge-xs tabular-nums" title="Kohorte des Studierenden">{s.program}{s.group}</span>
-												{#if s.accepted}
+												<span
+													class="badge badge-ghost badge-xs tabular-nums"
+													title="Kohorte des Studierenden">{s.program}{s.group}</span
+												>
+												{#if s.autoAccepted}
+													<span
+														class="badge badge-info badge-xs"
+														title="Wiederholungsprüfung — automatisch akzeptiert"
+													>
+														automatisch akzeptiert (Wiederholung)
+													</span>
+													{#if s.decision === 'VETO'}
+														<span class="badge badge-warning badge-xs">Veto — nicht akzeptiert</span>
+														<WriteButton
+															class="btn btn-ghost btn-xs"
+															disabled={busy === `a${key}-${s.mtknr}`}
+															on:click={() => clearDecision(c, s)}
+														>
+															Veto zurücknehmen
+														</WriteButton>
+													{:else}
+														<WriteButton
+															class="btn btn-ghost btn-xs text-error"
+															disabled={busy === `a${key}-${s.mtknr}`}
+															title="doch nicht akzeptieren (z. B. kein:e echte:r Wiederholer:in)"
+															on:click={() => decide(c, s, 'VETO')}
+														>
+															Veto
+														</WriteButton>
+													{/if}
+												{:else if s.decision === 'ACCEPT'}
+													<span class="badge badge-success badge-xs">akzeptiert</span>
 													<WriteButton
 														class="btn btn-ghost btn-xs text-error"
 														disabled={busy === `a${key}-${s.mtknr}`}
-														on:click={() => unacceptStudent(c, s)}
+														on:click={() => clearDecision(c, s)}
 													>
 														zurücknehmen
 													</WriteButton>
@@ -266,7 +327,7 @@
 													<WriteButton
 														class="btn btn-outline btn-xs"
 														disabled={busy === `a${key}-${s.mtknr}`}
-														on:click={() => acceptStudent(c, s)}
+														on:click={() => decide(c, s, 'ACCEPT')}
 													>
 														akzeptieren
 													</WriteButton>
@@ -324,9 +385,11 @@
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 									<div class="font-medium">{c.module1}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-									{#if (c.groups1 ?? []).length}
-										<div class="mt-0.5 flex flex-wrap gap-1">
-											{#each c.groups1 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+									{#if fmtSlot(c.slot1) || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+										<div class="mt-0.5 flex flex-wrap items-center gap-1">
+											{#if fmtSlot(c.slot1)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot1)}</span>{/if}
+											{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
+											{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
 									{/if}
 								</td>
@@ -334,9 +397,11 @@
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 									<div class="font-medium">{c.module2}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-									{#if (c.groups2 ?? []).length}
-										<div class="mt-0.5 flex flex-wrap gap-1">
-											{#each c.groups2 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+									{#if fmtSlot(c.slot2) || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+										<div class="mt-0.5 flex flex-wrap items-center gap-1">
+											{#if fmtSlot(c.slot2)}<span class="badge badge-ghost badge-xs tabular-nums">{fmtSlot(c.slot2)}</span>{/if}
+											{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
+											{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 										</div>
 									{/if}
 								</td>
@@ -453,25 +518,39 @@
 		</details>
 	{/if}
 
-	<!-- alle gespeicherten Per-Studierenden-Akzeptanzen -->
-	{#if acceptances.length}
+	<!-- alle gespeicherten Per-Studierenden-Entscheidungen -->
+	{#if decisions.length}
 		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 			<summary class="collapse-title text-sm font-medium">
-				Akzeptierte Konflikte (pro Studierendem)
-				<span class="font-normal text-base-content/50">· {acceptances.length}</span>
+				Entscheidungen (pro Studierendem)
+				<span class="font-normal text-base-content/50">· {decisions.length}</span>
 			</summary>
 			<div class="collapse-content">
 				<div class="overflow-x-auto rounded-lg border border-base-200">
 					<table class="table table-sm">
 						<thead>
-							<tr><th>Prüfung 1</th><th>Prüfung 2</th><th>Studierende:r (Mtknr)</th></tr>
+							<tr>
+								<th>Prüfung 1</th>
+								<th>Prüfung 2</th>
+								<th>Studierende:r (Mtknr)</th>
+								<th>Entscheidung</th>
+							</tr>
 						</thead>
 						<tbody>
-							{#each acceptances as a}
+							{#each decisions as a}
 								<tr>
 									<td class="font-mono tabular-nums">{a.ancode1}</td>
 									<td class="font-mono tabular-nums">{a.ancode2}</td>
 									<td class="font-mono text-sm tabular-nums text-base-content/60">{a.mtknr}</td>
+									<td>
+										<span
+											class="badge badge-sm {a.decision === 'VETO'
+												? 'badge-warning'
+												: 'badge-success'}"
+										>
+											{a.decision === 'VETO' ? 'Veto' : 'akzeptiert'}
+										</span>
+									</td>
 								</tr>
 							{/each}
 						</tbody>

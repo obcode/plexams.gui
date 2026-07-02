@@ -20,7 +20,7 @@ export async function load() {
 		constraints: /** @type {any[]} */ ([]),
 		loadError: '',
 		conflicts: /** @type {any[]} */ ([]),
-		acceptances: /** @type {any[]} */ ([]),
+		decisions: /** @type {any[]} */ ([]),
 		suggestions: /** @type {any[]} */ ([]),
 		shareList: /** @type {any[]} */ ([]),
 		conflictsError: ''
@@ -65,10 +65,22 @@ export async function load() {
 						module1
 						mainExamer1
 						groups1
+						isRepeaterExam1
+						slot1 {
+							dayNumber
+							slotNumber
+							starttime
+						}
 						ancode2
 						module2
 						mainExamer2
 						groups2
+						isRepeaterExam2
+						slot2 {
+							dayNumber
+							slotNumber
+							starttime
+						}
 						studentCount
 						proximity
 						canShareSlot
@@ -78,13 +90,16 @@ export async function load() {
 							name
 							program
 							group
+							autoAccepted
+							decision
 							accepted
 						}
 					}
-					studentConflictAcceptances {
+					studentConflictDecisions {
 						ancode1
 						ancode2
 						mtknr
+						decision
 					}
 					canShareSlotSuggestions {
 						${PAIR_FIELDS}
@@ -96,7 +111,7 @@ export async function load() {
 			`
 		);
 		out.conflicts = cd.examScheduleConflicts ?? [];
-		out.acceptances = cd.studentConflictAcceptances ?? [];
+		out.decisions = cd.studentConflictDecisions ?? [];
 		out.suggestions = cd.canShareSlotSuggestions ?? [];
 		out.shareList = cd.examsCanShareSlot ?? [];
 	} catch (e) {

@@ -8,7 +8,7 @@ export async function POST({ request }) {
 	const { ancode1, ancode2, mtknr } = await request.json();
 	const mutation = gql`
 		mutation ($ancode1: Int, $ancode2: Int, $mtknr: String) {
-			acceptStudentConflict(ancode1: $ancode1, ancode2: $ancode2, mtknr: $mtknr)
+			removeStudentConflictDecision(ancode1: $ancode1, ancode2: $ancode2, mtknr: $mtknr)
 		}
 	`;
 	try {
