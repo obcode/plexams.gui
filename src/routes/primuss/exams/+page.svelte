@@ -407,9 +407,9 @@
 			<tbody>
 				{#each displayedRows as exam}
 					<tr
-						class="{isDimmed(exam) ? 'text-base-content/40' : ''} {exam.fk07 && !exam.connected
-							? 'bg-warning/10'
-							: ''}"
+						class="{isDimmed(exam) && connectExam !== exam
+							? 'text-base-content/40'
+							: ''} {exam.fk07 && !exam.connected ? 'bg-warning/10' : ''}"
 					>
 						<td>
 							{#if !exam.connected}
