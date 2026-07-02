@@ -11,8 +11,13 @@
 	// --- Eingaben ---
 	/** @type {number | ''} */
 	let seed = 1;
-	/** @type {number | ''} */
-	let iterations = '';
+	// Terminplan: Qualität plateaut bei ~1 Mio.; darüber bringt es nichts (die auf
+	// die Iterationszahl normierte Abkühlung kann sogar leicht schlechter werden).
+	// Daher enger Bereich 100k–2M statt 1–20 Mio. wie bei den Aufsichten.
+	let iterations = 1_000_000;
+	const ITER_MIN = 100_000;
+	const ITER_MAX = 2_000_000;
+	const ITER_STEP = 100_000;
 
 	// --- Laufzeit-Status ---
 	let running = false;
@@ -141,7 +146,7 @@
 				variables: {
 					dryRun,
 					seed: seed === '' ? null : Number(seed),
-					iterations: iterations === '' ? null : Number(iterations)
+					iterations: Number(iterations)
 				}
 			},
 			{
@@ -261,17 +266,29 @@
 				disabled={running}
 			/>
 		</label>
-		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Iterationen (leer = Standard)</span>
+		<div class="flex flex-col gap-1">
+			<div class="flex items-baseline justify-between gap-3">
+				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
+			</div>
 			<input
-				type="number"
-				class="input input-bordered input-sm w-40"
+				type="range"
+				class="range range-primary range-sm w-72"
+				min={ITER_MIN}
+				max={ITER_MAX}
+				step={ITER_STEP}
 				bind:value={iterations}
-				min="0"
-				placeholder="Backend-Standard"
 				disabled={running}
 			/>
-		</label>
+			<div class="flex justify-between text-[10px] text-base-content/50">
+				<span>{fmt(ITER_MIN)}</span>
+				<span>{fmt(ITER_MAX)}</span>
+			</div>
+			<span class="text-xs text-base-content/50">
+				Standard 1 Mio.; mehr bringt i. d. R. nichts. 100k ≈ 0,3 s (schnelle Vorschau), 1 Mio. ≈ 3 s
+				(beste Qualität).
+			</span>
+		</div>
 	</div>
 
 	<div class="flex flex-wrap items-center gap-3">
