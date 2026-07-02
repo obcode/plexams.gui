@@ -1,5 +1,6 @@
 <script>
 	export let data;
+	import { invalidateAll } from '$app/navigation';
 	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
 	import { assembledExamsState } from '$lib/assembledExams/store';
 	import { studentRegsState } from '$lib/studentRegs/store';
@@ -38,6 +39,9 @@
 			return;
 		}
 		prepResult = { changes, studentCount };
+		// Load-Daten neu holen, damit die eben erzeugten Prüfungen in der Tabelle
+		// erscheinen (data.plannedExams kommt aus dem SSR-load).
+		await invalidateAll();
 	}
 </script>
 

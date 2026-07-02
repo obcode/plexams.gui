@@ -234,13 +234,13 @@
 				{ href: '/exam/examsToPlan', label: '📝 ZPA-Prüfungen planen' },
 				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
 				{ section: 'Anmeldungen' },
-				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' }
+				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' },
+				{ href: '/exam/assembledExams', label: '📋 aufbereitete Prüfungen' }
 			]
 		},
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/exam/assembledExams', label: '📋 aufbereitete Prüfungen mit Anmeldungen, etc.' },
 				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
