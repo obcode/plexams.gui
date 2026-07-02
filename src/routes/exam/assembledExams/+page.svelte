@@ -5,13 +5,14 @@
 	import { studentRegsState } from '$lib/studentRegs/store';
 	import { preparing, regeneratePreparation } from '$lib/prepare';
 
-	// Vorbedingungen: ZPA & Primuss importiert UND der manuelle Haken
-	// „ZPA- & Primuss-Prüfungen verknüpft" gesetzt. Connected Exams werden live
-	// berechnet — kein separater Schritt.
+	// Vorbedingungen: ZPA & Primuss importiert UND die manuellen Haken
+	// „ZPA- & Primuss-Prüfungen verknüpft" und „Constraints eingepflegt" gesetzt.
+	// Connected Exams werden live berechnet — kein separater Schritt.
 	$: canGenerate =
 		!!data.conditions?.zpaImported &&
 		!!data.conditions?.primussImported &&
-		!!data.conditions?.zpaPrimussConnected;
+		!!data.conditions?.zpaPrimussConnected &&
+		!!data.conditions?.constraintsEntered;
 	$: stale = $assembledExamsState.dirty || $studentRegsState.dirty;
 
 	/** @type {{ changes: any[]; studentCount: number } | null} */
@@ -59,7 +60,8 @@
 			</button>
 			{#if !canGenerate}
 				<span class="text-sm text-warning">
-					Erst ZPA- &amp; Primuss-Prüfungen verknüpfen und den Haken setzen.
+					Erst ZPA- &amp; Primuss-Prüfungen verknüpfen, Constraints einpflegen und die Haken auf der
+					Startseite setzen.
 				</span>
 			{:else if stale}
 				<span class="text-sm text-warning">⚠ veraltet — bitte neu generieren.</span>
