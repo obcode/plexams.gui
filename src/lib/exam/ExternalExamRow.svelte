@@ -60,6 +60,10 @@
 	}
 
 	$: hasTime = !!exam.planEntry?.externalTime;
+	// Zeit außerhalb des Prüfungszeitraums: nur externalTime, kein echter Slot
+	// (dayNumber/slotNumber == 0). Dann keinen Slot zeigen, nur die Zeit + Hinweis.
+	$: outsidePeriod =
+		hasTime && !exam.planEntry?.dayNumber && !exam.planEntry?.slotNumber;
 	let saving = false;
 	let error = '';
 
@@ -121,6 +125,11 @@
 				<span class="text-sm font-medium whitespace-nowrap tabular-nums">
 					{dateTime(exam.planEntry.externalTime)}
 				</span>
+				{#if outsidePeriod}
+					<span class="badge badge-ghost badge-sm" title="Zeit außerhalb des Prüfungszeitraums">
+						außerhalb des Prüfungszeitraums
+					</span>
+				{/if}
 			{:else}
 				<span class="badge badge-warning badge-sm">kein Termin</span>
 			{/if}

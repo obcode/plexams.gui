@@ -64,7 +64,9 @@
 	/** @param {any} g → Zeitstempel (ms) für Sortierung; ohne Zeit ans Ende */
 	function timeMs(g) {
 		const pe = g.planEntry;
-		const iso = pe?.externalTime ?? (pe && pe.slotNumber != null ? pe.starttime : null);
+		// slotNumber 0 = kein echter Slot (Slots sind 1-basiert), z. B. externe
+		// Zeit außerhalb des Prüfungszeitraums → nur externalTime zählt.
+		const iso = pe?.externalTime ?? (pe && pe.slotNumber ? pe.starttime : null);
 		if (!iso) return Infinity;
 		const t = new Date(iso).getTime();
 		return Number.isNaN(t) ? Infinity : t;
@@ -429,7 +431,12 @@
 							<td class="text-sm tabular-nums">
 								{#if g.planEntry?.externalTime}
 									{dateTime(g.planEntry.externalTime)}
-								{:else if g.planEntry && g.planEntry.slotNumber != null}
+									{#if !g.planEntry.slotNumber}
+										<span class="text-base-content/50" title="Zeit außerhalb des Prüfungszeitraums"
+											>· außerhalb</span
+										>
+									{/if}
+								{:else if g.planEntry && g.planEntry.slotNumber}
 									{dateTime(g.planEntry.starttime)}
 									<span class="text-base-content/50"
 										>({g.planEntry.dayNumber}/{g.planEntry.slotNumber})</span

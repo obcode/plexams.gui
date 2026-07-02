@@ -23,6 +23,8 @@ export async function load() {
 						ancode
 						planEntry {
 							externalTime
+							dayNumber
+							slotNumber
 						}
 					}
 					zpaExamsToPlanWithConstraints {
@@ -40,6 +42,8 @@ export async function load() {
 						}
 						planEntry {
 							externalTime
+							dayNumber
+							slotNumber
 						}
 					}
 					teachers {
