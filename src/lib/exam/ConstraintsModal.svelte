@@ -54,6 +54,8 @@
 	// Formularzustand
 	let form = {
 		notPlannedByMe: !!c.notPlannedByMe,
+		// Ort/Campus (leer = Standard = Lothstraße); wirkt im Terminplan-Generator
+		location: c.location ?? '',
 		doNotPublish: !!c.doNotPublish,
 		online: !!c.online,
 		exahm: !!rc.exahm,
@@ -107,10 +109,13 @@
 		const dateByPart = Object.fromEntries(days.map((d) => [dayPart(d.date), d.date]));
 		const excludeDays = [...form.excludeDays].map((d) => dateByPart[d]).filter(Boolean);
 
+		// location gilt auch für notPlannedByMe-Prüfungen (FK10)
+		const location = form.location || null;
 		const constraints = form.notPlannedByMe
-			? { notPlannedByMe: true, doNotPublish: form.doNotPublish }
+			? { notPlannedByMe: true, doNotPublish: form.doNotPublish, location }
 			: {
 					notPlannedByMe: false,
+					location,
 					doNotPublish: form.doNotPublish,
 					online: form.online,
 					exahm: form.exahm,
@@ -142,6 +147,7 @@
 			dispatch('saved', {
 				ancode: exam.ancode,
 				notPlannedByMe: form.notPlannedByMe,
+				location,
 				doNotPublish: form.doNotPublish,
 				online: form.notPlannedByMe ? false : form.online,
 				excludeDays: form.notPlannedByMe ? [] : excludeDays,
@@ -186,6 +192,19 @@
 			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={form.doNotPublish} />
 			<span class="font-medium">nicht veröffentlichen</span>
 			<span class="text-xs text-base-content/50">(Prüfung nicht ins ZPA hochladen)</span>
+		</label>
+
+		<!-- Ort/Campus — gilt auch für „nicht von mir geplant", daher außerhalb des
+		     unten deaktivierten Bereichs. Wirkung nur im Terminplan-Generator. -->
+		<label class="mt-3 flex flex-wrap items-center gap-2">
+			<span class="font-medium">Ort</span>
+			<select class="select select-bordered select-sm" bind:value={form.location}>
+				<option value="">Standard (Lothstraße)</option>
+				<option value="Campus Pasing">Campus Pasing</option>
+			</select>
+			<span class="text-xs text-base-content/50">
+				verschiedene Campus am selben Tag werden im Terminplan vermieden
+			</span>
 		</label>
 
 		<fieldset

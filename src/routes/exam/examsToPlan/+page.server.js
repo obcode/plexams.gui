@@ -27,6 +27,7 @@ export async function load() {
 				constraints {
 					ancode
 					notPlannedByMe
+					location
 					doNotPublish
 					online
 					excludeDays

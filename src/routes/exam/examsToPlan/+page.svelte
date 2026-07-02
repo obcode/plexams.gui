@@ -265,8 +265,14 @@
 		)
 			return;
 		const prev = e.constraints;
-		// notPlannedByMe darf keine anderen Constraints haben → vollständig ersetzen
-		e.constraints = want ? { notPlannedByMe: true } : null;
+		// notPlannedByMe darf keine anderen Constraints haben → vollständig ersetzen.
+		// location bleibt aber erhalten (gilt auch für notPlannedByMe-Prüfungen).
+		const loc = e.constraints?.location || null;
+		e.constraints = want
+			? { notPlannedByMe: true, location: loc }
+			: loc
+				? { notPlannedByMe: false, location: loc }
+				: null;
 		items = items;
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
@@ -274,7 +280,10 @@
 			const res = await fetch('/api/addConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ ancode: e.ancode, constraints: { notPlannedByMe: want } })
+				body: JSON.stringify({
+					ancode: e.ancode,
+					constraints: { notPlannedByMe: want, location: loc }
+				})
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
