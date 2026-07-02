@@ -261,6 +261,7 @@
 				{ href: '/plan/external', label: '🌐 Externe Termine (MUC.DAI & andere FKs)' },
 				{ href: '/plan/pre', label: '🔮 Vorab-Planung (ohne Primuss-Daten)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
+				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
 			]
 		},

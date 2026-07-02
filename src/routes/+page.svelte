@@ -14,6 +14,7 @@
 
 	/** @type {Record<string, string>} */
 	const AREA_LABEL = {
+		EXAMS: 'Terminplan gesperrt — Entwurf verschickt / Prüfungsplan veröffentlicht',
 		ROOMS: 'Raumzuordnung gesperrt — Raumplan veröffentlicht',
 		INVIGILATIONS: 'Aufsichteneinteilung gesperrt — Aufsichtenplan veröffentlicht'
 	};
