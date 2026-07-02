@@ -2,8 +2,36 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
+	import { invalidateAll } from '$app/navigation';
+	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
 
 	export let data;
+
+	// Konflikt-Diff: vor einem Schreiblauf die Konfliktliste festhalten, danach
+	// vergleichen (weg / geblieben / neu).
+	/** @type {any[] | null} */
+	let conflictSnapshot = null;
+	/** @type {{ removed: any[], stayed: any[], added: any[] } | null} */
+	let conflictDiff = null;
+
+	/** @param {any} c */
+	const cKey = (c) => [c.ancode1, c.ancode2].sort((a, b) => a - b).join('-');
+	/** @param {any[]} before @param {any[]} after */
+	function computeDiff(before, after) {
+		const beforeKeys = new Set(before.map(cKey));
+		const afterKeys = new Set(after.map(cKey));
+		return {
+			removed: before.filter((c) => !afterKeys.has(cKey(c))),
+			stayed: after.filter((c) => beforeKeys.has(cKey(c))),
+			added: after.filter((c) => !beforeKeys.has(cKey(c)))
+		};
+	}
+	async function refreshConflictsAndDiff() {
+		const before = conflictSnapshot ?? [];
+		await invalidateAll();
+		await tick();
+		conflictDiff = computeDiff(before, data.conflicts ?? []);
+	}
 
 	// EXAMS gesperrt (draftSent/examPlanPublished gesetzt) → nur Probelauf erlaubt.
 	$: examsBlocked = (data.blockedAreas ?? []).includes('EXAMS');
@@ -109,6 +137,9 @@
 		done = false;
 		running = true;
 		writeRun = !dryRun;
+		conflictDiff = null;
+		// nur beim Schreiblauf ändert sich der Plan → Snapshot für den Diff
+		conflictSnapshot = writeRun ? [...(data.conflicts ?? [])] : null;
 
 		try {
 			if (!convert) {
@@ -191,6 +222,8 @@
 					}
 					running = false;
 					done = true;
+					// nach dem Schreiblauf Konflikte neu laden und Diff berechnen
+					if (writeRun) refreshConflictsAndDiff();
 				}
 			}
 		);
@@ -477,6 +510,25 @@
 			{/if}
 		</div>
 	{/if}
+
+	<!-- Diff der Konflikte gegenüber vor dem letzten Schreiblauf -->
+	{#if conflictDiff}
+		<div class="alert flex-wrap gap-3 py-2 text-sm" transition:fade>
+			<span class="font-medium">Änderung durch den letzten Lauf:</span>
+			<span class="text-success">− {conflictDiff.removed.length} weg</span>
+			<span class="text-base-content/60">= {conflictDiff.stayed.length} geblieben</span>
+			<span class="text-warning">＋ {conflictDiff.added.length} neu</span>
+		</div>
+	{/if}
+
+	<!-- Konflikt-Bewertungs-Loop -->
+	<ExamConflictsPanel
+		conflicts={data.conflicts}
+		ratings={data.ratings}
+		suggestions={data.suggestions}
+		shareList={data.shareList}
+		loadError={data.conflictsError}
+	/>
 
 	<!-- Angewandte Constraints (read-only) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
