@@ -93,6 +93,7 @@
 						cost
 					}
 					iterations
+					seed
 					stoppedEarly
 					written
 					conflicts {
@@ -195,8 +196,10 @@
 			{
 				query: SUBSCRIPTION,
 				variables: {
+					// Seed immer explizit setzen (nicht dem Server-Default überlassen):
+					// derselbe Seed erzeugt bei unveränderten Daten/Bewertungen denselben Plan.
 					dryRun,
-					seed: seed === '' ? null : Number(seed),
+					seed: seed === '' || seed == null ? 1 : Number(seed),
 					iterations: Number(iterations),
 					ignoreRatings
 				}
@@ -256,6 +259,13 @@
 			unsubscribe = null;
 		}
 		running = false;
+	}
+
+	// anderen Seed probieren → anderer Plan (Probelauf); den neuen Seed ins Feld
+	// übernehmen, damit man ihn anschließend so schreiben kann.
+	function newSuggestion() {
+		seed = (seed === '' || seed == null ? 1 : Number(seed)) + 1;
+		start(true);
 	}
 
 	onDestroy(() => {
@@ -359,9 +369,18 @@
 				class="btn btn-primary btn-sm"
 				disabled={examsBlocked}
 				on:click={() => start(false)}
-				title={examsBlocked ? 'gesperrt — siehe Hinweis oben' : ''}
+				title={examsBlocked
+					? 'gesperrt — siehe Hinweis oben'
+					: 'schreibt den Plan mit dem aktuellen Seed — identisch zum Probelauf mit demselben Seed'}
 			>
 				▶ Generieren &amp; schreiben
+			</button>
+			<button
+				class="btn btn-ghost btn-sm"
+				on:click={newSuggestion}
+				title="anderen Seed (aktueller + 1) als Probelauf → anderer Plan"
+			>
+				🎲 Neuer Vorschlag
 			</button>
 			<button
 				class="btn btn-ghost btn-sm"
@@ -375,7 +394,8 @@
 			</button>
 		{/if}
 		<span class="text-xs text-base-content/50">
-			Probelauf rechnet und liefert einen Report, schreibt aber nichts in die Datenbank.
+			Probelauf schreibt nichts. Derselbe Seed erzeugt bei unveränderten Daten &amp; Bewertungen
+			denselben Plan — nach einem guten Probelauf einfach mit demselben Seed „schreiben".
 		</span>
 	</div>
 
@@ -412,6 +432,9 @@
 		<div class="flex flex-col gap-4" transition:fade>
 			<div class="flex flex-wrap items-center gap-3">
 				<h2 class="text-xl font-semibold">Ergebnis-Report</h2>
+				<span class="badge badge-outline gap-1 tabular-nums" title="verwendeter Seed">
+					Seed {r.seed}
+				</span>
 				{#if r.written}
 					<span class="badge badge-success">in DB geschrieben</span>
 				{:else}
