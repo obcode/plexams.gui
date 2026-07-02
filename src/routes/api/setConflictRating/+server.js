@@ -5,17 +5,18 @@ import { gqlErrorMessage } from '$lib/gqlError';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const { ancode1, ancode2, rating } = await request.json();
+	const { ancode1, ancode2, rating, mtknr } = await request.json();
 	const mutation = gql`
-		mutation ($ancode1: Int, $ancode2: Int, $rating: ConflictRating) {
-			setConflictRating(ancode1: $ancode1, ancode2: $ancode2, rating: $rating)
+		mutation ($ancode1: Int, $ancode2: Int, $rating: ConflictRating, $mtknr: String) {
+			setConflictRating(ancode1: $ancode1, ancode2: $ancode2, rating: $rating, mtknr: $mtknr)
 		}
 	`;
 	try {
 		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, {
 			ancode1: Number(ancode1),
 			ancode2: Number(ancode2),
-			rating
+			rating,
+			mtknr: mtknr ?? null
 		});
 		return json(data);
 	} catch (e) {

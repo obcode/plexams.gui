@@ -71,6 +71,11 @@ export async function load() {
 						proximity
 						rating
 						canShareSlot
+						affectedStudents {
+							mtknr
+							name
+							accepted
+						}
 					}
 					examConflictRatings {
 						ancode1

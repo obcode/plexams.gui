@@ -50,6 +50,7 @@
 	// --- Laufzeit-Status ---
 	let running = false;
 	let writeRun = false; // letzter/aktueller Lauf schreibt in die DB?
+	let ignoreRun = false; // Lauf ignoriert Ratings & canShareSlot
 	/** @type {string | null} */
 	let errorMsg = null;
 	let done = false;
@@ -75,8 +76,8 @@
 	let unsubscribe = null;
 
 	const SUBSCRIPTION = `
-		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int) {
-			generateExamSchedule(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
+		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int, $ignoreRatings: Boolean) {
+			generateExamSchedule(dryRun: $dryRun, seed: $seed, iterations: $iterations, ignoreRatings: $ignoreRatings) {
 				level
 				text
 				examReport {
@@ -126,8 +127,8 @@
 		if (termEl) termEl.scrollTop = termEl.scrollHeight;
 	}
 
-	/** @param {boolean} dryRun */
-	async function start(dryRun) {
+	/** @param {boolean} dryRun @param {boolean} [ignoreRatings] */
+	async function start(dryRun, ignoreRatings = false) {
 		if (running) return;
 		if (!dryRun && examsBlocked) return;
 		lines = [];
@@ -137,6 +138,7 @@
 		done = false;
 		running = true;
 		writeRun = !dryRun;
+		ignoreRun = ignoreRatings;
 		conflictDiff = null;
 		// nur beim Schreiblauf ändert sich der Plan → Snapshot für den Diff
 		conflictSnapshot = writeRun ? [...(data.conflicts ?? [])] : null;
@@ -177,7 +179,8 @@
 				variables: {
 					dryRun,
 					seed: seed === '' ? null : Number(seed),
-					iterations: Number(iterations)
+					iterations: Number(iterations),
+					ignoreRatings
 				}
 			},
 			{
@@ -267,6 +270,9 @@
 			{:else}
 				<span class="badge badge-ghost">Probelauf (kein Schreiben)</span>
 			{/if}
+			{#if ignoreRun}
+				<span class="badge badge-ghost">ohne Bewertungen</span>
+			{/if}
 		{/if}
 	</div>
 
@@ -338,6 +344,16 @@
 				title={examsBlocked ? 'gesperrt — siehe Hinweis oben' : ''}
 			>
 				▶ Generieren &amp; schreiben
+			</button>
+			<button
+				class="btn btn-ghost btn-sm"
+				disabled={examsBlocked}
+				on:click={() => start(false, true)}
+				title={examsBlocked
+					? 'gesperrt — siehe Hinweis oben'
+					: 'ignoriert alle Bewertungen & „darf zeitgleich" für diesen Lauf (gespeichert bleiben sie)'}
+			>
+				↺ Neu generieren ohne Bewertungen
 			</button>
 		{/if}
 		<span class="text-xs text-base-content/50">

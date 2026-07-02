@@ -78,6 +78,31 @@
 	/** @param {number} a1 @param {number} a2 */
 	const removeShare = (a1, a2) =>
 		callMut('removeExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`);
+
+	// aufgeklappte Konflikte (betroffene Studierende sichtbar)
+	let expanded = new Set();
+	/** @param {string} key */
+	function toggleExpand(key) {
+		const s = new Set(expanded);
+		s.has(key) ? s.delete(key) : s.add(key);
+		expanded = s;
+	}
+	// Per-Studierenden-Akzeptanz: nur die Nähe-Strafe dieses:r Studierenden
+	// entfällt (zeitgleich bleibt hart verboten — nur canShareSlot hebt das auf).
+	/** @param {any} c @param {any} s */
+	const acceptStudent = (c, s) =>
+		callMut(
+			'setConflictRating',
+			{ ancode1: c.ancode1, ancode2: c.ancode2, rating: 'ACCEPTED', mtknr: s.mtknr },
+			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`
+		);
+	/** @param {any} c @param {any} s */
+	const unacceptStudent = (c, s) =>
+		callMut(
+			'removeConflictRating',
+			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
+			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`
+		);
 </script>
 
 <div class="flex flex-col gap-4">
@@ -138,7 +163,16 @@
 								<div class="font-medium">{c.module2}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
 							</td>
-							<td class="text-right tabular-nums">{c.studentCount}</td>
+							<td class="text-right tabular-nums">
+							<button
+								class="btn btn-ghost btn-xs gap-1"
+								on:click={() => toggleExpand(key)}
+								title="betroffene Studierende anzeigen"
+							>
+								{c.studentCount}
+								<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
+							</button>
+						</td>
 							<td>
 								<div class="join">
 									<WriteButton
@@ -188,6 +222,49 @@
 								{/if}
 							</td>
 						</tr>
+						{#if expanded.has(key)}
+							<tr class="bg-base-200/40">
+								<td colspan="6">
+									<div class="flex flex-col gap-1 py-1">
+										<span class="text-xs font-medium text-base-content/60">
+											Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
+											Studierenden heraus (zeitgleich bleibt hart verboten; nur „darf zeitgleich"
+											hebt das auf).
+										</span>
+										{#each c.affectedStudents ?? [] as s}
+											<div class="flex flex-wrap items-center gap-2 text-sm">
+												{#if s.accepted}
+													<span class="badge badge-success badge-sm">akzeptiert</span>
+												{/if}
+												<span class="font-mono text-xs tabular-nums text-base-content/50">
+													{s.mtknr}
+												</span>
+												<span>{s.name}</span>
+												{#if s.accepted}
+													<WriteButton
+														class="btn btn-ghost btn-xs text-error"
+														disabled={busy === `a${key}-${s.mtknr}`}
+														on:click={() => unacceptStudent(c, s)}
+													>
+														zurücknehmen
+													</WriteButton>
+												{:else}
+													<WriteButton
+														class="btn btn-outline btn-xs"
+														disabled={busy === `a${key}-${s.mtknr}`}
+														on:click={() => acceptStudent(c, s)}
+													>
+														akzeptieren
+													</WriteButton>
+												{/if}
+											</div>
+										{:else}
+											<span class="text-sm text-base-content/50">— keine Studierenden gelistet</span>
+										{/each}
+									</div>
+								</td>
+							</tr>
+						{/if}
 					{/each}
 				</tbody>
 			</table>
