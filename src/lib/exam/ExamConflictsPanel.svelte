@@ -50,11 +50,12 @@
 	$: ratable = working.filter((/** @type {any} */ c) => !c.infoOnly);
 	$: infoConflicts = working.filter((/** @type {any} */ c) => c.infoOnly);
 
+	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
+	// die Folgetag-Zahl steht rein informativ im Qualitäts-Panel, diagnostics.nextDay).
 	const PROX = /** @type {Record<string, { label: string, cls: string }>} */ ({
 		SAME_SLOT: { label: 'gleicher Slot', cls: 'badge-error' },
 		ADJACENT: { label: 'direkt nacheinander', cls: 'badge-error' },
-		SAME_DAY: { label: 'selber Tag', cls: 'badge-warning' },
-		NEXT_DAY: { label: 'Folgetag', cls: 'badge-info' }
+		SAME_DAY: { label: 'selber Tag', cls: 'badge-warning' }
 	});
 	const RATING_LABEL = /** @type {Record<string, string>} */ ({
 		ACCEPTED: 'akzeptiert',
