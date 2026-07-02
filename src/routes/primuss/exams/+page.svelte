@@ -478,11 +478,12 @@
 										bind:value={connectTarget}
 									/>
 									{#if connectPreview}
-										<span class="text-sm text-success">
-											→ {connectPreview.module} · {connectPreview.mainExamer}
+										<span class="text-sm">
+											<span class="font-bold text-success">✓</span>
+											{connectPreview.module} · {connectPreview.mainExamer}
 										</span>
 									{:else}
-										<span class="text-sm text-warning">
+										<span class="text-sm font-medium text-warning">
 											keine ZPA-Prüfung mit Ancode {connectTarget}
 										</span>
 									{/if}
