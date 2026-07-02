@@ -50,7 +50,8 @@
 	$: ratable = working.filter((/** @type {any} */ c) => !c.infoOnly);
 	$: infoConflicts = working.filter((/** @type {any} */ c) => c.infoOnly);
 
-	// „auto" = alle betroffenen Studierenden sind autoAccepted (Wiederholer) →
+	// „auto" = alle betroffenen Studierenden sind autoAccepted (Wiederholer oder
+	// gleicher Slot — niemand schreibt beide) →
 	// separate, eingeklappte Section. „nicht-auto" (mind. ein:e Studierende:r
 	// braucht eine Entscheidung) oben und offen.
 	/** @param {any} c */
@@ -136,7 +137,8 @@
 	};
 
 	// Per-Studierenden-Entscheidung: ACCEPT (Konflikt akzeptieren) oder VETO
-	// (automatische Akzeptanz bei Wiederholung aufheben). accepted = effektiver
+	// (automatische Akzeptanz bei Wiederholung/gleichem Slot aufheben). accepted =
+	// effektiver
 	// Zustand (ACCEPT oder auto ohne Veto).
 	/** @param {any} st */
 	const isAccepted = (st) =>
@@ -271,7 +273,8 @@
 										<span class="text-xs font-medium text-base-content/60">
 											Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
 											Studierenden heraus (zeitgleich bleibt hart verboten; nur „darf zeitgleich"
-											hebt das auf). Wiederholer:innen sind automatisch akzeptiert.
+											hebt das auf). Wiederholer:innen und Paare mit gleichem Slot sind automatisch
+							akzeptiert.
 										</span>
 										{#each c.affectedStudents ?? [] as s}
 											<div
@@ -291,9 +294,11 @@
 												{#if s.autoAccepted}
 													<span
 														class="badge badge-info badge-xs"
-														title="Wiederholungsprüfung — automatisch akzeptiert"
+														title="automatisch akzeptiert — niemand schreibt beide Prüfungen"
 													>
-														automatisch akzeptiert (Wiederholung)
+														automatisch akzeptiert ({c.canShareSlot
+															? 'gleicher Slot'
+															: 'Wiederholung'})
 													</span>
 													{#if s.decision === 'VETO'}
 														<span class="badge badge-warning badge-xs">Veto — nicht akzeptiert</span>
@@ -308,7 +313,7 @@
 														<WriteButton
 															class="btn btn-ghost btn-xs text-error"
 															disabled={busy === `a${key}-${s.mtknr}`}
-															title="doch nicht akzeptieren (z. B. kein:e echte:r Wiederholer:in)"
+															title="doch nicht akzeptieren — Nähe-Strafe für diese:n Studierende:n wieder aktivieren"
 															on:click={() => decide(c, s, 'VETO')}
 														>
 															Veto
@@ -365,7 +370,7 @@
 		{#if ratableAuto.length}
 		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 			<summary class="collapse-title text-sm font-medium">
-				Automatisch akzeptiert (Wiederholungen)
+				Automatisch akzeptiert (Wiederholung / gleicher Slot)
 				<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{ratableAuto.length}</span>
 			</summary>
 			<div class="collapse-content">
