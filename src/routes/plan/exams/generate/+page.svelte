@@ -100,9 +100,11 @@
 						ancode1
 						module1
 						mainExamer1
+						groups1
 						ancode2
 						module2
 						mainExamer2
+						groups2
 						studentCount
 						proximity
 						rating
@@ -111,6 +113,8 @@
 						affectedStudents {
 							mtknr
 							name
+							program
+							group
 							accepted
 						}
 					}

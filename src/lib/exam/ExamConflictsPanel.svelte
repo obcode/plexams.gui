@@ -206,11 +206,21 @@
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 								<div class="font-medium">{c.module1}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+								{#if (c.groups1 ?? []).length}
+									<div class="mt-0.5 flex flex-wrap gap-1">
+										{#each c.groups1 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+									</div>
+								{/if}
 							</td>
 							<td>
 								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 								<div class="font-medium">{c.module2}</div>
 								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+								{#if (c.groups2 ?? []).length}
+									<div class="mt-0.5 flex flex-wrap gap-1">
+										{#each c.groups2 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+									</div>
+								{/if}
 							</td>
 							<td class="text-right tabular-nums">
 							<button
@@ -289,6 +299,7 @@
 													{s.mtknr}
 												</span>
 												<span>{s.name}</span>
+												<span class="badge badge-ghost badge-xs tabular-nums" title="Kohorte des Studierenden">{s.program}{s.group}</span>
 												{#if s.accepted}
 													<WriteButton
 														class="btn btn-ghost btn-xs text-error"
@@ -359,11 +370,21 @@
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
 									<div class="font-medium">{c.module1}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+									{#if (c.groups1 ?? []).length}
+										<div class="mt-0.5 flex flex-wrap gap-1">
+											{#each c.groups1 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+										</div>
+									{/if}
 								</td>
 								<td>
 									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
 									<div class="font-medium">{c.module2}</div>
 									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+									{#if (c.groups2 ?? []).length}
+										<div class="mt-0.5 flex flex-wrap gap-1">
+											{#each c.groups2 as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+										</div>
+									{/if}
 								</td>
 								<td class="text-right tabular-nums">
 									<button
@@ -384,6 +405,7 @@
 												<span>
 													<span class="font-mono text-xs tabular-nums text-base-content/50">{s.mtknr}</span>
 													{s.name}
+													<span class="badge badge-ghost badge-xs tabular-nums" title="Kohorte des Studierenden">{s.program}{s.group}</span>
 												</span>
 											{:else}
 												<span class="text-base-content/50">— keine Studierenden gelistet</span>
