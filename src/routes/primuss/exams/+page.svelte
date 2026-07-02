@@ -68,10 +68,11 @@
 	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
 
 	// Prüfung „relevant"? Art leer → ja; sonst nur schriftliche/praktische
-	// Prüfungen. Alles andere (Modularbeit, Präsentation, mündlich …) ist für die
-	// Planung uninteressant → gedimmt.
+	// Prüfungen. Wortstämme schr/prakt fangen auch Kürzel wie „schrP" ab. Alles
+	// andere (Modularbeit, Präsentation, mündlich …) ist für die Planung
+	// uninteressant → gedimmt.
 	/** @param {string} t */
-	const isRelevantType = (t) => !t || /schriftlich|praktisch/i.test(t);
+	const isRelevantType = (t) => !t || /schr|prakt/i.test(t);
 	// gedimmt dargestellt: keine Anmeldungen ODER irrelevante Art.
 	/** @param {any} e */
 	const isDimmed = (e) => e.studentRegsCount == 0 || !isRelevantType(e.examType);
