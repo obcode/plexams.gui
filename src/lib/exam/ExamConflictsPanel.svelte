@@ -1,6 +1,6 @@
 <script>
-	// Konflikt-Bewertungs-Loop zum Terminplan: Konflikte des aktuellen Plans
-	// bewerten (akzeptiert/unerwünscht/unzulässig) und Parallelsektionen als
+	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
+	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
 	// per invalidateAll die Load-Daten.
 	import { invalidateAll } from '$app/navigation';
@@ -8,8 +8,8 @@
 
 	/** @type {any[]} */
 	export let conflicts = [];
-	/** @type {any[]} */
-	export let ratings = [];
+	/** @type {any[]} gespeicherte Per-Studierenden-Akzeptanzen */
+	export let acceptances = [];
 	/** @type {any[]} */
 	export let suggestions = [];
 	/** @type {any[]} */
@@ -57,11 +57,6 @@
 		ADJACENT: { label: 'direkt nacheinander', cls: 'badge-error' },
 		SAME_DAY: { label: 'selber Tag', cls: 'badge-warning' }
 	});
-	const RATING_LABEL = /** @type {Record<string, string>} */ ({
-		ACCEPTED: 'akzeptiert',
-		UNDESIRED: 'unerwünscht',
-		FORBIDDEN: 'unzulässig'
-	});
 
 	let busy = '';
 	let actionError = '';
@@ -93,22 +88,6 @@
 		}
 	}
 
-	/** @param {any} c @param {string} rating */
-	const setRating = (c, rating) =>
-		callMut(
-			'setConflictRating',
-			{ ancode1: c.ancode1, ancode2: c.ancode2, rating },
-			`r${pairKey(c.ancode1, c.ancode2)}`,
-			() => patch(c.ancode1, c.ancode2, (w) => (w.rating = rating))
-		);
-	/** @param {any} c */
-	const accept = (c) =>
-		callMut(
-			'removeConflictRating',
-			{ ancode1: c.ancode1, ancode2: c.ancode2 },
-			`r${pairKey(c.ancode1, c.ancode2)}`,
-			() => patch(c.ancode1, c.ancode2, (w) => (w.rating = null))
-		);
 	/** @param {number} a1 @param {number} a2 */
 	const allowShare = (a1, a2) =>
 		callMut('setExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
@@ -138,15 +117,15 @@
 	/** @param {any} c @param {any} s */
 	const acceptStudent = (c, s) =>
 		callMut(
-			'setConflictRating',
-			{ ancode1: c.ancode1, ancode2: c.ancode2, rating: 'ACCEPTED', mtknr: s.mtknr },
+			'acceptStudentConflict',
+			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, true))
 		);
 	/** @param {any} c @param {any} s */
 	const unacceptStudent = (c, s) =>
 		callMut(
-			'removeConflictRating',
+			'removeStudentConflictAcceptance',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchStudent(w, s.mtknr, false))
@@ -175,10 +154,10 @@
 
 	{#if ratable.length}
 		<p class="max-w-3xl text-xs text-base-content/50">
-			Nach Schwere sortiert. Bewertung wirkt beim nächsten „Generieren": <strong>unerwünscht</strong>
-			zieht das Paar stärker auseinander, <strong>unzulässig</strong> erzwingt verschiedene Tage.
-			„darf zeitgleich" erlaubt Parallelsektionen denselben Slot (die harte Sperre und die Strafe
-			entfallen).
+			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong>pro
+			Studierendem</strong> zu akzeptieren (z. B. Wiederholer:innen) — das entfernt beim nächsten
+			„Generieren" nur deren Nähe-Strafe. „darf zeitgleich" erlaubt Parallelsektionen denselben Slot
+			(die harte Sperre und die Strafe entfallen).
 		</p>
 		<div class="overflow-x-auto rounded-lg border border-base-300">
 			<table class="table table-sm">
@@ -188,14 +167,12 @@
 						<th>Prüfung 1</th>
 						<th>Prüfung 2</th>
 						<th class="text-right">Stud.</th>
-						<th>Bewertung</th>
 						<th>gleicher Slot</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each ratable as c (pairKey(c.ancode1, c.ancode2))}
 						{@const key = pairKey(c.ancode1, c.ancode2)}
-						{@const cur = c.rating ?? 'ACCEPTED'}
 						<tr class="hover">
 							<td>
 								<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
@@ -233,31 +210,6 @@
 							</button>
 						</td>
 							<td>
-								<div class="join">
-									<WriteButton
-										class="btn join-item btn-xs {cur === 'ACCEPTED' ? 'btn-success' : 'btn-ghost'}"
-										disabled={busy === `r${key}`}
-										on:click={() => accept(c)}
-									>
-										akzeptiert
-									</WriteButton>
-									<WriteButton
-										class="btn join-item btn-xs {cur === 'UNDESIRED' ? 'btn-warning' : 'btn-ghost'}"
-										disabled={busy === `r${key}`}
-										on:click={() => setRating(c, 'UNDESIRED')}
-									>
-										unerwünscht
-									</WriteButton>
-									<WriteButton
-										class="btn join-item btn-xs {cur === 'FORBIDDEN' ? 'btn-error' : 'btn-ghost'}"
-										disabled={busy === `r${key}`}
-										on:click={() => setRating(c, 'FORBIDDEN')}
-									>
-										unzulässig
-									</WriteButton>
-								</div>
-							</td>
-							<td>
 								{#if c.canShareSlot}
 									<div class="flex items-center gap-1">
 										<span class="badge badge-success badge-sm">darf zeitgleich</span>
@@ -283,7 +235,7 @@
 						</tr>
 						{#if expanded.has(key)}
 							<tr class="bg-base-200/40">
-								<td colspan="6">
+								<td colspan="5">
 									<div class="flex flex-col gap-1 py-1">
 										<span class="text-xs font-medium text-base-content/60">
 											Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
@@ -499,36 +451,25 @@
 		</details>
 	{/if}
 
-	<!-- alle gespeicherten Bewertungen -->
-	{#if ratings.length}
+	<!-- alle gespeicherten Per-Studierenden-Akzeptanzen -->
+	{#if acceptances.length}
 		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 			<summary class="collapse-title text-sm font-medium">
-				Alle gespeicherten Bewertungen
-				<span class="font-normal text-base-content/50">· {ratings.length}</span>
+				Akzeptierte Konflikte (pro Studierendem)
+				<span class="font-normal text-base-content/50">· {acceptances.length}</span>
 			</summary>
 			<div class="collapse-content">
 				<div class="overflow-x-auto rounded-lg border border-base-200">
 					<table class="table table-sm">
 						<thead>
-							<tr><th>Prüfung 1</th><th>Prüfung 2</th><th>Bewertung</th><th>Studierende:r</th></tr>
+							<tr><th>Prüfung 1</th><th>Prüfung 2</th><th>Studierende:r (Mtknr)</th></tr>
 						</thead>
 						<tbody>
-							{#each ratings as r}
+							{#each acceptances as a}
 								<tr>
-									<td class="font-mono tabular-nums">{r.ancode1}</td>
-									<td class="font-mono tabular-nums">{r.ancode2}</td>
-									<td>
-										<span
-											class="badge badge-sm {r.rating === 'FORBIDDEN'
-												? 'badge-error'
-												: r.rating === 'UNDESIRED'
-													? 'badge-warning'
-													: 'badge-ghost'}"
-										>
-											{RATING_LABEL[r.rating] ?? r.rating}
-										</span>
-									</td>
-									<td class="text-sm text-base-content/60">{r.mtknr || 'ganzes Paar'}</td>
+									<td class="font-mono tabular-nums">{a.ancode1}</td>
+									<td class="font-mono tabular-nums">{a.ancode2}</td>
+									<td class="font-mono text-sm tabular-nums text-base-content/60">{a.mtknr}</td>
 								</tr>
 							{/each}
 						</tbody>

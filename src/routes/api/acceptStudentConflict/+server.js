@@ -8,14 +8,14 @@ export async function POST({ request }) {
 	const { ancode1, ancode2, mtknr } = await request.json();
 	const mutation = gql`
 		mutation ($ancode1: Int, $ancode2: Int, $mtknr: String) {
-			removeConflictRating(ancode1: $ancode1, ancode2: $ancode2, mtknr: $mtknr)
+			acceptStudentConflict(ancode1: $ancode1, ancode2: $ancode2, mtknr: $mtknr)
 		}
 	`;
 	try {
 		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, {
 			ancode1: Number(ancode1),
 			ancode2: Number(ancode2),
-			mtknr: mtknr ?? null
+			mtknr: String(mtknr)
 		});
 		return json(data);
 	} catch (e) {

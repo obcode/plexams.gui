@@ -3,8 +3,8 @@ import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
 
 // Terminplan-Generierung: Gate (EXAMS in blockedAreas → Schreiben gesperrt), die
-// aktuell angewandten Constraints (read-only) sowie der Konflikt-Bewertungs-Loop
-// (Konflikte des aktuellen Plans, Bewertungen, canShareSlot-Vorschläge/-Paare).
+// aktuell angewandten Constraints (read-only) sowie der Konflikt-Loop (Konflikte
+// des aktuellen Plans, Per-Studierenden-Akzeptanzen, canShareSlot-Vorschläge/-Paare).
 const PAIR_FIELDS = `
 	ancode1
 	module1
@@ -20,7 +20,7 @@ export async function load() {
 		constraints: /** @type {any[]} */ ([]),
 		loadError: '',
 		conflicts: /** @type {any[]} */ ([]),
-		ratings: /** @type {any[]} */ ([]),
+		acceptances: /** @type {any[]} */ ([]),
 		suggestions: /** @type {any[]} */ ([]),
 		shareList: /** @type {any[]} */ ([]),
 		conflictsError: ''
@@ -71,7 +71,6 @@ export async function load() {
 						groups2
 						studentCount
 						proximity
-						rating
 						canShareSlot
 						infoOnly
 						affectedStudents {
@@ -82,10 +81,9 @@ export async function load() {
 							accepted
 						}
 					}
-					examConflictRatings {
+					studentConflictAcceptances {
 						ancode1
 						ancode2
-						rating
 						mtknr
 					}
 					canShareSlotSuggestions {
@@ -98,7 +96,7 @@ export async function load() {
 			`
 		);
 		out.conflicts = cd.examScheduleConflicts ?? [];
-		out.ratings = cd.examConflictRatings ?? [];
+		out.acceptances = cd.studentConflictAcceptances ?? [];
 		out.suggestions = cd.canShareSlotSuggestions ?? [];
 		out.shareList = cd.examsCanShareSlot ?? [];
 	} catch (e) {

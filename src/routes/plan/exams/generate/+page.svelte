@@ -107,7 +107,6 @@
 						groups2
 						studentCount
 						proximity
-						rating
 						canShareSlot
 						infoOnly
 						affectedStudents {
@@ -592,7 +591,7 @@
 				? 'aus dem gerade geschriebenen Plan'
 				: 'aus dem letzten Probelauf (nicht gespeichert)'
 			: 'aus dem gespeicherten Plan'}
-		ratings={data.ratings}
+		acceptances={data.acceptances}
 		suggestions={data.suggestions}
 		shareList={data.shareList}
 		loadError={data.conflictsError}
