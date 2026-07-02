@@ -203,6 +203,10 @@
 		checkStudentRegs();
 	}
 
+	// aktuell aktives Theme (von theme-change als data-theme am <html> gesetzt),
+	// damit der Umschalter es anzeigen und im Dropdown markieren kann.
+	let currentTheme = '';
+
 	onMount(() => {
 		getSemester();
 		// „… veraltet?" — beim Laden, bei Tab-Fokus und im leichten Intervall
@@ -211,9 +215,22 @@
 		const onFocus = () => checkStaleStates();
 		window.addEventListener('focus', onFocus);
 		const iv = setInterval(checkStaleStates, 20000);
+
+		// theme-change setzt data-theme am <html>; per Observer live spiegeln.
+		const readTheme = () => {
+			currentTheme = document.documentElement.getAttribute('data-theme') ?? '';
+		};
+		readTheme();
+		const themeObserver = new MutationObserver(readTheme);
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme']
+		});
+
 		return () => {
 			window.removeEventListener('focus', onFocus);
 			clearInterval(iv);
+			themeObserver.disconnect();
 		};
 	});
 
@@ -502,9 +519,9 @@
 			<div
 				tabindex="0"
 				role="button"
-				class="btn btn-ghost btn-sm btn-circle"
-				title="Theme wählen"
-				aria-label="Theme wählen"
+				class="btn btn-ghost btn-sm gap-1"
+				title="Theme wählen — aktuell: {currentTheme}"
+				aria-label="Theme wählen, aktuell {currentTheme}"
 			>
 				<svg
 					class="h-5 w-5"
@@ -519,6 +536,7 @@
 						d="M9.53 16.12a3 3 0 0 0-5.78 1.13 2.25 2.25 0 0 1-2.4 2.24 4.5 4.5 0 0 0 8.4-2.24c0-.4-.08-.78-.22-1.13Zm0 0a16 16 0 0 0 3.39-1.62m-5.04-.03a16 16 0 0 1 1.62-3.39m3.42 3.42a16 16 0 0 0 4.76-4.65l3.88-5.81a1.15 1.15 0 0 0-1.6-1.6l-5.81 3.88a16 16 0 0 0-4.65 4.76m3.42 3.42a6.78 6.78 0 0 0-3.42-3.42"
 					/>
 				</svg>
+				<span class="hidden capitalize md:inline">{currentTheme}</span>
 			</div>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
@@ -528,11 +546,15 @@
 				{#each themes as theme}
 					<li>
 						<button
-							class="rounded-lg capitalize"
+							class="flex items-center justify-between rounded-lg capitalize {theme ===
+							currentTheme
+								? 'bg-primary font-semibold text-primary-content'
+								: ''}"
 							data-set-theme={theme}
-							data-act-class="font-semibold"
+							on:click={() => (currentTheme = theme)}
 						>
-							{theme}
+							<span>{theme}</span>
+							{#if theme === currentTheme}<span aria-hidden="true">✓</span>{/if}
 						</button>
 					</li>
 				{/each}
