@@ -302,6 +302,43 @@
 		}
 	}
 
+	/** Ort inline setzen — nur bei notPlannedByMe (Constraints sind dort simpel).
+	 * @param {any} e @param {string} location */
+	async function setLocation(e, location) {
+		if (busy.has(e.ancode)) return;
+		const prev = e.constraints;
+		const loc = location || null;
+		const doNotPublish = !!e.constraints?.doNotPublish;
+		e.constraints = { notPlannedByMe: true, doNotPublish, location: loc };
+		items = items;
+		busy = new Set(busy).add(e.ancode);
+		actionError = '';
+		try {
+			const res = await fetch('/api/addConstraints', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					ancode: e.ancode,
+					constraints: { notPlannedByMe: true, doNotPublish, location: loc }
+				})
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				e.constraints = prev;
+				items = items;
+				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+			}
+		} catch (err) {
+			e.constraints = prev;
+			items = items;
+			actionError = err instanceof Error ? err.message : String(err);
+		} finally {
+			const s = new Set(busy);
+			s.delete(e.ancode);
+			busy = s;
+		}
+	}
+
 	/** @param {any} item @param {'toPlan'|'notToPlan'} target */
 	async function setStatus(item, target) {
 		if (item.status === target || busy.has(item.ancode)) return;
@@ -598,7 +635,21 @@
 						</label>
 						{#if c?.notPlannedByMe}
 							<span class="badge badge-neutral badge-sm">geplant von anderen</span>
+							<!-- Ort inline (ohne Modal), da für notPlannedByMe interessant -->
+							<select
+								class="select select-bordered select-xs"
+								title="Ort/Campus (wirkt im Terminplan)"
+								value={c?.location ?? ''}
+								disabled={busy.has(e.ancode)}
+								on:change={(ev) => setLocation(e, ev.currentTarget.value)}
+							>
+								<option value="">Lothstraße</option>
+								<option value="Campus Pasing">Campus Pasing</option>
+							</select>
 						{:else}
+							{#if c?.location}
+								<span class="badge badge-sm" title="Ort/Campus">📍 {c.location}</span>
+							{/if}
 							{#if c?.doNotPublish}
 								<span
 									class="badge badge-error badge-outline badge-sm"
