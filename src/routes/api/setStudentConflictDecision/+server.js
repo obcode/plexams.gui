@@ -7,7 +7,7 @@ import { gqlErrorMessage } from '$lib/gqlError';
 export async function POST({ request }) {
 	const { ancode1, ancode2, mtknr, decision } = await request.json();
 	const mutation = gql`
-		mutation ($ancode1: Int, $ancode2: Int, $mtknr: String, $decision: ConflictDecision) {
+		mutation ($ancode1: Int!, $ancode2: Int!, $mtknr: String!, $decision: ConflictDecision!) {
 			setStudentConflictDecision(
 				ancode1: $ancode1
 				ancode2: $ancode2
