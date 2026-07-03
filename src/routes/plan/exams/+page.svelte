@@ -2,6 +2,15 @@
 	export let data;
 	import Slot from '$lib/slot/Slot.svelte';
 	import { normalizeFk, planningFk, displayAncode } from '$lib/exam/fk';
+	import {
+		dateObj,
+		isoWeekday,
+		mondayOf,
+		isoWeekNum,
+		ddmm,
+		minutesOfDay,
+		hhmm
+	} from '$lib/date/calendar';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { onMount } from 'svelte';
@@ -186,30 +195,8 @@
 	// ---- Ansicht (Kalender nach Wochen ↔ Raster Tage×Zeiten) ----
 	let view = 'kalender';
 	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-	/** @param {string} iso */
-	const dateObj = (iso) => {
-		const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
-		return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
-	};
-	/** @param {Date} dt → Mo=1 … So=7 */
-	const isoWeekday = (dt) => ((dt.getUTCDay() + 6) % 7) + 1;
-	/** @param {Date} dt → Montag der Woche */
-	const mondayOf = (dt) => {
-		const m = new Date(dt);
-		m.setUTCDate(dt.getUTCDate() - (isoWeekday(dt) - 1));
-		return m;
-	};
-	/** @param {Date} dt → ISO-Kalenderwoche */
-	function isoWeekNum(dt) {
-		const d = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
-		d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3);
-		const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
-		firstThu.setUTCDate(firstThu.getUTCDate() - ((firstThu.getUTCDay() + 6) % 7) + 3);
-		return 1 + Math.round((d.getTime() - firstThu.getTime()) / 604800000);
-	}
-	/** @param {Date} dt */
-	const ddmm = (dt) =>
-		`${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}.`;
+
+	// Datums-/Kalender-Mathematik lebt in $lib/date/calendar (unit-getestet).
 
 	// Tage nach ISO-Woche gruppieren; Spalten Mo–Fr (+Sa/So falls genutzt).
 	$: weeks = (() => {
@@ -236,14 +223,6 @@
 
 	// ---- Zeitbasierte Kalenderansicht (Blöcke nach echter Start-Zeit + Dauer) ----
 	const PX_PER_MIN = 1.1;
-	/** @param {string} iso → Minuten seit Mitternacht (Wanduhr aus dem ISO-Offset) */
-	const minutesOfDay = (iso) => {
-		const m = /T(\d{2}):(\d{2})/.exec(String(iso ?? ''));
-		return m ? +m[1] * 60 + +m[2] : null;
-	};
-	/** @param {number} min → „08:30" */
-	const hhmm = (min) =>
-		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 	// Filter der geplanten Prüfungen für die Zeit-Ansicht. Alle Toggle-Variablen
 	// als Parameter, damit die reaktive Anweisung sie trackt.
