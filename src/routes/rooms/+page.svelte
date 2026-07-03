@@ -242,8 +242,8 @@
 				<RoomForm
 					mode={editRoom ? 'edit' : 'add'}
 					room={editRoom}
-					on:saved={onSaved}
-					on:cancel={() => (showModal = false)}
+					onsaved={onSaved}
+					oncancel={() => (showModal = false)}
 				/>
 			</div>
 			<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showModal = false)}

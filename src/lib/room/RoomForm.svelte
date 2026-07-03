@@ -1,19 +1,21 @@
-<script>
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines Raums. Beim
 	// Bearbeiten ist der name (Schlüssel) gesperrt. deactivated ist NICHT Teil
 	// des Inputs (Aktiv-Status nur über setRoomActive).
 
-	/** 'add' | 'edit'
-	 * @type {string} */
-	export let mode = 'add';
-	/** vorhandener Raum zum Vorbefüllen (edit)
-	 * @type {any} */
-	export let room = null;
-
-	const dispatch = createEventDispatcher();
+	let {
+		mode = 'add',
+		room = null,
+		onsaved,
+		oncancel
+	}: {
+		mode?: string;
+		room?: any;
+		onsaved?: (data: any) => void;
+		oncancel?: () => void;
+	} = $props();
 
 	const empty = {
 		name: '',
@@ -28,8 +30,7 @@
 		hmebSeats: 0
 	};
 
-	/** @param {any} r */
-	function pick(r) {
+	function pick(r: any) {
 		return {
 			name: r.name ?? '',
 			seats: r.seats ?? 0,
@@ -44,15 +45,14 @@
 		};
 	}
 
-	let form = room ? pick(room) : { ...empty };
+	let form: Record<string, any> = $state(room ? pick(room) : { ...empty });
 
-	let saving = false;
-	/** @type {string | null} */
-	let errorMsg = null;
+	let saving = $state(false);
+	let errorMsg = $state<string | null>(null);
 
-	$: nameError = form.name.trim() === '' ? 'Name ist erforderlich.' : '';
-	$: seatsError = !(Number(form.seats) > 0) ? 'Plätze muss eine Zahl > 0 sein.' : '';
-	$: formValid = !nameError && !seatsError;
+	const nameError = $derived(form.name.trim() === '' ? 'Name ist erforderlich.' : '');
+	const seatsError = $derived(!(Number(form.seats) > 0) ? 'Plätze muss eine Zahl > 0 sein.' : '');
+	const formValid = $derived(!nameError && !seatsError);
 
 	const FLAGS = [
 		{ key: 'handicap', label: 'NTA (Handicap)' },
@@ -73,8 +73,7 @@
 			errorMsg = 'Bitte die markierten Eingaben prüfen.';
 			return;
 		}
-		/** @type {any} */
-		const input = {
+		const input: Record<string, any> = {
 			name: form.name,
 			seats: Number(form.seats),
 			handicap: form.handicap,
@@ -110,7 +109,7 @@
 		} finally {
 			saving = false;
 		}
-		dispatch('saved', data);
+		onsaved?.(data);
 	}
 </script>
 
@@ -184,10 +183,10 @@
 	{/if}
 
 	<div class="flex justify-end gap-2">
-		<button class="btn btn-ghost btn-sm" on:click={() => dispatch('cancel')} disabled={saving}>
+		<button class="btn btn-ghost btn-sm" onclick={() => oncancel?.()} disabled={saving}>
 			Abbrechen
 		</button>
-		<WriteButton class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
+		<WriteButton class="btn btn-primary btn-sm gap-2" onclick={submit} disabled={saving || !formValid}>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Anlegen'}
 		</WriteButton>
