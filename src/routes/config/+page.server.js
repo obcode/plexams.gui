@@ -16,7 +16,6 @@ export async function load() {
 				semesterConfigInput {
 					from
 					until
-					examGapMinutes
 					slots
 					forbiddenDays
 					mucDaiSlots

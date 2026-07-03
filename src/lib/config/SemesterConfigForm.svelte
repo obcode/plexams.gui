@@ -20,8 +20,6 @@
 		return {
 			from: c.from ?? '',
 			until: c.until ?? '',
-			// Zwischenzeit zwischen Prüfungen (Minuten); leer = Default (30)
-			examGapMinutes: c.examGapMinutes ?? '',
 			/** @type {string[]} */
 			slots: [...(c.slots ?? [])],
 			/** @type {string[]} */
@@ -148,10 +146,6 @@
 		return {
 			from: form.from,
 			until: form.until,
-			examGapMinutes:
-				form.examGapMinutes === '' || form.examGapMinutes == null
-					? null
-					: Number(form.examGapMinutes),
 			slots: form.slots.map((s) => s.trim()).filter(Boolean),
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
 			// Set → absolute [Tag, Slot]-Paare, sortiert
@@ -196,25 +190,8 @@
 					on:change={(e) => (form.until = setDate(form.until, e.currentTarget.value))}
 				/>
 			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">
-					Zwischenzeit zwischen Prüfungen (Minuten)
-				</span>
-				<input
-					type="number"
-					min="0"
-					class="input input-bordered input-sm"
-					bind:value={form.examGapMinutes}
-					placeholder="Standard 30"
-				/>
-			</label>
 		</div>
 		<p class="text-xs text-base-content/50">„von (from)" ist der Planungsbeginn = Tag 1.</p>
-		<p class="max-w-3xl text-xs text-base-content/50">
-			Puffer zwischen zwei Prüfungen desselben Studierenden (leer = Standard 30). Bei uniformen
-			2-h-Slots bleiben 90-min-Prüfungen mit 30 Min. Puffer direkt hintereinander erlaubt; größere
-			Werte sperren mehr Folgeslots.
-		</p>
 	</div>
 
 	<!-- Slots -->

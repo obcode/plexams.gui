@@ -50,6 +50,63 @@
 	// Warm-Start: bestehenden Plan als Ausgangspunkt behalten (nur verbessern).
 	let keepAssigned = false;
 
+	// Zwischenzeit zwischen Prüfungen (Semester-Config; wirkt bei der Generierung).
+	// Bearbeiten via Round-Trip über setSemesterConfigInput (kein Einzelfeld-Setter).
+	/** @type {number | ''} */
+	let examGap = data.semesterConfigInput?.examGapMinutes ?? '';
+	let gapBusy = false;
+	let gapInfo = '';
+	let gapError = '';
+	async function saveGap() {
+		if (gapBusy) return;
+		const base = data.semesterConfigInput;
+		if (!base) {
+			gapError = 'Semester-Config nicht geladen.';
+			return;
+		}
+		gapBusy = true;
+		gapInfo = '';
+		gapError = '';
+		const e = base.emails ?? {};
+		const input = {
+			from: base.from,
+			until: base.until,
+			examGapMinutes: examGap === '' || examGap == null ? null : Number(examGap),
+			slots: base.slots ?? [],
+			forbiddenDays: base.forbiddenDays ?? [],
+			mucDaiSlots: base.mucDaiSlots ?? [],
+			emails: {
+				profs: e.profs,
+				lbas: e.lbas,
+				lbasLastSemester: e.lbasLastSemester,
+				additionalExamer: e.additionalExamer ?? [],
+				fs: e.fs,
+				sekr: e.sekr,
+				roomManagement: e.roomManagement,
+				kdp: e.kdp,
+				lbaba: e.lbaba
+			}
+		};
+		try {
+			const res = await fetch('/api/setSemesterConfigInput', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ input })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				gapError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			gapInfo = 'Zwischenzeit gespeichert.';
+			await invalidateAll();
+		} catch (err) {
+			gapError = err instanceof Error ? err.message : String(err);
+		} finally {
+			gapBusy = false;
+		}
+	}
+
 	// --- Laufzeit-Status ---
 	let running = false;
 	let writeRun = false; // letzter/aktueller Lauf schreibt in die DB?
@@ -425,6 +482,36 @@
 				komplett neuen Plan aus lassen.
 			</span>
 		</label>
+	</div>
+
+	<!-- Zwischenzeit zwischen Prüfungen (Semester-Config; wirkt bei der Generierung) -->
+	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">
+		<div class="flex flex-wrap items-end gap-3">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">
+					Zwischenzeit zwischen Prüfungen (Minuten)
+				</span>
+				<input
+					type="number"
+					min="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={examGap}
+					placeholder="Standard 30"
+					disabled={gapBusy}
+				/>
+			</label>
+			<button class="btn btn-outline btn-sm" disabled={gapBusy} on:click={saveGap}>
+				{gapBusy ? 'speichert …' : 'speichern'}
+			</button>
+			{#if gapInfo}<span class="text-xs text-success">{gapInfo}</span>{/if}
+			{#if gapError}<span class="text-xs text-error">{gapError}</span>{/if}
+		</div>
+		<span class="max-w-3xl text-xs text-base-content/50">
+			Puffer zwischen zwei Prüfungen desselben Studierenden (leer = Standard 30, persistente
+			Semester-Einstellung). Bei uniformen 2-h-Slots bleiben 90-min-Prüfungen mit 30 Min. Puffer
+			direkt hintereinander erlaubt; größere Werte sperren mehr Folgeslots. Wirkt beim nächsten
+			„Generieren".
+		</span>
 	</div>
 
 	<div class="flex flex-wrap items-center gap-3">

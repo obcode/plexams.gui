@@ -18,6 +18,8 @@ export async function load() {
 	const out = {
 		blockedAreas: /** @type {string[]} */ ([]),
 		constraints: /** @type {any[]} */ ([]),
+		/** @type {any} volles Config-Input für den examGapMinutes-Round-Trip */
+		semesterConfigInput: null,
 		loadError: '',
 		conflicts: /** @type {any[]} */ ([]),
 		decisions: /** @type {any[]} */ ([]),
@@ -42,6 +44,25 @@ export async function load() {
 						weight
 						tier
 					}
+					semesterConfigInput {
+						from
+						until
+						examGapMinutes
+						slots
+						forbiddenDays
+						mucDaiSlots
+						emails {
+							profs
+							lbas
+							lbasLastSemester
+							additionalExamer
+							fs
+							sekr
+							roomManagement
+							kdp
+							lbaba
+						}
+					}
 				}
 			`
 		);
@@ -49,6 +70,7 @@ export async function load() {
 		out.constraints = [...(data.examScheduleConstraints ?? [])].sort(
 			(/** @type {any} */ a, /** @type {any} */ b) => a.tier - b.tier
 		);
+		out.semesterConfigInput = data.semesterConfigInput ?? null;
 	} catch (e) {
 		out.loadError = gqlErrorMessage(e);
 	}
