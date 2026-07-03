@@ -1,0 +1,37 @@
+# Dependency-Updates aktuell halten (nativ in GitHub, kein App-Setup nötig).
+# Wöchentliche PRs, gruppiert, damit es nicht zerfasert. Für Auto-Merge von
+# Minor/Patch wäre Renovate die stärkere Alternative (braucht die Renovate-App).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Svelte-Ökosystem zusammen (Kit/vite-plugin/svelte müssen kompatibel sein)
+      svelte:
+        patterns:
+          - 'svelte'
+          - '@sveltejs/*'
+          - 'svelte-*'
+      # Build-/Test-Toolchain zusammen
+      tooling:
+        patterns:
+          - 'vite'
+          - 'vitest'
+          - '@vitest/*'
+          - 'eslint*'
+          - 'prettier*'
+          - '@playwright/*'
+          - 'playwright'
+      # alles übrige an Minor/Patch gebündelt
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
