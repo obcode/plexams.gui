@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 
 	import { createEventDispatcher } from 'svelte';
@@ -22,18 +19,15 @@
 		conflictingAncodes
 	} = $props();
 	const dispatch = createEventDispatcher();
-	let examsPlannedByMe = $state([]);
-	let examsNotPlannedByMe = $state([]);
-
-	run(() => {
-		[examsPlannedByMe, examsNotPlannedByMe] = examsWithoutSlot.reduce(
-			(result, element) => {
-				result[element.constraints && element.constraints.notPlannedByMe ? 1 : 0].push(element);
-				return result;
-			},
-			[[], []]
-		);
+	const grouped = $derived.by(() => {
+		const result: [any[], any[]] = [[], []];
+		for (const element of examsWithoutSlot) {
+			result[element.constraints && element.constraints.notPlannedByMe ? 1 : 0].push(element);
+		}
+		return result;
 	});
+	const examsPlannedByMe = $derived(grouped[0]);
+	const examsNotPlannedByMe = $derived(grouped[1]);
 
 	let showExamsPlannedByMe = $state(true);
 

@@ -1,32 +1,30 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	let { data } = $props();
-	let examers = data.examers;
+	const examers = data.examers;
 
 	let searchTerm = $state('');
 	let hideFK07Profs = $state(false);
-	let filteredExamers = $state([]);
 
-	run(() => {
+	const filteredExamers = $derived.by(() => {
 		let result = examers;
 
 		// Filter FK07 Profs wenn aktiviert
 		if (hideFK07Profs) {
-			result = result.filter((examer) => !(examer.fk === 'FK07' && examer.isProf));
+			result = result.filter((examer: any) => !(examer.fk === 'FK07' && examer.isProf));
 		}
 
 		// Filter nach Suchbegriff
 		if (searchTerm) {
+			const q = searchTerm.toLowerCase();
 			result = result.filter(
-				(examer) =>
-					examer.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					examer.shortname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					examer.fk.toLowerCase().includes(searchTerm.toLowerCase())
+				(examer: any) =>
+					examer.fullname.toLowerCase().includes(q) ||
+					examer.shortname.toLowerCase().includes(q) ||
+					examer.fk.toLowerCase().includes(q)
 			);
 		}
 
-		filteredExamers = result;
+		return result;
 	});
 </script>
 

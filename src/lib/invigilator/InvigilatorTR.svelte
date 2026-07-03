@@ -1,10 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
-	
-	// global duty at 100% workload (before the personal factor); the bars are scaled
-	
-
 	import InvigilatorDays from './InvigilatorDays.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	/**
@@ -25,6 +19,7 @@
 		base100 = 0
 	} = $props();
 
+	/** @param {any} invigilator */
 	function nameBg(invigilator) {
 		if (!invigilator.requirements.fromZpa) {
 			return 'bg-red-400';
@@ -35,15 +30,11 @@
 		return 'bg-base-200';
 	}
 
-	let contribution = $state(0);
-	if (invigilator.requirements) {
-		contribution = invigilator.requirements.allContributions;
-	}
+	const contribution = invigilator.requirements ? invigilator.requirements.allContributions : 0;
 
-	let openMinutes = $state(0);
-	run(() => {
-		openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
-	});
+	const openMinutes = $derived(
+		invigilator.todos.totalMinutes - invigilator.todos.doingMinutes
+	);
 
 	function openColor() {
 		if (openMinutes <= 0) {
