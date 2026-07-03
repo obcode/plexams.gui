@@ -1,6 +1,7 @@
 <script>
 	export let data;
 	import Slot from '$lib/slot/Slot.svelte';
+	import { normalizeFk, planningFk, displayAncode } from '$lib/exam/fk';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { onMount } from 'svelte';
@@ -343,26 +344,21 @@
 		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
 		return 'border-l-primary';
 	};
+	// FK-Formatierung zentral in $lib/exam/fk (unit-getestet).
 	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
 	// Primuss-Ancode darstellen, z. B. „FK03: 123".
 	/** @param {any} z zpaExam */
 	const fmtAncode = (z) =>
-		z.faculty ? `${z.faculty}: ${z.primussAncodes?.[0]?.ancode ?? z.ancode}` : z.ancode.toString();
+		displayAncode(normalizeFk(z.faculty), z.primussAncodes?.[0]?.ancode, z.ancode);
 
-	// planende FK: Fakultät zuerst, sonst Constraint-Feld; rein numerisch → „FK…"
+	// planende FK: Fakultät zuerst, sonst Constraint-Feld.
 	/** @param {any} e */
-	const otherFk = (e) => {
-		const raw = e.zpaExam?.faculty || e.constraints?.notPlannedByMeInFK || '';
-		return /^\d+$/.test(raw) ? `FK${raw}` : raw;
-	};
+	const otherFk = (e) => planningFk(e.zpaExam?.faculty, e.constraints?.notPlannedByMeInFK);
 
 	// „FK10: 456" — FK-Präfix + Primuss-Ancode, wie in den Slot-Kästchen.
 	/** @param {any} e */
-	const otherFkAncode = (e) => {
-		const fk = otherFk(e);
-		const a = e.zpaExam?.primussAncodes?.[0]?.ancode ?? e.zpaExam?.ancode ?? e.ancode;
-		return fk ? `${fk}: ${a}` : String(a);
-	};
+	const otherFkAncode = (e) =>
+		displayAncode(otherFk(e), e.zpaExam?.primussAncodes?.[0]?.ancode, e.zpaExam?.ancode ?? e.ancode);
 
 	/** @param {string|null|undefined} iso → „Mo 06.07. 11:00" (Berlin) */
 	const fmtDateTime = (iso) => {

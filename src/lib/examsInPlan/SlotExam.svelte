@@ -21,6 +21,7 @@
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 	import { onMount } from 'svelte';
 	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
+	import { planningFk, displayAncode } from '$lib/exam/fk';
 	import { Tooltip } from '@svelte-plugins/tooltips';
 
 	const dispatch = createEventDispatcher();
@@ -265,16 +266,18 @@
 	}
 
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
-	// FK bei „nicht von mir geplant" (Constraint-Feld, z. B. „10"). Rein numerisch
-	// → „FK"-Präfix. Leer ⇒ eigene Prüfung (FK07).
-	const rawFk = exam.zpaExam.faculty || exam.constraints?.notPlannedByMeInFK || '';
-	const notMeFk = /^\d+$/.test(rawFk) ? `FK${rawFk}` : rawFk;
+	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld
+	// (rein numerisch → „FK"-Präfix). Leer ⇒ eigene Prüfung (FK07). Logik in
+	// $lib/exam/fk (unit-getestet).
+	const notMeFk = planningFk(exam.zpaExam.faculty, exam.constraints?.notPlannedByMeInFK);
 
 	// Externe/fremd-geplante Prüfungen über FK + Primuss-Ancode darstellen, z. B.
 	// „FK03: 123" bzw. „FK10: 456" — statt Ancode-Präfix-Parsing.
-	let ancodeToShow = notMeFk
-		? `${notMeFk}: ${exam.zpaExam.primussAncodes?.[0]?.ancode ?? exam.zpaExam.ancode}`
-		: exam.zpaExam.ancode.toString();
+	let ancodeToShow = displayAncode(
+		notMeFk,
+		exam.zpaExam.primussAncodes?.[0]?.ancode,
+		exam.zpaExam.ancode
+	);
 </script>
 
 {#if show}

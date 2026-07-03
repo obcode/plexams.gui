@@ -1,21 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
-
-const ZPA_FIELDS = `
-	ancode
-	module
-	mainExamer
-	mainExamerID
-	examType
-	examTypeFull
-	duration
-	isRepeaterExam
-	groups
-	primussAncodes {
-		program
-		ancode
-	}
-`;
+import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '$lib/gql/fragments';
 
 export async function load() {
 	const query = gql`

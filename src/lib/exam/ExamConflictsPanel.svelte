@@ -5,6 +5,7 @@
 	// per invalidateAll die Load-Daten.
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { diffMeta } from '$lib/exam/conflictDiff';
 
 	/** @type {any[]} */
 	export let conflicts = [];
@@ -20,21 +21,8 @@
 	/** woher die angezeigten Konflikte stammen (Lauf-Snapshot vs. gespeichert) */
 	export let sourceLabel = '';
 
-	// Diff-Status je Konflikt (nach einem (Probe-)Lauf gesetzt): zeigt auf einen
-	// Blick, was der Lauf am Konfliktbild verändert hat. Backend liefert einen
-	// String — defensiv/normalisiert behandelt.
-	/** @param {string} [s] Diff-Status; liefert Stil-Meta oder null */
-	function diffMeta(s) {
-		const n = (s ?? '').toLowerCase();
-		if (n === 'new' || n === 'neu')
-			return { row: 'bg-error/10', badge: 'badge-error', label: 'neu' };
-		if (n === 'worse' || n === 'schlimmer' || n === 'increased')
-			return { row: 'bg-warning/10', badge: 'badge-warning', label: '↑ schlimmer' };
-		if (n === 'better' || n === 'besser' || n === 'decreased')
-			return { row: 'bg-success/10', badge: 'badge-success', label: '↓ besser' };
-		return null; // unverändert / kein Diff → neutral
-	}
-	// Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
+	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
+	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
 	$: hasDiff =
 		resolvedConflicts.length > 0 ||
 		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus));

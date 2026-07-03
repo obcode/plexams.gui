@@ -1,24 +1,17 @@
-import { CodegenConfig } from '@graphql-codegen/cli';
+import type { CodegenConfig } from '@graphql-codegen/cli';
 
-// Prefer environment variable, fall back to SvelteKit env if available, finally fallback to local schema file
-let schema: string | undefined = process.env.PLEXAMS_SERVER;
-try {
-	// Try to load SvelteKit env when running inside svelte environment
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const svelteEnv = require('$env/dynamic/private');
-	if (!schema && svelteEnv?.env?.PLEXAMS_SERVER) schema = svelteEnv.env.PLEXAMS_SERVER;
-} catch (e) {
-	// ignore - require will fail outside sveltekit
-}
-
-if (!schema) schema = './schema.graphql';
-
+// Generiert TypeScript-Typen aus dem committeten Schema (schema.graphql), damit
+// codegen offline und in CI ohne laufendes Backend funktioniert. Das Schema
+// aktualisiert man bei Backend-Änderungen via `npm run update-schema.graphql`
+// (holt es vom $PLEXAMS_SERVER und ruft danach codegen auf).
+//
+// Aktuell nur Schema-Typen (typescript). Sobald die Datenschicht auf typisierte
+// Dokumente umgestellt wird, kommt hier client-preset + documents-Glob dazu.
 const config: CodegenConfig = {
-	schema,
-	// documents: ['src/**/*.graphql'],
+	schema: './schema.graphql',
 	generates: {
 		'./src/lib/__generated__/graphql.ts': {
-			plugins: ['typescript', 'typescript-operations']
+			plugins: ['typescript']
 		}
 	}
 };

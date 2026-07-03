@@ -28,6 +28,46 @@ directive @specifiedBy(
 	url: String!
 ) on SCALAR
 
+type AdditionalExam {
+	ancode: Int!
+
+	"""
+	date in dd.mm.yyyy.
+	"""
+	date: String!
+
+	"""
+	time in HH:MM.
+	"""
+	time: String!
+	rooms: [AdditionalExamRoom!]!
+}
+
+input AdditionalExamInput {
+	ancode: Int!
+	date: String!
+	time: String!
+	rooms: [AdditionalExamRoomInput!]!
+}
+
+type AdditionalExamRoom {
+	roomName: String!
+	invigilatorID: Int!
+	duration: Int!
+	isReserve: Boolean!
+	studentCount: Int!
+	isHandicap: Boolean!
+}
+
+input AdditionalExamRoomInput {
+	roomName: String!
+	invigilatorID: Int!
+	duration: Int!
+	isReserve: Boolean!
+	studentCount: Int!
+	isHandicap: Boolean!
+}
+
 type AnCode {
 	ancode: Int!
 }
@@ -55,6 +95,67 @@ type AnnyBooking {
 	bookingGroupIdentifier: String
 	cancelableUntil: Time
 	hasCustomDescription: Boolean!
+
+	"""
+	true when the booking's personalization name is one of ours (annyConfig.personalizationNames).
+	"""
+	mine: Boolean!
+}
+
+type AnnyConfig {
+	"""
+	names whose bookings are flagged as ours (mine=true).
+	"""
+	personalizationNames: [String!]!
+}
+
+input ArgFilterInput {
+	key: String!
+	value: String!
+}
+
+type AssembledExam {
+	ancode: Int!
+	zpaExam: ZPAExam!
+	mainExamer: Teacher!
+	primussExams: [EnhancedPrimussExam!]!
+	constraints: Constraints
+	conflicts: [ZPAConflict!]!
+	studentRegsCount: Int!
+	ntas: [NTA!]!
+	maxDuration: Int!
+}
+
+type AssembledExamsChange {
+	ancode: Int!
+	module: String!
+
+	"""
+	added | removed | changed
+	"""
+	kind: String!
+
+	"""
+	human-readable change descriptions, e.g. 'Anmeldungen 42 → 43'.
+	"""
+	details: [String!]!
+}
+
+type AssembledExamsState {
+	"""
+	true when the assembled exams are stale relative to their inputs.
+	"""
+	dirty: Boolean!
+
+	"""
+	the operation that last marked them stale (mutation/subscription name).
+	"""
+	reason: String
+
+	"""
+	when they were last marked stale or (re)generated.
+	"""
+	changedAt: Time
 }
 
 """
@@ -86,6 +187,16 @@ type Conflict {
 	numberOfStuds: Int!
 }
 
+"""
+ConflictDecision is an explicit per-student override of the automatic handling:
+ACCEPT drops that student's proximity penalty; VETO forces it to count at full weight
+(overriding an automatic repeat down-weighting).
+"""
+enum ConflictDecision {
+	ACCEPT
+	VETO
+}
+
 type ConflictPerProgram {
 	program: String!
 	conflicts: [Conflict!]!
@@ -104,28 +215,91 @@ type ConflictsPerProgramAncode {
 	conflicts: Conflicts
 }
 
+type ConflictStudent {
+	mtknr: String!
+	name: String!
+
+	"""
+	the student's study program, e.g. "IF".
+	"""
+	program: String!
+
+	"""
+	the student's cohort/group, e.g. "IF4B".
+	"""
+	group: String!
+
+	"""
+	true if this is (heuristically) a repeat for this student (repeater exam or
+	the student's semester is above the exam's) — auto down-weighted and accepted by default.
+	"""
+	autoAccepted: Boolean!
+
+	"""
+	explicit decision for this student, if any (overrides the automatic handling).
+	"""
+	decision: ConflictDecision
+
+	"""
+	effective: penalty dropped for this student (explicit ACCEPT, or autoAccepted and not vetoed).
+	"""
+	accepted: Boolean!
+}
+
 type ConnectedExam {
 	zpaExam: ZPAExam!
 	primussExams: [PrimussExam!]!
 	otherPrimussExams: [PrimussExam!]!
+
+	"""
+	Findings from connecting ZPA and Primuss data, graded by level.
+	"""
 	warnings: [ConnectedExamWarning!]!
 }
 
 """
-A structured note on a ZPA↔Primuss connection. level ∈ info | warning | error.
+A finding from connecting a ZPA exam to its Primuss registrations.
 """
 type ConnectedExamWarning {
+	"""
+	info | warning | error
+	"""
 	level: String!
 	message: String!
+
+	"""
+	The Primuss program this finding refers to (for an add/fix/remove action), if any.
+	"""
 	program: String
+
+	"""
+	The Primuss ancode this finding refers to, if any.
+	"""
 	ancode: Int
+
+	"""
+	The module/exam name of the referenced Primuss exam, if known.
+	"""
 	module: String
+
+	"""
+	The examer of the referenced Primuss exam, if known.
+	"""
 	examer: String
+}
+
+type ConstraintCost {
+	name: String!
+	cost: Float!
 }
 
 type Constraints {
 	ancode: Int!
 	notPlannedByMe: Boolean!
+
+	"""
+	do not upload this exam to the ZPA when publishing the plan.
+	"""
 	doNotPublish: Boolean!
 	excludeDays: [Time!]
 	possibleDays: [Time!]
@@ -133,6 +307,17 @@ type Constraints {
 	fixedTime: Time
 	sameSlot: [Int!]
 	online: Boolean!
+
+	"""
+	fixed exam location/campus, e.g. "Campus Pasing"; empty = default campus
+	(Lothstraße). Used for a minimum travel gap between exams at different campuses.
+	"""
+	location: String
+
+	"""
+	the faculty that plans this exam when notPlannedByMe (e.g. "FK10" for Pasing ZPA exams).
+	"""
+	notPlannedByMeInFK: String
 	roomConstraints: RoomConstraints
 }
 
@@ -146,6 +331,12 @@ input ConstraintsInput {
 	fixedTime: Time
 	sameSlot: [Int!]
 	online: Boolean
+	location: String
+
+	"""
+	the faculty that plans this exam when notPlannedByMe (e.g. "FK10").
+	"""
+	notPlannedByMeInFK: String
 	placesWithSocket: Boolean
 	lab: Boolean
 	exahm: Boolean
@@ -208,6 +399,18 @@ type Emails {
 	lbaba: String!
 }
 
+input EmailsInput {
+	profs: String!
+	lbas: String!
+	lbasLastSemester: String!
+	additionalExamer: [String!]!
+	fs: String!
+	sekr: String!
+	roomManagement: String!
+	kdp: String!
+	lbaba: String!
+}
+
 type EnhancedPrimussExam {
 	exam: PrimussExam!
 	studentRegs: [EnhancedStudentReg!]!
@@ -230,9 +433,177 @@ type ExamDay {
 	date: Time!
 }
 
+type ExamDurationOverride {
+	ancode: Int!
+	duration: Int!
+}
+
 type ExamerInPlan {
 	mainExamer: String!
 	mainExamerID: Int!
+}
+
+"""
+ExamPair is a pair of exams with display info (for canShareSlot lists/suggestions).
+"""
+type ExamPair {
+	ancode1: Int!
+	module1: String!
+	mainExamer1: String!
+	ancode2: Int!
+	module2: String!
+	mainExamer2: String!
+}
+
+"""
+One exam I plan for an examer, for the planning info email (no slot/date).
+"""
+type ExamPlanningMailExam {
+	ancode: Int!
+	module: String!
+
+	"""
+	Human-readable exam type (ZPA full name).
+	"""
+	examType: String!
+	constraints: Constraints
+}
+
+type ExamPlanningMailRecipient {
+	teacher: Teacher!
+
+	"""
+	withExams = I plan at least one of their exams; fk07NoExams = FK07 examer I plan nothing for.
+	"""
+	category: String!
+
+	"""
+	The exams I plan for this examer (empty for fk07NoExams).
+	"""
+	exams: [ExamPlanningMailExam!]!
+}
+
+"""
+ExamScheduleConflict is a conflict in the CURRENT plan: two exams a student is
+registered in that ended up close in time, aggregated over all affected students. A
+conflict is only meaningful per student — the per-student acceptance lives on
+affectedStudents.
+"""
+type ExamScheduleConflict {
+	ancode1: Int!
+	module1: String!
+	mainExamer1: String!
+
+	"""
+	the study groups exam 1 is offered for (e.g. ["IF2A"]).
+	"""
+	groups1: [String!]!
+
+	"""
+	true if exam 1 is a repeater exam.
+	"""
+	isRepeaterExam1: Boolean!
+
+	"""
+	exam 1's campus/location (empty = default campus Lothstraße).
+	"""
+	location1: String!
+
+	"""
+	the planned slot of exam 1.
+	"""
+	slot1: Slot!
+	ancode2: Int!
+	module2: String!
+	mainExamer2: String!
+	groups2: [String!]!
+	isRepeaterExam2: Boolean!
+	location2: String!
+	slot2: Slot!
+
+	"""
+	number of students registered in both, in the plan.
+	"""
+	studentCount: Int!
+
+	"""
+	worst proximity across affected students: SAME_SLOT | ADJACENT | SAME_DAY.
+	"""
+	proximity: String!
+
+	"""
+	true if the pair is declared can-share-slot.
+	"""
+	canShareSlot: Boolean!
+
+	"""
+	true if BOTH exams are external (planned by another faculty): information only.
+	"""
+	infoOnly: Boolean!
+
+	"""
+	the affected students (registered in both); acceptance is set per student here.
+	"""
+	affectedStudents: [ConflictStudent!]!
+
+	"""
+	status relative to the currently saved plan, only set in a generation report: "new"
+	(not in the saved plan), "worse"/"better" (proximity changed), "unchanged", or
+	"resolved" (was in the saved plan, gone now). Empty outside a diff context.
+	"""
+	diffStatus: String!
+}
+
+"""
+Quality report of a generated (or current) exam schedule.
+"""
+type ExamScheduleDiagnostics {
+	students: Int!
+	pairs: Int!
+	sameSlot: Int!
+	adjacent: Int!
+	sameDay: Int!
+	nextDay: Int!
+	within3: Int!
+	further: Int!
+	studentsWithAdjacent: Int!
+	studentsWithSameDay: Int!
+	worstStudentPenalty: Float!
+	maxSlotSeats: Int!
+	slotsUsed: Int!
+	slotsOverThreshold: Int!
+	maxExamsPerSlot: Int!
+}
+
+type ExamScheduleReport {
+	units: Int!
+	fixed: Int!
+	placed: Int!
+	unplaced: Int!
+	unplacedAncodes: [Int!]!
+	hardViolations: [String!]!
+	cost: Float!
+	costByConstraint: [ConstraintCost!]!
+	iterations: Int!
+
+	"""
+	the seed used — pass it back to reproduce this exact plan.
+	"""
+	seed: Int!
+	stoppedEarly: Boolean!
+	written: Boolean!
+	diagnostics: ExamScheduleDiagnostics!
+
+	"""
+	conflicts of the generated schedule (to review/rate, also on a dry run). Each
+	carries a diffStatus relative to the saved plan (new/worse/better/unchanged).
+	"""
+	conflicts: [ExamScheduleConflict!]!
+
+	"""
+	conflicts that were in the saved plan but are gone in the generated one (diffStatus "resolved").
+	"""
+	resolvedConflicts: [ExamScheduleConflict!]!
 }
 
 """
@@ -268,16 +639,103 @@ type FK07Program {
 	name: String!
 }
 
-type GeneratedExam {
-	ancode: Int!
-	zpaExam: ZPAExam!
-	mainExamer: Teacher!
-	primussExams: [EnhancedPrimussExam!]!
-	constraints: Constraints
-	conflicts: [ZPAConflict!]!
-	studentRegsCount: Int!
-	ntas: [NTA!]!
-	maxDuration: Int!
+type GenerateAssembledExamsResult {
+	"""
+	the new state (dirty=false).
+	"""
+	state: AssembledExamsState!
+
+	"""
+	what changed vs the previously cached assembled exams (empty = nothing changed).
+	"""
+	changes: [AssembledExamsChange!]!
+}
+
+type GeneratePreparationResult {
+	assembledExams: GenerateAssembledExamsResult!
+	studentRegs: GenerateStudentRegsResult!
+}
+
+type GenerateStudentRegsResult {
+	state: StudentRegsState!
+
+	"""
+	number of students with planned registrations after the (re)generation.
+	"""
+	studentCount: Int!
+}
+
+type GenerationConfig {
+	"""
+	minutes buffer between two uses of a room / between invigilations.
+	"""
+	timelagMin: Int!
+	iterations: Int!
+	startTemp: Float!
+	endTemp: Float!
+
+	"""
+	allowed deviation (minutes) from an invigilator's target workload.
+	"""
+	toleranceMin: Int!
+	maxSpanHours: Float!
+	weightMinuteBalance: Float!
+	weightBeyondTolerance: Float!
+	weightOverTargetFactor: Float!
+	weightCoverage: Float!
+	weightMaxDays: Float!
+	weightPreferExamDays: Float!
+	weightDistribution: Float!
+	weightDaySpan: Float!
+}
+
+input GenerationConfigInput {
+	timelagMin: Int!
+	iterations: Int!
+	startTemp: Float!
+	endTemp: Float!
+	toleranceMin: Int!
+	maxSpanHours: Float!
+	weightMinuteBalance: Float!
+	weightBeyondTolerance: Float!
+	weightOverTargetFactor: Float!
+	weightCoverage: Float!
+	weightMaxDays: Float!
+	weightPreferExamDays: Float!
+	weightDistribution: Float!
+	weightDaySpan: Float!
+}
+
+type ImportMucDaiResult {
+	"""
+	programs (Studiengruppen) found in the CSV.
+	"""
+	programs: [String!]!
+
+	"""
+	total exam rows imported into the mucdai_<program> collections.
+	"""
+	examsImported: Int!
+
+	"""
+	new non-ZPA exams created (non-FK07, not existing yet).
+	"""
+	examsCreated: Int!
+
+	"""
+	non-FK07 exams that already existed (kept with their ancode).
+	"""
+	examsExisting: Int!
+
+	"""
+	FK07 exams skipped (they exist as ZPA exams, only linked).
+	"""
+	examsSkippedFK07: Int!
+
+	"""
+	assembled exams of the imported programs removed because they are no longer in the CSV (or flipped to FK07).
+	"""
+	examsRemoved: Int!
 }
 
 type Invigilation {
@@ -453,6 +911,7 @@ type LogLine {
 	progress: OptimizerProgress
 	report: InvigilationReport
 	validation: ValidationReport
+	examReport: ExamScheduleReport
 }
 
 """
@@ -474,22 +933,60 @@ type MucDaiExam {
 	duration: Int!
 	isRepeaterExam: Boolean!
 	program: String!
+
+	"""
+	the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12.
+	"""
 	plannedBy: String!
+
+	"""
+	Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
+	auto-assigned ancode for exams planned by other faculties. null if not yet
+	created/linked.
+	"""
 	ancode: Int
+
+	"""
+	Link status to our data: "external" (auto-created external exam, linked), "zpa"
+	(linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
+	manual linking).
+	"""
+	linkStatus: String!
+
+	"""
+	The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time.
+	"""
 	planEntry: PlanEntry
 }
 
-type ImportMucDaiResult {
-	programs: [String!]!
-	examsImported: Int!
-	examsCreated: Int!
-	examsExisting: Int!
-	examsSkippedFK07: Int!
-	examsRemoved: Int!
-}
-
 type Mutation {
-	notPlannedByMe(ancode: Int!): Boolean!
+	"""
+	Create or update an additional exam (key: ancode).
+	"""
+	upsertAdditionalExam(input: AdditionalExamInput!): AdditionalExam!
+
+	"""
+	Delete an additional exam by ancode. Returns false if there was none.
+	"""
+	deleteAdditionalExam(ancode: Int!): Boolean!
+
+	"""
+	Set the personalization names that mark 'our' Anny bookings (mine=true). Does
+	not filter; all bookings are still fetched and shown.
+	"""
+	setAnnyPersonalizationNames(names: [String!]!): AnnyConfig!
+
+	"""
+	Regenerate the cached assembled exams from the current data and clear the stale
+	flag. Fast (~100ms); returns the new state plus the list of changes vs the
+	previously cached assembled exams.
+	"""
+	generateAssembledExams: GenerateAssembledExamsResult!
+
+	"""
+	Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10").
+	"""
+	notPlannedByMe(ancode: Int!, inFK: String): Boolean!
 	excludeDays(ancode: Int!, days: [String!]!): Boolean!
 	possibleDays(ancode: Int!, days: [String!]!): Boolean!
 	sameSlot(ancode: Int!, ancodes: [Int!]!): Boolean!
@@ -501,6 +998,86 @@ type Mutation {
 	addConstraints(ancode: Int!, constraints: ConstraintsInput!): Constraints!
 	rmConstraints(ancode: Int!): Boolean!
 	clearEmailAttachments(kind: String!): Int!
+
+	"""
+	Add a Primuss ancode mapping to a ZPA exam.
+	Returns the (live computed) connected exam.
+	"""
+	addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
+
+	"""
+	Remove a (manually added) Primuss ancode mapping of a program from a ZPA exam.
+	Returns the (live computed) connected exam.
+	"""
+	removePrimussAncode(zpaAncode: Int!, program: String!): ConnectedExam!
+
+	"""
+	Renumber a Primuss exam (exam + student regs + conflicts) from fromAncode to
+	toAncode within a program. Returns the (live computed) connected exam.
+	"""
+	fixPrimussAncode(
+		zpaAncode: Int!
+		program: String!
+		fromAncode: Int!
+		toAncode: Int!
+	): ConnectedExam!
+
+	"""
+	Set an explicit decision for a student's conflict (ACCEPT drops the penalty;
+	VETO forces it to count despite an automatic repeat down-weighting).
+	"""
+	setStudentConflictDecision(
+		ancode1: Int!
+		ancode2: Int!
+		mtknr: String!
+		decision: ConflictDecision!
+	): Boolean!
+
+	"""
+	Remove the explicit decision (back to automatic handling).
+	"""
+	removeStudentConflictDecision(ancode1: Int!, ancode2: Int!, mtknr: String!): Boolean!
+
+	"""
+	Declare / undeclare that two exams may share a slot.
+	"""
+	setExamsCanShareSlot(ancode1: Int!, ancode2: Int!): Boolean!
+	removeExamsCanShareSlot(ancode1: Int!, ancode2: Int!): Boolean!
+
+	"""
+	Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0.
+	"""
+	setExamDuration(ancode: Int!, duration: Int!): ExamDurationOverride!
+
+	"""
+	Remove the duration override for an ancode. Returns false if there was none.
+	"""
+	removeExamDuration(ancode: Int!): Boolean!
+
+	"""
+	fixExamRoomsPhase freezes the phase-A EXaHM/SEB placement (sets PhaseFixed, distinct
+	from the manual Locked). Returns the number of exams fixed. Phase B then treats them
+	as immovable obstacles.
+	"""
+	fixExamRoomsPhase: Int!
+
+	"""
+	unfixExamRoomsPhase clears the phase-A freeze on all exams (manual Locked stays).
+	"""
+	unfixExamRoomsPhase: Boolean!
+
+	"""
+	resetExamSchedule removes the generated exam schedule (phase B): all placements that
+	are not manually locked, not external / not-planned-by-me and not frozen by the
+	EXaHM/SEB room phase (phaseFixed). Returns the number of entries removed. A full reset
+	(incl. phase A) = unfixExamRoomsPhase then resetExamSchedule. Blocked while published.
+	"""
+	resetExamSchedule: Int!
+
+	"""
+	Store the generation config (global). Returns the saved config.
+	"""
+	setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
 
 	"""
 	Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) in a slot.
@@ -520,7 +1097,7 @@ type Mutation {
 	prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
 
 	"""
-	Reset the generated invigilations (invigilations_other) so only the
+	Reset the assigned invigilations (invigilations_other) so only the
 	pre-planning remains; self-invigilations are refreshed on the next generation.
 	Blocked while the invigilation plan is published.
 	"""
@@ -552,50 +1129,39 @@ type Mutation {
 		name: String!
 		reason: String!
 	): PermanentNonInvigilator!
-	setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
-	setPlaner(name: String!, email: String!): Planer!
-	generateGeneratedExams: GenerateGeneratedExamsResult!
-	generateStudentRegs: GenerateStudentRegsResult!
-	setExamDuration(ancode: Int!, duration: Int!): Boolean!
-	removeExamDuration(ancode: Int!): Boolean!
-	setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
-	upsertSpecialInterest(input: SpecialInterestInput!): SpecialInterest!
-	deleteSpecialInterest(name: String!): Boolean!
-	upsertAdditionalExam(input: AdditionalExamInput!): AdditionalExam!
-	deleteAdditionalExam(ancode: Int!): Boolean!
-
-	"""
-	ZPA↔Primuss-Zuordnung bearbeiten — alle liefern das aktualisierte ConnectedExam.
-	"""
-	addPrimussAncode(zpaAncode: Int!, program: String!, primussAncode: Int!): ConnectedExam!
-	removePrimussAncode(zpaAncode: Int!, program: String!): ConnectedExam!
-	fixPrimussAncode(
-		zpaAncode: Int!
-		program: String!
-		fromAncode: Int!
-		toAncode: Int!
-	): ConnectedExam!
-	createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
-	seedStudyProgramsFromConfig: Int!
-	upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
-	deleteStudyProgram(shortname: String!): Boolean!
-	addPreplanExam(input: PreplanExamInput!): PreplanExam!
-	updatePreplanExam(id: Int!, input: PreplanExamInput!): PreplanExam!
-	deletePreplanExam(id: Int!): Boolean!
-	setPreplanExamSlot(id: Int!, dayNumber: Int, slotNumber: Int): PreplanExam!
-	connectPreplanExamToAncode(id: Int!, ancode: Int!): PreplanExam!
-	disconnectPreplanExam(id: Int!): PreplanExam!
-
-	"""
-	Generate (and persist) slot assignments for the SEB/EXaHM preplan exams.
-	keepAssigned: true keeps manually set slots fixed, only places unassigned ones.
-	"""
-	generatePreplanAssignment(keepAssigned: Boolean!): PreplanValidation!
 
 	"""
 	Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
 	"""
 	removePermanentNonInvigilator(teacherID: Int!): Boolean!
+
+	"""
+	Import MUC.DAI exams from a CSV (the file you get from MUC.DAI; columns Nr,
+	Modulname, Prüfungsform, Bewertung, Dauer, Erstpruefender, Zweitpruefender,
+	IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the mucdai_<program>
+	data and generates the non-ZPA exams for everything not planned by FK07 (FK07
+	exams already exist as ZPA exams and are only linked). The GUI sends the file
+	content as text.
+	"""
+	importMucDaiExams(csv: String!): ImportMucDaiResult!
+
+	"""
+	Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
+	faculty). The matching slot is computed and stored as the plan entry's
+	externalTime. date: dd.mm.yyyy, time: HH:MM.
+	"""
+	setExternalExamTime(ancode: Int!, date: String!, time: String!): Boolean!
+
+	"""
+	Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
+	for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
+	"""
+	setMucDaiZpaLink(program: String!, primussAncode: Int!, zpaAncode: Int!): MucDaiExam!
+
+	"""
+	Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection.
+	"""
+	removeMucDaiLink(program: String!, primussAncode: Int!): MucDaiExam!
 	addNTA(input: NTAInput!): NTA!
 
 	"""
@@ -620,12 +1186,84 @@ type Mutation {
 	"""
 	removeNtaRoomAloneWaiver(mtknr: String!, ancode: Int!): Boolean!
 	addExamToSlot(day: Int!, time: Int!, ancode: Int!): Boolean!
-	rmExamFromSlot(ancode: Int!): Boolean!
+
+	"""
+	Set the planner (name + email), stored in the global DB.
+	"""
+	setPlaner(name: String!, email: String!): Planer!
 
 	"""
 	Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state.
 	"""
 	setPlanningCondition(key: String!, done: Boolean!): PlanningState!
+
+	"""
+	Regenerate both the cached assembled exams and the per-student planned
+	registrations in one step. They share the same inputs (connected exams + Primuss
+	data) and are independent of each other, so they are always (re)generated together.
+	Clears both stale flags and reports both results.
+	"""
+	generatePreparation: GeneratePreparationResult!
+
+	"""
+	Generate a slot assignment for the pre-exams, distributing them only over the
+	MUC.DAI slots that already have Anny rooms booked (up to ~90% of each slot's
+	booked seats). Exams of the same study program never share a slot and are spread
+	across days; the most important exams (EXaHM, then large SEB) are placed first.
+	Uses a DSATUR constructive pass with a simulated-annealing repair for the hard
+	residue. Fixed pre-exams keep their slot; all non-fixed exams are re-planned
+	(with keepAssigned, currently-slotted non-fixed exams are kept too). The new
+	assignment is persisted; the result is its validation.
+	"""
+	generatePreplanAssignment(keepAssigned: Boolean): PreplanValidation!
+	addPreplanExam(input: PreplanExamInput!): PreplanExam!
+	updatePreplanExam(id: Int!, input: PreplanExamInput!): PreplanExam!
+	deletePreplanExam(id: Int!): Boolean!
+
+	"""
+	Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
+	or neither). The slot must be a real slot of this semester.
+	"""
+	setPreplanExamSlot(id: Int!, dayNumber: Int, slotNumber: Int): PreplanExam!
+
+	"""
+	Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
+	must not already be linked by another pre-exam.
+	"""
+	connectPreplanExamToAncode(id: Int!, ancode: Int!): PreplanExam!
+
+	"""
+	Remove the ZPA link from a pre-exam.
+	"""
+	disconnectPreplanExam(id: Int!): PreplanExam!
+
+	"""
+	Pin/unpin the pre-exam's current slot. A fixed pre-exam keeps its slot when the
+	automatic assignment is (re-)generated; all non-fixed exams are re-planned.
+	"""
+	setPreplanExamFixed(id: Int!, fixed: Boolean!): PreplanExam!
+
+	"""
+	Mark (conflict=true) or unmark (false) another pre-exam as "must not run at the same
+	time" as this one (same students). The link is kept symmetric. Soft: the automatic
+	assignment then spreads the two apart (different days, else max slot distance).
+	"""
+	setPreplanExamNotSameSlot(id: Int!, otherID: Int!, conflict: Boolean!): PreplanExam!
+
+	"""
+	Mark (canShare=true) or unmark (false) another pre-exam as "may run at the same time /
+	right after" this one despite a shared study program (no common students). The link is
+	kept symmetric and cancels the program-based spreading for that pair.
+	"""
+	setPreplanExamCanShareSlot(id: Int!, otherID: Int!, canShare: Boolean!): PreplanExam!
+
+	"""
+	Set the constraints of a pre-exam (room restrictions, same-slot, …). Reuses the
+	normal ConstraintsInput, but its `sameSlot` references other PRE-EXAM ids (not
+	ancodes) — they are kept symmetric. On connectPreplanExamToAncode these
+	constraints are carried over to the ZPA exam (sameSlot translated to ancodes).
+	"""
+	setPreplanExamConstraints(id: Int!, constraints: ConstraintsInput!): PreplanExam!
 	prePlanRoom(
 		ancode: Int!
 		roomName: String!
@@ -686,8 +1324,8 @@ type Mutation {
 	migrateRoomsRequestWith: Int!
 
 	"""
-	Reset the generated room plan (planned_rooms) so only the pre-planning
-	remains; re-generation re-applies it. Blocked while the room plan is published.
+	Reset the assigned room plan (planned_rooms) so only the pre-planning remains;
+	re-assignment re-applies it. Blocked while the room plan is published.
 	"""
 	resetRoomsForExams: Boolean!
 
@@ -730,11 +1368,118 @@ type Mutation {
 		from: Time!
 		until: Time!
 	): RoomRequest!
+
+	"""
+	Replace the raw per-semester config. The derived semesterConfig (days, slots,
+	go-slots) is recomputed and stored. Returns warnings for changes that may
+	invalidate an existing plan (the change is still applied).
+	"""
+	setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
+
+	"""
+	Create a new semester (in its own database) with the given config. The
+	semester must match YYYY-SS / YYYY-WS and must not already have a config.
+	Use setSemester to switch the running server to it afterwards.
+	"""
+	createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
+
+	"""
+	Switch the running server to another database (workspace) at runtime. `name` is
+	the database name from allSemesterNames (id), e.g. "2026-SS" or "test-v2". The
+	logical semester used against external systems (ZPA) is the database's own stored
+	semester — independent of the database name. `semester` is an optional override,
+	only needed for a database that has no stored semester yet (then it is
+	remembered). The target may be empty (config null until created/imported).
+	Refused while an operation is running. The GUI must refetch all data afterwards.
+	"""
+	setSemester(name: String!, semester: String): Semester!
+
+	"""
+	Create a new, independent database (workspace) for the logical semester of
+	`fromSemester` (e.g. "2026-SS"), copying that semester's config (dates/slots/
+	emails) so it matches. `database` is the new database name (e.g. "test-v2"); it
+	must not exist yet. The data stays empty — switch to it and import (e.g. from ZPA,
+	which uses the logical semester). Returns the new workspace.
+	"""
+	createWorkspace(database: String!, fromSemester: String!): Semester!
+
+	"""
+	Protect or unprotect the current database: when read-only, all data-changing
+	operations (mutations and imports/generation/uploads) are rejected, but the
+	semester can still be viewed and validated, and you can switch away. Useful to
+	guard the real semester while replaying in a clone.
+	"""
+	setSemesterReadOnly(readOnly: Boolean!): Semester!
+
+	"""
+	Create or update a special-interest group (key: name).
+	"""
+	upsertSpecialInterest(input: SpecialInterestInput!): SpecialInterest!
+
+	"""
+	Delete a special-interest group by name. Returns false if there was none.
+	"""
+	deleteSpecialInterest(name: String!): Boolean!
+
+	"""
+	Regenerate the per-student planned registrations from the current data and clear
+	the stale flag. Returns the new state plus the number of students.
+	"""
+	generateStudentRegs: GenerateStudentRegsResult!
+
+	"""
+	Create or update a study program (key: shortname/Kürzel).
+	"""
+	upsertStudyProgram(input: StudyProgramInput!): StudyProgram!
+
+	"""
+	Delete a study program by its shortname. Returns false if there was none.
+	"""
+	deleteStudyProgram(shortname: String!): Boolean!
+
+	"""
+	Seed study programs from the configured lists (fk07programs, mucdaiprograms,
+	miscprograms) without overwriting existing ones. Returns the number created.
+	"""
+	seedStudyProgramsFromConfig: Int!
 	zpaExamsToPlan(input: [Int!]!): [ZPAExam!]!
 	addZpaExamToPlan(ancode: Int!): Boolean!
 	rmZpaExamFromPlan(ancode: Int!): Boolean!
-	importMucDaiExams(csv: String!): ImportMucDaiResult!
-	setExternalExamTime(ancode: Int!, date: String!, time: String!): Boolean!
+}
+
+type MutationLogArg {
+	key: String!
+	value: String!
+}
+
+type MutationLogEntry {
+	time: Time!
+
+	"""
+	GraphQL operation/field name, e.g. addPreplanExam.
+	"""
+	name: String!
+
+	"""
+	mutation | subscription
+	"""
+	type: String!
+
+	"""
+	The call arguments, flattened to key/value pairs (nested input objects included).
+	"""
+	args: [MutationLogArg!]!
+
+	"""
+	Ancodes referenced by the arguments (ancode / zpaAncode / primussAncode / …).
+	"""
+	ancodes: [Int!]!
+
+	"""
+	Set when the operation returned an error (for subscriptions only the start error, if any).
+	"""
+	error: String
+	durationMs: Int!
 }
 
 type NTA {
@@ -787,6 +1532,30 @@ type NTAWithRegsByExamAndTeacher {
 }
 
 """
+OptimizerConstraint describes one applied constraint (for the read-only view).
+"""
+type OptimizerConstraint {
+	name: String!
+	title: String!
+	description: String!
+
+	"""
+	hard | soft
+	"""
+	kind: String!
+
+	"""
+	soft-constraint weight (0 for hard).
+	"""
+	weight: Float!
+
+	"""
+	display priority (lower = more important).
+	"""
+	tier: Int!
+}
+
+"""
 OptimizerProgress is the structured payload of a PROGRESS LogLine, mirroring the
 simulated-annealing optimizer snapshot.
 """
@@ -820,6 +1589,16 @@ type PlanEntry {
 	externalTime: Time
 	ancode: Int!
 	locked: Boolean!
+
+	"""
+	fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock.
+	"""
+	phaseFixed: Boolean!
+}
+
+type Planer {
+	name: String!
+	email: String!
 }
 
 type PlannedExam {
@@ -870,6 +1649,7 @@ type PlanningCondition {
 Areas that can be locked by a published gate.
 """
 enum PlanningGate {
+	EXAMS
 	ROOMS
 	INVIGILATIONS
 }
@@ -896,6 +1676,104 @@ type PreExam {
 }
 
 """
+A manually entered pseudo-exam for the SEB/EXaHM pre-planning, captured before the
+ZPA exam list / Primuss data exist. Linked to a ZPA ancode later (phase 4).
+"""
+type PreplanExam {
+	id: Int!
+
+	"""
+	EXaHM | SEB
+	"""
+	examKind: String!
+	examerID: Int!
+
+	"""
+	Snapshot of the examer's name.
+	"""
+	examerName: String!
+	module: String!
+
+	"""
+	StudyProgram shortnames.
+	"""
+	programs: [String!]!
+	expectedStudents: Int!
+	duration: Int
+	plannedDayNumber: Int
+	plannedSlotNumber: Int
+
+	"""
+	True when the slot is pinned and survives a re-run of the automatic assignment.
+	"""
+	isFixed: Boolean!
+
+	"""
+	PRE-EXAM ids that should not run at the same time as this one (same students). Soft:
+	the assignment spreads them apart (different days, else maximum slot distance).
+	"""
+	notSameSlot: [Int!]
+
+	"""
+	PRE-EXAM ids that may run at the same time / right after this one despite sharing a
+	study program (no common students). Cancels the spreading for that pair.
+	"""
+	canShareSlot: [Int!]
+
+	"""
+	Set once linked to a real ZPA exam.
+	"""
+	ancode: Int
+	notes: String
+
+	"""
+	Constraints captured during pre-planning (room restrictions, same-slot, …),
+	carried over to the ZPA exam on linking. In sameSlot the ints are PRE-EXAM ids.
+	"""
+	constraints: Constraints
+}
+
+input PreplanExamInput {
+	examKind: String!
+	examerID: Int!
+	module: String!
+	programs: [String!]!
+	expectedStudents: Int!
+	duration: Int
+	notes: String
+}
+
+type PreplanKindNeed {
+	examCount: Int!
+	seatsNeeded: Int!
+
+	"""
+	Greedily suggested number of rooms of this kind to cover the seats.
+	"""
+	roomsSuggested: Int!
+
+	"""
+	Names of the suggested rooms (largest first).
+	"""
+	rooms: [String!]!
+
+	"""
+	Total seats available across all rooms of this kind (per slot ceiling).
+	"""
+	seatsAvailable: Int!
+
+	"""
+	Seats already booked in Anny for this slot (0 for the unslotted bucket).
+	"""
+	seatsBooked: Int!
+
+	"""
+	Rooms still to book in Anny to cover the demand (largest first); empty when enough is booked.
+	"""
+	roomsToBook: [String!]!
+}
+
+"""
 PrePlannedInvigilation fixes an invigilator for a room (or the reserve) in a
 slot before the automatic invigilation planning runs. roomName is null for a
 reserve invigilation.
@@ -918,6 +1796,71 @@ type PrePlannedRoom {
 	Optional exact number of students planned for this room; taken verbatim when generating.
 	"""
 	seats: Int
+}
+
+type PreplanOverview {
+	slots: [PreplanSlotNeed!]!
+}
+
+type PreplanProgramConflict {
+	program: String!
+	preplanExamIDs: [Int!]!
+	modules: [String!]!
+}
+
+type PreplanSameSlotGroup {
+	members: [PreplanSameSlotMember!]!
+
+	"""
+	true when every member is connected (the same-slot is fully carried over to the ZPA exams).
+	"""
+	complete: Boolean!
+}
+
+type PreplanSameSlotMember {
+	id: Int!
+	module: String!
+	examKind: String!
+
+	"""
+	true when this member is linked to a ZPA ancode.
+	"""
+	connected: Boolean!
+	ancode: Int
+}
+
+type PreplanSlotNeed {
+	"""
+	null day/slot = the bucket of pre-exams without a slot yet.
+	"""
+	dayNumber: Int
+	slotNumber: Int
+	starttime: Time
+	exahm: PreplanKindNeed!
+	seb: PreplanKindNeed!
+
+	"""
+	Programs that appear in more than one pre-exam of this slot (possible clash).
+	"""
+	conflicts: [PreplanProgramConflict!]!
+}
+
+type PreplanValidation {
+	"""
+	True when there are no findings (everything assigned, within capacity, no overlaps).
+	"""
+	ok: Boolean!
+	assignedCount: Int!
+
+	"""
+	ids of pre-exams without a slot.
+	"""
+	unassignedIDs: [Int!]!
+
+	"""
+	Human-readable findings (German).
+	"""
+	messages: [String!]!
 }
 
 type PrimussExam {
@@ -953,53 +1896,118 @@ type PrimussExamWithCount {
 	examType: String!
 	presence: String!
 	studentRegsCount: Int!
+
+	"""
+	true if this Primuss exam is connected to a ZPA or external (MUC.DAI) exam.
+	"""
+	connected: Boolean!
+
+	"""
+	true if connected to a ZPA exam selected to be planned by us (a subset of
+	connected; false for external/MUC.DAI links or not-to-plan ZPA exams).
+	"""
+	plannedZPA: Boolean!
 }
 
 type Query {
 	allSemesterNames: [Semester!]!
 	semester: Semester!
-	planer: Planer!
-	mutationLogNames: [String!]!
-	generatedExamsState: GeneratedExamsState!
-	studentRegsState: StudentRegsState!
-	students: [Student!]!
-	studentByMtknr(mtknr: String!): Student
-	studentsByName(regex: String!): [Student!]!
-	examDurationOverrides: [ExamDurationOverride!]!
-	generationConfig: GenerationConfig!
-	specialInterests: [SpecialInterest!]!
-	additionalExams: [AdditionalExam!]!
-	mutationLog(
-		name: String
-		type: String
-		ancode: Int
-		args: [ArgFilterInput!]
-		since: Time
-		until: Time
-		limit: Int
-	): [MutationLogEntry!]!
-	semesterConfig: SemesterConfig!
+
+	"""
+	null when the semester has no config yet (fresh/empty DB) — create it via createSemester / init.
+	"""
+	semesterConfig: SemesterConfig
+
+	"""
+	The raw, editable per-semester config (source of truth for the derived semesterConfig).
+	"""
 	semesterConfigInput: SemesterConfigInput
+
+	"""
+	A template for creating a new semester, seeded from the current semester's
+	config (slots/emails/go-slots carry over; the planner adjusts the dates).
+	"""
 	newSemesterConfigDefaults: SemesterConfigInput!
-	studyPrograms: [StudyProgram!]!
-	preplanExams: [PreplanExam!]!
-	preplanExam(id: Int!): PreplanExam
-	preplanExamAncodeSuggestions(id: Int!): [PreplanAncodeSuggestion!]!
-	preplanOverview: PreplanOverview!
-	validatePreplanAssignment: PreplanValidation!
+
+	"""
+	Additional exams: fully specified entries that are appended to the ZPA upload
+	but are not part of the normal plan (replaces publish.additionalExams).
+	"""
+	additionalExams: [AdditionalExam!]!
 	annyBookings(room: String): [AnnyBooking!]!
 	allAnnyBookings: [AnnyBooking!]!
+
+	"""
+	The Anny settings stored in the DB (the token stays in the config file).
+	"""
+	annyConfig: AnnyConfig!
+
+	"""
+	State of the cached assembled exams. dirty=true means an input changed since the
+	last generation (connected exams, zpa-exams-to-plan, constraints, NTAs, imports),
+	so the assembled exams — and everything derived from them (planned exams) — are
+	stale and should be regenerated.
+	"""
+	assembledExamsState: AssembledExamsState!
 	constraintForAncode(ancode: Int!): Constraints
 	zpaExamsToPlanWithConstraints: [ZPAExamWithConstraints!]!
 	emailAttachments(kind: String!): [EmailAttachmentInfo!]!
+
+	"""
+	Candidates for the consolidated exam-planning info email (replacing the separate
+	constraints + prepared emails): one entry per examer — every examer with at least one
+	exam I plan (toPlan and not notPlannedByMe, any faculty), plus the FK07 examers who do
+	have ZPA exam(s) this semester but none that I plan. Examers without any ZPA exam, and
+	non-FK07 examers without a planned exam, are excluded. For selecting/deselecting
+	recipients before sending. No slot/date is included.
+	"""
+	examPlanningMailRecipients: [ExamPlanningMailRecipient!]!
 	connectedExam(ancode: Int!): ConnectedExam
 	connectedExams: [ConnectedExam!]!
-	generatedExams: [GeneratedExam!]!
-	generatedExam(ancode: Int!): GeneratedExam
+	assembledExams: [AssembledExam!]!
+	assembledExam(ancode: Int!): AssembledExam
 	plannedExams: [PlannedExam!]!
 	plannedExam(ancode: Int!): PlannedExam
 	mucdaiExams: [MucDaiExam!]!
 	conflictingAncodes(ancode: Int!): [Conflict!]
+
+	"""
+	Conflicts of the current plan, to review (accept per student).
+	"""
+	examScheduleConflicts: [ExamScheduleConflict!]!
+
+	"""
+	All explicit per-student conflict decisions currently stored.
+	"""
+	studentConflictDecisions: [StudentConflictDecision!]!
+
+	"""
+	Exam pairs declared as allowed to share a slot (no student legitimately sits both).
+	"""
+	examsCanShareSlot: [ExamPair!]!
+
+	"""
+	Auto-detected canShareSlot candidates (same module+program, different examer) not yet declared.
+	"""
+	canShareSlotSuggestions: [ExamPair!]!
+
+	"""
+	Per-ancode exam duration overrides. They are only applied to exams whose ZPA
+	duration is 0 (i.e. not set in the ZPA); they feed the assembled exams.
+	"""
+	examDurationOverrides: [ExamDurationOverride!]!
+
+	"""
+	The read-only list of hard/soft constraints the exam-schedule generator applies.
+	"""
+	examScheduleConstraints: [OptimizerConstraint!]!
+
+	"""
+	Global generation tuning: the room time lag and the invigilation optimizer
+	(simulated annealing) parameters. Stored in the global plexams database; the
+	config file is only a seed/fallback. Steers room and invigilation generation.
+	"""
+	generationConfig: GenerationConfig!
 	invigilatorTodos: InvigilationTodos
 	invigilatorsWithReq: [Invigilator!]!
 
@@ -1034,6 +2042,36 @@ type Query {
 	invigilatorsWithReq only returns the ones who actually invigilate.
 	"""
 	invigilatorCandidates: [Teacher!]!
+
+	"""
+	Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
+	carry the program with a missing number (0/-1) first, then same-examer + similar
+	module, then either. For the GUI to confirm/correct the link.
+	"""
+	mucDaiZpaCandidates(program: String!, primussAncode: Int!): [ZPAExam!]!
+
+	"""
+	Audit log of mutating operations (mutations + data-changing subscriptions),
+	newest first. Filter by operation name, by an ancode referenced in the
+	arguments, by arbitrary argument key/value pairs, and/or a time range.
+	"""
+	mutationLog(
+		"""
+		filter by operation type: mutation | subscription | cli
+		"""
+		type: String
+		name: String
+		ancode: Int
+		args: [ArgFilterInput!]
+		since: Time
+		until: Time
+		limit: Int
+	): [MutationLogEntry!]!
+
+	"""
+	Distinct operation names present in the mutation log (for a filter dropdown).
+	"""
+	mutationLogNames: [String!]!
 	ntas: [NTA!]
 	ntasWithRegs: [Student!]
 	nta(mtknr: String!): NTAWithRegs
@@ -1059,9 +2097,45 @@ type Query {
 	awkwardSlots(ancode: Int!): [Slot!]!
 
 	"""
+	The planner (name + email). Stored globally in the DB; the config is only a fallback.
+	"""
+	planer: Planer!
+
+	"""
 	The planning state (phases, conditions, currently locked areas).
 	"""
 	planningState: PlanningState!
+
+	"""
+	Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps).
+	"""
+	validatePreplanAssignment: PreplanValidation!
+
+	"""
+	SEB/EXaHM pre-planning pseudo-exams of this semester.
+	"""
+	preplanExams: [PreplanExam!]!
+	preplanExam(id: Int!): PreplanExam
+
+	"""
+	Candidate ZPA exams for linking the given pre-exam, ranked by examer (same
+	teacher) and module-name similarity. Empty before the ZPA exams are imported.
+	"""
+	preplanExamAncodeSuggestions(id: Int!): [ZPAExam!]!
+
+	"""
+	Same-slot groups of pre-exams (>= 2 members) with each member's connection status, so
+	the GUI can show which members are still pending. The same-slot is only carried over to
+	the ZPA exams once every member of a group is connected (complete = true).
+	"""
+	preplanSameSlotGroups: [PreplanSameSlotGroup!]!
+
+	"""
+	Room-need and program-overlap overview for the SEB/EXaHM pre-planning: per slot
+	(plus one entry with null day/slot for not-yet-slotted pre-exams) the seat demand
+	and a suggested set of rooms per kind, and the program overlaps within the slot.
+	"""
+	preplanOverview: PreplanOverview!
 	primussExams: [PrimussExamByProgram]
 	primussExam(program: String!, ancode: Int!): PrimussExam!
 	primussExamsForAnCode(ancode: Int!): [PrimussExam!]
@@ -1102,9 +2176,27 @@ type Query {
 	Dry-run: which management rooms would be requested for which exams (read-only, changes nothing).
 	"""
 	roomRequestsPreview: [RoomRequestPreview!]!
+
+	"""
+	Special-interest groups (named ancode lists) used for the Studierenden-Info PDFs.
+	"""
+	specialInterests: [SpecialInterest!]!
+
+	"""
+	State of the prepared student registrations (the per-student planned regs shown
+	via `students`). dirty=true means an input changed since the last generation
+	(connected exams, which exams are planned, NTAs, ZPA imports), so they should be
+	regenerated.
+	"""
+	studentRegsState: StudentRegsState!
 	studentByMtknr(mtknr: String!): Student
 	studentsByName(regex: String!): [Student!]!
 	students: [Student!]!
+
+	"""
+	All study programs (Studiengänge), global/cross-semester.
+	"""
+	studyPrograms: [StudyProgram!]!
 	teacher(id: Int!): Teacher
 	teachers(fromZPA: Boolean): [Teacher!]!
 	invigilators: [ZPAInvigilator!]!
@@ -1172,6 +2264,10 @@ type RoomConstraints {
 	seb: Boolean!
 	kdpJiraURL: String
 	maxStudents: Int
+
+	"""
+	extra seats to reserve on top of the registered students (capacity buffer).
+	"""
 	additionalSeats: Int
 	comments: String
 }
@@ -1285,321 +2381,41 @@ type RoomWithInvigilator {
 	prePlanned: Boolean!
 }
 
-type Semester {
-	id: String!
-}
-
-"""
-SemesterConfigInput is the editable semester configuration (raw input form,
-before days/slots are computed). Null for a fresh semester without config.
-NOTE: hand-written stub for the GUI — regenerate via update-schema.graphql.
-"""
-type SemesterConfigInput {
-	from: Time!
-	until: Time!
-	slots: [String!]!
-	forbiddenDays: [Time!]
-	mucDaiSlots: [[Int!]!]
-	emails: Emails!
-}
-
-input SemesterConfigInputData {
-	from: Time!
-	until: Time!
-	slots: [String!]!
-	forbiddenDays: [Time!]
-	mucDaiSlots: [[Int!]!]
-	emails: EmailsInput!
-}
-
-input EmailsInput {
-	profs: String!
-	lbas: String!
-	lbasLastSemester: String!
-	additionalExamer: [String!]!
-	fs: String!
-	sekr: String!
-	roomManagement: String!
-	kdp: String!
-	lbaba: String!
-}
-
-"""
-StudyProgram is a global (cross-semester) study program. category groups them
-(fk07 | mucdai | misc). name may be empty right after the seed.
-"""
-type StudyProgram {
-	shortname: String!
-	name: String!
-	degree: String
-	category: String!
-	active: Boolean!
-	retired: Boolean!
-	externalExamsBase: Int
-}
-
-input StudyProgramInput {
-	shortname: String!
-	name: String!
-	degree: String
-	category: String!
-	active: Boolean!
-	retired: Boolean
-	externalExamsBase: Int
-}
-
-"""
-PreplanExam is an SEB/EXaHM exam pre-planned for a semester (kept in that
-semester's DB). Slot assignment (plannedDayNumber/SlotNumber) and ancode are
-managed separately and survive updates.
-"""
-type PreplanExam {
-	id: Int!
-	examKind: String!
-	examerID: Int!
-	examerName: String!
-	module: String!
-	programs: [String!]!
-	expectedStudents: Int!
-	duration: Int
-	plannedDayNumber: Int
-	plannedSlotNumber: Int
-	ancode: Int
-	notes: String
-}
-
-input PreplanExamInput {
-	examKind: String!
-	examerID: Int!
-	module: String!
-	programs: [String!]!
-	expectedStudents: Int!
-	duration: Int
-	notes: String
-}
-
-type PreplanOverview {
-	slots: [PreplanSlotNeed!]!
-}
-
-"""
-Result of validating or generating the SEB/EXaHM preplan slot assignment.
-"""
-type PreplanValidation {
-	ok: Boolean!
-	assignedCount: Int!
-	unassignedIDs: [Int!]!
-	messages: [String!]!
-}
-
-"""
-PreplanSlotNeed: per-slot SEB/EXaHM room demand. A slot with all of
-dayNumber/slotNumber/starttime null is the "without slot" bucket.
-"""
-type PreplanSlotNeed {
-	dayNumber: Int
-	slotNumber: Int
-	starttime: Time
-	exahm: PreplanKindNeed!
-	seb: PreplanKindNeed!
-	conflicts: [PreplanSlotConflict!]!
-}
-
-type PreplanKindNeed {
-	examCount: Int!
-	seatsNeeded: Int!
-	roomsSuggested: Int!
-	rooms: [String!]!
-	seatsAvailable: Int!
-	seatsBooked: Int!
-	roomsToBook: [String!]!
-}
-
-type PreplanSlotConflict {
-	program: String!
-	preplanExamIDs: [Int!]!
-	modules: [String!]!
-}
-
-"""
-Suggested ZPA exam (ancode) for a PreplanExam — best matches first.
-"""
-type PreplanAncodeSuggestion {
-	ancode: Int!
-	module: String!
-	mainExamer: String!
-	mainExamerID: Int!
-	examType: String!
-}
-
 type SaveSemesterConfigResult {
 	ok: Boolean!
+
+	"""
+	Non-fatal warnings, e.g. changes that may invalidate an existing plan.
+	"""
 	warnings: [String!]!
 }
 
-"""
-Global planner (name + e-mail), stored in the DB, semester-independent.
-"""
-type Planer {
-	name: String!
-	email: String!
-}
+type Semester {
+	"""
+	the database label (e.g. '2026 SS' or a clone '2026 SS-Test'); selects the database.
+	"""
+	id: String!
 
-"""
-Zustand der generierten Prüfungen (Cache). dirty=true → veraltet.
-"""
-type GenerationConfig {
-	timelagMin: Int
-	iterations: Int
-	startTemp: Float
-	endTemp: Float
-	toleranceMin: Int
-	maxSpanHours: Float
-	weightMinuteBalance: Float
-	weightBeyondTolerance: Float
-	weightOverTargetFactor: Float
-	weightCoverage: Float
-	weightMaxDays: Float
-	weightPreferExamDays: Float
-	weightDistribution: Float
-	weightDaySpan: Float
-}
+	"""
+	the logical semester used against external systems (ZPA), e.g. '2026 SS' — for
+	a clone this stays the real semester, not the database name.
+	"""
+	semester: String
 
-input GenerationConfigInput {
-	timelagMin: Int
-	iterations: Int
-	startTemp: Float
-	endTemp: Float
-	toleranceMin: Int
-	maxSpanHours: Float
-	weightMinuteBalance: Float
-	weightBeyondTolerance: Float
-	weightOverTargetFactor: Float
-	weightCoverage: Float
-	weightMaxDays: Float
-	weightPreferExamDays: Float
-	weightDistribution: Float
-	weightDaySpan: Float
-}
+	"""
+	false for databases that cannot be used with this code (no semester config).
+	"""
+	compatible: Boolean!
 
-type SpecialInterest {
-	name: String!
-	filename: String
-	ancodes: [Int!]!
-}
+	"""
+	true when the database is protected: it can be selected, but all mutations fail.
+	"""
+	readOnly: Boolean!
 
-input SpecialInterestInput {
-	name: String!
-	filename: String
-	ancodes: [Int!]
-}
-
-type AdditionalExamRoom {
-	roomName: String!
-	invigilatorID: Int!
-	duration: Int!
-	isReserve: Boolean!
-	studentCount: Int!
-	isHandicap: Boolean!
-}
-
-input AdditionalExamRoomInput {
-	roomName: String!
-	invigilatorID: Int
-	duration: Int
-	isReserve: Boolean
-	studentCount: Int
-	isHandicap: Boolean
-}
-
-type AdditionalExam {
-	ancode: Int!
-	date: String!
-	time: String
-	rooms: [AdditionalExamRoom!]!
-}
-
-input AdditionalExamInput {
-	ancode: Int!
-	date: String!
-	time: String
-	rooms: [AdditionalExamRoomInput!]
-}
-
-type StudentRegsState {
-	dirty: Boolean!
-	reason: String
-	changedAt: Time
-}
-
-type GenerateStudentRegsResult {
-	state: StudentRegsState!
-	studentCount: Int!
-}
-
-type StudentReg {
-	program: String!
-	reg: Int!
-}
-
-type Student {
-	mtknr: String!
-	name: String!
-	program: String!
-	group: String!
-	regs: [Int!]!
-	regsWithProgram: [StudentReg!]!
-	nta: NTA
-	zpaStudent: ZPAStudent
-}
-
-type ExamDurationOverride {
-	ancode: Int!
-	duration: Int!
-}
-
-type GeneratedExamsState {
-	dirty: Boolean!
-	reason: String
-	changedAt: Time
-}
-
-type GeneratedExamsChange {
-	ancode: Int!
-	module: String!
-	kind: String!
-	details: [String!]!
-}
-
-type GenerateGeneratedExamsResult {
-	state: GeneratedExamsState!
-	changes: [GeneratedExamsChange!]!
-}
-
-"""
-Filter über ein einzelnes Mutation-Argument (key=value).
-"""
-input ArgFilterInput {
-	key: String
-	value: String
-}
-
-type MutationLogArg {
-	key: String!
-	value: String!
-}
-
-"""
-Ein Audit-Log-Eintrag. type ∈ mutation | subscription | cli.
-"""
-type MutationLogEntry {
-	time: Time!
-	name: String!
-	type: String!
-	args: [MutationLogArg!]!
-	ancodes: [Int!]!
-	error: String
-	durationMs: Int!
+	"""
+	data schema version of the database (null when unknown/never stamped).
+	"""
+	schemaVersion: Int
 }
 
 type SemesterConfig {
@@ -1612,6 +2428,59 @@ type SemesterConfig {
 	from: Time!
 	until: Time!
 	emails: Emails!
+
+	"""
+	Effective travel/break buffer (minutes) between a student's consecutive exams.
+	"""
+	examGapMinutes: Int!
+}
+
+"""
+SemesterConfigInput is the raw, editable per-semester configuration — the values
+that used to live in <semester>.yaml. The derived SemesterConfig is computed from
+it.
+"""
+type SemesterConfigInput {
+	"""
+	Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check).
+	"""
+	from: Time!
+	until: Time!
+
+	"""
+	Daily slot start times as "HH:MM".
+	"""
+	slots: [String!]!
+	forbiddenDays: [Time!]
+
+	"""
+	MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from).
+	"""
+	mucDaiSlots: [[Int!]!]
+	emails: Emails!
+
+	"""
+	Travel/break buffer (minutes) a student needs between two consecutive exams (null = default).
+	"""
+	examGapMinutes: Int
+}
+
+input SemesterConfigInputData {
+	from: Time!
+	until: Time!
+	slots: [String!]!
+	forbiddenDays: [Time!]
+
+	"""
+	MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from).
+	"""
+	mucDaiSlots: [[Int!]!]
+	emails: EmailsInput!
+
+	"""
+	Travel/break buffer (minutes) a student needs between two consecutive exams (null = default).
+	"""
+	examGapMinutes: Int
 }
 
 type Slot {
@@ -1641,6 +2510,22 @@ type SoftCostReport {
 	breakdown: [SoftCostItem!]!
 }
 
+type SpecialInterest {
+	name: String!
+
+	"""
+	output file name for the generated PDF.
+	"""
+	filename: String!
+	ancodes: [Int!]!
+}
+
+input SpecialInterestInput {
+	name: String!
+	filename: String!
+	ancodes: [Int!]!
+}
+
 type Starttime {
 	number: Int!
 	start: String!
@@ -1655,6 +2540,16 @@ type Student {
 	regsWithProgram: [RegWithProgram!]!
 	zpaStudent: ZPAStudent
 	nta: NTA
+}
+
+"""
+StudentConflictDecision is a stored explicit decision for one student's conflict pair.
+"""
+type StudentConflictDecision {
+	ancode1: Int!
+	ancode2: Int!
+	mtknr: String!
+	decision: ConflictDecision!
 }
 
 type StudentReg {
@@ -1682,6 +2577,64 @@ type StudentRegsPerStudent {
 	ancodes: [Int!]!
 }
 
+type StudentRegsState {
+	dirty: Boolean!
+
+	"""
+	the operation that last marked them stale (mutation/subscription name).
+	"""
+	reason: String
+
+	"""
+	when they were last marked stale or (re)generated.
+	"""
+	changedAt: Time
+}
+
+"""
+A study program (Studiengang), e.g. IF / DE / GN.
+"""
+type StudyProgram {
+	"""
+	Kürzel, e.g. IF (unique key).
+	"""
+	shortname: String!
+	name: String!
+
+	"""
+	e.g. Bachelor / Master.
+	"""
+	degree: String
+
+	"""
+	Origin/grouping: fk07 | mucdai | misc.
+	"""
+	category: String!
+	active: Boolean!
+
+	"""
+	A retired fk07 program counts as an "old program" (no longer planned).
+	"""
+	retired: Boolean!
+
+	"""
+	Base ancode for external (e.g. MUC.DAI) exams of this program: the local ZPA
+	ancode is externalExamsBase + primussAncode. Only for externally imported
+	programs (mucdai/misc).
+	"""
+	externalExamsBase: Int
+}
+
+input StudyProgramInput {
+	shortname: String!
+	name: String!
+	degree: String
+	category: String!
+	active: Boolean!
+	retired: Boolean!
+	externalExamsBase: Int
+}
+
 type Subscription {
 	"""
 	assignInvigilations runs the automatic invigilation planning and streams its
@@ -1691,8 +2644,14 @@ type Subscription {
 	"""
 	assignInvigilations(dryRun: Boolean!, seed: Int, iterations: Int): LogLine!
 	sendEmailExaHM(run: Boolean!): LogLine!
-	sendEmailConstraints(run: Boolean!): LogLine!
-	sendEmailPrepared(run: Boolean!): LogLine!
+
+	"""
+	Send the consolidated exam-planning info email to the selected examers (teacherIDs;
+	null/empty = all candidates from examPlanningMailRecipients). Per examer: the exams I
+	plan with their constraints (no slot/date) and a Jira link for (further) constraints,
+	or — for FK07 examers I plan nothing for — a note that I plan none of their exams.
+	"""
+	sendEmailExamPlanningInfo(run: Boolean!, teacherIDs: [Int!]): LogLine!
 	sendEmailDraft(run: Boolean!): LogLine!
 	sendEmailPublishedExams(run: Boolean!): LogLine!
 	sendEmailPublishedRooms(run: Boolean!): LogLine!
@@ -1782,16 +2741,33 @@ type Subscription {
 	sendEmailNTAPlanned(run: Boolean!): LogLine!
 
 	"""
-	Recompute the allowed rooms per slot (rooms-for-slots) and stream the output.
-	Writes only the derived slot→rooms cache; useful to preview it after editing
-	rooms or room requests.
+	generateExamSchedule runs the automatic exam-schedule (Terminplan) generation and
+	streams its terminal-style output line by line. With dryRun nothing is written; the
+	final RESULT line carries the structured examReport either way. A non-dry-run write
+	is refused while the plan is gated (draft sent / published). With keepAssigned the
+	current plan is used as the warm start (only improve, minimal churn) instead of
+	building a fresh assignment from scratch.
 	"""
-	generateRoomsForSlots: LogLine!
+	generateExamSchedule(
+		dryRun: Boolean!
+		seed: Int
+		iterations: Int
+		ignoreRatings: Boolean
+		keepAssigned: Boolean
+	): LogLine!
 
 	"""
-	Assign rooms to all exams (rooms-for-exams) and stream the output. Recomputes
-	rooms-for-slots first, then writes the planned rooms; no separate
-	rooms-for-slots step needed.
+	generateExamRoomsPhase runs phase A: it schedules ONLY the EXaHM/SEB exams into the
+	booked T-building slots, maximizing room usage, and streams its output line by line.
+	With dryRun nothing is written. After a satisfactory run, fixExamRoomsPhase freezes
+	the result so the regular generateExamSchedule (phase B) leaves those exams untouched.
+	"""
+	generateExamRoomsPhase(dryRun: Boolean!, seed: Int, iterations: Int): LogLine!
+
+	"""
+	Assign rooms to all exams (rooms-for-exams) and stream the output. The allowed
+	rooms per slot are computed live from the current rooms/requests/bookings;
+	there is no separate rooms-for-slots step or cache.
 	"""
 	assignRoomsForExams: LogLine!
 
@@ -1809,7 +2785,6 @@ type Subscription {
 	validateRoomsPerExam: LogLine!
 	validateRoomsTimeDistance: LogLine!
 	validateRoomsBlocked: LogLine!
-	validateRoomsForSlotsFresh: LogLine!
 	validateRoomsEnoughSeats: LogLine!
 	validateZPADateTimes: LogLine!
 	validateZPARooms: LogLine!
@@ -2009,6 +2984,12 @@ type ZPAExam {
 	isRepeaterExam: Boolean!
 	groups: [String!]!
 	primussAncodes: [ZPAPrimussAncodes!]!
+
+	"""
+	Responsible faculty (Prüfungsplanung), e.g. FK03/FK08/FK12 for external MUC.DAI
+	exams. Empty for our own FK07 exams — the GUI can treat empty as FK07.
+	"""
+	faculty: String!
 }
 
 type ZPAExamsForType {
