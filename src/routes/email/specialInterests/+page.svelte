@@ -2,15 +2,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	let listError = '';
+	let listError = $state('');
 	/** @type {any} */
-	let editing = null;
-	let isNew = false;
+	let editing = $state(null);
+	let isNew = $state(false);
 	let origName = '';
-	let editError = '';
-	let saving = false;
+	let editError = $state('');
+	let saving = $state(false);
 
 	function openAdd() {
 		editing = { name: '', filename: '', ancodes: '' };
@@ -103,7 +103,7 @@
 		<h1 class="text-2xl font-semibold">Special Interests</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.interests.length}</span>
 		<div class="flex-1"></div>
-		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Special Interest</button>
+		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Special Interest</button>
 	</div>
 
 	{#if listError}
@@ -138,7 +138,7 @@
 								</div>
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(si)}
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(si)}
 									>Bearbeiten</button
 								>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(si)}
@@ -181,7 +181,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
@@ -189,6 +189,6 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeEdit}></button>
 	</div>
 {/if}

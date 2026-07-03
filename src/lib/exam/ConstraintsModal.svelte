@@ -3,14 +3,25 @@
 	import { createEventDispatcher } from 'svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	/** @type {any} */
-	export let exam;
-	/** @type {{number:number, date:string}[]} */
-	export let days = [];
-	/** @type {string[]} */
-	export let rooms = [];
-	/** @type {any[]} verfügbare Prüfungen (für „gleicher Slot wie") */
-	export let allExams = [];
+	
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} exam
+	 * @property {{number:number, date:string}[]} [days]
+	 * @property {string[]} [rooms]
+	 * @property {any[]} [allExams]
+	 */
+
+	/** @type {Props} */
+	let {
+		exam,
+		days = [],
+		rooms = [],
+		allExams = []
+	} = $props();
 
 	const dispatch = createEventDispatcher();
 
@@ -52,7 +63,7 @@
 	}
 
 	// Formularzustand
-	let form = {
+	let form = $state({
 		notPlannedByMe: !!c.notPlannedByMe,
 		// planende Fakultät bei „nicht von mir geplant“ (z. B. „FK10“)
 		notPlannedByMeInFK: c.notPlannedByMeInFK ?? '',
@@ -74,12 +85,12 @@
 		allowedRooms: [...(rc.allowedRooms ?? [])],
 		/** @type {number[]} */
 		sameSlot: [...(c.sameSlot ?? [])]
-	};
+	});
 
-	let saving = false;
-	let error = '';
+	let saving = $state(false);
+	let error = $state('');
 	/** @type {number | string} */
-	let addSlotAncode = '';
+	let addSlotAncode = $state('');
 
 	/** @param {string} d */
 	function toggleDay(d) {
@@ -302,7 +313,7 @@
 											type="checkbox"
 											class="checkbox checkbox-xs"
 											checked={form.excludeDays.has(dayPart(d.date))}
-											on:change={() => toggleDay(dayPart(d.date))}
+											onchange={() => toggleDay(dayPart(d.date))}
 										/>
 										<span class="tabular-nums">{ddmm(d.date)}</span>
 									</label>
@@ -322,7 +333,7 @@
 					{#each form.sameSlot as a}
 						<span class="badge badge-ghost gap-1">
 							{a}{moduleOf(a) ? ` · ${moduleOf(a)}` : ''}
-							<button class="text-error" on:click={() => rmSameSlot(a)}>✕</button>
+							<button class="text-error" onclick={() => rmSameSlot(a)}>✕</button>
 						</span>
 					{/each}
 				</div>
@@ -339,7 +350,7 @@
 							{/if}
 						{/each}
 					</select>
-					<button class="btn btn-ghost btn-sm" disabled={!addSlotAncode} on:click={addSameSlot}>
+					<button class="btn btn-ghost btn-sm" disabled={!addSlotAncode} onclick={addSameSlot}>
 						+ hinzufügen
 					</button>
 				</div>
@@ -360,7 +371,7 @@
 									type="checkbox"
 									class="checkbox checkbox-xs"
 									checked={form.allowedRooms.includes(name)}
-									on:change={() => toggleRoom(name)}
+									onchange={() => toggleRoom(name)}
 								/>
 								<span class="font-mono">{name}</span>
 							</label>
@@ -375,7 +386,7 @@
 		{/if}
 
 		<div class="modal-action">
-			<button class="btn btn-ghost btn-sm" disabled={saving} on:click={() => dispatch('close')}>
+			<button class="btn btn-ghost btn-sm" disabled={saving} onclick={() => dispatch('close')}>
 				Abbrechen
 			</button>
 			<WriteButton class="btn btn-primary btn-sm" disabled={saving} on:click={save}>
@@ -383,5 +394,5 @@
 			</WriteButton>
 		</div>
 	</div>
-	<button class="modal-backdrop" aria-label="schließen" on:click={() => dispatch('close')}></button>
+	<button class="modal-backdrop" aria-label="schließen" onclick={() => dispatch('close')}></button>
 </div>

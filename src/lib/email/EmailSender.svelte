@@ -9,68 +9,82 @@
 	// werden. Streamt die LogLines der zugehörigen Subscription wie ein Terminal
 	// (ANSI im text möglich; PROGRESS-Zeilen werden in-place aktualisiert).
 
-	/** Subscription-Feldname, z. B. 'sendEmailDraft'
-	 * @type {string} */
-	export let emailKey;
-	/** Überschrift der Karte
-	 * @type {string} */
-	export let title;
-	/** kurze Beschreibung darunter */
-	export let description = '';
-	/** zusätzliche Subscription-Argumente neben `run`, z. B.
-	 * { teacherID: { type: 'Int!', value: 123 } }
-	 * @type {Record<string, { type: string, value: any }>} */
-	export let extraArgs = {};
-	/** Buttons deaktivieren (z. B. solange keine Auswahl getroffen ist) */
-	export let disabled = false;
-	/** planningState-Bedingungen (conditionKey → done); steuert „bereits gesendet"
-	 * @type {Record<string, boolean>} */
-	export let conditionsDone = {};
-	/** überschreibt die Bedingung aus dem Mapping (z. B. wenn derselbe
-	 * Subscription-Key gegated und ungegated verwendet wird) */
-	export let conditionKey = '';
-	/** „Wirklich senden" ausblenden (Probelauf bleibt), z. B. wenn nichts zu
-	 * versenden ist; optionaler Hinweistext dazu */
-	export let hideRealSend = false;
-	export let hideRealSendHint = 'kein Versand nötig';
-	/** wiederholbar: kein „bereits gesendet"-Block nach echtem Versand
-	 * (z. B. Versand an wechselnde Teilmengen) */
-	export let repeatable = false;
-	/** Text der Bestätigungs-Rückfrage vor dem echten Versand */
-	export let confirmText = 'Wirklich an alle Empfänger senden?';
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} emailKey - Subscription-Feldname, z. B. 'sendEmailDraft'
+	 * @property {string} title - Überschrift der Karte
+	 * @property {string} [description] - kurze Beschreibung darunter
+	 * @property {Record<string, { type: string, value: any }>} [extraArgs] - zusätzliche Subscription-Argumente neben `run`, z. B.
+{ teacherID: { type: 'Int!', value: 123 } }
+	 * @property {boolean} [disabled] - Buttons deaktivieren (z. B. solange keine Auswahl getroffen ist)
+	 * @property {Record<string, boolean>} [conditionsDone] - planningState-Bedingungen (conditionKey → done); steuert „bereits gesendet"
+	 * @property {string} [conditionKey] - überschreibt die Bedingung aus dem Mapping (z. B. wenn derselbe
+Subscription-Key gegated und ungegated verwendet wird)
+	 * @property {boolean} [hideRealSend] - „Wirklich senden" ausblenden (Probelauf bleibt), z. B. wenn nichts zu
+versenden ist; optionaler Hinweistext dazu
+	 * @property {string} [hideRealSendHint]
+	 * @property {boolean} [repeatable] - wiederholbar: kein „bereits gesendet"-Block nach echtem Versand
+(z. B. Versand an wechselnde Teilmengen)
+	 * @property {string} [confirmText] - Text der Bestätigungs-Rückfrage vor dem echten Versand
+	 */
+
+	/** @type {Props} */
+	let {
+		emailKey,
+		title,
+		description = '',
+		extraArgs = {},
+		disabled = false,
+		conditionsDone = {},
+		conditionKey = '',
+		hideRealSend = false,
+		hideRealSendHint = 'kein Versand nötig',
+		repeatable = false,
+		confirmText = 'Wirklich an alle Empfänger senden?'
+	} = $props();
 
 	// „bereits gesendet": zugehörige Bedingung ist done (oder gerade real
 	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
-	let sentOverride = false;
-	$: condKey = conditionKey || EMAIL_CONDITION[emailKey];
-	$: alreadySent =
-		!repeatable && (sentOverride || (condKey ? conditionsDone[condKey] === true : false));
+	let sentOverride = $state(false);
+	let condKey = $derived(conditionKey || EMAIL_CONDITION[emailKey]);
+	let alreadySent =
+		$derived(!repeatable && (sentOverride || (condKey ? conditionsDone[condKey] === true : false)));
 
 	// --- Laufzeit-Status ---
-	let running = false;
-	let done = false;
+	let running = $state(false);
+	let done = $state(false);
 	/** war der letzte Lauf ein echter Versand (run: true)? */
-	let lastReal = false;
+	let lastReal = $state(false);
 	/** Bestätigungs-Schritt für den echten Versand sichtbar? */
-	let confirming = false;
+	let confirming = $state(false);
 	/** Server lehnt ab, weil eine Validierung/ein Transfer läuft → nur Hinweis */
-	let blocked = false;
+	let blocked = $state(false);
 	/** @type {string | null} */
-	let errorMsg = null;
+	let errorMsg = $state(null);
 	/** gab es eine ERROR-Zeile im aktuellen Lauf? */
 	let hadError = false;
 
 	// Terminal: alle Zeilen ausser PROGRESS werden angehängt; die jeweils letzte
 	// PROGRESS-Zeile wird in-place aktualisiert.
 	/** @type {{ level: string, html: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string } | null} */
-	let current = null;
+	let current = $state(null);
 
-	let showTerminal = true;
+	let showTerminal = $state(true);
 
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 
 	/** @type {any} */
 	let convert = null;
@@ -187,7 +201,7 @@
 
 	// echte Fehler (Verbindung etc.) — die Server-Ablehnung „läuft schon etwas"
 	// ist KEIN harter Fehler, sondern ein Hinweis.
-	$: hardError = !!errorMsg;
+	let hardError = $derived(!!errorMsg);
 </script>
 
 <div
@@ -227,7 +241,7 @@
 		<button
 			class="btn btn-primary btn-sm gap-2"
 			disabled={running || disabled}
-			on:click={() => start(false)}
+			onclick={() => start(false)}
 		>
 			{#if running && !lastReal}
 				<span class="loading loading-spinner loading-xs"></span>
@@ -248,10 +262,10 @@
 		{:else if confirming}
 			<div class="flex items-center gap-2 rounded-lg bg-error/10 px-2 py-1" transition:slide>
 				<span class="text-xs font-medium text-error">{confirmText}</span>
-				<button class="btn btn-error btn-xs" disabled={running} on:click={() => start(true)}>
+				<button class="btn btn-error btn-xs" disabled={running} onclick={() => start(true)}>
 					Ja, senden
 				</button>
-				<button class="btn btn-ghost btn-xs" on:click={() => (confirming = false)}>
+				<button class="btn btn-ghost btn-xs" onclick={() => (confirming = false)}>
 					Abbrechen
 				</button>
 			</div>
@@ -259,7 +273,7 @@
 			<button
 				class="btn btn-outline btn-error btn-sm gap-2"
 				disabled={running || disabled}
-				on:click={() => (confirming = true)}
+				onclick={() => (confirming = true)}
 			>
 				✉ Wirklich senden …
 			</button>
@@ -287,7 +301,7 @@
 		<div>
 			<button
 				class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
-				on:click={() => (showTerminal = !showTerminal)}
+				onclick={() => (showTerminal = !showTerminal)}
 			>
 				{showTerminal ? '▾' : '▸'} Terminal-Ausgabe ({lines.length})
 			</button>

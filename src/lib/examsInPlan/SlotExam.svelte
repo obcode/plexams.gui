@@ -1,20 +1,6 @@
-<script>
-	export let exam;
-	export let maxSlots;
-	export let showExam;
-	export let showAncode;
-	export let showExamerID;
-	export let showOnlyOnline;
-	export let showOnlyExahm;
-	export let showOnlySEB;
-	export let selectedExam;
-	export let selectedExamerID;
-	export let onlyPlannedByMe;
-	export let onlyConflicts;
-	export let details;
-	export let moveable;
-	export let inSlot;
-	export let conflictingAncodes;
+<script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
@@ -23,6 +9,24 @@
 	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
 	import { planningFk, displayAncode } from '$lib/exam/fk';
 	import { Tooltip } from '@svelte-plugins/tooltips';
+	let {
+		exam,
+		maxSlots,
+		showExam,
+		showAncode,
+		showExamerID,
+		showOnlyOnline,
+		showOnlyExahm,
+		showOnlySEB,
+		selectedExam,
+		selectedExamerID,
+		onlyPlannedByMe,
+		onlyConflicts,
+		details,
+		moveable,
+		inSlot,
+		conflictingAncodes
+	} = $props();
 
 	const dispatch = createEventDispatcher();
 
@@ -57,25 +61,25 @@
 	// 	awkwardSlots = data.awkwardSlots;
 	// }
 
-	let selected = false;
-	let sameSlot = false;
+	let selected = $state(false);
+	let sameSlot = $state(false);
 
-	$: {
+	run(() => {
 		selected = selectedExam == exam.ancode || selectedExamerID == exam.zpaExam.mainExamerID;
 		sameSlot =
 			exam.constraints != null &&
 			exam.constraints.sameSlot != null &&
 			exam.constraints.sameSlot.includes(selectedExam);
-	}
+	});
 
 	let slotToMove = 'none';
 
-	let show = true;
+	let show = $state(true);
 
-	let online = false;
+	let online = $state(false);
 	online = exam.constraints && exam.constraints.online;
 
-	let exahm = false;
+	let exahm = $state(false);
 	exahm =
 		exam.constraints &&
 		exam.constraints.roomConstraints &&
@@ -86,7 +90,7 @@
 		if (primussExam.studentRegs.length > 0) programs.push(primussExam.exam.program);
 	}
 
-	$: {
+	run(() => {
 		if (onlyPlannedByMe && exam.constraints != null && exam.constraints.notPlannedByMe) {
 			show = false;
 		} else if (
@@ -118,10 +122,10 @@
 
 		// 	fetchAllowedSlots();
 		// 	fetchAwkwardSlots();
-	}
+	});
 
-	let showConflictCount = false;
-	let conflictCount = 0;
+	let showConflictCount = $state(false);
+	let conflictCount = $state(0);
 	function calcConflictCount(ancode) {
 		for (const conflict of exam.conflicts) {
 			if (conflict.ancode == ancode) {
@@ -131,17 +135,19 @@
 		return 0;
 	}
 
-	$: if (showConflictCount) {
-		conflictCount = calcConflictCount(selectedExam);
-	} else {
-		conflictCount = 0;
-	}
+	run(() => {
+		if (showConflictCount) {
+			conflictCount = calcConflictCount(selectedExam);
+		} else {
+			conflictCount = 0;
+		}
+	});
 
 	// Karten-Zustand → farbiger Links-Akzent (border-l) + dezente Tönung, auf
 	// Theme-Tokens statt hartkodierter Farben. Kaskade wie zuvor (Auswahl > gleiche:r
 	// Prüfende:r > sameSlot > Konflikt > extern/nicht-von-mir > Wiederholung > normal).
-	let colors;
-	$: {
+	let colors = $state();
+	run(() => {
 		showConflictCount = conflictingAncodes.includes(exam.ancode);
 		if (selectedExam == exam.ancode) {
 			colors = 'border-l-primary bg-primary/15 ring-1 ring-primary/60';
@@ -159,7 +165,7 @@
 		} else {
 			colors = 'border-l-success/60';
 		}
-	}
+	});
 
 	function select(code) {
 		if (!selected) {
@@ -257,13 +263,15 @@
 		// 	fetchAwkwardSlots();
 	});
 
-	let width = 'w-96';
+	let width = $state('w-96');
 
-	$: if (details || !inSlot) {
-		width = 'w-96';
-	} else {
-		width = 'w-min';
-	}
+	run(() => {
+		if (details || !inSlot) {
+			width = 'w-96';
+		} else {
+			width = 'w-min';
+		}
+	});
 
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
 	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld
@@ -281,12 +289,12 @@
 </script>
 
 {#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		transition:fade
 		class="m-1 cursor-pointer rounded-lg border border-base-300 border-l-4 bg-base-100 p-2 shadow-sm transition-shadow hover:shadow-md {colors} {width}"
-		on:click={() => select(exam.ancode)}
+		onclick={() => select(exam.ancode)}
 	>
 		{#if showConflictCount}
 			<div class="mb-1">

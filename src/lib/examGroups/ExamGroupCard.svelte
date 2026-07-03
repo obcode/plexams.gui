@@ -1,8 +1,8 @@
-<script>
-	export let group;
+<script lang="ts">
 	import SlotsMiniMap from '$lib/slot/SlotsMiniMap.svelte';
+	let { group } = $props();
 
-	let collapsed = group.examGroupInfo.notPlannedByMe;
+	let collapsed = $state(group.examGroupInfo.notPlannedByMe);
 
 	function bg(notPlannedByMe) {
 		if (notPlannedByMe) {
@@ -38,10 +38,10 @@
 			{/each}
 		</ul>
 		{#if !collapsed}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<h3
 				class="text-xl"
-				on:click={() => {
+				onclick={() => {
 					collapsed = !collapsed;
 				}}
 			>
@@ -59,9 +59,9 @@
 			</div>
 			<div><SlotsMiniMap slots={group.examGroupInfo.possibleSlots} /></div>
 		{:else}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<span
-				on:click={() => {
+				onclick={() => {
 					collapsed = !collapsed;
 				}}
 			>

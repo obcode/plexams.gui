@@ -1,5 +1,6 @@
 <script>
-	export let data;
+	import { run } from 'svelte/legacy';
+
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
@@ -10,11 +11,12 @@
 	import { tick } from 'svelte';
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
+	let { data } = $props();
 
 	// nach einer Zuordnung neu laden: invalidateAll frischt die Load-Daten
 	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
 	// client-seitig nachladenden Slot-Komponenten neu ein.
-	let reloadKey = 0;
+	let reloadKey = $state(0);
 	async function onGenerated() {
 		needsRegen = false;
 		reloadKey++;
@@ -22,7 +24,7 @@
 	}
 
 	// Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.
-	let resetBusy = false;
+	let resetBusy = $state(false);
 	async function resetRooms() {
 		if (resetBusy) return;
 		if (
@@ -52,22 +54,22 @@
 	}
 
 	// Tag → Datum, Slot → Startzeit (für die „ohne Raum"-Warnung).
-	$: dayDateById = Object.fromEntries(
+	let dayDateById = $derived(Object.fromEntries(
 		(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => [d.number, d.date])
-	);
-	$: slotStartById = Object.fromEntries(
+	));
+	let slotStartById = $derived(Object.fromEntries(
 		(data.semesterConfig?.starttimes ?? []).map((/** @type {any} */ s) => [s.number, s.start])
-	);
+	));
 
 	/** @type {'exams' | 'rooms'} */
-	let view = 'exams';
+	let view = $state('exams');
 
-	let showOnlyExamsWithNTAs = false;
-	let details = false;
-	let showRooms = 'all';
-	let dimOthers = false;
-	let showOnlyWithoutRoom = false;
-	let highlightNotPrePlanned = false;
+	let showOnlyExamsWithNTAs = $state(false);
+	let details = $state(false);
+	let showRooms = $state('all');
+	let dimOthers = $state(false);
+	let showOnlyWithoutRoom = $state(false);
+	let highlightNotPrePlanned = $state(false);
 
 	/** @param {number} day @param {number} slot @param {string} roomName */
 	const isPlanned = (day, slot, roomName) => data.plannedRooms.has(`${day}-${slot}-${roomName}`);
@@ -81,8 +83,8 @@
 	// aufgeklappte Tage (Sicht „nach Prüfungen"). Bei Raumauswahl nur die Tage
 	// offen, an denen der Raum geplant ist; ohne Auswahl folgt es „alle Tage".
 	/** @type {Record<number, boolean>} */
-	let showDays = {};
-	let showAllDays = false;
+	let showDays = $state({});
+	let showAllDays = $state(false);
 	/** @param {string} rooms @param {boolean} allDays */
 	function applyDayDefaults(rooms, allDays) {
 		for (const day of data.semesterConfig?.days ?? []) {
@@ -90,7 +92,9 @@
 		}
 		showDays = showDays;
 	}
-	$: applyDayDefaults(showRooms, showAllDays);
+	run(() => {
+		applyDayDefaults(showRooms, showAllDays);
+	});
 
 	// Sprung aus der „ohne Raum"-Warnung zum passenden Tag/Slot.
 	/** @param {number} day @param {number} slot */
@@ -106,26 +110,26 @@
 			?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
-	$: baseRooms = data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room');
-	$: gridRooms =
-		showRooms === 'all'
+	let baseRooms = $derived(data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room'));
+	let gridRooms =
+		$derived(showRooms === 'all'
 			? baseRooms
-			: baseRooms.filter((/** @type {string} */ r) => r === showRooms);
+			: baseRooms.filter((/** @type {string} */ r) => r === showRooms));
 
 	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
 	// Zuordnung in planned_rooms wirken).
 	/** @type {Map<string, string>} */
-	let blockedMap = new Map(
+	let blockedMap = $state(new Map(
 		data.blockedRooms.map((/** @type {any} */ b) => [
 			`${b.day}-${b.slot}-${b.room}`,
 			b.reason ?? ''
 		])
-	);
+	));
 	/** @type {Set<string>} */
 	let blockBusy = new Set();
 	/** @type {string | null} */
-	let blockError = null;
-	let needsRegen = false;
+	let blockError = $state(null);
+	let needsRegen = $state(false);
 
 	/** @param {number} n */
 	const prePlanWarn = (n) =>
@@ -230,12 +234,12 @@
 				<button
 					role="tab"
 					class="tab {view === 'exams' ? 'tab-active' : ''}"
-					on:click={() => (view = 'exams')}>nach Prüfungen</button
+					onclick={() => (view = 'exams')}>nach Prüfungen</button
 				>
 				<button
 					role="tab"
 					class="tab {view === 'rooms' ? 'tab-active' : ''}"
-					on:click={() => (view = 'rooms')}>nach Räumen</button
+					onclick={() => (view = 'rooms')}>nach Räumen</button
 				>
 			</div>
 		</div>
@@ -305,7 +309,7 @@
 							<button
 								class="badge badge-sm cursor-pointer gap-1 border-error-content/30 hover:underline"
 								title="zum Tag/Slot springen (Tag {n.day} · Slot {n.slot})"
-								on:click={() => jumpTo(n.day, n.slot)}
+								onclick={() => jumpTo(n.day, n.slot)}
 							>
 								{#if n.nta}<span class="font-semibold">NTA</span>{/if}
 								{n.ancode}
@@ -388,7 +392,7 @@
 						<div class="overflow-hidden rounded-lg border border-base-300 bg-base-100">
 							<button
 								class="flex w-full items-center gap-2 px-4 py-2 text-left font-medium hover:bg-base-200"
-								on:click={() => (showDays[day.number] = !showDays[day.number])}
+								onclick={() => (showDays[day.number] = !showDays[day.number])}
 							>
 								<span class="text-base-content/50">{showDays[day.number] ? '▾' : '▸'}</span>
 								Tag {day.number}
@@ -396,12 +400,12 @@
 							</button>
 							{#if showDays[day.number]}
 								<!-- Klick auf freie Fläche (nicht auf Karten/Slots) klappt den Tag zu -->
-								<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+								<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 								<div
 									class="flex flex-col gap-3 border-t border-base-300 p-3"
 									transition:slide
 									role="presentation"
-									on:click={(e) => {
+									onclick={(e) => {
 										if (e.target === e.currentTarget) showDays[day.number] = false;
 									}}
 								>
@@ -440,7 +444,7 @@
 									<!-- Fuß-Leiste zum Zuklappen, ohne nach oben scrollen zu müssen -->
 									<button
 										class="-mx-3 -mb-3 mt-1 flex items-center justify-center gap-2 rounded-b-lg border-t border-base-300 px-4 py-2 text-sm font-medium text-base-content/50 hover:bg-base-200"
-										on:click={() => (showDays[day.number] = false)}
+										onclick={() => (showDays[day.number] = false)}
 									>
 										▴ Tag {day.number} zuklappen
 									</button>

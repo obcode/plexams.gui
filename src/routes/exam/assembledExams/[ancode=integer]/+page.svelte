@@ -1,14 +1,14 @@
 <script>
-	export let data;
+	let { data } = $props();
 
-	$: exam = data.assembledExam;
-	$: studentCount = exam
+	let exam = $derived(data.assembledExam);
+	let studentCount = $derived(exam
 		? exam.primussExams.reduce(
 				(/** @type {number} */ sum, /** @type {any} */ pe) => sum + pe.studentRegs.length,
 				0
 			)
-		: 0;
-	$: c = exam?.constraints;
+		: 0);
+	let c = $derived(exam?.constraints);
 
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 	/** @param {string} iso → „Mo, 06.07." */

@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
@@ -8,25 +10,34 @@
 	import { diffMeta } from '$lib/exam/conflictDiff';
 	import { pairKey, isAutoConflict } from '$lib/exam/conflictLoop';
 
-	/** @type {any[]} */
-	export let conflicts = [];
-	/** @type {any[]} gespeicherte Per-Studierenden-Entscheidungen (ACCEPT/VETO) */
-	export let decisions = [];
-	/** @type {any[]} */
-	export let suggestions = [];
-	/** @type {any[]} */
-	export let shareList = [];
-	/** @type {any[]} im letzten Lauf gelöste Konflikte (nicht mehr im Plan) */
-	export let resolvedConflicts = [];
-	export let loadError = '';
-	/** woher die angezeigten Konflikte stammen (Lauf-Snapshot vs. gespeichert) */
-	export let sourceLabel = '';
+	
+	
+	
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {any[]} [conflicts]
+	 * @property {any[]} [decisions]
+	 * @property {any[]} [suggestions]
+	 * @property {any[]} [shareList]
+	 * @property {any[]} [resolvedConflicts]
+	 * @property {string} [loadError]
+	 * @property {string} [sourceLabel] - woher die angezeigten Konflikte stammen (Lauf-Snapshot vs. gespeichert)
+	 */
 
-	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
-	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
-	$: hasDiff =
-		resolvedConflicts.length > 0 ||
-		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus));
+	/** @type {Props} */
+	let {
+		conflicts = [],
+		decisions = [],
+		suggestions = [],
+		shareList = [],
+		resolvedConflicts = [],
+		loadError = '',
+		sourceLabel = ''
+	} = $props();
+
 
 	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
 
@@ -35,16 +46,9 @@
 	// aktualisiert. Beim Wechsel der Quelle (neuer Lauf / frischer Load) neu
 	// aufsetzen, dazwischen optimistisch patchen.
 	/** @type {any[]} */
-	let working = [];
+	let working = $state([]);
 	/** @type {any} */
-	let seenRef;
-	$: if (conflicts !== seenRef) {
-		seenRef = conflicts;
-		working = conflicts.map((/** @type {any} */ c) => ({
-			...c,
-			affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
-		}));
-	}
+	let seenRef = $state();
 	/** @param {number} a1 @param {number} a2 @param {(c:any)=>void} fn */
 	function patch(a1, a2, fn) {
 		const k = pairKey(a1, a2);
@@ -55,16 +59,7 @@
 		}
 	}
 
-	// infoOnly=true: beide Prüfungen extern (andere FK) → nichts änderbar, nur Info.
-	$: ratable = working.filter((/** @type {any} */ c) => !c.infoOnly);
-	$: infoConflicts = working.filter((/** @type {any} */ c) => c.infoOnly);
 
-	// „auto" = alle betroffenen Studierenden sind autoAccepted (Wiederholer oder
-	// gleicher Slot — niemand schreibt beide) →
-	// separate, eingeklappte Section. „nicht-auto" (mind. ein:e Studierende:r
-	// braucht eine Entscheidung) oben und offen.
-	$: ratableNonAuto = ratable.filter((/** @type {any} */ c) => !isAutoConflict(c));
-	$: ratableAuto = ratable.filter(isAutoConflict);
 
 	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
 	// die Folgetag-Zahl steht rein informativ im Qualitäts-Panel, diagnostics.nextDay).
@@ -74,8 +69,8 @@
 		SAME_DAY: { label: 'selber Tag', cls: 'badge-warning' }
 	});
 
-	let busy = '';
-	let actionError = '';
+	let busy = $state('');
+	let actionError = $state('');
 
 	/** @param {string} path @param {any} body @param {string} key @param {(() => void)} [patchFn] */
 	async function callMut(path, body, key, patchFn) {
@@ -116,7 +111,7 @@
 		);
 
 	// aufgeklappte Konflikte (betroffene Studierende sichtbar)
-	let expanded = new Set();
+	let expanded = $state(new Set());
 	/** @param {string} key */
 	function toggleExpand(key) {
 		const s = new Set(expanded);
@@ -172,6 +167,29 @@
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
 		);
+	run(() => {
+		if (conflicts !== seenRef) {
+			seenRef = conflicts;
+			working = conflicts.map((/** @type {any} */ c) => ({
+				...c,
+				affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
+			}));
+		}
+	});
+	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
+	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
+	let hasDiff =
+		$derived(resolvedConflicts.length > 0 ||
+		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus)));
+	// infoOnly=true: beide Prüfungen extern (andere FK) → nichts änderbar, nur Info.
+	let ratable = $derived(working.filter((/** @type {any} */ c) => !c.infoOnly));
+	let infoConflicts = $derived(working.filter((/** @type {any} */ c) => c.infoOnly));
+	// „auto" = alle betroffenen Studierenden sind autoAccepted (Wiederholer oder
+	// gleicher Slot — niemand schreibt beide) →
+	// separate, eingeklappte Section. „nicht-auto" (mind. ein:e Studierende:r
+	// braucht eine Entscheidung) oben und offen.
+	let ratableNonAuto = $derived(ratable.filter((/** @type {any} */ c) => !isAutoConflict(c)));
+	let ratableAuto = $derived(ratable.filter(isAutoConflict));
 </script>
 
 <div class="flex flex-col gap-4">
@@ -299,7 +317,7 @@
 							<td class="text-right tabular-nums">
 							<button
 								class="btn btn-ghost btn-xs gap-1"
-								on:click={() => toggleExpand(key)}
+								onclick={() => toggleExpand(key)}
 								title="betroffene Studierende anzeigen"
 							>
 								{c.studentCount}
@@ -518,7 +536,7 @@
 								<td class="text-right tabular-nums">
 									<button
 										class="btn btn-ghost btn-xs gap-1"
-										on:click={() => toggleExpand(key)}
+										onclick={() => toggleExpand(key)}
 										title="betroffene Studierende anzeigen"
 									>
 										{c.studentCount}

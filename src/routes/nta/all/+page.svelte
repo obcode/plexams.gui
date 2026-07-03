@@ -4,27 +4,27 @@
 	import NtaTr from '$lib/nta/NtaTR.svelte';
 	import NTAForm from '$lib/nta/NTAForm.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	let searchTerm = '';
-	let roomAlone = false;
-	let currentSemester = false;
+	let searchTerm = $state('');
+	let roomAlone = $state(false);
+	let currentSemester = $state(false);
 	/** 'all' | 'active' | 'inactive' */
-	let activeFilter = 'all';
+	let activeFilter = $state('all');
 
-	$: filteredNTAs = data.ntas.filter((/** @type {any} */ nta) => {
+	let filteredNTAs = $derived(data.ntas.filter((/** @type {any} */ nta) => {
 		if (searchTerm && !nta.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
 		if (roomAlone && !nta.needsRoomAlone) return false;
 		if (currentSemester && nta.lastSemester != data.semester) return false;
 		if (activeFilter === 'active' && nta.deactivated) return false;
 		if (activeFilter === 'inactive' && !nta.deactivated) return false;
 		return true;
-	});
+	}));
 
 	// Die mtknr ist der Schlüssel und muss eindeutig sein. Doppelte mtknr als
 	// klare Fehlermeldung anzeigen (statt die Seite per each-Key abstürzen zu
 	// lassen) — muss serverseitig bereinigt werden.
-	$: duplicateMtknr = (() => {
+	let duplicateMtknr = $derived((() => {
 		const seen = new Set();
 		const dup = new Set();
 		for (const nta of data.ntas) {
@@ -32,12 +32,12 @@
 			else seen.add(nta.mtknr);
 		}
 		return [...dup];
-	})();
+	})());
 
 	// Modal zum Anlegen/Bearbeiten
-	let showModal = false;
+	let showModal = $state(false);
 	/** @type {any} */
-	let editNta = null;
+	let editNta = $state(null);
 
 	function openAdd() {
 		editNta = null;
@@ -54,7 +54,7 @@
 	}
 
 	/** @type {string | null} */
-	let toggleError = null;
+	let toggleError = $state(null);
 	/** @param {any} nta */
 	async function onToggle(nta) {
 		toggleError = null;
@@ -83,7 +83,7 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{data.ntas.length}</span>
 		<span class="text-sm text-base-content/60">{filteredNTAs.length} ausgewählt</span>
 		<div class="flex-1"></div>
-		<button class="btn btn-primary btn-sm gap-2" on:click={openAdd}>+ NTA hinzufügen</button>
+		<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ NTA hinzufügen</button>
 	</div>
 
 	<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
@@ -165,7 +165,7 @@
 				oncancel={() => (showModal = false)}
 			/>
 		</div>
-		<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showModal = false)}
+		<button class="modal-backdrop" aria-label="Schließen" onclick={() => (showModal = false)}
 		></button>
 	</div>
 {/if}

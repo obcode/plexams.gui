@@ -1,7 +1,7 @@
-<script>
-	export let data;
+<script lang="ts">
 	import ExamGroupCard from '$lib/examGroups/ExamGroupCard.svelte';
 	import ExamGroupConflictCard from '$lib/examGroups/ExamGroupConflictCard.svelte';
+	let { data } = $props();
 </script>
 
 <div class="grid grid-cols-2 gap-1">

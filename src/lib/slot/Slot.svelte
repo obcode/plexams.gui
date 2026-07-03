@@ -1,32 +1,36 @@
-<script>
-	export let day;
-	export let time;
-	export let forbiddenSlot;
-	export let exahmrooms;
-	export let maxSlots;
-	export let selectedExam;
-	export let selectedExamerID;
-	export let onlyPlannedByMe;
-	export let onlyConflicts;
-	export let details;
-	export let moveable;
-	export let showExam;
-	export let showAncode;
-	export let showExamerID;
-	export let showOnlyOnline;
-	export let showOnlyExahm;
-	export let showOnlySEB;
-	export let showOnlyEXaHMRooms;
-	export let conflictingAncodes;
-	export let refresh;
+<script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
+	let {
+		day,
+		time,
+		forbiddenSlot,
+		exahmrooms,
+		maxSlots,
+		selectedExam,
+		selectedExamerID,
+		onlyPlannedByMe,
+		onlyConflicts,
+		details,
+		moveable,
+		showExam,
+		showAncode,
+		showExamerID,
+		showOnlyOnline,
+		showOnlyExahm,
+		showOnlySEB,
+		showOnlyEXaHMRooms,
+		conflictingAncodes,
+		refresh = $bindable()
+	} = $props();
 
-	let exams = [];
+	let exams = $state([]);
 
 	async function fetchExams() {
 		const response = await fetch('/api/examsInSlot', {
@@ -61,7 +65,7 @@
 
 	// $: calculateConflicts(selectedExam, exams);
 
-	let count = 0;
+	let count = $state(0);
 
 	function countIt() {
 		let counted = 0;
@@ -107,10 +111,12 @@
 		});
 	}
 
-	$: if (refresh) {
-		fetchExams();
-		refresh = false;
-	}
+	run(() => {
+		if (refresh) {
+			fetchExams();
+			refresh = false;
+		}
+	});
 </script>
 
 <div class="flex justify-between">

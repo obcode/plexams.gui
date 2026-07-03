@@ -6,6 +6,13 @@
 	import { browser } from '$app/environment';
 	import { checkAssembledExams } from '$lib/assembledExams/store';
 	import { checkStudentRegs } from '$lib/studentRegs/store';
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('svelte').Snippet} [children]
+	 */
+
+	/** @type {Props} */
+	let { children } = $props();
 
 	// Nach jeder erfolgreichen Mutation (POST an /api/…) den „aufbereitete
 	// Prüfungen veraltet?"-Zustand sofort neu prüfen. Reiner Beobachter: die
@@ -51,5 +58,5 @@
 
 <div class="p-8">
 	<Nav />
-	<slot />
+	{@render children?.()}
 </div>

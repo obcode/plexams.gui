@@ -5,23 +5,29 @@
 
 	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
 	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).
-	/** @type {any} */
-	export let nta;
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} nta
+	 */
 
-	let showFullComp = false;
-	let showOther = false;
-	let showMail = false;
+	/** @type {Props} */
+	let { nta } = $props();
 
-	$: comp = nta.nta.compensation ?? '';
-	$: longComp = comp.length > 70;
-	$: compShort = longComp ? comp.slice(0, 70).trimEnd() + '…' : comp;
+	let showFullComp = $state(false);
+	let showOther = $state(false);
+	let showMail = $state(false);
 
-	$: plannedExams = nta.exams.filter(
+	let comp = $derived(nta.nta.compensation ?? '');
+	let longComp = $derived(comp.length > 70);
+	let compShort = $derived(longComp ? comp.slice(0, 70).trimEnd() + '…' : comp);
+
+	let plannedExams = $derived(nta.exams.filter(
 		(/** @type {any} */ e) => !(e.constraints && e.constraints.notPlannedByMe)
-	);
-	$: otherExams = nta.exams.filter(
+	));
+	let otherExams = $derived(nta.exams.filter(
 		(/** @type {any} */ e) => e.constraints && e.constraints.notPlannedByMe
-	);
+	));
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -58,7 +64,7 @@
 			{#if longComp}
 				<button
 					class="align-baseline text-xs font-medium text-primary"
-					on:click={() => (showFullComp = !showFullComp)}
+					onclick={() => (showFullComp = !showFullComp)}
 				>
 					{showFullComp ? 'weniger' : 'mehr'}
 				</button>
@@ -109,7 +115,7 @@
 		<div>
 			<button
 				class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
-				on:click={() => (showOther = !showOther)}
+				onclick={() => (showOther = !showOther)}
 			>
 				{showOther ? '▾' : '▸'}
 				{otherExams.length} nicht von mir geplante {otherExams.length === 1
@@ -134,7 +140,7 @@
 	<div>
 		<button
 			class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
-			on:click={() => (showMail = true)}
+			onclick={() => (showMail = true)}
 		>
 			✉ E-Mail versenden
 		</button>
@@ -160,10 +166,10 @@
 				/>
 			{/if}
 			<div class="flex justify-end">
-				<button class="btn btn-ghost btn-sm" on:click={() => (showMail = false)}>Schließen</button>
+				<button class="btn btn-ghost btn-sm" onclick={() => (showMail = false)}>Schließen</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showMail = false)}
+		<button class="modal-backdrop" aria-label="Schließen" onclick={() => (showMail = false)}
 		></button>
 	</div>
 {/if}

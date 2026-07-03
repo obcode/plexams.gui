@@ -4,7 +4,7 @@
 	import WriteButton from '$lib/WriteButton.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// Ampel je Art und Slot (exakt nach Spec):
 	//  seatsNeeded == 0            → neutral (kein Bedarf)
@@ -100,43 +100,6 @@
 		return d;
 	};
 
-	$: calendar = (() => {
-		const planned = (data.calendarSlots ?? []).filter(
-			(/** @type {any} */ s) => s.dayNumber != null && s.starttime
-		);
-		/** @type {Map<string, any>} */
-		const weeks = new Map();
-		/** @type {Set<number>} */
-		const usedWd = new Set();
-		for (const s of planned) {
-			const dt = dateObj(s.starttime);
-			if (!dt) continue;
-			const wd = isoWeekday(dt);
-			usedWd.add(wd);
-			const mon = mondayOf(dt);
-			const key = mon.toISOString().slice(0, 10);
-			if (!weeks.has(key))
-				weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
-			const w = weeks.get(key);
-			if (!w.byDay.has(wd)) w.byDay.set(wd, []);
-			const slotExams = (data.exams ?? []).filter(
-				(/** @type {any} */ e) =>
-					e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
-			);
-			w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
-		}
-		for (const w of weeks.values())
-			for (const arr of w.byDay.values())
-				arr.sort(
-					(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
-				);
-		const weekList = [...weeks.values()].sort(
-			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
-		);
-		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
-		return { weekList, cols };
-	})();
-	$: unplanned = (data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null);
 
 	/** @type {Record<string, number>} */
 	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
@@ -154,50 +117,28 @@
 
 	// --- Filter der Prüfungstabelle nach Studiengang (Badges mit Anzahl) ---
 	/** @type {string[]} */
-	let selectedPrograms = [];
+	let selectedPrograms = $state([]);
 	/** @param {string} p */
 	const toggleProgFilter = (p) =>
 		(selectedPrograms = selectedPrograms.includes(p)
 			? selectedPrograms.filter((x) => x !== p)
 			: [...selectedPrograms, p]);
-	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
-	$: catRank = new Map(
-		(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [
-			sp.shortname,
-			CAT_ORDER.indexOf(sp.category ?? 'misc')
-		])
-	);
-	$: programCounts = (() => {
-		/** @type {Map<string, number>} */
-		const m = new Map();
-		for (const e of data.exams) for (const p of e.programs ?? []) m.set(p, (m.get(p) ?? 0) + 1);
-		return [...m.entries()].sort((a, b) => {
-			const ra = catRank.get(a[0]) ?? 99;
-			const rb = catRank.get(b[0]) ?? 99;
-			return ra - rb || a[0].localeCompare(b[0]);
-		});
-	})();
 	/** passt die Prüfung zum aktiven Studiengang-Filter? @param {any} ex */
 	const matchesProgFilter = (ex) =>
 		selectedPrograms.length > 0 &&
 		(ex.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p));
-	$: filteredExams = selectedPrograms.length
-		? data.exams.filter((/** @type {any} */ e) =>
-				(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
-			)
-		: data.exams;
 
-	let listError = '';
+	let listError = $state('');
 	/** @type {Set<number>} */
-	let busy = new Set();
+	let busy = $state(new Set());
 
 	// ---- Editor ----
 	/** @type {any} */
-	let editing = null;
-	let isNew = false;
-	let editError = '';
-	let saving = false;
-	let examerQuery = '';
+	let editing = $state(null);
+	let isNew = $state(false);
+	let editError = $state('');
+	let saving = $state(false);
+	let examerQuery = $state('');
 
 	// Prüfende als „Nachname, Vorname" (letztes Token = Nachname; Titel bleiben beim
 	// Vornamen) — alphabetisch nach Nachname, im Editor durchsuchbar.
@@ -207,24 +148,10 @@
 		if (parts.length < 2) return full ?? '';
 		return `${parts[parts.length - 1]}, ${parts.slice(0, -1).join(' ')}`;
 	}
-	// teachers.shortname ist bereits „Nachname, Vorname" → direkt als Label nutzen.
-	$: teacherOptions = (data.teachers ?? [])
-		.map((/** @type {any} */ t) => ({ id: t.id, label: t.shortname }))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label));
-	$: teacherById = new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname]));
 	// Anzeige eines Prüfenden: sauberer shortname über die examerID, sonst der
 	// gespeicherte Snapshot (Voll-Name → „Nachname, …") als Fallback.
 	/** @param {any} e */
 	const examerDisplay = (e) => teacherById.get(e?.examerID) ?? examerLabel(e?.examerName ?? '');
-	$: examerFiltered = examerQuery.trim()
-		? teacherOptions.filter((/** @type {any} */ o) =>
-				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
-			)
-		: teacherOptions;
-	$: selectedExamerLabel = editing
-		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ??
-			'')
-		: '';
 
 	function openAdd() {
 		editing = {
@@ -263,23 +190,6 @@
 	/** @type {Record<string, string>} */
 	const CAT_LABEL = { fk07: 'FK07', mucdai: 'MUC.DAI', misc: 'Misc' };
 	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
-	$: programGroups = (() => {
-		/** @type {Map<string, any[]>} */
-		const byCat = new Map();
-		for (const sp of data.studyPrograms ?? []) {
-			const c = sp.category ?? 'misc';
-			if (!byCat.has(c)) byCat.set(c, []);
-			byCat.get(c)?.push(sp);
-		}
-		const cats = [
-			...CAT_ORDER.filter((c) => byCat.has(c)),
-			...[...byCat.keys()].filter((c) => !CAT_ORDER.includes(c))
-		];
-		return cats.map((c) => ({
-			label: CAT_LABEL[c] ?? c,
-			items: (byCat.get(c) ?? []).sort((a, b) => a.shortname.localeCompare(b.shortname))
-		}));
-	})();
 
 	/** @param {string} sn */
 	function toggleProgram(sn) {
@@ -403,24 +313,16 @@
 		}
 	}
 
-	// sameSlot-Gruppen: unvollständige (noch nicht alle Mitglieder verbunden) → Hinweis.
-	$: incompleteGroups = (data.sameSlotGroups ?? []).filter((/** @type {any} */ g) => !g.complete);
-	// sameSlot-Gruppe der aktuell zu verknüpfenden Pre-Prüfung (für Partner-Status).
-	$: suggestGroup = suggestFor
-		? (data.sameSlotGroups ?? []).find((/** @type {any} */ g) =>
-				g.members.some((/** @type {any} */ m) => m.id === suggestFor.id)
-			)
-		: null;
 
 	// ZPA-Ancode-Zuordnung
 	/** @type {any} */
-	let suggestFor = null;
+	let suggestFor = $state(null);
 	/** @type {any[]} */
-	let suggestions = [];
-	let suggestLoading = false;
-	let suggestError = '';
-	let manualAncode = '';
-	let connecting = false;
+	let suggestions = $state([]);
+	let suggestLoading = $state(false);
+	let suggestError = $state('');
+	let manualAncode = $state('');
+	let connecting = $state(false);
 
 	const jsonHeaders = { 'content-type': 'application/json' };
 
@@ -502,8 +404,6 @@
 		}
 	}
 
-	// ---- Constraints-Editor (pro Preplan-Prüfung) ----
-	$: examById = new Map(data.exams.map((/** @type {any} */ e) => [e.id, e]));
 	/** @param {number} id → „Modul (Nachname, Vorname)" der verknüpften Preplan-Prüfung */
 	const moduleOf = (id) => {
 		const e = examById.get(id);
@@ -532,17 +432,17 @@
 	}
 
 	/** @type {any} */
-	let conEditing = null;
+	let conEditing = $state(null);
 	/** @type {any} */
-	let conForm = null;
-	let conSaving = false;
-	let conError = '';
+	let conForm = $state(null);
+	let conSaving = $state(false);
+	let conError = $state('');
 	// Konfliktpartner („nicht gleichzeitig") — eigene Mutation, sofort gespeichert.
 	/** @type {number[]} */
-	let conNotSame = [];
+	let conNotSame = $state([]);
 	// „darf zusammen mit" — eigene Mutation, sofort gespeichert.
 	/** @type {number[]} */
-	let conCanShare = [];
+	let conCanShare = $state([]);
 
 	/** @param {any} e */
 	function openConstraints(e) {
@@ -560,17 +460,6 @@
 	}
 	const closeConstraints = () => (conEditing = null);
 
-	// Konfliktpartner-Kandidaten: nur andere Prüfungen mit gemeinsamem Studiengang
-	// (ohne gemeinsamen Studiengang kann es keinen Slot-Konflikt geben).
-	$: notSameCandidates = conEditing
-		? data.exams.filter(
-				(/** @type {any} */ x) =>
-					x.id !== conEditing.id &&
-					(conEditing.programs ?? []).some((/** @type {string} */ p) =>
-						(x.programs ?? []).includes(p)
-					)
-			)
-		: [];
 
 	/** @param {number} id */
 	function toggleSameSlot(id) {
@@ -675,12 +564,11 @@
 
 	// Zuordnung generieren & validieren
 	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[]}|null} */
-	let validation = null;
-	let validationKind = '';
-	let validating = false;
-	let generating = false;
+	let validation = $state(null);
+	let validationKind = $state('');
+	let validating = $state(false);
+	let generating = $state(false);
 
-	$: unassignedSet = new Set(validation?.unassignedIDs ?? []);
 
 	async function validate() {
 		if (validating || generating) return;
@@ -735,6 +623,118 @@
 			generating = false;
 		}
 	}
+	let calendar = $derived((() => {
+		const planned = (data.calendarSlots ?? []).filter(
+			(/** @type {any} */ s) => s.dayNumber != null && s.starttime
+		);
+		/** @type {Map<string, any>} */
+		const weeks = new Map();
+		/** @type {Set<number>} */
+		const usedWd = new Set();
+		for (const s of planned) {
+			const dt = dateObj(s.starttime);
+			if (!dt) continue;
+			const wd = isoWeekday(dt);
+			usedWd.add(wd);
+			const mon = mondayOf(dt);
+			const key = mon.toISOString().slice(0, 10);
+			if (!weeks.has(key))
+				weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
+			const w = weeks.get(key);
+			if (!w.byDay.has(wd)) w.byDay.set(wd, []);
+			const slotExams = (data.exams ?? []).filter(
+				(/** @type {any} */ e) =>
+					e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
+			);
+			w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
+		}
+		for (const w of weeks.values())
+			for (const arr of w.byDay.values())
+				arr.sort(
+					(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
+				);
+		const weekList = [...weeks.values()].sort(
+			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+		);
+		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
+		return { weekList, cols };
+	})());
+	let unplanned = $derived((data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null));
+	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
+	let catRank = $derived(new Map(
+		(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [
+			sp.shortname,
+			CAT_ORDER.indexOf(sp.category ?? 'misc')
+		])
+	));
+	let programCounts = $derived((() => {
+		/** @type {Map<string, number>} */
+		const m = new Map();
+		for (const e of data.exams) for (const p of e.programs ?? []) m.set(p, (m.get(p) ?? 0) + 1);
+		return [...m.entries()].sort((a, b) => {
+			const ra = catRank.get(a[0]) ?? 99;
+			const rb = catRank.get(b[0]) ?? 99;
+			return ra - rb || a[0].localeCompare(b[0]);
+		});
+	})());
+	let filteredExams = $derived(selectedPrograms.length
+		? data.exams.filter((/** @type {any} */ e) =>
+				(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
+			)
+		: data.exams);
+	// teachers.shortname ist bereits „Nachname, Vorname" → direkt als Label nutzen.
+	let teacherOptions = $derived((data.teachers ?? [])
+		.map((/** @type {any} */ t) => ({ id: t.id, label: t.shortname }))
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label)));
+	let teacherById = $derived(new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname])));
+	let examerFiltered = $derived(examerQuery.trim()
+		? teacherOptions.filter((/** @type {any} */ o) =>
+				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
+			)
+		: teacherOptions);
+	let selectedExamerLabel = $derived(editing
+		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ??
+			'')
+		: '');
+	let programGroups = $derived((() => {
+		/** @type {Map<string, any[]>} */
+		const byCat = new Map();
+		for (const sp of data.studyPrograms ?? []) {
+			const c = sp.category ?? 'misc';
+			if (!byCat.has(c)) byCat.set(c, []);
+			byCat.get(c)?.push(sp);
+		}
+		const cats = [
+			...CAT_ORDER.filter((c) => byCat.has(c)),
+			...[...byCat.keys()].filter((c) => !CAT_ORDER.includes(c))
+		];
+		return cats.map((c) => ({
+			label: CAT_LABEL[c] ?? c,
+			items: (byCat.get(c) ?? []).sort((a, b) => a.shortname.localeCompare(b.shortname))
+		}));
+	})());
+	// sameSlot-Gruppen: unvollständige (noch nicht alle Mitglieder verbunden) → Hinweis.
+	let incompleteGroups = $derived((data.sameSlotGroups ?? []).filter((/** @type {any} */ g) => !g.complete));
+	// sameSlot-Gruppe der aktuell zu verknüpfenden Pre-Prüfung (für Partner-Status).
+	let suggestGroup = $derived(suggestFor
+		? (data.sameSlotGroups ?? []).find((/** @type {any} */ g) =>
+				g.members.some((/** @type {any} */ m) => m.id === suggestFor.id)
+			)
+		: null);
+	// ---- Constraints-Editor (pro Preplan-Prüfung) ----
+	let examById = $derived(new Map(data.exams.map((/** @type {any} */ e) => [e.id, e])));
+	// Konfliktpartner-Kandidaten: nur andere Prüfungen mit gemeinsamem Studiengang
+	// (ohne gemeinsamen Studiengang kann es keinen Slot-Konflikt geben).
+	let notSameCandidates = $derived(conEditing
+		? data.exams.filter(
+				(/** @type {any} */ x) =>
+					x.id !== conEditing.id &&
+					(conEditing.programs ?? []).some((/** @type {string} */ p) =>
+						(x.programs ?? []).includes(p)
+					)
+			)
+		: []);
+	let unassignedSet = $derived(new Set(validation?.unassignedIDs ?? []));
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -745,7 +745,7 @@
 		<span class="text-xs text-base-content/50">
 			🤖 verteilt alle <strong>nicht</strong>-fixierten Prüfungen neu; 🔒 fixierte bleiben.
 		</span>
-		<button class="btn btn-outline btn-sm" on:click={validate} disabled={validating || generating}>
+		<button class="btn btn-outline btn-sm" onclick={validate} disabled={validating || generating}>
 			{validating ? 'prüft …' : '✔ Prüfen'}
 		</button>
 		<WriteButton
@@ -756,7 +756,7 @@
 		>
 			{generating ? 'verteilt …' : '🤖 Automatisch verteilen'}
 		</WriteButton>
-		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
+		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Prüfung</button>
 	</div>
 
 	<!-- 🔌 Anny importieren → danach Übersicht (seatsBooked) neu laden -->
@@ -806,7 +806,7 @@
 					<span class="badge badge-success badge-sm">vollständig</span>
 				{/if}
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" on:click={() => (validation = null)}>schließen</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => (validation = null)}>schließen</button>
 			</div>
 			{#if validation.messages.length}
 				<ul class="mt-1 list-inside list-disc text-sm">
@@ -998,14 +998,14 @@
 					class="badge gap-1 tabular-nums {selectedPrograms.includes(prog)
 						? 'badge-primary'
 						: 'badge-ghost'}"
-					on:click={() => toggleProgFilter(prog)}
+					onclick={() => toggleProgFilter(prog)}
 				>
 					<span class="font-mono">{prog}</span>
 					{count}
 				</button>
 			{/each}
 			{#if selectedPrograms.length}
-				<button class="btn btn-ghost btn-xs" on:click={() => (selectedPrograms = [])}>
+				<button class="btn btn-ghost btn-xs" onclick={() => (selectedPrograms = [])}>
 					✕ {filteredExams.length}/{data.exams.length}
 				</button>
 			{/if}
@@ -1100,7 +1100,7 @@
 											: 'select-warning text-warning'}"
 										value={slotValue(e)}
 										disabled={busy.has(e.id) || e.isFixed || $page.data?.readOnly}
-										on:change={(ev) => setSlot(e, ev.currentTarget.value)}
+										onchange={(ev) => setSlot(e, ev.currentTarget.value)}
 									>
 										<option value="" class="text-warning">— nicht zugeordnet</option>
 										{#each data.slots as s}
@@ -1129,16 +1129,16 @@
 									<span class="badge badge-sm {data.zpaPresent ? 'badge-warning' : 'badge-ghost'}">
 										nicht zugeordnet
 									</span>
-									<button class="btn btn-ghost btn-xs" on:click={() => openSuggest(e)}
+									<button class="btn btn-ghost btn-xs" onclick={() => openSuggest(e)}
 										>Zuordnen</button
 									>
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openConstraints(e)}>
+								<button class="btn btn-ghost btn-xs" onclick={() => openConstraints(e)}>
 									Constraints
 								</button>
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(e)}>Bearbeiten</button
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(e)}>Bearbeiten</button
 								>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
 									>Löschen</WriteButton
@@ -1213,7 +1213,7 @@
 								) === o.id
 									? 'bg-primary/15 font-medium text-primary'
 									: ''}"
-								on:click={() => (editing.examerID = o.id)}
+								onclick={() => (editing.examerID = o.id)}
 							>
 								<span class="w-3 text-center">{Number(editing.examerID) === o.id ? '✓' : ''}</span>
 								<span>{o.label}</span>
@@ -1266,7 +1266,7 @@
 											type="checkbox"
 											class="checkbox checkbox-xs"
 											checked={editing.programs.includes(sp.shortname)}
-											on:change={() => toggleProgram(sp.shortname)}
+											onchange={() => toggleProgram(sp.shortname)}
 										/>
 										<span class="font-mono">{sp.shortname}</span>
 									</label>
@@ -1286,7 +1286,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
@@ -1294,7 +1294,7 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeEdit}></button>
 	</div>
 {/if}
 
@@ -1407,12 +1407,12 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeSuggest} disabled={connecting}>
+				<button class="btn btn-ghost btn-sm" onclick={closeSuggest} disabled={connecting}>
 					Schließen
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeSuggest}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeSuggest}></button>
 	</div>
 {/if}
 
@@ -1457,7 +1457,7 @@
 								type="checkbox"
 								class="checkbox checkbox-xs"
 								checked={conForm.sameSlot.includes(o.id)}
-								on:change={() => toggleSameSlot(o.id)}
+								onchange={() => toggleSameSlot(o.id)}
 							/>
 							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 								{o.examKind}
@@ -1486,7 +1486,7 @@
 								type="checkbox"
 								class="checkbox checkbox-xs"
 								checked={conNotSame.includes(o.id)}
-								on:change={() => toggleNotSame(o.id)}
+								onchange={() => toggleNotSame(o.id)}
 							/>
 							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 								{o.examKind}
@@ -1518,7 +1518,7 @@
 								type="checkbox"
 								class="checkbox checkbox-xs"
 								checked={conCanShare.includes(o.id)}
-								on:change={() => toggleCanShare(o.id)}
+								onchange={() => toggleCanShare(o.id)}
 							/>
 							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
 								{o.examKind}
@@ -1536,7 +1536,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{conError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeConstraints} disabled={conSaving}>
+				<button class="btn btn-ghost btn-sm" onclick={closeConstraints} disabled={conSaving}>
 					Abbrechen
 				</button>
 				<WriteButton class="btn btn-primary btn-sm" on:click={saveConstraints} disabled={conSaving}>
@@ -1544,6 +1544,6 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeConstraints}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeConstraints}></button>
 	</div>
 {/if}

@@ -5,24 +5,37 @@
 
 	const dispatch = createEventDispatcher();
 
-	/** Subscription-Feldname @type {string} */
-	export let field;
-	export let title;
-	export let description = '';
-	/** Feld hat ein dryRun-Argument */
-	export let hasDryRun = false;
-	/** Akzentfarbe: 'info' (Download) | 'success' (Upload) */
-	export let accent = 'info';
-	export let actionLabel = 'Starten';
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} field - Subscription-Feldname @type {string}
+	 * @property {any} title
+	 * @property {string} [description]
+	 * @property {boolean} [hasDryRun] - Feld hat ein dryRun-Argument
+	 * @property {string} [accent] - Akzentfarbe: 'info' (Download) | 'success' (Upload)
+	 * @property {string} [actionLabel]
+	 */
 
-	let dryRun = true;
+	/** @type {Props} */
+	let {
+		field,
+		title,
+		description = '',
+		hasDryRun = false,
+		accent = 'info',
+		actionLabel = 'Starten'
+	} = $props();
+
+	let dryRun = $state(true);
 
 	/** @type {'idle' | 'running' | 'done' | 'error'} */
-	let status = 'idle';
+	let status = $state('idle');
 	/** @type {{ html: string, text?: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string } | null} */
-	let current = null;
+	let current = $state(null);
 
 	// Änderungszeilen der ZPA-Importe hervorheben: „+ neu", „- entfällt",
 	// „~ alt → neu". Klassifiziert über den Rohtext (evtl. ANSI vorher entfernt).
@@ -35,7 +48,7 @@
 		return '';
 	}
 	/** @type {string | null} */
-	let errorMsg = null;
+	let errorMsg = $state(null);
 	// Aussagekräftige Fehlermeldungen vom Reporter/error-Kanal (ERROR-Level-Zeilen),
 	// z. B. ZPA-Status + Antworttext — gesammelt und prominent als Alert gezeigt.
 	/** @type {string[]} */
@@ -50,7 +63,7 @@
 	/** @type {(() => void) | null} */
 	let unsubscribe = null;
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 
 	async function scrollToBottom() {
 		await tick();
@@ -195,9 +208,9 @@
 				</label>
 			{/if}
 			{#if status === 'running'}
-				<button class="btn btn-error btn-sm" on:click={stop}>Abbrechen</button>
+				<button class="btn btn-error btn-sm" onclick={stop}>Abbrechen</button>
 			{:else}
-				<button class="btn btn-{accent} btn-sm" on:click={start}>{actionLabel}</button>
+				<button class="btn btn-{accent} btn-sm" onclick={start}>{actionLabel}</button>
 			{/if}
 		</div>
 	</div>

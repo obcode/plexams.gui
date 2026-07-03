@@ -5,11 +5,11 @@
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	/** @type {any} */
-	let group;
+	let group = $state();
 	/** @type {any[]} */
-	let waivers = [];
-	let loadErr = '';
-	let removeBusy = '';
+	let waivers = $state([]);
+	let loadErr = $state('');
+	let removeBusy = $state('');
 
 	async function loadWaivers() {
 		loadErr = '';

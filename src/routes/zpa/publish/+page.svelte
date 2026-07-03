@@ -5,7 +5,7 @@
 	import { zpaValidators } from '$lib/validation/validators';
 	import { invalidateAll } from '$app/navigation';
 
-	export let data;
+	let { data } = $props();
 
 	// nach einem Im-/Export den Sync-Verlauf neu laden
 	const refreshLog = () => invalidateAll();
@@ -145,7 +145,7 @@
 		<div class="flex flex-wrap items-baseline gap-2">
 			<h2 class="text-xl font-semibold">Sync-Verlauf</h2>
 			<span class="text-sm text-base-content/60">letzte Im-/Exporte mit Zeitstempel</span>
-			<button class="btn btn-ghost btn-xs" on:click={refreshLog}>↻ neu laden</button>
+			<button class="btn btn-ghost btn-xs" onclick={refreshLog}>↻ neu laden</button>
 		</div>
 		{#await data.syncLog}
 			<div class="flex items-center gap-2 text-sm text-base-content/50">

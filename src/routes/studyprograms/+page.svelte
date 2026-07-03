@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
 		fk07: 'FK07',
@@ -11,7 +11,7 @@
 	});
 	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
 
-	$: byCat = (() => {
+	let byCat = $derived((() => {
 		/** @type {Map<string, any[]>} */
 		const m = new Map();
 		for (const p of data.programs) {
@@ -25,21 +25,21 @@
 			return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
 		});
 		return keys.map((k) => ({ key: k, label: CAT_LABEL[k] ?? k, items: m.get(k) ?? [] }));
-	})();
-	$: missingName = data.programs.filter((/** @type {any} */ p) => !(p.name ?? '').trim()).length;
+	})());
+	let missingName = $derived(data.programs.filter((/** @type {any} */ p) => !(p.name ?? '').trim()).length);
 
-	let listError = '';
-	let seedMsg = '';
-	let seeding = false;
+	let listError = $state('');
+	let seedMsg = $state('');
+	let seeding = $state(false);
 	/** @type {Set<string>} */
-	let busy = new Set();
+	let busy = $state(new Set());
 
 	// ---- Editor (anlegen/ändern; Schlüssel = shortname) ----
 	/** @type {any} */
-	let editing = null;
-	let isNew = false;
-	let editError = '';
-	let saving = false;
+	let editing = $state(null);
+	let isNew = $state(false);
+	let editError = $state('');
+	let saving = $state(false);
 
 	function openAdd() {
 		editing = {
@@ -195,7 +195,7 @@
 		<WriteButton class="btn btn-outline btn-sm" disabled={seeding} on:click={seed}>
 			{seeding ? 'füllt …' : 'fehlende aus Config anlegen'}
 		</WriteButton>
-		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Studiengang</button>
+		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Studiengang</button>
 	</div>
 
 	{#if seedMsg}
@@ -261,11 +261,11 @@
 											class="toggle toggle-sm"
 											checked={p.active}
 											disabled={busy.has(p.shortname)}
-											on:change={() => toggleActive(p)}
+											onchange={() => toggleActive(p)}
 										/>
 									</td>
 									<td class="text-right whitespace-nowrap">
-										<button class="btn btn-ghost btn-xs" on:click={() => openEdit(p)}
+										<button class="btn btn-ghost btn-xs" onclick={() => openEdit(p)}
 											>Bearbeiten</button
 										>
 										<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(p)}
@@ -353,7 +353,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
@@ -361,6 +361,6 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeEdit}></button>
 	</div>
 {/if}

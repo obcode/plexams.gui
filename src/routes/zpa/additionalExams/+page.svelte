@@ -2,17 +2,17 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	$: teacherName = new Map(data.teachers.map((/** @type {any} */ t) => [t.id, t.fullname]));
+	let teacherName = $derived(new Map(data.teachers.map((/** @type {any} */ t) => [t.id, t.fullname])));
 
-	let listError = '';
+	let listError = $state('');
 	/** @type {any} */
-	let editing = null;
-	let isNew = false;
+	let editing = $state(null);
+	let isNew = $state(false);
 	let origAncode = 0;
-	let editError = '';
-	let saving = false;
+	let editError = $state('');
+	let saving = $state(false);
 
 	/** @param {string} ddmmyyyy → „yyyy-mm-dd" fürs date-Input */
 	function toDateInput(ddmmyyyy) {
@@ -143,7 +143,7 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{data.exams.length}</span>
 		<span class="text-sm text-base-content/50">nur für die ZPA-Veröffentlichung</span>
 		<div class="flex-1"></div>
-		<button class="btn btn-primary btn-sm" on:click={openAdd}>+ Prüfung</button>
+		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Prüfung</button>
 	</div>
 
 	{#if listError}
@@ -191,7 +191,7 @@
 								</div>
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" on:click={() => openEdit(ex)}
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}
 									>Bearbeiten</button
 								>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(ex)}
@@ -234,7 +234,7 @@
 			<div class="mt-4 flex items-center gap-2">
 				<span class="font-medium">Räume / Aufsichten</span>
 				<span class="badge badge-ghost badge-sm">{editing.rooms.length}</span>
-				<button class="btn btn-ghost btn-xs" on:click={addRoom}>+ Raum</button>
+				<button class="btn btn-ghost btn-xs" onclick={addRoom}>+ Raum</button>
 			</div>
 			<div class="mt-1 flex flex-col gap-2">
 				{#each editing.rooms as r, i}
@@ -279,7 +279,7 @@
 						<label class="flex cursor-pointer items-center gap-1 text-sm">
 							<input type="checkbox" class="checkbox checkbox-xs" bind:checked={r.isHandicap} /> NTA
 						</label>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => rmRoom(i)}>✕</button>
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmRoom(i)}>✕</button>
 					</div>
 				{/each}
 			</div>
@@ -288,7 +288,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
@@ -296,6 +296,6 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeEdit}></button>
 	</div>
 {/if}

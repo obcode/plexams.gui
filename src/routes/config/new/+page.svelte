@@ -2,18 +2,18 @@
 	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	/** @type {SemesterConfigForm} */
-	let formComp;
-	let name = '';
-	let creating = false;
-	let errorMsg = '';
+	let formComp = $state();
+	let name = $state('');
+	let creating = $state(false);
+	let errorMsg = $state('');
 	/** @type {string[]} */
-	let warnings = [];
-	let createdName = '';
+	let warnings = $state([]);
+	let createdName = $state('');
 
-	$: nameOk = /^\d{4}-(SS|WS)$/.test(name.trim());
+	let nameOk = $derived(/^\d{4}-(SS|WS)$/.test(name.trim()));
 
 	async function create() {
 		if (creating) return;

@@ -1,12 +1,14 @@
-<script>
-	export let data;
+<script lang="ts">
+	import { run } from 'svelte/legacy';
+
+	let { data } = $props();
 	let examers = data.examers;
 
-	let searchTerm = '';
-	let hideFK07Profs = false;
-	let filteredExamers = [];
+	let searchTerm = $state('');
+	let hideFK07Profs = $state(false);
+	let filteredExamers = $state([]);
 
-	$: {
+	run(() => {
 		let result = examers;
 
 		// Filter FK07 Profs wenn aktiviert
@@ -25,7 +27,7 @@
 		}
 
 		filteredExamers = result;
-	}
+	});
 </script>
 
 <div class="text-center m-2 text-4xl">

@@ -1,35 +1,41 @@
-<script>
-	export let examsWithoutSlot;
-	export let maxSlots;
-	export let showExam;
-	export let showAncode;
-	export let showExamerID;
-	export let showOnlyOnline;
-	export let showOnlyExahm;
-	export let showOnlySEB;
-	export let selectedExam;
-	export let selectedExamerID;
-	export let onlyPlannedByMe;
-	export let details;
-	export let moveable;
-	export let conflictingAncodes;
+<script lang="ts">
+	import { run } from 'svelte/legacy';
+
 
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 
 	import { createEventDispatcher } from 'svelte';
+	let {
+		examsWithoutSlot,
+		maxSlots,
+		showExam,
+		showAncode,
+		showExamerID,
+		showOnlyOnline,
+		showOnlyExahm,
+		showOnlySEB,
+		selectedExam,
+		selectedExamerID,
+		onlyPlannedByMe,
+		details,
+		moveable,
+		conflictingAncodes
+	} = $props();
 	const dispatch = createEventDispatcher();
-	let examsPlannedByMe = [];
-	let examsNotPlannedByMe = [];
+	let examsPlannedByMe = $state([]);
+	let examsNotPlannedByMe = $state([]);
 
-	$: [examsPlannedByMe, examsNotPlannedByMe] = examsWithoutSlot.reduce(
-		(result, element) => {
-			result[element.constraints && element.constraints.notPlannedByMe ? 1 : 0].push(element);
-			return result;
-		},
-		[[], []]
-	);
+	run(() => {
+		[examsPlannedByMe, examsNotPlannedByMe] = examsWithoutSlot.reduce(
+			(result, element) => {
+				result[element.constraints && element.constraints.notPlannedByMe ? 1 : 0].push(element);
+				return result;
+			},
+			[[], []]
+		);
+	});
 
-	let showExamsPlannedByMe = true;
+	let showExamsPlannedByMe = $state(true);
 
 	function forwardSelected(event) {
 		dispatch('selected', event.detail);
@@ -47,11 +53,11 @@
 
 {#if examsPlannedByMe.length > 0}
 	<div class="text-center m-2">
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			class="text-4xl text-center mt-8 uppercase"
-			on:click={() => (showExamsPlannedByMe = !showExamsPlannedByMe)}
+			onclick={() => (showExamsPlannedByMe = !showExamsPlannedByMe)}
 		>
 			{examsPlannedByMe.length} Prüfungen noch einzuplanen
 		</div>

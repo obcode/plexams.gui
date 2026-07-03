@@ -1,9 +1,15 @@
 <script>
-	export let semesterConfig;
-	export let invigilator;
-	// when false, only own exams are drawn (the Aufsicht/Reserve blocks are hidden)
-	export let showInvigilations = true;
+	
 	import { mkDateShort } from '$lib/jshelper/misc';
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} semesterConfig
+	 * @property {any} invigilator
+	 * @property {boolean} [showInvigilations] - when false, only own exams are drawn (the Aufsicht/Reserve blocks are hidden)
+	 */
+
+	/** @type {Props} */
+	let { semesterConfig, invigilator, showInvigilations = true } = $props();
 	const requirements = invigilator.requirements;
 
 	const timeWindows = requirements?.timeWindows ?? [];

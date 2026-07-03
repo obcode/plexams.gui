@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import {
@@ -73,15 +75,15 @@
 		readOnly: boolean;
 		schemaVersion: number | null;
 	};
-	let semester = 'unknown';
-	let currentSem: Sem | null = null;
-	let allSemesters: Sem[] = [];
+	let semester = $state('unknown');
+	let currentSem: Sem | null = $state(null);
+	let allSemesters: Sem[] = $state([]);
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
-	$: readOnly = $page.data?.readOnly ?? currentSem?.readOnly ?? false;
+	let readOnly = $derived($page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
-	$: logicalSem =
-		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '';
+	let logicalSem =
+		$derived(currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '');
 	async function getSemester() {
 		const response = await fetch('/api/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
@@ -93,7 +95,7 @@
 	}
 
 	// DB-Schutz (read-only) umschalten → bei Erfolg neu laden
-	let togglingReadOnly = false;
+	let togglingReadOnly = $state(false);
 	async function toggleReadOnly(value: boolean) {
 		if (togglingReadOnly) return;
 		togglingReadOnly = true;
@@ -120,9 +122,9 @@
 
 	// Semester umschalten → bei Erfolg alles neu laden (graphql-request hat keinen
 	// Cache; ein voller Reload entspricht client.resetStore()).
-	let switchingSemester = false;
-	let semesterError = '';
-	let semesterErrorTitle = 'Aktion fehlgeschlagen';
+	let switchingSemester = $state(false);
+	let semesterError = $state('');
+	let semesterErrorTitle = $state('Aktion fehlgeschlagen');
 
 	// Workspace = Datenbank. id ist der DB-Name (Schaltschlüssel), semester das
 	// logische Semester (Anzeige). schemaVersion == null ⇒ DB ohne Daten.
@@ -160,11 +162,11 @@
 	}
 
 	// Neuen Test-Workspace (DB) anlegen und hineinwechseln.
-	let wsOpen = false;
-	let wsName = '';
-	let wsFromSemester = '';
-	let wsCreating = false;
-	$: wsNameValid = /^[A-Za-z0-9 _-]+$/.test(wsName.trim());
+	let wsOpen = $state(false);
+	let wsName = $state('');
+	let wsFromSemester = $state('');
+	let wsCreating = $state(false);
+	let wsNameValid = $derived(/^[A-Za-z0-9 _-]+$/.test(wsName.trim()));
 
 	function openNewWorkspace() {
 		wsName = '';
@@ -205,7 +207,7 @@
 
 	// aktuell aktives Theme (von theme-change als data-theme am <html> gesetzt),
 	// damit der Umschalter es anzeigen und im Dropdown markieren kann.
-	let currentTheme = '';
+	let currentTheme = $state('');
 
 	onMount(() => {
 		getSemester();
@@ -331,22 +333,24 @@
 		return 0;
 	}
 
-	$: pathname = $page.url.pathname;
+	let pathname = $derived($page.url.pathname);
 	// bei jedem Seitenwechsel den „veraltet"-Zustand neu prüfen (im SPA feuert
 	// window.focus nicht, und der Intervall hätte bis zu 20 s Latenz)
-	let lastCheckedPath = '';
-	$: if (pathname && pathname !== lastCheckedPath) {
-		lastCheckedPath = pathname;
-		checkStaleStates();
-	}
-	$: activeHref = menus
+	let lastCheckedPath = $state('');
+	run(() => {
+		if (pathname && pathname !== lastCheckedPath) {
+			lastCheckedPath = pathname;
+			checkStaleStates();
+		}
+	});
+	let activeHref = $derived(menus
 		.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
 		.reduce(
 			(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
 			''
-		);
-	$: activeMenu =
-		menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? '';
+		));
+	let activeMenu =
+		$derived(menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? '');
 
 	const themes = [
 		'light',
@@ -469,7 +473,7 @@
 			<button
 				class="btn btn-ghost btn-sm gap-1 px-2"
 				aria-label="Validierung jetzt prüfen"
-				on:click={runValidationCheck}
+				onclick={runValidationCheck}
 			>
 				{#each $validationDots as d}
 					<span
@@ -502,7 +506,7 @@
 				class="btn btn-ghost btn-sm btn-circle"
 				title={statusTitle('ZPA-Validierung', $zpaSummary)}
 				aria-label="ZPA jetzt prüfen"
-				on:click={runZpaCheck}
+				onclick={runZpaCheck}
 			>
 				{#if $zpaSummary.running}
 					<span class="loading loading-spinner loading-xs"></span>
@@ -551,7 +555,7 @@
 								? 'bg-primary font-semibold text-primary-content'
 								: ''}"
 							data-set-theme={theme}
-							on:click={() => (currentTheme = theme)}
+							onclick={() => (currentTheme = theme)}
 						>
 							<span>{theme}</span>
 							{#if theme === currentTheme}<span aria-hidden="true">✓</span>{/if}
@@ -606,7 +610,7 @@
 									? 'bg-primary/15 text-primary'
 									: ''}"
 								disabled={switchingSemester}
-								on:click={() => switchSemester(s.id)}
+								onclick={() => switchSemester(s.id)}
 							>
 								<span class="flex items-center gap-1">
 									<span class="font-medium tabular-nums">{s.id}</span>
@@ -627,20 +631,20 @@
 						<button
 							class="rounded-lg"
 							disabled={togglingReadOnly}
-							on:click={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
+							onclick={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
 						>
 					{:else}
 						<button
 							class="rounded-lg"
 							disabled={togglingReadOnly}
-							on:click={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
+							onclick={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
 						>
 					{/if}
 				</li>
 
 				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
 				<li>
-					<button class="rounded-lg" disabled={switchingSemester} on:click={openNewWorkspace}>
+					<button class="rounded-lg" disabled={switchingSemester} onclick={openNewWorkspace}>
 						🧪 Neuen Workspace anlegen …
 					</button>
 				</li>
@@ -728,7 +732,7 @@
 			<button
 				class="btn btn-error btn-xs"
 				disabled={togglingReadOnly}
-				on:click={() => toggleReadOnly(false)}
+				onclick={() => toggleReadOnly(false)}
 			>
 				{togglingReadOnly ? '…' : 'Schutz aufheben'}
 			</button>
@@ -773,17 +777,17 @@
 				</label>
 			</div>
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={() => (wsOpen = false)}>Abbrechen</button>
+				<button class="btn btn-ghost btn-sm" onclick={() => (wsOpen = false)}>Abbrechen</button>
 				<button
 					class="btn btn-primary btn-sm"
 					disabled={wsCreating || switchingSemester || !wsNameValid || !wsFromSemester}
-					on:click={createWorkspace}
+					onclick={createWorkspace}
 				>
 					{wsCreating || switchingSemester ? 'legt an …' : 'anlegen & wechseln'}
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (wsOpen = false)}
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (wsOpen = false)}
 		></button>
 	</div>
 {/if}
@@ -798,10 +802,10 @@
 			</h2>
 			<p class="mt-3 font-mono text-sm break-words whitespace-pre-wrap">{semesterError}</p>
 			<div class="modal-action">
-				<button class="btn btn-sm" on:click={() => (semesterError = '')}>schließen</button>
+				<button class="btn btn-sm" onclick={() => (semesterError = '')}>schließen</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (semesterError = '')}
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (semesterError = '')}
 		></button>
 	</div>
 {/if}

@@ -3,13 +3,13 @@
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import { backendBase } from '$lib/email/attachments';
 
-	export let data;
+	let { data } = $props();
 
 	// Download „Planned-Rooms-JSON" (für Deckblätter). REST direkt am Backend
 	// (gleicher Host/Port wie /query, NICHT über GraphQL); credentials wegen der
 	// CORS-Config (AllowCredentials). Dateiname kommt aus Content-Disposition.
-	let prDownloading = false;
-	let prError = '';
+	let prDownloading = $state(false);
+	let prError = $state('');
 	/** @param {string} cd @param {string} fallback */
 	function filenameFromCD(cd, fallback) {
 		let m = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
@@ -47,25 +47,25 @@
 	// Hochgeladene Aufsichtskalender (vom AttachmentManager gemeldet) → steuert,
 	// ob „Veröffentlichte Aufsichten“ versendet werden kann.
 	/** @type {import('$lib/email/attachments').Attachment[]} */
-	let invigAttachments = [];
-	$: hasInvigImages = invigAttachments.length > 0;
+	let invigAttachments = $state([]);
+	let hasInvigImages = $derived(invigAttachments.length > 0);
 
 	// Hochgeladene Deckblätter (vom AttachmentManager gemeldet) → steuert, ob
 	// versendet werden kann und welche Prüfenden im Einzelversand wählbar sind.
 	/** @type {import('$lib/email/attachments').Attachment[]} */
-	let coverAttachments = [];
-	$: uploadedExamerKeys = new Set(coverAttachments.map((a) => String(a.key)));
-	$: hasCovers = uploadedExamerKeys.size > 0;
+	let coverAttachments = $state([]);
+	let uploadedExamerKeys = $derived(new Set(coverAttachments.map((a) => String(a.key))));
+	let hasCovers = $derived(uploadedExamerKeys.size > 0);
 	// nur Prüfende, für die ein Deckblatt vorliegt
-	$: availableExamers = data.expectedExamers.filter((/** @type {any} */ e) =>
+	let availableExamers = $derived(data.expectedExamers.filter((/** @type {any} */ e) =>
 		uploadedExamerKeys.has(String(e.key))
-	);
+	));
 
 	// Auswahl für den Einzelversand eines Deckblatts.
-	let selectedExamerId = '';
-	$: selectedExamer = availableExamers.find(
+	let selectedExamerId = $state('');
+	let selectedExamer = $derived(availableExamers.find(
 		(/** @type {any} */ e) => String(e.key) === String(selectedExamerId)
-	);
+	));
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
@@ -90,14 +90,16 @@
 			expectedKeys={data.expectedInvigilators}
 			on:change={(e) => (invigAttachments = e.detail)}
 		>
-			<a
-				slot="actions"
-				href="/plan/invigilation/planning"
-				class="btn btn-primary btn-sm gap-2"
-				title="Wechselt auf „Aufsichten mit Anforderungen“ — dort nochmal „Kalender auf Server hochladen“ klicken"
-			>
-				⬆ Kalender auf Server hochladen
-			</a>
+			{#snippet actions()}
+						<a
+					
+					href="/plan/invigilation/planning"
+					class="btn btn-primary btn-sm gap-2"
+					title="Wechselt auf „Aufsichten mit Anforderungen“ — dort nochmal „Kalender auf Server hochladen“ klicken"
+				>
+					⬆ Kalender auf Server hochladen
+				</a>
+					{/snippet}
 		</AttachmentManager>
 		<p class="text-xs text-base-content/50">
 			Hinweis: Dieser Button wechselt auf die Seite „Aufsichten mit Anforderungen“. Dort musst du
@@ -139,7 +141,7 @@
 			<button
 				class="btn btn-outline btn-sm gap-2"
 				disabled={prDownloading}
-				on:click={downloadPlannedRooms}
+				onclick={downloadPlannedRooms}
 			>
 				{#if prDownloading}<span class="loading loading-spinner loading-xs"></span>{/if}
 				⬇ Planned-Rooms-JSON (für Deckblätter)

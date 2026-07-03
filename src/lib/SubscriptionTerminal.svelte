@@ -10,18 +10,24 @@
 	// teilen sich ein Terminal. Exklusive Aktionen werden serverseitig
 	// blockiert (ERROR + DONE) — das zeigen wir als Hinweis.
 
-	/** @type {{ field: string, label: string, primary?: boolean, disabled?: boolean }[]} */
-	export let actions = [];
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {{ field: string, label: string, primary?: boolean, disabled?: boolean }[]} [actions]
+	 */
+
+	/** @type {Props} */
+	let { actions = [] } = $props();
 
 	const dispatch = createEventDispatcher();
 
-	let running = false;
+	let running = $state(false);
 	/** @type {string | null} */
-	let runningField = null;
-	let done = false;
-	let blocked = false;
+	let runningField = $state(null);
+	let done = $state(false);
+	let blocked = $state(false);
 	/** @type {string | null} */
-	let errorMsg = null;
+	let errorMsg = $state(null);
 	// Aussagekräftige Fehlermeldungen vom Reporter/error-Kanal (ERROR-Level-Zeilen,
 	// die keine reine Sperrmeldung sind) — prominent als Alert statt nur im Terminal.
 	/** @type {string[]} */
@@ -30,12 +36,12 @@
 	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
 	/** @type {{ level: string, html: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string } | null} */
-	let current = null;
+	let current = $state(null);
 
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 	/** @type {any} */
 	let convert = null;
 	/** @type {any} */
@@ -161,7 +167,7 @@
 				class="btn btn-sm gap-2 {a.primary ? 'btn-primary' : 'btn-outline'}"
 				disabled={running || a.disabled}
 				title={a.disabled ? 'gesperrt' : ''}
-				on:click={() => start(a.field)}
+				onclick={() => start(a.field)}
 			>
 				{#if running && runningField === a.field}
 					<span class="loading loading-spinner loading-xs"></span>
@@ -173,7 +179,7 @@
 			<span class="badge badge-success">fertig</span>
 		{/if}
 		{#if !running && (lines.length || current || errorMsg || blocked)}
-			<button class="btn btn-ghost btn-xs gap-1" on:click={close}>✕ schließen</button>
+			<button class="btn btn-ghost btn-xs gap-1" onclick={close}>✕ schließen</button>
 		{/if}
 	</div>
 

@@ -2,37 +2,29 @@
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	/**
-	 * @type {{
-	 *   key: string,
-	 *   title: string,
-	 *   description?: string,
-	 *   status: 'idle' | 'running' | 'done' | 'error',
-	 *   lines: { level: string, html: string }[],
-	 *   current: { html: string } | null,
-	 *   report: any,
-	 *   errorMsg: string | null
-	 * }}
-	 */
-	export let validator;
+	
 
+	
 	/**
-	 * Optionaler Callback, um für ein „NTA … not alone"-Finding einen Verzicht
-	 * „eigener Raum" zu akzeptieren. Nur gesetzt, zeigt den Button.
-	 * @type {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null}
+	 * @typedef {Object} Props
+	 * @property {any} validator
+	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - Optionaler Callback, um für ein „NTA … not alone"-Finding einen Verzicht
+„eigener Raum" zu akzeptieren. Nur gesetzt, zeigt den Button.
 	 */
-	export let onAcceptWaiver = null;
+
+	/** @type {Props} */
+	let { validator, onAcceptWaiver = null } = $props();
 
 	const dispatch = createEventDispatcher();
 
-	let showTerminal = false;
+	let showTerminal = $state(false);
 
 	// ---- Verzicht „eigener Raum" akzeptieren ----
 	/** @type {any} */
-	let waiveFor = null;
-	let waiveReason = '';
-	let waiveBusy = false;
-	let waiveError = '';
+	let waiveFor = $state(null);
+	let waiveReason = $state('');
+	let waiveBusy = $state(false);
+	let waiveError = $state('');
 
 	/** Finding ist ein noch offener „nicht allein"-Fehler mit mtknr/ancode? @param {any} f */
 	function canWaive(f) {
@@ -134,7 +126,7 @@
 				title="Neu starten"
 				aria-label="Neu starten"
 				disabled={validator.status === 'running'}
-				on:click={() => dispatch('restart')}
+				onclick={() => dispatch('restart')}
 			>
 				↻
 			</button>
@@ -206,16 +198,16 @@
 											<button
 												class="btn btn-primary btn-xs"
 												disabled={!waiveReason.trim() || waiveBusy}
-												on:click={() => submitWaive(f)}
+												onclick={() => submitWaive(f)}
 											>
 												{waiveBusy ? 'speichert…' : 'akzeptieren'}
 											</button>
-											<button class="btn btn-ghost btn-xs" on:click={cancelWaive}>abbrechen</button>
+											<button class="btn btn-ghost btn-xs" onclick={cancelWaive}>abbrechen</button>
 										</div>
 										{#if waiveError}<div class="text-xs text-error">{waiveError}</div>{/if}
 									</div>
 								{:else}
-									<button class="btn btn-outline btn-xs mt-2" on:click={() => openWaive(f)}>
+									<button class="btn btn-outline btn-xs mt-2" onclick={() => openWaive(f)}>
 										Verzicht akzeptieren
 									</button>
 								{/if}
@@ -234,7 +226,7 @@
 		<div>
 			<button
 				class="btn btn-ghost btn-xs gap-1 px-1 text-base-content/60"
-				on:click={() => (showTerminal = !showTerminal)}
+				onclick={() => (showTerminal = !showTerminal)}
 			>
 				{showTerminal ? '▾' : '▸'} Terminal-Ausgabe ({validator.lines.length})
 			</button>

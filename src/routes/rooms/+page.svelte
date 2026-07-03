@@ -4,12 +4,12 @@
 	import { fade } from 'svelte/transition';
 	import RoomForm from '$lib/room/RoomForm.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// Modal zum Anlegen/Bearbeiten
-	let showModal = false;
+	let showModal = $state(false);
 	/** @type {any} */
-	let editRoom = null;
+	let editRoom = $state(null);
 	function openAdd() {
 		editRoom = null;
 		showModal = true;
@@ -43,11 +43,11 @@
 		{ value: 'ANNY', label: 'Anny' },
 		{ value: 'MANAGEMENT', label: 'Gebäudemanagement' }
 	];
-	let requestFilter = 'all';
+	let requestFilter = $state('all');
 
 	/** aktive Eigenschafts-Filter (UND-Verknüpfung)
 	 * @type {Set<string>} */
-	let activeFlags = new Set();
+	let activeFlags = $state(new Set());
 	/** @param {string} key */
 	function toggleFlag(key) {
 		if (activeFlags.has(key)) activeFlags.delete(key);
@@ -56,11 +56,11 @@
 	}
 
 	/** @type {'active' | 'all' | 'inactive'} */
-	let activeFilter = 'active';
+	let activeFilter = $state('active');
 	/** @type {'name' | 'seats'} */
-	let sortCol = 'name';
+	let sortCol = $state('name');
 
-	$: rooms = [...data.rooms]
+	let rooms = $derived([...data.rooms]
 		.filter((/** @type {any} */ r) => {
 			if (activeFilter === 'active' && r.deactivated) return false;
 			if (activeFilter === 'inactive' && !r.deactivated) return false;
@@ -70,10 +70,10 @@
 		})
 		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
 			sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
-		);
+		));
 
 	/** @type {string | null} */
-	let toggleError = null;
+	let toggleError = $state(null);
 	/** @param {any} room */
 	async function toggleRoom(room) {
 		toggleError = null;
@@ -109,7 +109,7 @@
 			<span class="text-sm text-base-content/60">{rooms.length} angezeigt</span>
 		{/if}
 		<div class="flex-1"></div>
-		<button class="btn btn-primary btn-sm gap-2" on:click={openAdd}>+ Neuer Raum</button>
+		<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ Neuer Raum</button>
 	</div>
 
 	<!-- Filter-Toolbar -->
@@ -118,7 +118,7 @@
 			{#each ACTIVE_OPTIONS as opt}
 				<button
 					class="btn btn-sm join-item {activeFilter === opt.key ? 'btn-primary' : 'btn-ghost'}"
-					on:click={() => (activeFilter = /** @type {any} */ (opt.key))}
+					onclick={() => (activeFilter = /** @type {any} */ (opt.key))}
 				>
 					{opt.label}
 				</button>
@@ -131,13 +131,13 @@
 		{#each FEATURES as f}
 			<button
 				class="btn btn-sm {activeFlags.has(f.key) ? 'btn-primary' : 'btn-outline'}"
-				on:click={() => toggleFlag(f.key)}
+				onclick={() => toggleFlag(f.key)}
 			>
 				{f.label}
 			</button>
 		{/each}
 		{#if activeFlags.size}
-			<button class="btn btn-ghost btn-sm" on:click={() => (activeFlags = new Set())}>
+			<button class="btn btn-ghost btn-sm" onclick={() => (activeFlags = new Set())}>
 				Filter zurücksetzen
 			</button>
 		{/if}
@@ -166,13 +166,13 @@
 				<tr>
 					<th
 						class="cursor-pointer select-none {sortCol === 'name' ? 'text-primary' : ''}"
-						on:click={() => (sortCol = 'name')}
+						onclick={() => (sortCol = 'name')}
 					>
 						Name {sortCol === 'name' ? '▲' : ''}
 					</th>
 					<th
 						class="cursor-pointer select-none text-right {sortCol === 'seats' ? 'text-primary' : ''}"
-						on:click={() => (sortCol = 'seats')}
+						onclick={() => (sortCol = 'seats')}
 					>
 						Plätze {sortCol === 'seats' ? '▼' : ''}
 					</th>
@@ -217,7 +217,7 @@
 									class="toggle toggle-sm toggle-success"
 									checked={!room.deactivated}
 									disabled={$page.data?.readOnly}
-									on:change={() => toggleRoom(room)}
+									onchange={() => toggleRoom(room)}
 								/>
 								<span class="text-xs {room.deactivated ? 'text-error' : 'text-success'}">
 									{room.deactivated ? 'inaktiv' : 'aktiv'}
@@ -225,7 +225,7 @@
 							</label>
 						</td>
 						<td>
-							<button class="btn btn-ghost btn-xs" on:click={() => openEdit(room)}>✎ Bearbeiten</button>
+							<button class="btn btn-ghost btn-xs" onclick={() => openEdit(room)}>✎ Bearbeiten</button>
 						</td>
 					</tr>
 				{/each}
@@ -246,7 +246,7 @@
 					oncancel={() => (showModal = false)}
 				/>
 			</div>
-			<button class="modal-backdrop" aria-label="Schließen" on:click={() => (showModal = false)}
+			<button class="modal-backdrop" aria-label="Schließen" onclick={() => (showModal = false)}
 			></button>
 		</div>
 	{/if}

@@ -1,20 +1,22 @@
 <script>
-	export let data;
+	import { run } from 'svelte/legacy';
+
 	import { fade } from 'svelte/transition';
 
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
+	let { data } = $props();
 
 	let invigilators = data.todos.invigilators;
 	const todos = data.todos;
 
-	let searchTerm = '';
-	let filteredInvigilators = [];
+	let searchTerm = $state('');
+	let filteredInvigilators = $state([]);
 
-	let sortOpen = true;
-	let showInvigilations = true;
+	let sortOpen = $state(true);
+	let showInvigilations = $state(true);
 
-	let stillOpen = 0;
+	let stillOpen = $state(0);
 	for (const invig of data.todos.invigilators) {
 		stillOpen += invig.todos.totalMinutes - invig.todos.doingMinutes;
 	}
@@ -104,7 +106,7 @@
 	// Dot-Filter: Klick auf einen Punkt filtert die Liste auf alle Aufsichten in
 	// derselben Spalte (gleicher Wert/Bin).
 	/** @type {{ kind: string, bin: number, ids: Set<number>, label: string } | null} */
-	let dotFilter = null;
+	let dotFilter = $state(null);
 	/**
 	 * @param {string} kind
 	 * @param {number} bin
@@ -122,7 +124,7 @@
 		dotFilter = null;
 	}
 
-	$: {
+	run(() => {
 		let filteredInvigilatorsTmp = [];
 		filteredInvigilators = filteredInvigilatorsTmp;
 		if (searchTerm) {
@@ -157,10 +159,10 @@
 			});
 		}
 		filteredInvigilators = filteredInvigilatorsTmp;
-	}
+	});
 
-	let exporting = false;
-	let exportProgress = '';
+	let exporting = $state(false);
+	let exportProgress = $state('');
 
 	// Captures every currently shown invigilator card to PNG and bundles them into
 	// one ZIP. Respects the active search filter (no search → everyone). The libs
@@ -211,10 +213,10 @@
 		}
 	}
 
-	let uploading = false;
-	let uploadProgress = '';
+	let uploading = $state(false);
+	let uploadProgress = $state('');
 	/** @type {{ done: number, failed: string[], blocked: boolean } | null} */
-	let uploadResult = null;
+	let uploadResult = $state(null);
 
 	// Captures every currently shown invigilator card to PNG and uploads each one
 	// directly to the backend attachment store (kind invigilation-image, key =
@@ -322,7 +324,7 @@
 							style="left: {d.leftPct}%; bottom: {d.bottom}px"
 							title="Räume {d.room} Min · Reserve {d.reserve} Min — klicken zum Filtern"
 							aria-label="Aufsichten mit {Math.round(d.share * 100)} % Reserve filtern"
-							on:click={() => pickDot('ratio', d.bin, `${Math.round(d.share * 100)} % Reserve`)}
+							onclick={() => pickDot('ratio', d.bin, `${Math.round(d.share * 100)} % Reserve`)}
 						></button>
 					{/each}
 				</div>
@@ -361,7 +363,7 @@
 							style="left: {d.leftPct}%; bottom: {d.bottom}px"
 							title="{d.value} Min. offen — klicken zum Filtern"
 							aria-label="Aufsichten mit {d.value} Min. offen filtern"
-							on:click={() => pickDot('open', d.bin, `${d.value} Min. offen`)}
+							onclick={() => pickDot('open', d.bin, `${d.value} Min. offen`)}
 						></button>
 					{/each}
 				</div>
@@ -413,7 +415,7 @@
 		{#if dotFilter}
 			<span class="badge badge-primary gap-2 whitespace-nowrap">
 				{dotFilter.label} ({dotFilter.ids.size})
-				<button class="font-bold" on:click={clearDotFilter} aria-label="Filter aufheben">✕</button>
+				<button class="font-bold" onclick={clearDotFilter} aria-label="Filter aufheben">✕</button>
 			</span>
 		{/if}
 		<label class="label cursor-pointer gap-2">
@@ -422,7 +424,7 @@
 				type="checkbox"
 				class="toggle toggle-sm"
 				checked={!showInvigilations}
-				on:change={(e) => (showInvigilations = !e.currentTarget.checked)}
+				onchange={(e) => (showInvigilations = !e.currentTarget.checked)}
 			/>
 		</label>
 		<label class="label cursor-pointer gap-2">
@@ -430,12 +432,12 @@
 			<input
 				type="checkbox"
 				class="toggle toggle-sm"
-				on:click={() => {
+				onclick={() => {
 					sortOpen = !sortOpen;
 				}}
 			/>
 		</label>
-		<button class="btn btn-outline btn-sm gap-2" on:click={exportAllPng} disabled={exporting}>
+		<button class="btn btn-outline btn-sm gap-2" onclick={exportAllPng} disabled={exporting}>
 			{#if exporting}
 				<span class="loading loading-spinner loading-xs"></span>
 				{exportProgress}
@@ -445,7 +447,7 @@
 		</button>
 		<button
 			class="btn btn-primary btn-sm gap-2"
-			on:click={uploadAllPng}
+			onclick={uploadAllPng}
 			disabled={uploading || exporting}
 		>
 			{#if uploading}

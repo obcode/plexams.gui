@@ -4,35 +4,35 @@
 	import { env } from '$env/dynamic/public';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// EXAMS gesperrt → nur Probelauf; Schreiben/Fixieren deaktiviert.
-	$: examsBlocked = (data.blockedAreas ?? []).includes('EXAMS');
+	let examsBlocked = $derived((data.blockedAreas ?? []).includes('EXAMS'));
 
 	// --- Eingaben (wie normale Generierung) ---
 	/** @type {number | ''} */
-	let seed = 1;
-	let iterations = 1_000_000;
+	let seed = $state(1);
+	let iterations = $state(1_000_000);
 	const ITER_MIN = 100_000;
 	const ITER_MAX = 2_000_000;
 	const ITER_STEP = 100_000;
 
 	// --- Laufzeit-Status ---
-	let running = false;
-	let writeRun = false;
+	let running = $state(false);
+	let writeRun = $state(false);
 	/** @type {string | null} */
-	let errorMsg = null;
-	let done = false;
+	let errorMsg = $state(null);
+	let done = $state(false);
 
 	/** @type {{ level: string, html: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string } | null} */
-	let current = null;
+	let current = $state(null);
 	/** @type {any} */
-	let examReport = null;
+	let examReport = $state(null);
 
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 	/** @type {any} */
 	let convert = null;
 	/** @type {any} */
@@ -186,10 +186,10 @@
 	const fmt = (n) => (n ?? 0).toLocaleString('de-DE');
 
 	// --- Fixieren / Aufheben ---
-	let fixBusy = false;
-	let fixError = '';
+	let fixBusy = $state(false);
+	let fixError = $state('');
 	/** @type {string} */
-	let fixInfo = '';
+	let fixInfo = $state('');
 	/** @param {string} path @param {(d:any)=>string} msg */
 	async function fixAction(path, msg) {
 		if (fixBusy) return;
@@ -295,15 +295,15 @@
 
 	<div class="flex flex-wrap items-center gap-3">
 		{#if running}
-			<button class="btn btn-error btn-sm gap-2" on:click={stop}>
+			<button class="btn btn-error btn-sm gap-2" onclick={stop}>
 				<span class="loading loading-spinner loading-xs"></span> Abbrechen
 			</button>
 		{:else}
-			<button class="btn btn-outline btn-sm" on:click={() => start(true)}>▷ Probelauf</button>
+			<button class="btn btn-outline btn-sm" onclick={() => start(true)}>▷ Probelauf</button>
 			<button
 				class="btn btn-primary btn-sm"
 				disabled={examsBlocked}
-				on:click={() => start(false)}
+				onclick={() => start(false)}
 				title={examsBlocked ? 'gesperrt — siehe Hinweis oben' : ''}
 			>
 				▶ Planen &amp; schreiben

@@ -1,3 +1,5 @@
+<!-- @migration-task Error while migrating Svelte code: can't migrate `let open = !collapsed;` to `$state` because there's a variable named state.
+     Rename the variable and try again or migrate by hand. -->
 <script>
 	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';

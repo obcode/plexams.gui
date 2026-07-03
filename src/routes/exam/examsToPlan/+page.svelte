@@ -1,30 +1,34 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// lokaler State (optimistisches Umschalten ohne Voll-Reload)
 	/** @type {any[]} */
-	let items = [];
+	let items = $state([]);
 	/** @type {any} */
-	let lastData;
-	$: if (data.items !== lastData) {
-		items = data.items.map((/** @type {any} */ e) => ({ ...e }));
-		lastData = data.items;
-		// beim Laden: gibt es „nicht zugeordnete", nur die zeigen, sonst „zu planen"
-		filterStatus = items.some((/** @type {any} */ e) => e.status === 'unknown')
-			? 'unknown'
-			: 'toPlan';
-	}
+	let lastData = $state();
+	run(() => {
+		if (data.items !== lastData) {
+			items = data.items.map((/** @type {any} */ e) => ({ ...e }));
+			lastData = data.items;
+			// beim Laden: gibt es „nicht zugeordnete", nur die zeigen, sonst „zu planen"
+			filterStatus = items.some((/** @type {any} */ e) => e.status === 'unknown')
+				? 'unknown'
+				: 'toPlan';
+		}
+	});
 
-	$: byAncode = new Map(items.map((/** @type {any} */ e) => [e.ancode, e]));
+	let byAncode = $derived(new Map(items.map((/** @type {any} */ e) => [e.ancode, e])));
 
 	// Slot-Infos für den „vorgeplant"-Tooltip
-	$: dateByDay = new Map(data.days.map((/** @type {any} */ d) => [d.number, d.date]));
-	$: startBySlot = new Map(data.starttimes.map((/** @type {any} */ s) => [s.number, s.start]));
+	let dateByDay = $derived(new Map(data.days.map((/** @type {any} */ d) => [d.number, d.date])));
+	let startBySlot = $derived(new Map(data.starttimes.map((/** @type {any} */ s) => [s.number, s.start])));
 	/** @param {string} iso → „13.07." */
 	const ddmm = (iso) => {
 		const [, m, d] = (iso ?? '').slice(0, 10).split('-');
@@ -45,16 +49,16 @@
 		return 'schon (vor)geplant (Vorplanung, noch ohne Slot)';
 	}
 
-	$: examTypes = [
+	let examTypes = $derived([
 		...new Set(items.map((/** @type {any} */ e) => e.examTypeFull).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
-	let examType = '';
+	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
+	let examType = $state('');
 
 	/** @type {Set<number>} */
-	let busy = new Set();
-	let actionError = '';
+	let busy = $state(new Set());
+	let actionError = $state('');
 
-	$: counts = {
+	let counts = $derived({
 		total: items.length,
 		toPlan: items.filter((/** @type {any} */ e) => e.status === 'toPlan').length,
 		notToPlan: items.filter((/** @type {any} */ e) => e.status === 'notToPlan').length,
@@ -63,8 +67,8 @@
 		notMe: items.filter(
 			(/** @type {any} */ e) => e.status === 'toPlan' && e.constraints?.notPlannedByMe
 		).length
-	};
-	$: toPlanByMe = counts.toPlan - counts.notMe;
+	});
+	let toPlanByMe = $derived(counts.toPlan - counts.notMe);
 
 	// --- Constraints-Helfer ---
 	/** @param {any} rc */
@@ -119,7 +123,7 @@
 
 	// Dauer-Override setzen/entfernen (nur bei ZPA-Dauer 0). Aktualisiert lokal.
 	/** @type {Record<number, number|string>} */
-	let durInput = {};
+	let durInput = $state({});
 	/** @param {any} e */
 	async function setDur(e) {
 		const v = Number(durInput[e.ancode]);
@@ -174,21 +178,21 @@
 			busy = s;
 		}
 	}
-	$: durZeroCount = items.filter(isDurZero).length;
+	let durZeroCount = $derived(items.filter(isDurZero).length);
 
 	// --- Filter ---
 	// Status: beim Laden nur „zu planen"
 	/** @type {string | null} */
-	let filterStatus = 'toPlan';
-	let cFilter = 'alle';
-	let durZero = false;
-	let nonFK07 = false;
-	let q = '';
+	let filterStatus = $state('toPlan');
+	let cFilter = $state('alle');
+	let durZero = $state(false);
+	let nonFK07 = $state(false);
+	let q = $state('');
 
 	// Prüfende außerhalb der FK07 (bekannte, abweichende Fakultät).
 	/** @param {any} e */
 	const isNonFK07 = (e) => !!e.examerFk && e.examerFk !== 'FK07';
-	$: nonFK07Count = items.filter(isNonFK07).length;
+	let nonFK07Count = $derived(items.filter(isNonFK07).length);
 
 	// „Dauer 0" blendet den Status-Filter aus; beim Ausschalten wieder herstellen
 	/** @type {string | null} */
@@ -231,7 +235,7 @@
 		}
 	}
 
-	$: filtered = items.filter((/** @type {any} */ e) => {
+	let filtered = $derived(items.filter((/** @type {any} */ e) => {
 		if (filterStatus && e.status !== filterStatus) return false;
 		if (durZero && !isDurZero(e)) return false;
 		if (nonFK07 && !isNonFK07(e)) return false;
@@ -244,13 +248,13 @@
 			if (!hay.toLowerCase().includes(n)) return false;
 		}
 		return true;
-	});
+	}));
 
 	// „nicht von mir geplant"-Prüfungen ans Ende schieben (bleiben in „zu planen").
-	$: displayed = [...filtered].sort(
+	let displayed = $derived([...filtered].sort(
 		(/** @type {any} */ a, /** @type {any} */ b) =>
 			Number(!!a.constraints?.notPlannedByMe) - Number(!!b.constraints?.notPlannedByMe)
-	);
+	));
 
 	/** Toggle „nicht von mir geplant" — schließt andere Constraints aus. @param {any} e */
 	async function toggleNotMe(e) {
@@ -371,7 +375,7 @@
 
 	// --- Constraints-Editor (Modal) ---
 	/** @type {any} */
-	let editExam = null;
+	let editExam = $state(null);
 	/** @param {any} e */
 	const openEdit = (e) => (editExam = e);
 	/** @param {CustomEvent<any>} ev */
@@ -435,7 +439,7 @@
 				<strong>{counts.unknown}</strong> Prüfung{counts.unknown === 1 ? '' : 'en'} noch
 				<strong>nicht zugeordnet</strong> — bitte entscheiden: planen oder nicht planen.
 			</span>
-			<button class="btn btn-sm" on:click={() => (filterStatus = 'unknown')}>anzeigen</button>
+			<button class="btn btn-sm" onclick={() => (filterStatus = 'unknown')}>anzeigen</button>
 		</div>
 	{/if}
 
@@ -453,7 +457,7 @@
 				title={counts.notMe
 					? `${toPlanByMe} von mir, ${counts.notMe} nicht von mir geplant`
 					: 'zu planen'}
-				on:click={() => setStatusFilter('toPlan')}
+				onclick={() => setStatusFilter('toPlan')}
 			>
 				✓ {toPlanByMe}{counts.notMe ? ` +${counts.notMe}` : ''} zu planen
 			</button>
@@ -461,7 +465,7 @@
 				class="badge badge-ghost gap-1 tabular-nums {filterStatus && filterStatus !== 'notToPlan'
 					? 'opacity-40'
 					: ''}"
-				on:click={() => setStatusFilter('notToPlan')}
+				onclick={() => setStatusFilter('notToPlan')}
 			>
 				✕ {counts.notToPlan} nicht planen
 			</button>
@@ -469,21 +473,21 @@
 				class="badge badge-warning gap-1 tabular-nums {filterStatus && filterStatus !== 'unknown'
 					? 'opacity-40'
 					: ''}"
-				on:click={() => setStatusFilter('unknown')}
+				onclick={() => setStatusFilter('unknown')}
 			>
 				? {counts.unknown} nicht zugeordnet
 			</button>
 			<button
 				class="badge badge-error gap-1 tabular-nums {durZero ? '' : 'badge-outline'}"
 				title="zu planen, nicht „nicht von mir geplant“, ohne hinterlegte Dauer"
-				on:click={toggleDurZero}
+				onclick={toggleDurZero}
 			>
 				⏱ {durZeroCount} Dauer 0
 			</button>
 			<button
 				class="badge badge-neutral gap-1 tabular-nums {nonFK07 ? '' : 'badge-outline'}"
 				title="Prüfende außerhalb der FK07"
-				on:click={() => (nonFK07 = !nonFK07)}
+				onclick={() => (nonFK07 = !nonFK07)}
 			>
 				🏛 {nonFK07Count} nicht FK07
 			</button>
@@ -553,7 +557,7 @@
 							class="toggle toggle-success toggle-sm"
 							checked={e.status === 'toPlan'}
 							disabled={busy.has(e.ancode)}
-							on:change={(ev) => setStatus(e, ev.currentTarget.checked ? 'toPlan' : 'notToPlan')}
+							onchange={(ev) => setStatus(e, ev.currentTarget.checked ? 'toPlan' : 'notToPlan')}
 						/>
 						<span class="text-xs text-base-content/60">
 							{e.status === 'toPlan' ? 'zu planen' : 'nicht planen'}
@@ -632,7 +636,7 @@
 								class="toggle toggle-neutral toggle-xs"
 								checked={!!c?.notPlannedByMe}
 								disabled={busy.has(e.ancode)}
-								on:change={() => toggleNotMe(e)}
+								onchange={() => toggleNotMe(e)}
 							/>
 							<span class="text-base-content/60">nicht von mir</span>
 						</label>
@@ -646,7 +650,7 @@
 								title="planende Fakultät (z. B. „FK10“)"
 								value={c?.notPlannedByMeInFK ?? ''}
 								disabled={busy.has(e.ancode)}
-								on:change={(ev) => saveNotMe(e, { fk: ev.currentTarget.value.trim() })}
+								onchange={(ev) => saveNotMe(e, { fk: ev.currentTarget.value.trim() })}
 							/>
 							<!-- Ort inline (ohne Modal), da für notPlannedByMe interessant -->
 							<select
@@ -654,7 +658,7 @@
 								title="Ort/Campus (wirkt im Terminplan)"
 								value={c?.location ?? ''}
 								disabled={busy.has(e.ancode)}
-								on:change={(ev) => saveNotMe(e, { location: ev.currentTarget.value })}
+								onchange={(ev) => saveNotMe(e, { location: ev.currentTarget.value })}
 							>
 								<option value="">Lothstraße</option>
 								<option value="Campus Pasing">Campus Pasing</option>
@@ -700,7 +704,7 @@
 												byAncode.get(a).mainExamer
 											})`
 										: `gleicher Slot wie ${a}`}
-									on:click={() => byAncode.get(a) && openEdit(byAncode.get(a))}
+									onclick={() => byAncode.get(a) && openEdit(byAncode.get(a))}
 								>
 									↔ {a}
 								</button>
@@ -713,7 +717,7 @@
 									title="Platz-Puffer">+{c.roomConstraints.additionalSeats} Plätze</span
 								>{/if}
 							{#if !hasConstraints(c)}<span class="text-base-content/30">keine</span>{/if}
-							<button class="btn btn-ghost btn-xs ml-auto" on:click={() => openEdit(e)}>✎</button>
+							<button class="btn btn-ghost btn-xs ml-auto" onclick={() => openEdit(e)}>✎</button>
 						{/if}
 					</div>
 				{/if}

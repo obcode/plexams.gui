@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// ---- Time-Scalar (ISO mit Offset) direkt am String verarbeiten ----
 	/** @param {string} iso */
@@ -26,20 +26,20 @@
 	const dayIsoFor = (dp) =>
 		data.days.find((/** @type {any} */ d) => datePart(d.date) === dp)?.date ?? '';
 
-	$: existingIds = new Set(data.constraints.map((/** @type {any} */ c) => c.teacherID));
-	$: permByTeacher = new Map(data.permanent.map((/** @type {any} */ p) => [p.teacherID, p]));
+	let existingIds = $derived(new Set(data.constraints.map((/** @type {any} */ c) => c.teacherID)));
+	let permByTeacher = $derived(new Map(data.permanent.map((/** @type {any} */ p) => [p.teacherID, p])));
 	// per-Semester-Dropdown: Kandidaten ohne Semester-Eintrag und nicht permanent
-	$: addableTeachers = data.candidates.filter(
+	let addableTeachers = $derived(data.candidates.filter(
 		(/** @type {any} */ t) => !existingIds.has(t.id) && !permByTeacher.has(t.id)
-	);
-	$: firstDayPart = data.days.length ? datePart(data.days[0].date) : '';
+	));
+	let firstDayPart = $derived(data.days.length ? datePart(data.days[0].date) : '');
 
 	// alle Aufsichten anzeigen (auch ohne Constraints) — Zeilen entsprechend ableiten
-	let showAll = false;
-	$: constraintByTeacher = new Map(
+	let showAll = $state(false);
+	let constraintByTeacher = $derived(new Map(
 		data.constraints.map((/** @type {any} */ c) => [c.teacherID, c])
-	);
-	$: rows = showAll
+	));
+	let rows = $derived(showAll
 		? data.candidates.map(
 				(/** @type {any} */ t) =>
 					constraintByTeacher.get(t.id) ?? {
@@ -52,23 +52,23 @@
 						_empty: true
 					}
 			)
-		: data.constraints;
+		: data.constraints);
 
 	// ---- Editor-Zustand ----
 	/** @type {number | null} */
-	let editing = null;
-	let editName = '';
-	let editIsNot = false;
+	let editing = $state(null);
+	let editName = $state('');
+	let editIsNot = $state(false);
 	/** @type {string[]} Datums-Teile (YYYY-MM-DD) */
-	let editExcluded = [];
+	let editExcluded = $state([]);
 	/** @type {{ date: string, from: string, until: string }[]} */
-	let editWindows = [];
-	let isNew = false;
-	let editError = '';
-	let saving = false;
+	let editWindows = $state([]);
+	let isNew = $state(false);
+	let editError = $state('');
+	let saving = $state(false);
 
-	let addTeacherID = 0;
-	let listError = '';
+	let addTeacherID = $state(0);
+	let listError = $state('');
 
 	/** @param {any} c */
 	function openEdit(c) {
@@ -214,7 +214,7 @@
 				{/each}
 			</select>
 		</label>
-		<button class="btn btn-primary btn-sm" disabled={!addTeacherID} on:click={openAdd}>
+		<button class="btn btn-primary btn-sm" disabled={!addTeacherID} onclick={openAdd}>
 			Constraints anlegen
 		</button>
 		<div class="flex-1"></div>
@@ -296,7 +296,7 @@
 										>permanent — kein Semester-Eintrag nötig</span
 									>
 								{:else}
-									<button class="btn btn-ghost btn-xs" on:click={() => openEdit(c)}>
+									<button class="btn btn-ghost btn-xs" onclick={() => openEdit(c)}>
 										{c._empty ? 'Anlegen' : 'Bearbeiten'}
 									</button>
 									{#if !c._empty}
@@ -339,7 +339,7 @@
 			<div class="mt-4 flex flex-col gap-2">
 				<div class="flex items-center gap-2">
 					<span class="font-medium">Zusätzliche Sperrtage</span>
-					<button class="btn btn-ghost btn-xs" on:click={addExcluded}>+ Sperrtag</button>
+					<button class="btn btn-ghost btn-xs" onclick={addExcluded}>+ Sperrtag</button>
 				</div>
 				{#if editExcluded.length === 0}
 					<div class="text-xs text-base-content/50">keine</div>
@@ -351,7 +351,7 @@
 									<option value={datePart(d.date)}>{fmtDate(d.date)}</option>
 								{/each}
 							</select>
-							<button class="btn btn-ghost btn-xs text-error" on:click={() => removeExcluded(i)}
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeExcluded(i)}
 								>✕</button
 							>
 						</div>
@@ -363,7 +363,7 @@
 			<div class="mt-4 flex flex-col gap-2">
 				<div class="flex items-center gap-2">
 					<span class="font-medium">Sperrfenster</span>
-					<button class="btn btn-ghost btn-xs" on:click={addWindow}>+ Sperrfenster</button>
+					<button class="btn btn-ghost btn-xs" onclick={addWindow}>+ Sperrfenster</button>
 				</div>
 				<p class="text-xs text-base-content/50">
 					Mindestens „von“ oder „bis“ angeben; sind beide gesetzt, muss „bis“ nach „von“ liegen.
@@ -386,7 +386,7 @@
 								<span class="text-xs text-base-content/60">bis</span>
 								<input type="time" class="input input-bordered input-sm" bind:value={w.until} />
 							</label>
-							<button class="btn btn-ghost btn-xs text-error" on:click={() => removeWindow(i)}
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeWindow(i)}
 								>✕</button
 							>
 						</div>
@@ -399,7 +399,7 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeEdit} disabled={saving}
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
 					>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
@@ -407,6 +407,6 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeEdit}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeEdit}></button>
 	</div>
 {/if}

@@ -45,7 +45,7 @@
 											class="progress progress-error w-full"
 											value={nta.nta.deltaDurationPercent}
 											max={100}
-										/>
+										></progress>
 									</div>
 								</div>
 							</li>

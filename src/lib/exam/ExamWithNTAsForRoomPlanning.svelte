@@ -2,54 +2,72 @@
 	import { classifyRoom } from '$lib/room/roomCategories';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	/** @type {any} */
-	export let plannedExam;
-	export let showOnlyExamsWithNTAs;
-	export let details;
-	export let showRooms;
-	/** bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen */
-	export let dimOthers = false;
-	/** Tag dieser Karte — für die Raum-Vorplanung (freie Plätze pro Slot) @type {number | null} */
-	export let day = null;
-	/** Slot dieser Karte @type {number | null} */
-	export let time = null;
-	/** nur Prüfungen anzeigen, die (noch) keinen Raum haben */
-	export let showOnlyWithoutRoom = false;
-	/** nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt */
-	export let highlightNotPrePlanned = false;
-	/** fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>} */
-	export let prePlannedSeats = {};
-	/** Ancodes mit nicht zugeordneten Studierenden (für „nur ohne Raum") @type {Set<number>} */
-	export let unplacedAncodes = new Set();
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} plannedExam
+	 * @property {any} showOnlyExamsWithNTAs
+	 * @property {any} details
+	 * @property {any} showRooms
+	 * @property {boolean} [dimOthers] - bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen
+	 * @property {number | null} [day] - Tag dieser Karte — für die Raum-Vorplanung (freie Plätze pro Slot) @type {number | null}
+	 * @property {number | null} [time] - Slot dieser Karte @type {number | null}
+	 * @property {boolean} [showOnlyWithoutRoom] - nur Prüfungen anzeigen, die (noch) keinen Raum haben
+	 * @property {boolean} [highlightNotPrePlanned] - nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt
+	 * @property {Record<string, number>} [prePlannedSeats] - fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>}
+	 * @property {Set<number>} [unplacedAncodes] - Ancodes mit nicht zugeordneten Studierenden (für „nur ohne Raum") @type {Set<number>}
+	 */
+
+	/** @type {Props} */
+	let {
+		plannedExam = $bindable(),
+		showOnlyExamsWithNTAs,
+		details,
+		showRooms,
+		dimOthers = false,
+		day = null,
+		time = null,
+		showOnlyWithoutRoom = false,
+		highlightNotPrePlanned = false,
+		prePlannedSeats = {},
+		unplacedAncodes = new Set()
+	} = $props();
 
 	let exam = plannedExam.zpaExam;
 	let constraints = plannedExam.constraints;
 	let ntas = plannedExam.ntas;
 
 	// enthält diese Prüfung den ausgewählten Raum?
-	$: matchesRoom =
-		showRooms === 'all' ||
-		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms);
-	$: passNta = !showOnlyExamsWithNTAs || (ntas && ntas.length > 0);
+	let matchesRoom =
+		$derived(showRooms === 'all' ||
+		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms));
+	let passNta = $derived(!showOnlyExamsWithNTAs || (ntas && ntas.length > 0));
 	// „ohne Raum": nicht zugeordnete Studierende (autoritativ aus unplacedExams)
 	// oder gar keine geplanten Räume.
-	$: hasNoRoom =
-		unplacedAncodes.has(exam.ancode) ||
+	let hasNoRoom =
+		$derived(unplacedAncodes.has(exam.ancode) ||
 		!plannedExam.plannedRooms ||
-		plannedExam.plannedRooms.length === 0;
-	$: passNoRoom = !showOnlyWithoutRoom || hasNoRoom;
+		plannedExam.plannedRooms.length === 0);
+	let passNoRoom = $derived(!showOnlyWithoutRoom || hasNoRoom);
 	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
-	$: visible = passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers);
+	let visible = $derived(passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers));
 	// hat die Prüfung mindestens einen nicht fixierten (echten) Raum?
-	$: hasNotPrePlanned = (plannedExam.plannedRooms || []).some(
+	let hasNotPrePlanned = $derived((plannedExam.plannedRooms || []).some(
 		(/** @type {any} */ r) => !r.prePlanned && r.room.name !== 'No Room'
-	);
+	));
 	// ganze Karte dimmen: bei Raumauswahl ohne Treffer, oder im „nur nicht
 	// fixierte"-Modus, wenn die Karte keinen nicht fixierten Raum hat
-	$: dimmed =
-		(showRooms !== 'all' && !matchesRoom) || (highlightNotPrePlanned && !hasNotPrePlanned);
+	let dimmed =
+		$derived((showRooms !== 'all' && !matchesRoom) || (highlightNotPrePlanned && !hasNotPrePlanned));
 
-	$: hasNtas = ntas && ntas.length > 0;
+	let hasNtas = $derived(ntas && ntas.length > 0);
 
 	let studentRegs = plannedExam.studentRegsCount;
 
@@ -126,15 +144,15 @@
 	// ----- Raum-Picker: einen Raum von Hand vorplanen (auch belegte Räume als
 	// Reserve mitnutzen oder als NTA-Raum). Lädt die freien Plätze pro Slot bei
 	// Bedarf nach. -----
-	let showPicker = false;
+	let showPicker = $state(false);
 	/** @type {'normal' | 'reserve' | 'nta'} */
-	let pickVariant = 'normal';
-	let pickMtknr = ''; // bei Variante „nta": gewählte Matrikelnummer
-	let pickSeats = '';
-	let pickError = '';
+	let pickVariant = $state('normal');
+	let pickMtknr = $state(''); // bei Variante „nta": gewählte Matrikelnummer
+	let pickSeats = $state('');
+	let pickError = $state('');
 	/** @type {any[] | null} */
-	let slotRooms = null;
-	let loadingRooms = false;
+	let slotRooms = $state(null);
+	let loadingRooms = $state(false);
 
 	async function openPicker() {
 		showPicker = true;
@@ -181,14 +199,14 @@
 	// Prüfung belegt sind (usedBy) oder bereits (z. B. als NTA-Raum) für diese
 	// Prüfung vorgeplant sind — Mitnutzung ist gewollt. Verfügbarkeit zeigt sich
 	// an freeSeats; Constraint-Eignung bleibt als Hinweis (mismatchReason).
-	$: pickerCandidates = (slotRooms || [])
+	let pickerCandidates = $derived((slotRooms || [])
 		.filter((/** @type {any} */ r) => r.roomName !== 'No Room')
 		.map((/** @type {any} */ r) => ({
 			...r,
 			dimReason: mismatchReason(r),
 			full: r.freeSeats <= 0
 		}))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.roomName.localeCompare(b.roomName));
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.roomName.localeCompare(b.roomName)));
 
 	/** @param {any} c */
 	async function addRoom(c) {
@@ -401,7 +419,7 @@
 							<button
 								class="btn btn-ghost btn-xs"
 								title="schließen"
-								on:click={() => (showPicker = false)}>✕</button
+								onclick={() => (showPicker = false)}>✕</button
 							>
 						</div>
 						{#if loadingRooms}
@@ -450,7 +468,7 @@
 				{:else}
 					<button
 						class="btn btn-ghost btn-xs self-start text-xs text-base-content/60"
-						on:click={openPicker}>➕ Raum vorplanen</button
+						onclick={openPicker}>➕ Raum vorplanen</button
 					>
 				{/if}
 				{#if pickError}

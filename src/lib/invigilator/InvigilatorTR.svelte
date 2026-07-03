@@ -1,15 +1,29 @@
 <script>
-	export let semesterConfig;
-	export let index;
-	export let invigilator;
-	// forwarded to the calendar: hide Aufsicht/Reserve blocks, show only exams
-	export let showInvigilations = true;
+	import { run } from 'svelte/legacy';
+
+	
 	// global duty at 100% workload (before the personal factor); the bars are scaled
-	// relative to this, so the "bei 100 %" bar is normally full.
-	export let base100 = 0;
+	
 
 	import InvigilatorDays from './InvigilatorDays.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} semesterConfig
+	 * @property {any} index
+	 * @property {any} invigilator
+	 * @property {boolean} [showInvigilations] - forwarded to the calendar: hide Aufsicht/Reserve blocks, show only exams
+	 * @property {number} [base100] - relative to this, so the "bei 100 %" bar is normally full.
+	 */
+
+	/** @type {Props} */
+	let {
+		semesterConfig,
+		index,
+		invigilator,
+		showInvigilations = true,
+		base100 = 0
+	} = $props();
 
 	function nameBg(invigilator) {
 		if (!invigilator.requirements.fromZpa) {
@@ -21,13 +35,15 @@
 		return 'bg-base-200';
 	}
 
-	let contribution = 0;
+	let contribution = $state(0);
 	if (invigilator.requirements) {
 		contribution = invigilator.requirements.allContributions;
 	}
 
-	let openMinutes = 0;
-	$: openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+	let openMinutes = $state(0);
+	run(() => {
+		openMinutes = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+	});
 
 	function openColor() {
 		if (openMinutes <= 0) {
@@ -53,11 +69,11 @@
 	// Abrechnung der Aufsichten: Eigenaufsicht zählt 0, Reserve pauschal 60,
 	// sonstige Aufsicht mit ihrer tatsächlichen Dauer. Summe = geleistete Minuten.
 	const RESERVE_MINUTES = 60;
-	let selfCount = 0;
-	let reserveCount = 0;
-	let otherCount = 0;
-	let reserveMinutes = 0;
-	let otherMinutes = 0;
+	let selfCount = $state(0);
+	let reserveCount = $state(0);
+	let otherCount = $state(0);
+	let reserveMinutes = $state(0);
+	let otherMinutes = $state(0);
 	for (const inv of invigilator.todos?.invigilations ?? []) {
 		if (inv.isSelfInvigilation) {
 			selfCount++;

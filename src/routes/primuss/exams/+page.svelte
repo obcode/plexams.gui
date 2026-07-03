@@ -4,20 +4,20 @@
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	let program = data.primussExams.length > 0 ? data.primussExams[0].program : '';
+	let program = $state(data.primussExams.length > 0 ? data.primussExams[0].program : '');
 
 	// --- Sammellisten-Import (ZIP per REST an POST /upload/primuss-zip) ---
 	// inkrementell/wiederholbar; nach dem Upload aktualisiert invalidateAll die
 	// Anmeldedaten unten.
-	let uploading = false;
-	let blocked = false;
-	let uploadError = '';
+	let uploading = $state(false);
+	let blocked = $state(false);
+	let uploadError = $state('');
 	/** @type {any} */
-	let result = null;
+	let result = $state(null);
 	/** @type {number | ''} */
-	let mailAncode = '';
+	let mailAncode = $state('');
 
 	/** @param {Event} ev */
 	async function onFile(ev) {
@@ -45,27 +45,27 @@
 		}
 	}
 
-	$: programs = result?.programs ?? [];
-	$: skipped = result?.skipped ?? [];
-	$: affected = result?.affectedZpaAncodes ?? [];
-	$: hasFirstImport = programs.some((/** @type {any} */ p) => p.firstImport);
+	let programs = $derived(result?.programs ?? []);
+	let skipped = $derived(result?.skipped ?? []);
+	let affected = $derived(result?.affectedZpaAncodes ?? []);
+	let hasFirstImport = $derived(programs.some((/** @type {any} */ p) => p.firstImport));
 
-	$: exams = data.primussExams.filter((/** @type {any} */ p) => p.program == program);
-	$: rows = exams.length > 0 ? exams[0].exams : [];
+	let exams = $derived(data.primussExams.filter((/** @type {any} */ p) => p.program == program));
+	let rows = $derived(exams.length > 0 ? exams[0].exams : []);
 
 	// Suche nach Ancode / Modul / Prüfender — bei aktiver Suche über alle
 	// Studiengänge, sonst die Liste des gewählten Studiengangs.
-	let q = '';
+	let q = $state('');
 	// Fokus auf das Wesentliche: FK07-Prüfungen und/oder noch nicht mit einer
 	// ZPA-Prüfung verbundene.
 	// Ansicht-Voreinstellung (sich gegenseitig ausschließend); orthogonal dazu der
 	// „nicht verbunden"-Filter (gehört zum Verbinden-Workflow).
 	/** @type {'alle' | 'fk07' | 'zero' | 'nonfk07' | 'irrelevant'} */
-	let view = 'fk07';
-	let onlyUnconnected = false;
-	$: ql = q.trim().toLowerCase();
-	$: searching = ql.length > 0;
-	$: allRows = data.primussExams.flatMap((/** @type {any} */ p) => p.exams);
+	let view = $state('fk07');
+	let onlyUnconnected = $state(false);
+	let ql = $derived(q.trim().toLowerCase());
+	let searching = $derived(ql.length > 0);
+	let allRows = $derived(data.primussExams.flatMap((/** @type {any} */ p) => p.exams));
 
 	// Prüfung „relevant"? Art leer → ja; sonst nur schriftliche/praktische
 	// Prüfungen. Wortstämme schr/prakt fangen auch Kürzel wie „schrP" ab. Alles
@@ -93,18 +93,18 @@
 		return true; // alle
 	};
 
-	$: baseRows = searching
+	let baseRows = $derived(searching
 		? allRows.filter((/** @type {any} */ e) =>
 				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
 			)
-		: rows;
+		: rows);
 	// view/onlyUnconnected wörtlich referenzieren, damit Svelte die Abhängigkeit
 	// erkennt und bei Auswahländerung neu filtert.
-	$: displayedRows = baseRows
+	let displayedRows = $derived(baseRows
 		.filter((/** @type {any} */ e) => viewMatch(e, view))
-		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected);
+		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected));
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
-	$: openFK07 = allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length;
+	let openFK07 = $derived(allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length);
 
 	// Studiengänge nach Kategorie gruppieren: FK07 / MUC.DAI / Sonstige
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
@@ -116,22 +116,22 @@
 	/** @param {string} prog */
 	const catOf = (prog) => data.catByProgram?.[prog] ?? 'misc';
 
-	$: groups = CAT_ORDER.map((key) => ({
+	let groups = $derived(CAT_ORDER.map((key) => ({
 		key,
 		label: CAT_LABEL[key],
 		items: data.primussExams.filter((/** @type {any} */ p) => catOf(p.program) === key)
-	})).filter((g) => g.items.length > 0);
+	})).filter((g) => g.items.length > 0));
 
 	// --- Inline mit einer ZPA-Prüfung verbinden (addPrimussAncode) ---
 	// Reuse der bestehenden Mutation von /exam/connected: eine Primuss-Anmeldung
 	// (program/ancode) an eine ZPA-Prüfung hängen. Ziel-Ancode vorbelegt mit dem
 	// Primuss-Ancode (Normalfall), Vorschau aus data.zpaByAncode.
 	/** @type {any} */
-	let connectExam = null;
+	let connectExam = $state(null);
 	/** @type {number | string} */
-	let connectTarget = '';
-	let connectBusy = false;
-	let connectError = '';
+	let connectTarget = $state('');
+	let connectBusy = $state(false);
+	let connectError = $state('');
 
 	/** @param {any} exam */
 	function startConnect(exam) {
@@ -143,8 +143,8 @@
 		connectExam = null;
 		connectError = '';
 	}
-	$: connectPreview =
-		connectTarget !== '' ? (data.zpaByAncode?.[Number(connectTarget)] ?? null) : null;
+	let connectPreview =
+		$derived(connectTarget !== '' ? (data.zpaByAncode?.[Number(connectTarget)] ?? null) : null);
 
 	async function doConnect() {
 		if (connectBusy || !connectExam || connectTarget === '') return;
@@ -187,7 +187,7 @@
 				type="file"
 				accept=".zip,application/zip"
 				class="hidden"
-				on:change={onFile}
+				onchange={onFile}
 				disabled={uploading}
 			/>
 		</label>
@@ -214,7 +214,7 @@
 					inkrementell — Gruppen nacheinander und später erneut (geänderte Daten) hochladbar
 				</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" on:click={() => (result = null)}>schließen</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => (result = null)}>schließen</button>
 			</div>
 
 			<div class="overflow-x-auto rounded-lg border border-base-200">
@@ -301,7 +301,7 @@
 					{#each affected as a}
 						<button
 							class="badge gap-1 tabular-nums {mailAncode === a ? 'badge-primary' : 'badge-ghost'}"
-							on:click={() => (mailAncode = a)}
+							onclick={() => (mailAncode = a)}
 						>
 							{a}
 						</button>
@@ -372,7 +372,7 @@
 		<button
 			class="badge gap-1 tabular-nums {onlyUnconnected ? 'badge-warning' : 'badge-ghost'}"
 			title="nur noch nicht mit einer ZPA-Prüfung verbundene"
-			on:click={() => (onlyUnconnected = !onlyUnconnected)}
+			onclick={() => (onlyUnconnected = !onlyUnconnected)}
 		>
 			⚠ unverbunden
 		</button>
@@ -380,7 +380,7 @@
 			<span class="text-warning">{openFK07} offen (FK07 &amp; nicht verbunden)</span>
 		{/if}
 		{#if searching}
-			<button class="btn btn-ghost btn-xs" on:click={() => (q = '')}>✕ Suche</button>
+			<button class="btn btn-ghost btn-xs" onclick={() => (q = '')}>✕ Suche</button>
 		{/if}
 	</div>
 
@@ -425,7 +425,7 @@
 										class="btn btn-ghost btn-xs"
 										class:btn-active={connectExam === exam}
 										title="mit einer ZPA-Prüfung verbinden"
-										on:click={() => (connectExam === exam ? cancelConnect() : startConnect(exam))}
+										onclick={() => (connectExam === exam ? cancelConnect() : startConnect(exam))}
 									>
 										＋ verbinden
 									</button>
@@ -507,7 +507,7 @@
 									>
 										{connectBusy ? 'verbindet …' : '✓ verbinden'}
 									</WriteButton>
-									<button class="btn btn-ghost btn-xs" on:click={cancelConnect}>abbrechen</button>
+									<button class="btn btn-ghost btn-xs" onclick={cancelConnect}>abbrechen</button>
 									{#if connectBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
 								</div>
 								{#if connectError}

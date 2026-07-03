@@ -1,19 +1,23 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { levelOf, zpaPrograms, primussPrograms } from '$lib/exam/connected.js';
 	import ConnectedRow from '$lib/exam/ConnectedRow.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// lokaler, bearbeitbarer State — Mutationen ersetzen nur den betroffenen
 	// Eintrag (kein Voll-Reload).
 	/** @type {any[]} */
-	let exams = [];
+	let exams = $state([]);
 	/** @type {any} */
-	let lastData;
-	$: if (data.connectedExams !== lastData) {
-		exams = [...(data.connectedExams ?? [])];
-		lastData = data.connectedExams;
-	}
+	let lastData = $state();
+	run(() => {
+		if (data.connectedExams !== lastData) {
+			exams = [...(data.connectedExams ?? [])];
+			lastData = data.connectedExams;
+		}
+	});
 
 	/** @param {any} updated → aktualisiertes ConnectedExam einsetzen */
 	function onUpdated(updated) {
@@ -26,7 +30,7 @@
 		exams = exams;
 	}
 
-	$: rows = exams.map((/** @type {any} */ e) => ({ ...e, level: levelOf(e) }));
+	let rows = $derived(exams.map((/** @type {any} */ e) => ({ ...e, level: levelOf(e) })));
 
 	/** @param {(e: any) => Set<string>} fn */
 	const sortedPrograms = (fn) =>
@@ -34,30 +38,30 @@
 			a.localeCompare(b)
 		);
 	// Studiengänge je Seite (eigene Optionslisten)
-	$: zpaProgramOptions = sortedPrograms(zpaPrograms);
-	$: primussProgramOptions = sortedPrograms(primussPrograms);
+	let zpaProgramOptions = $derived(sortedPrograms(zpaPrograms));
+	let primussProgramOptions = $derived(sortedPrograms(primussPrograms));
 
-	$: counts = {
+	let counts = $derived({
 		total: rows.length,
 		error: rows.filter((/** @type {any} */ r) => r.level === 'error').length,
 		warning: rows.filter((/** @type {any} */ r) => r.level === 'warning').length,
 		info: rows.filter((/** @type {any} */ r) => r.level === 'info').length,
 		ok: rows.filter((/** @type {any} */ r) => r.level === 'ok').length
-	};
+	});
 
 	// Filter: null = alle, 'attention' = Warnungen+Fehler, sonst genau eine Stufe.
 	/** @type {string | null} */
-	let filter = null;
-	let zpaProgram = ''; // '' = alle (ZPA-Seite)
-	let primussProgram = ''; // '' = alle (Primuss-Seite)
-	let q = '';
+	let filter = $state(null);
+	let zpaProgram = $state(''); // '' = alle (ZPA-Seite)
+	let primussProgram = $state(''); // '' = alle (Primuss-Seite)
+	let q = $state('');
 
 	/** @param {string} f */
 	const toggle = (f) => (filter = filter === f ? null : f);
 
 	// `filter`, `zpaProgram`, `primussProgram` und `q` werden hier direkt
 	// referenziert, damit Svelte die Reaktivität erkennt.
-	$: filtered = rows.filter((/** @type {any} */ r) => {
+	let filtered = $derived(rows.filter((/** @type {any} */ r) => {
 		if (filter === 'attention') {
 			if (r.level !== 'warning' && r.level !== 'error') return false;
 		} else if (filter && r.level !== filter) {
@@ -75,7 +79,7 @@
 			if (!hay.toLowerCase().includes(n)) return false;
 		}
 		return true;
-	});
+	}));
 
 	/** Badge ausgegraut, wenn ein anderer Filter aktiv ist.
 	 * @param {string | null} active @param {string} f */
@@ -104,25 +108,25 @@
 			<div class="flex flex-wrap items-center gap-1.5">
 				<button
 					class="badge badge-success gap-1 tabular-nums {dim(filter, 'ok')}"
-					on:click={() => toggle('ok')}
+					onclick={() => toggle('ok')}
 				>
 					✓ {counts.ok} passt
 				</button>
 				<button
 					class="badge badge-ghost gap-1 tabular-nums {dim(filter, 'info')}"
-					on:click={() => toggle('info')}
+					onclick={() => toggle('info')}
 				>
 					ℹ {counts.info} Hinweise
 				</button>
 				<button
 					class="badge badge-warning gap-1 tabular-nums {dim(filter, 'warning')}"
-					on:click={() => toggle('warning')}
+					onclick={() => toggle('warning')}
 				>
 					⚠ {counts.warning} Warnungen
 				</button>
 				<button
 					class="badge badge-error gap-1 tabular-nums {dim(filter, 'error')}"
-					on:click={() => toggle('error')}
+					onclick={() => toggle('error')}
 				>
 					✕ {counts.error} Fehler
 				</button>
@@ -133,7 +137,7 @@
 					type="checkbox"
 					class="toggle toggle-sm"
 					checked={filter === 'attention'}
-					on:change={() => toggle('attention')}
+					onchange={() => toggle('attention')}
 				/>
 				<span>nur Auffälligkeiten</span>
 			</label>

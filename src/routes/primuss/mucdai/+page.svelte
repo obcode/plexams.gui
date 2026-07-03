@@ -2,15 +2,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	$: programs = [...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
+	let programs = $derived([...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
 		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
-	);
+	));
 
 	// gleiche Prüfung (gleicher ZPA-Ancode; sonst primussAncode) über mehrere
 	// Studiengänge zu einer Zeile gruppieren
-	$: groups = (() => {
+	let groups = $derived((() => {
 		/** @type {Map<string, any>} */
 		const m = new Map();
 		for (const e of data.mucdaiExams) {
@@ -50,16 +50,16 @@
 				(/** @type {number} */ a, /** @type {number} */ b) => a - b
 			)
 		}));
-	})();
+	})());
 
 	/** @type {string} */
-	let program = '';
-	let fk07Only = false;
+	let program = $state('');
+	let fk07Only = $state(false);
 	/** @type {'ancode' | 'time'} */
-	let sortBy = 'ancode';
+	let sortBy = $state('ancode');
 	// Suche nach Prüfender / Modul / Ancode (ZPA & Primuss)
-	let q = '';
-	$: ql = q.trim().toLowerCase();
+	let q = $state('');
+	let ql = $derived(q.trim().toLowerCase());
 
 	/** @param {any} g → Zeitstempel (ms) für Sortierung; ohne Zeit ans Ende */
 	function timeMs(g) {
@@ -72,7 +72,7 @@
 		return Number.isNaN(t) ? Infinity : t;
 	}
 
-	$: filtered = groups
+	let filtered = $derived(groups
 		.filter((g) => !program || g.programs.includes(program))
 		.filter((g) => !fk07Only || g.plannedBy === 'FK07')
 		.filter(
@@ -85,7 +85,7 @@
 		.sort((a, b) => {
 			if (sortBy === 'time') return timeMs(a) - timeMs(b) || a.primussList[0] - b.primussList[0];
 			return a.primussList[0] - b.primussList[0];
-		});
+		}));
 
 	// --- Zeit-Helfer (Berlin) ---
 	/** @param {string} iso → „13.07. 08:30" */
@@ -119,10 +119,10 @@
 	}
 
 	// --- Import ---
-	let importing = false;
+	let importing = $state(false);
 	/** @type {any} */
-	let importResult = null;
-	let importError = '';
+	let importResult = $state(null);
+	let importError = $state('');
 	/** @param {Event} ev */
 	async function onFile(ev) {
 		const input = /** @type {HTMLInputElement} */ (ev.target);
@@ -155,11 +155,11 @@
 
 	// --- externe Zeit setzen ---
 	/** @type {any} */
-	let timeFor = null;
-	let tDate = '';
-	let tTime = '';
-	let timeSaving = false;
-	let timeError = '';
+	let timeFor = $state(null);
+	let tDate = $state('');
+	let tTime = $state('');
+	let timeSaving = $state(false);
+	let timeError = $state('');
 	/** @param {any} e */
 	function openTime(e) {
 		timeFor = e;
@@ -212,12 +212,12 @@
 	const jsonHeaders = { 'content-type': 'application/json' };
 
 	/** @type {any} */
-	let linkFor = null;
+	let linkFor = $state(null);
 	/** @type {any[]} */
-	let candidates = [];
-	let candLoading = false;
-	let linking = false;
-	let linkError = '';
+	let candidates = $state([]);
+	let candLoading = $state(false);
+	let linking = $state(false);
+	let linkError = $state('');
 
 	/** @param {any} g */
 	async function openLink(g) {
@@ -309,7 +309,7 @@
 				type="file"
 				accept=".csv,text/csv"
 				class="hidden"
-				on:change={onFile}
+				onchange={onFile}
 				disabled={importing}
 			/>
 		</label>
@@ -340,12 +340,12 @@
 				<span class="text-sm text-base-content/50">Studiengang:</span>
 				<button
 					class="badge gap-1 {program === '' ? 'badge-primary' : 'badge-ghost'}"
-					on:click={() => (program = '')}>alle</button
+					onclick={() => (program = '')}>alle</button
 				>
 				{#each programs as p}
 					<button
 						class="badge gap-1 {program === p ? 'badge-primary' : 'badge-ghost'}"
-						on:click={() => (program = p)}>{p}</button
+						onclick={() => (program = p)}>{p}</button
 					>
 				{/each}
 			</div>
@@ -364,11 +364,11 @@
 				<span class="text-base-content/50">Sortierung:</span>
 				<button
 					class="badge gap-1 {sortBy === 'ancode' ? 'badge-primary' : 'badge-ghost'}"
-					on:click={() => (sortBy = 'ancode')}>Primuss-Ancode</button
+					onclick={() => (sortBy = 'ancode')}>Primuss-Ancode</button
 				>
 				<button
 					class="badge gap-1 {sortBy === 'time' ? 'badge-primary' : 'badge-ghost'}"
-					on:click={() => (sortBy = 'time')}>Zeit</button
+					onclick={() => (sortBy = 'time')}>Zeit</button
 				>
 			</div>
 		</div>
@@ -454,13 +454,13 @@
 									<button
 										class="btn btn-ghost btn-xs"
 										title="ZPA-Verknüpfung ändern/entfernen"
-										on:click={() => openLink(g)}
+										onclick={() => openLink(g)}
 									>
 										Verknüpfung
 									</button>
 								{/if}
 								{#if g.plannedBy !== 'FK07' && g.ancode != null}
-									<button class="btn btn-ghost btn-xs" on:click={() => openTime(g)}>
+									<button class="btn btn-ghost btn-xs" onclick={() => openTime(g)}>
 										Zeit setzen
 									</button>
 								{/if}
@@ -480,7 +480,7 @@
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">Import: {importResult.examsImported} Prüfungen</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" on:click={() => (importResult = null)}
+				<button class="btn btn-ghost btn-xs" onclick={() => (importResult = null)}
 					>schließen</button
 				>
 			</div>
@@ -521,7 +521,7 @@
 			<div class="modal-action">
 				<button
 					class="btn btn-ghost btn-sm"
-					on:click={() => (timeFor = null)}
+					onclick={() => (timeFor = null)}
 					disabled={timeSaving}
 				>
 					Abbrechen
@@ -531,7 +531,7 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (timeFor = null)}
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (timeFor = null)}
 		></button>
 	</div>
 {/if}
@@ -609,9 +609,9 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" on:click={closeLink} disabled={linking}>Schließen</button>
+				<button class="btn btn-ghost btn-sm" onclick={closeLink} disabled={linking}>Schließen</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={closeLink}></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={closeLink}></button>
 	</div>
 {/if}

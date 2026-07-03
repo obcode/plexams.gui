@@ -1,41 +1,49 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import EmailCard from '$lib/email/EmailCard.svelte';
 	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
 	import { emailGroups } from '$lib/email/emails';
 	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
 
-	export let data;
+	let { data } = $props();
 
+
+	// Gestreamte Load-Daten: Seite rendert sofort, diese füllen sich nach.
+	/** @type {Record<string, boolean>} */
+	let conditionsDone = $state({});
+	let allRequirementsPresent = $state(false);
+	/** @type {any[]} */
+	let examPlanningMailRecipients = $state([]);
+
+	// Einzelversand mit Argumenten (wiederholbar, kein Gate)
+	let pdAncode = $state('');
+	let pdUpdated = $state(false);
+	let puProgram = $state('');
+	let puAncode = $state('');
+	let puEmail = $state('');
+	let newNtaMtknr = $state('');
+	let roomAloneMtknr = $state('');
+	run(() => {
+		data.conditionsDone.then((/** @type {Record<string, boolean>} */ v) => (conditionsDone = v));
+	});
 	// „bereits gesendet": zugehörige Bedingung ist done. Solche Versände wandern
 	// nach unten, oben bleibt nur Offenes (oberste Karte = nächster Schritt).
 	// Reaktiv (referenziert conditionsDone), damit sich die Sortierung aktualisiert,
 	// sobald die async geladenen Bedingungen eintreffen.
 	/** @param {import('$lib/email/emails').EmailDef} email */
-	$: isSent = (email) => {
+	let isSent = $derived((email) => {
 		const k = email.conditionKey || EMAIL_CONDITION[email.key];
 		return !!k && conditionsDone[k] === true;
-	};
-	$: sentEmails = emailGroups.flatMap((g) => g.emails).filter(isSent);
-
-	// Gestreamte Load-Daten: Seite rendert sofort, diese füllen sich nach.
-	/** @type {Record<string, boolean>} */
-	let conditionsDone = {};
-	let allRequirementsPresent = false;
-	/** @type {any[]} */
-	let examPlanningMailRecipients = [];
-	$: data.conditionsDone.then((/** @type {Record<string, boolean>} */ v) => (conditionsDone = v));
-	$: data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
-	$: data.examPlanningMailRecipients.then((/** @type {any[]} */ v) => (examPlanningMailRecipients = v));
-
-	// Einzelversand mit Argumenten (wiederholbar, kein Gate)
-	let pdAncode = '';
-	let pdUpdated = false;
-	let puProgram = '';
-	let puAncode = '';
-	let puEmail = '';
-	let newNtaMtknr = '';
-	let roomAloneMtknr = '';
+	});
+	let sentEmails = $derived(emailGroups.flatMap((g) => g.emails).filter(isSent));
+	run(() => {
+		data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
+	});
+	run(() => {
+		data.examPlanningMailRecipients.then((/** @type {any[]} */ v) => (examPlanningMailRecipients = v));
+	});
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">

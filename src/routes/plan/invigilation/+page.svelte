@@ -1,10 +1,10 @@
 <script>
-	export let data;
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
+	let { data } = $props();
 
-	let days = data.days;
+	let days = $state(data.days);
 	// mtknr -> NTA, to mark NTA students sitting in a room
 	const ntaMap = new Map((data.ntas ?? []).map((/** @type {any} */ n) => [n.mtknr, n]));
 
@@ -36,15 +36,15 @@
 		.map((m) => ntaMap.get(m))
 		.sort((a, b) => a.name.localeCompare(b.name));
 
-	let open = days.map(() => false); // initial: alle Tage zu
+	let open = $state(days.map(() => false)); // initial: alle Tage zu
 
 	// Auswahl: entweder Person (Teacher-ID) oder NTA (mtknr) — wechselseitig exklusiv
-	let selKind = ''; // '' | 'teacher' | 'nta'
-	let selectedId = 0;
-	let selectedNta = '';
-	let selectedName = '';
-	let examinerSel = 0;
-	let ntaSel = '';
+	let selKind = $state(''); // '' | 'teacher' | 'nta'
+	let selectedId = $state(0);
+	let selectedNta = $state('');
+	let selectedName = $state('');
+	let examinerSel = $state(0);
+	let ntaSel = $state('');
 
 	/**
 	 * @param {number} id
@@ -173,13 +173,13 @@
 	// ===== Aufsichten-Vorplanung (fixieren / Person vorplanen / entfernen) =====
 	// Kandidaten je Tag (aus invigilatorsForDay), bei Bedarf nachgeladen.
 	/** @type {Map<number, any[]>} */
-	let candidatesByDay = new Map();
+	let candidatesByDay = $state(new Map());
 	// Key des Eintrags, dessen Personen-Picker offen ist ('' = keiner)
-	let pickerOpen = '';
-	let pickSel = 0;
+	let pickerOpen = $state('');
+	let pickSel = $state(0);
 	/** @type {Set<string>} */
-	let busy = new Set();
-	let actionError = '';
+	let busy = $state(new Set());
+	let actionError = $state('');
 
 	/** @param {number} dayNumber @param {number} slotNumber @param {string | null} roomName */
 	const entryKey = (dayNumber, slotNumber, roomName) =>
@@ -298,7 +298,7 @@
 	}
 
 	// Aufsichteneinteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.
-	let resetBusy = false;
+	let resetBusy = $state(false);
 	async function resetInvigilations() {
 		if (resetBusy) return;
 		if (
@@ -344,7 +344,7 @@
 			{#if selKind}
 				<span class="badge badge-primary badge-lg gap-2">
 					{selectedName}{selKind === 'teacher' ? ` (${selectedId})` : ' · NTA'}
-					<button class="font-bold" on:click={clearSel}>✕</button>
+					<button class="font-bold" onclick={clearSel}>✕</button>
 				</span>
 			{/if}
 			<div class="ml-auto flex flex-wrap items-center gap-1">
@@ -355,8 +355,8 @@
 				>
 					{resetBusy ? 'Setzt zurück…' : 'Aufsichteneinteilung zurücksetzen'}
 				</WriteButton>
-				<button class="btn btn-ghost btn-xs" on:click={() => setAll(true)}>alle ausklappen</button>
-				<button class="btn btn-ghost btn-xs" on:click={() => setAll(false)}>alle einklappen</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => setAll(true)}>alle ausklappen</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => setAll(false)}>alle einklappen</button>
 			</div>
 		</div>
 
@@ -374,7 +374,7 @@
 			<select
 				class="select select-bordered select-sm"
 				bind:value={examinerSel}
-				on:change={() =>
+				onchange={() =>
 					examinerSel && selectPerson(examinerSel, examinerMap.get(examinerSel) ?? '')}
 			>
 				<option value={0}>Prüfende wählen…</option>
@@ -385,7 +385,7 @@
 			<select
 				class="select select-bordered select-sm"
 				bind:value={ntaSel}
-				on:change={() => ntaSel && selectNta(ntaSel)}
+				onchange={() => ntaSel && selectNta(ntaSel)}
 			>
 				<option value="">NTA wählen…</option>
 				{#each ntaList as n}
@@ -414,7 +414,7 @@
 		{#if actionError}
 			<div class="alert alert-error py-2 text-sm">
 				<span>{actionError}</span>
-				<button class="btn btn-ghost btn-xs" on:click={() => (actionError = '')}>✕</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => (actionError = '')}>✕</button>
 			</div>
 		{/if}
 
@@ -464,7 +464,7 @@
 													? 'ring-2 ring-primary ring-offset-1'
 													: ''}"
 												style:opacity={selKind && slot.reserve.id !== selectedId ? 0.4 : 1}
-												on:click={() => selectPerson(slot.reserve.id, slot.reserve.shortname)}
+												onclick={() => selectPerson(slot.reserve.id, slot.reserve.shortname)}
 											>
 												Reserve: {slot.reserve.shortname}
 											</button>
@@ -512,7 +512,7 @@
 											<button
 												class="badge badge-ghost badge-sm"
 												title="Reserve vorplanen"
-												on:click={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
+												onclick={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
 											>
 										{/if}
 										{#if pickerOpen === rKey}
@@ -577,7 +577,7 @@
 																? 'ring-2 ring-primary ring-offset-1'
 																: ''}"
 															style:opacity={selKind && r.invigilator.id !== selectedId ? 0.4 : 1}
-															on:click={() =>
+															onclick={() =>
 																selectPerson(r.invigilator.id, r.invigilator.shortname)}
 														>
 															👤 {r.invigilator.shortname}
@@ -616,7 +616,7 @@
 																				: ntaHere
 																					? 'text-primary-content'
 																					: 'text-info'}"
-																			on:click={() =>
+																			onclick={() =>
 																				selectPerson(re.exam.mainExamerID, re.exam.mainExamer)}
 																		>
 																			{re.exam.mainExamer}
@@ -689,7 +689,7 @@
 																<button
 																	class="badge badge-ghost badge-sm"
 																	title="andere Person vorplanen"
-																	on:click={() => togglePicker(rKey, day.number)}
+																	onclick={() => togglePicker(rKey, day.number)}
 																	>Person vorplanen…</button
 																>
 															{/if}

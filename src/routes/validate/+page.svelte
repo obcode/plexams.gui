@@ -3,7 +3,7 @@
 	import { validationGroups as groups } from '$lib/validation/validators';
 
 	/** @type {Record<string, { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }>} */
-	let stats = {};
+	let stats = $state({});
 
 	/**
 	 * @param {string} id
@@ -13,12 +13,12 @@
 		stats = { ...stats, [id]: e.detail };
 	}
 
-	$: all = Object.values(stats);
-	$: totalErrors = all.reduce((s, v) => s + (v.errors ?? 0), 0);
-	$: totalWarnings = all.reduce((s, v) => s + (v.warnings ?? 0), 0);
-	$: anyRunning = all.some((v) => v.running);
-	$: allDone = all.length === groups.length && all.every((v) => v.done);
-	$: allOk = allDone && all.every((v) => v.ok);
+	let all = $derived(Object.values(stats));
+	let totalErrors = $derived(all.reduce((s, v) => s + (v.errors ?? 0), 0));
+	let totalWarnings = $derived(all.reduce((s, v) => s + (v.warnings ?? 0), 0));
+	let anyRunning = $derived(all.some((v) => v.running));
+	let allDone = $derived(all.length === groups.length && all.every((v) => v.done));
+	let allOk = $derived(allDone && all.every((v) => v.ok));
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">

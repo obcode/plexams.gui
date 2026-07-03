@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
 	let {
 		nta,
@@ -33,7 +33,7 @@
 				type="checkbox"
 				class="toggle toggle-sm toggle-success"
 				checked={!nta.deactivated}
-				disabled={$page.data?.readOnly}
+				disabled={page.data?.readOnly}
 				onchange={() => ontoggle?.(nta)}
 			/>
 			<span class="text-xs {nta.deactivated ? 'text-error' : 'text-success'}">

@@ -1,14 +1,14 @@
 <script>
-	export let data;
+	let { data } = $props();
 	/** @param {string} program @param {number} reg */
 	const examInfo = (program, reg) => data.examByKey?.[`${program}/${reg}`];
 
-	let q = '';
+	let q = $state('');
 	/** @type {any[]} */
-	let students = [];
-	let loading = false;
-	let error = '';
-	let searched = false;
+	let students = $state([]);
+	let loading = $state(false);
+	let error = $state('');
+	let searched = $state(false);
 
 	async function search() {
 		const term = q.trim();
@@ -55,10 +55,10 @@
 			class="input input-bordered input-sm w-72"
 			type="text"
 			bind:value={q}
-			on:keydown={onEnter}
+			onkeydown={onEnter}
 			placeholder="Name (Regex) oder Matrikelnummer …"
 		/>
-		<button class="btn btn-primary btn-sm" disabled={loading || !q.trim()} on:click={search}>
+		<button class="btn btn-primary btn-sm" disabled={loading || !q.trim()} onclick={search}>
 			{loading ? 'sucht …' : 'Suchen'}
 		</button>
 		<span class="text-xs text-base-content/40"

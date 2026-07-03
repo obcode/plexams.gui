@@ -6,10 +6,10 @@
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	/** @type {'preview' | 'manage' | 'email'} */
-	let section = 'manage';
+	let section = $state('manage');
 
 	/** @param {any} r */
 	const key = (r) => `${r.room}-${r.day}-${r.slot}`;
@@ -35,20 +35,20 @@
 
 	// ===== Abschnitt: Bestehende Anfragen =====
 	/** @type {'time' | 'room' | 'slot'} */
-	let view = 'room';
-	let pendingOnly = false;
+	let view = $state('room');
+	let pendingOnly = $state(false);
 
-	$: filtered = data.roomRequests.filter((/** @type {any} */ r) => !pendingOnly || !r.approved);
-	$: approvedCount = data.roomRequests.filter((/** @type {any} */ r) => r.approved).length;
-	$: pendingCount = data.roomRequests.length - approvedCount;
+	let filtered = $derived(data.roomRequests.filter((/** @type {any} */ r) => !pendingOnly || !r.approved));
+	let approvedCount = $derived(data.roomRequests.filter((/** @type {any} */ r) => r.approved).length);
+	let pendingCount = $derived(data.roomRequests.length - approvedCount);
 
-	$: byRoom = [...new Set(filtered.map((/** @type {any} */ r) => r.room))].sort().map((room) => ({
+	let byRoom = $derived([...new Set(filtered.map((/** @type {any} */ r) => r.room))].sort().map((room) => ({
 		room,
 		reqs: filtered
 			.filter((/** @type {any} */ r) => r.room === room)
 			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.from.localeCompare(b.from))
-	}));
-	$: bySlot = (() => {
+	})));
+	let bySlot = $derived((() => {
 		/** @type {Map<string, any>} */
 		const m = new Map();
 		for (const r of filtered) {
@@ -57,13 +57,13 @@
 			m.get(k).reqs.push(r);
 		}
 		return [...m.values()].sort((a, b) => a.day - b.day || a.slot - b.slot);
-	})();
-	$: timeline = [...filtered].sort((/** @type {any} */ a, /** @type {any} */ b) =>
+	})());
+	let timeline = $derived([...filtered].sort((/** @type {any} */ a, /** @type {any} */ b) =>
 		a.from.localeCompare(b.from)
-	);
+	));
 
 	// Tag → Datum/Offset aus semesterConfig.days (für „Anfrage hinzufügen")
-	$: dayInfo = (() => {
+	let dayInfo = $derived((() => {
 		/** @type {Record<number, { date: string, offset: string }>} */
 		const m = {};
 		for (const d of data.days) {
@@ -71,7 +71,7 @@
 			if (mm) m[d.number] = { date: mm[1], offset: mm[2] || '+02:00' };
 		}
 		return m;
-	})();
+	})());
 
 	/** @param {string} hhmm Minuten seit Mitternacht */
 	const toMin = (hhmm) => {
@@ -99,9 +99,9 @@
 	}
 
 	/** @type {Set<string>} */
-	let busyKeys = new Set();
+	let busyKeys = $state(new Set());
 	/** @type {string | null} */
-	let errorMsg = null;
+	let errorMsg = $state(null);
 
 	/** @param {'approve' | 'active'} kind @param {any} req */
 	async function toggle(kind, req) {
@@ -141,19 +141,19 @@
 	];
 
 	// ===== Zeit-Modal (bearbeiten + hinzufügen) =====
-	let modalOpen = false;
+	let modalOpen = $state(false);
 	/** @type {'edit' | 'add'} */
-	let modalMode = 'edit';
+	let modalMode = $state('edit');
 	/** @type {any} */
-	let mEditReq = null;
-	let mRoom = '';
-	let mDay = '';
-	let mSlot = '';
-	let mFromTime = '';
-	let mUntilTime = '';
-	let mSaving = false;
+	let mEditReq = $state(null);
+	let mRoom = $state('');
+	let mDay = $state('');
+	let mSlot = $state('');
+	let mFromTime = $state('');
+	let mUntilTime = $state('');
+	let mSaving = $state(false);
 	/** @type {string | null} */
-	let mError = null;
+	let mError = $state(null);
 
 	/** @param {any} r */
 	function openEdit(r) {
@@ -179,12 +179,12 @@
 		modalOpen = true;
 	}
 	// abgeleiteter Slot (Add-Modus) bzw. fixer Slot (Edit)
-	$: derivedSlot = modalMode === 'add' ? slotForTime(mFromTime) : Number(mSlot);
-	$: modalValid = !!(
+	let derivedSlot = $derived(modalMode === 'add' ? slotForTime(mFromTime) : Number(mSlot));
+	let modalValid = $derived(!!(
 		mFromTime &&
 		mUntilTime &&
 		(modalMode === 'edit' ? true : mRoom && mDay && derivedSlot)
-	);
+	));
 
 	async function saveModal() {
 		if (!modalValid) return;
@@ -229,17 +229,17 @@
 
 	// ===== Abschnitt: Probelauf =====
 	/** @type {any[] | null} */
-	let preview = null;
-	let previewLoading = false;
+	let preview = $state(null);
+	let previewLoading = $state(false);
 	/** @type {string | null} */
-	let previewError = null;
+	let previewError = $state(null);
 	/** @type {Set<number>} */
-	let expanded = new Set();
-	let applying = false;
+	let expanded = $state(new Set());
+	let applying = $state(false);
 	/** @type {string | null} */
-	let applyError = null;
+	let applyError = $state(null);
 	/** @type {string | null} */
-	let applyMsg = null;
+	let applyMsg = $state(null);
 
 	async function loadPreview() {
 		previewLoading = true;
@@ -321,7 +321,7 @@
 				<button
 					role="tab"
 					class="tab {section === s.key ? 'tab-active' : ''}"
-					on:click={() => (section = /** @type {any} */ (s.key))}
+					onclick={() => (section = /** @type {any} */ (s.key))}
 				>
 					{s.label}
 				</button>
@@ -336,7 +336,7 @@
 			schreibt den Probelauf in die DB und ersetzt bestehende Anfragen.
 		</p>
 		<div class="flex flex-wrap items-center gap-3">
-			<button class="btn btn-sm gap-2" disabled={previewLoading} on:click={loadPreview}>
+			<button class="btn btn-sm gap-2" disabled={previewLoading} onclick={loadPreview}>
 				{#if previewLoading}<span class="loading loading-spinner loading-xs"></span>{/if}
 				↻ Vorschau {preview ? 'neu laden' : 'laden'}
 			</button>
@@ -383,7 +383,7 @@
 										{#if p.simultaneousExams && p.simultaneousExams.length}
 											<button
 												class="btn btn-ghost btn-xs"
-												on:click={() => toggleExpand(i)}
+												onclick={() => toggleExpand(i)}
 												aria-label="zeitgleiche Prüfungen"
 											>
 												{expanded.has(i) ? '▾' : '▸'}
@@ -449,7 +449,7 @@
 					<button
 						role="tab"
 						class="tab {view === v.key ? 'tab-active' : ''}"
-						on:click={() => (view = /** @type {any} */ (v.key))}
+						onclick={() => (view = /** @type {any} */ (v.key))}
 					>
 						{v.label}
 					</button>
@@ -460,7 +460,7 @@
 				<span class="label-text">nur offene</span>
 			</label>
 			<div class="flex-1"></div>
-			<button class="btn btn-primary btn-sm gap-2" on:click={openAdd}>+ Anfrage hinzufügen</button>
+			<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ Anfrage hinzufügen</button>
 		</div>
 		<p class="text-xs text-base-content/50">
 			„inaktiv" wird beim nächsten Vorbereiten der Räume-für-Slots nicht verwendet.
@@ -648,7 +648,7 @@
 				{/if}
 
 				<div class="flex justify-end gap-2">
-					<button class="btn btn-ghost btn-sm" on:click={() => (modalOpen = false)} disabled={mSaving}>
+					<button class="btn btn-ghost btn-sm" onclick={() => (modalOpen = false)} disabled={mSaving}>
 						Abbrechen
 					</button>
 					<WriteButton
@@ -662,7 +662,7 @@
 				</div>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="Schließen" on:click={() => (modalOpen = false)}
+		<button class="modal-backdrop" aria-label="Schließen" onclick={() => (modalOpen = false)}
 		></button>
 	</div>
 {/if}

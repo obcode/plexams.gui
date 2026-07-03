@@ -1,6 +1,6 @@
-<script>
-	export let data;
-	$: nta = data.nta;
+<script lang="ts">
+	let { data } = $props();
+	let nta = $derived(data.nta);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">

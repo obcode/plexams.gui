@@ -1,12 +1,12 @@
 <script>
-	export let data;
+	let { data } = $props();
 
 	/** @type {any[]} */
-	let logs = data.initial;
+	let logs = $state(data.initial);
 	const names = data.names;
 
 	// Quelle/Typ wird serverseitig gefiltert (kombinierbar mit den übrigen Filtern)
-	let typeFilter = 'alle';
+	let typeFilter = $state('alle');
 	/** @param {string} t */
 	const setType = (t) => {
 		typeFilter = t;
@@ -14,16 +14,16 @@
 	};
 
 	// Filter
-	let name = '';
-	let ancode = '';
+	let name = $state('');
+	let ancode = $state('');
 	/** @type {{key:string, value:string}[]} mehrere Parameter-Paare (UND) */
-	let params = [{ key: '', value: '' }];
-	let since = '';
-	let until = '';
-	let limit = 200;
+	let params = $state([{ key: '', value: '' }]);
+	let since = $state('');
+	let until = $state('');
+	let limit = $state(200);
 
-	let loading = false;
-	let error = '';
+	let loading = $state(false);
+	let error = $state('');
 
 	// datetime-local ist Ortszeit → im Browser zu ISO/UTC machen, damit der
 	// Time-Scalar des Servers korrekt filtert (Server läuft UTC).
@@ -81,14 +81,14 @@
 		logs = data.initial;
 	}
 
-	$: hasFilter = !!(
+	let hasFilter = $derived(!!(
 		name ||
 		typeFilter !== 'alle' ||
 		ancode ||
 		since ||
 		until ||
 		params.some((p) => p.key.trim() || p.value.trim())
-	);
+	));
 
 	// Klick-Filter aus der Tabelle
 	/** @param {number} a */
@@ -139,7 +139,7 @@
 			{#each [['alle', 'alle'], ['mutation', 'Mutation'], ['subscription', 'Subscription'], ['cli', 'CLI']] as [val, label]}
 				<button
 					class="tab {typeFilter === val ? 'tab-active' : ''}"
-					on:click={() => setType(val)}
+					onclick={() => setType(val)}
 					disabled={loading}
 				>
 					{label}
@@ -153,7 +153,7 @@
 		<div class="flex flex-wrap items-end gap-3">
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Operation</span>
-				<select class="select select-bordered select-sm w-56" bind:value={name} on:change={apply}>
+				<select class="select select-bordered select-sm w-56" bind:value={name} onchange={apply}>
 					<option value="">alle</option>
 					{#each names as n}
 						<option value={n}>{n}</option>
@@ -166,7 +166,7 @@
 					type="number"
 					class="input input-bordered input-sm w-28"
 					bind:value={ancode}
-					on:keydown={onEnter}
+					onkeydown={onEnter}
 					placeholder="beliebig"
 				/>
 			</label>
@@ -184,7 +184,7 @@
 					type="number"
 					class="input input-bordered input-sm w-24"
 					bind:value={limit}
-					on:keydown={onEnter}
+					onkeydown={onEnter}
 				/>
 			</label>
 		</div>
@@ -200,7 +200,7 @@
 						type="text"
 						class="input input-bordered input-sm w-40"
 						bind:value={p.key}
-						on:keydown={onEnter}
+						onkeydown={onEnter}
 						placeholder="key, z. B. program"
 					/>
 					<span class="text-base-content/40">=</span>
@@ -208,25 +208,25 @@
 						type="text"
 						class="input input-bordered input-sm w-40"
 						bind:value={p.value}
-						on:keydown={onEnter}
+						onkeydown={onEnter}
 						placeholder="Wert, z. B. GS"
 					/>
-					<button class="btn btn-ghost btn-xs" title="Zeile entfernen" on:click={() => rmParam(i)}>
+					<button class="btn btn-ghost btn-xs" title="Zeile entfernen" onclick={() => rmParam(i)}>
 						✕
 					</button>
 					{#if i === params.length - 1}
-						<button class="btn btn-ghost btn-xs" on:click={addParam}>+ Parameter</button>
+						<button class="btn btn-ghost btn-xs" onclick={addParam}>+ Parameter</button>
 					{/if}
 				</div>
 			{/each}
 		</div>
 
 		<div class="flex items-center gap-2">
-			<button class="btn btn-primary btn-sm" disabled={loading} on:click={apply}>
+			<button class="btn btn-primary btn-sm" disabled={loading} onclick={apply}>
 				{loading ? 'lädt …' : 'Filtern'}
 			</button>
 			{#if hasFilter}
-				<button class="btn btn-ghost btn-sm" on:click={reset}>zurücksetzen</button>
+				<button class="btn btn-ghost btn-sm" onclick={reset}>zurücksetzen</button>
 			{/if}
 		</div>
 	</div>
@@ -268,7 +268,7 @@
 									<button
 										class="badge badge-ghost badge-sm hover:badge-primary"
 										title="nach {a.key} = {a.value} filtern"
-										on:click={() => filterByArg(a.key, a.value)}
+										onclick={() => filterByArg(a.key, a.value)}
 									>
 										<span class="text-base-content/50">{a.key}:</span>&nbsp;{a.value}
 									</button>
@@ -284,7 +284,7 @@
 									<button
 										class="badge badge-outline badge-xs tabular-nums hover:badge-primary"
 										title="nach Ancode {a} filtern"
-										on:click={() => filterByAncode(a)}
+										onclick={() => filterByAncode(a)}
 									>
 										{a}
 									</button>

@@ -1,7 +1,9 @@
 <script>
-	export let data;
+	import { run } from 'svelte/legacy';
+
+	let { data } = $props();
 	let slots = data.slots;
-	let hideEmpty = true;
+	let hideEmpty = $state(true);
 	const roomOrder = ['T3.015', 'T3.016', 'T3.017', 'T3.023', 'T3.021'];
 
 	/** Datum aus ISO-String (keine Zeitzonen-/Hydration-Probleme). @param {string} iso */
@@ -55,15 +57,17 @@
 	}
 
 	/** @type {any[]} */
-	let filteredSlots = [];
-	$: filteredSlots = hideEmpty
-		? slots.filter(
-				(/** @type {any} */ s) =>
-					(s.exams && s.exams.length > 0) ||
-					(s.tRooms && s.tRooms.length > 0) ||
-					(s.annyBookings && s.annyBookings.length > 0)
-			)
-		: slots;
+	let filteredSlots = $state([]);
+	run(() => {
+		filteredSlots = hideEmpty
+			? slots.filter(
+					(/** @type {any} */ s) =>
+						(s.exams && s.exams.length > 0) ||
+						(s.tRooms && s.tRooms.length > 0) ||
+						(s.annyBookings && s.annyBookings.length > 0)
+				)
+			: slots;
+	});
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">

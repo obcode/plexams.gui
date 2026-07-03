@@ -3,34 +3,34 @@
 	import StreamAction from '$lib/zpa/StreamAction.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
-	$: bookings = data.bookings || [];
-	$: slots = data.slots || [];
-	$: roomOrder = data.roomOrder || [];
-	$: annyRooms = data.annyRooms || [];
-	$: examDays = data.examDays || [];
+	let { data } = $props();
+	let bookings = $derived(data.bookings || []);
+	let slots = $derived(data.slots || []);
+	let roomOrder = $derived(data.roomOrder || []);
+	let annyRooms = $derived(data.annyRooms || []);
+	let examDays = $derived(data.examDays || []);
 
 	/** @type {'calendar' | 'list' | 'matrix'} */
-	let view = 'calendar';
+	let view = $state('calendar');
 
 	// --- Filter (Kalender + Liste), Defaults: nur meine + nur Prüfungszeitraum ---
-	let onlyMine = true;
-	let onlyExamPeriod = true;
-	let roomFilter = 'all';
-	let q = '';
+	let onlyMine = $state(true);
+	let onlyExamPeriod = $state(true);
+	let roomFilter = $state('all');
+	let q = $state('');
 
-	$: examMin = examDays.length ? examDays[0].date : null;
-	$: examMax = examDays.length ? examDays[examDays.length - 1].date : null;
+	let examMin = $derived(examDays.length ? examDays[0].date : null);
+	let examMax = $derived(examDays.length ? examDays[examDays.length - 1].date : null);
 	/** @param {any} b */
 	const inExamPeriod = (b) =>
 		!examMin || !examMax || (b.dateKey && b.dateKey >= examMin && b.dateKey <= examMax);
 
-	$: mineCount = bookings.filter((/** @type {any} */ b) => b.mine).length;
-	$: roomsInBookings = [
+	let mineCount = $derived(bookings.filter((/** @type {any} */ b) => b.mine).length);
+	let roomsInBookings = $derived([
 		...new Set(bookings.map((/** @type {any} */ b) => b.room).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
+	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
 
-	$: filtered = bookings.filter((/** @type {any} */ b) => {
+	let filtered = $derived(bookings.filter((/** @type {any} */ b) => {
 		if (onlyMine && !b.mine) return false;
 		if (onlyExamPeriod && !inExamPeriod(b)) return false;
 		if (roomFilter !== 'all' && b.room !== roomFilter) return false;
@@ -41,7 +41,7 @@
 			if (!hay.includes(t)) return false;
 		}
 		return true;
-	});
+	}));
 
 	// --- Raum-Farben (kategoriale Palette für die Kalenderansicht) ---
 	const PALETTE = [
@@ -58,15 +58,15 @@
 		'#2dd4bf',
 		'#facc15'
 	];
-	$: roomColors = Object.fromEntries(
+	let roomColors = $derived(Object.fromEntries(
 		roomsInBookings.map((/** @type {string} */ r, /** @type {number} */ i) => [
 			r,
 			PALETTE[i % PALETTE.length]
 		])
-	);
-	$: legendRooms = [
+	));
+	let legendRooms = $derived([
 		...new Set(filtered.map((/** @type {any} */ b) => b.room).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b));
+	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
 
 	// --- Kalender aufbauen ---
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -82,27 +82,27 @@
 		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 	// Spalten = Prüfungstage; ohne Prüfungszeitraum-Filter auch Tage außerhalb.
-	$: calendarDates = (() => {
+	let calendarDates = $derived((() => {
 		const set = new Set(examDays.map((/** @type {any} */ d) => d.date));
 		if (!onlyExamPeriod || set.size === 0) {
 			for (const b of filtered) if (b.dateKey) set.add(b.dateKey);
 		}
 		return [...set].sort();
-	})();
+	})());
 
-	$: calBookings = filtered.filter(
+	let calBookings = $derived(filtered.filter(
 		(/** @type {any} */ b) =>
 			b.startMin != null &&
 			b.endMin != null &&
 			b.room &&
 			b.dateKey &&
 			calendarDates.includes(b.dateKey)
-	);
+	));
 	/** @param {string | null} room */
 	const colorOf = (room) => (room && roomColors[room]) || '#94a3b8';
 
 	const PX_PER_MIN = 0.7;
-	$: timeRange = (() => {
+	let timeRange = $derived((() => {
 		let lo = Infinity;
 		let hi = -Infinity;
 		for (const b of calBookings) {
@@ -118,17 +118,17 @@
 		hi = Math.ceil(hi / 60) * 60;
 		if (hi - lo < 120) hi = lo + 120;
 		return { lo, hi };
-	})();
-	$: totalHeight = (timeRange.hi - timeRange.lo) * PX_PER_MIN;
-	$: hourMarks = (() => {
+	})());
+	let totalHeight = $derived((timeRange.hi - timeRange.lo) * PX_PER_MIN);
+	let hourMarks = $derived((() => {
 		const out = [];
 		for (let h = Math.ceil(timeRange.lo / 60); h <= Math.floor(timeRange.hi / 60); h += 1)
 			out.push(h);
 		return out;
-	})();
+	})());
 
 	// Pro Tag überlappungsfrei in „Spuren" (lanes) packen.
-	$: calendar = calendarDates.map((date) => {
+	let calendar = $derived(calendarDates.map((date) => {
 		const dayBookings = calBookings
 			.filter((/** @type {any} */ b) => b.dateKey === date)
 			.sort(
@@ -153,33 +153,33 @@
 			bookings: placed,
 			lanes: Math.max(1, laneEnds.length)
 		};
-	});
+	}));
 
 	// --- Slot-Matrix: Filter ---
-	let hideEmpty = true;
+	let hideEmpty = $state(true);
 	/** @type {number[]} */
-	let selectedDays = [];
-	$: availableDays = [...new Set(slots.map((/** @type {any} */ s) => Number(s.day)))].sort(
+	let selectedDays = $state([]);
+	let availableDays = $derived([...new Set(slots.map((/** @type {any} */ s) => Number(s.day)))].sort(
 		(/** @type {number} */ a, /** @type {number} */ b) => a - b
-	);
+	));
 	/** @param {number} d */
 	const toggleDay = (d) =>
 		(selectedDays = selectedDays.includes(d)
 			? selectedDays.filter((x) => x !== d)
 			: [...selectedDays, d]);
-	$: filteredSlots = slots.filter((/** @type {any} */ s) => {
+	let filteredSlots = $derived(slots.filter((/** @type {any} */ s) => {
 		if (selectedDays.length && !selectedDays.includes(Number(s.day))) return false;
 		if (hideEmpty) return Number(s.coveredRooms || 0) > 0;
 		return true;
-	});
+	}));
 
 	// --- Namen pflegen (personalizationNames → wirkt auf mine) ---
 	/** @type {string[]} */
-	let names = [...(data.personalizationNames || [])];
-	let newName = '';
-	let savingNames = false;
-	let namesError = '';
-	$: namesDirty = JSON.stringify(names) !== JSON.stringify(data.personalizationNames || []);
+	let names = $state([...(data.personalizationNames || [])]);
+	let newName = $state('');
+	let savingNames = $state(false);
+	let namesError = $state('');
+	let namesDirty = $derived(JSON.stringify(names) !== JSON.stringify(data.personalizationNames || []));
 
 	function addName() {
 		const n = newName.trim();
@@ -269,7 +269,7 @@
 				{#each names as n}
 					<span class="badge badge-neutral gap-1">
 						{n}
-						<button class="text-error" title="entfernen" on:click={() => rmName(n)}>✕</button>
+						<button class="text-error" title="entfernen" onclick={() => rmName(n)}>✕</button>
 					</span>
 				{:else}
 					<span class="text-sm text-base-content/40">— noch keine Namen</span>
@@ -280,10 +280,10 @@
 					class="input input-bordered input-sm flex-1"
 					type="text"
 					bind:value={newName}
-					on:keydown={(e) => e.key === 'Enter' && addName()}
+					onkeydown={(e) => e.key === 'Enter' && addName()}
 					placeholder="Name hinzufügen (z. B. Vorname Nachname)"
 				/>
-				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} on:click={addName}>＋</button>
+				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} onclick={addName}>＋</button>
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={savingNames || !namesDirty}
@@ -311,13 +311,13 @@
 
 	<!-- Ansicht umschalten -->
 	<div class="tabs tabs-boxed w-fit">
-		<button class="tab {view === 'calendar' ? 'tab-active' : ''}" on:click={() => (view = 'calendar')}>
+		<button class="tab {view === 'calendar' ? 'tab-active' : ''}" onclick={() => (view = 'calendar')}>
 			📅 Kalender
 		</button>
-		<button class="tab {view === 'list' ? 'tab-active' : ''}" on:click={() => (view = 'list')}>
+		<button class="tab {view === 'list' ? 'tab-active' : ''}" onclick={() => (view = 'list')}>
 			Liste
 		</button>
-		<button class="tab {view === 'matrix' ? 'tab-active' : ''}" on:click={() => (view = 'matrix')}>
+		<button class="tab {view === 'matrix' ? 'tab-active' : ''}" onclick={() => (view = 'matrix')}>
 			Slot-Matrix
 		</button>
 	</div>
@@ -499,13 +499,13 @@
 						class="badge gap-1 tabular-nums {selectedDays.includes(day)
 							? 'badge-primary'
 							: 'badge-ghost'}"
-						on:click={() => toggleDay(day)}
+						onclick={() => toggleDay(day)}
 					>
 						{day}
 					</button>
 				{/each}
 				{#if selectedDays.length}
-					<button class="btn btn-ghost btn-xs" on:click={() => (selectedDays = [])}>alle</button>
+					<button class="btn btn-ghost btn-xs" onclick={() => (selectedDays = [])}>alle</button>
 				{/if}
 			</div>
 		</div>

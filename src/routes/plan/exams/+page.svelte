@@ -1,5 +1,4 @@
 <script>
-	export let data;
 	import Slot from '$lib/slot/Slot.svelte';
 	import { normalizeFk, planningFk, displayAncode } from '$lib/exam/fk';
 	import {
@@ -15,11 +14,12 @@
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { onMount } from 'svelte';
+	let { data } = $props();
 
 	let examsWithoutSlot = data.examsWithoutSlot ?? [];
 
-	let onlyPlannedByMe = true;
-	let details = false;
+	let onlyPlannedByMe = $state(true);
+	let details = $state(false);
 	let moveable = false;
 
 	let maxSlots =
@@ -31,18 +31,18 @@
 	// // forbidden
 	// // awkward
 
-	let onlyConflicts = true;
+	let onlyConflicts = $state(true);
 
-	let showExam = 'all';
-	let showAncode = '0';
-	let showExamerID = 'all';
+	let showExam = $state('all');
+	let showAncode = $state('0');
+	let showExamerID = $state('all');
 	let showOnlyOnline = false;
-	let showOnlyExahm = false;
+	let showOnlyExahm = $state(false);
 	let showOnlySEB = false;
-	let showOnlyEXaHMRooms = false;
-	let showMucdaiSlots = false;
+	let showOnlyEXaHMRooms = $state(false);
+	let showMucdaiSlots = $state(false);
 
-	let allProgramsInPlan = [];
+	let allProgramsInPlan = $state([]);
 	async function getPrograms() {
 		const response = await fetch('/api/allProgramsInPlan', {
 			method: 'GET'
@@ -50,7 +50,7 @@
 
 		allProgramsInPlan = await response.json();
 	}
-	let allAncodes = [];
+	let allAncodes = $state([]);
 	async function getAncodes() {
 		const response = await fetch('/api/ancodesInPlan', {
 			method: 'GET'
@@ -58,7 +58,7 @@
 
 		allAncodes = await response.json();
 	}
-	let allExamer = [];
+	let allExamer = $state([]);
 	async function getExamer() {
 		const response = await fetch('/api/examerInPlan', {
 			method: 'GET'
@@ -67,7 +67,7 @@
 		allExamer = await response.json();
 	}
 
-	let slotsStatus = new Map();
+	let slotsStatus = $state(new Map());
 
 	function initSlotsStatus(status) {
 		for (let day of data.semesterConfig?.days ?? []) {
@@ -77,7 +77,7 @@
 		}
 	}
 
-	let refresh = new Map();
+	let refresh = $state(new Map());
 
 	function initRefresh() {
 		for (let day of data.semesterConfig?.days ?? []) {
@@ -100,7 +100,7 @@
 		mucdaiSlot[[slot.dayNumber, slot.slotNumber]] = 'rounded ring-2 ring-error/70';
 	}
 
-	let mucdaiSlotToShow = new Map();
+	let mucdaiSlotToShow = $state(new Map());
 
 	function handleMucdaiSlots() {
 		if (showMucdaiSlots) {
@@ -116,9 +116,9 @@
 		getExamer();
 	});
 
-	let selectedExam = -1;
-	let conflictingAncodes = [];
-	let selectedExamerID = -1;
+	let selectedExam = $state(-1);
+	let conflictingAncodes = $state([]);
+	let selectedExamerID = $state(-1);
 
 	async function handleSelect(event) {
 		initSlotsStatus('forbidden');
@@ -194,13 +194,13 @@
 	}
 
 	// ---- Ansicht (Kalender nach Wochen ↔ Raster Tage×Zeiten) ----
-	let view = 'kalender';
+	let view = $state('kalender');
 	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 	// Datums-/Kalender-Mathematik lebt in $lib/date/calendar (unit-getestet).
 
 	// Tage nach ISO-Woche gruppieren; Spalten Mo–Fr (+Sa/So falls genutzt).
-	$: weeks = (() => {
+	let weeks = $derived((() => {
 		/** @type {Map<string, any>} */
 		const map = new Map();
 		/** @type {Set<number>} */
@@ -220,23 +220,23 @@
 			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
 		);
 		return { weekList, cols };
-	})();
+	})());
 
 	// ---- Zeitbasierte Kalenderansicht (Blöcke nach echter Start-Zeit + Dauer) ----
 	const PX_PER_MIN = 1.1;
 
 	// Filter der geplanten Prüfungen (Logik in $lib/exam/examFilter, unit-getestet).
 	// Die Toggle-Variablen stehen hier in der $:-Anweisung, damit sie getrackt werden.
-	$: plannedFiltered = filterPlanned(data.plannedExams, {
+	let plannedFiltered = $derived(filterPlanned(data.plannedExams, {
 		onlyMine: onlyPlannedByMe,
 		program: showExam,
 		examerID: showExamerID,
 		ancode: showAncode,
 		onlyOnline: showOnlyOnline,
 		onlyExahm: showOnlyExahm
-	});
+	}));
 
-	$: timeCal = (() => {
+	let timeCal = $derived((() => {
 		const items = [];
 		for (const e of plannedFiltered) {
 			// Nur echte Slots (1-basiert): externe Out-of-Period-Prüfungen (Slot 0/0)
@@ -293,7 +293,7 @@
 		const hours = [];
 		for (let h = min; h <= max; h += 60) hours.push(h);
 		return { weekList, cols, min, max, hours };
-	})();
+	})());
 
 	/** @param {any} x → Zustands-Akzent für einen Zeit-Block */
 	const blockColor = (x) => {
@@ -338,11 +338,11 @@
 	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, nur
 	// externalTime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
 	// im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
-	$: otherFkNoSlot = (data.otherFkExams ?? [])
+	let otherFkNoSlot = $derived((data.otherFkExams ?? [])
 		.filter(
 			(/** @type {any} */ e) => !(e.planEntry?.dayNumber > 0 && e.planEntry?.slotNumber > 0)
 		)
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode);
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode));
 
 	function forbiddenSlot(day, time) {
 		const key = `${day},${time}`;
@@ -377,11 +377,11 @@
 			<div class="join">
 				<button
 					class="btn join-item btn-sm {view === 'kalender' ? 'btn-primary' : 'btn-ghost'}"
-					on:click={() => (view = 'kalender')}>🗓 Slots</button
+					onclick={() => (view = 'kalender')}>🗓 Slots</button
 				>
 				<button
 					class="btn join-item btn-sm {view === 'zeit' ? 'btn-primary' : 'btn-ghost'}"
-					on:click={() => (view = 'zeit')}>⏱ Zeit</button
+					onclick={() => (view = 'zeit')}>⏱ Zeit</button
 				>
 			</div>
 			{#if selectedExam !== -1}
@@ -418,7 +418,7 @@
 					type="checkbox"
 					class="toggle toggle-sm"
 					bind:checked={showMucdaiSlots}
-					on:change={handleMucdaiSlots}
+					onchange={handleMucdaiSlots}
 				/> MUC.DAI-Slots
 			</label>
 			<div class="flex-1"></div>

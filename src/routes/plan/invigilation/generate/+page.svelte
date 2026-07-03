@@ -4,34 +4,34 @@
 	import { env } from '$env/dynamic/public';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// --- Eingaben ---
-	let dryRun = true;
-	let seed = 1;
-	let iterations = 2_000_000;
+	let dryRun = $state(true);
+	let seed = $state(1);
+	let iterations = $state(2_000_000);
 
 	const ITER_MIN = 1_000_000;
 	const ITER_MAX = 20_000_000;
 	const ITER_STEP = 1_000_000;
 
 	// --- Laufzeit-Status ---
-	let running = false;
+	let running = $state(false);
 	/** @type {string | null} */
-	let errorMsg = null;
-	let done = false;
+	let errorMsg = $state(null);
+	let done = $state(false);
 
 	// Terminal: alle Zeilen ausser PROGRESS werden angehaengt; die jeweils
 	// letzte PROGRESS-Zeile wird in-place aktualisiert (Spinner-Gefuehl).
 	/** @type {{ level: string, html: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string, progress: any } | null} */
-	let current = null;
+	let current = $state(null);
 	/** @type {any} */
-	let report = null;
+	let report = $state(null);
 
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 
 	// ANSI->HTML Konverter und WS-Client werden nur im Browser geladen.
 	/** @type {any} */
@@ -179,10 +179,10 @@
 	/** @param {number} n */
 	const fmt = (n) => (n ?? 0).toLocaleString('de-DE');
 
-	$: progressPct =
-		current && current.progress && current.progress.total
+	let progressPct =
+		$derived(current && current.progress && current.progress.total
 			? Math.min(100, Math.round((current.progress.iteration / current.progress.total) * 100))
-			: 0;
+			: 0);
 
 	// --- Globale Optimierer-Parameter (generationConfig) ---
 	const NUM_FIELDS = [
@@ -206,12 +206,12 @@
 	const ALL_PARAMS = [...NUM_FIELDS, ...WEIGHTS];
 
 	/** @type {Record<string, any>} */
-	let cfgForm = {};
+	let cfgForm = $state({});
 	for (const f of ALL_PARAMS) cfgForm[f.key] = data.config?.[f.key] ?? 0;
 
-	let cfgSaving = false;
-	let cfgError = '';
-	let cfgSavedAt = '';
+	let cfgSaving = $state(false);
+	let cfgError = $state('');
+	let cfgSavedAt = $state('');
 
 	async function saveConfig() {
 		if (cfgSaving) return;
@@ -370,11 +370,11 @@
 
 	<div class="flex items-center gap-3">
 		{#if running}
-			<button class="btn btn-error btn-sm gap-2" on:click={stop}>
+			<button class="btn btn-error btn-sm gap-2" onclick={stop}>
 				<span class="loading loading-spinner loading-xs"></span> Abbrechen
 			</button>
 		{:else}
-			<button class="btn btn-primary btn-sm gap-2" on:click={start}>▶ Einteilung starten</button>
+			<button class="btn btn-primary btn-sm gap-2" onclick={start}>▶ Einteilung starten</button>
 		{/if}
 		{#if current && current.progress}
 			<div class="flex flex-1 items-center gap-3">

@@ -1,16 +1,16 @@
 <script>
-	export let exams;
 
 	import { goto } from '$app/navigation';
 	import { mkStarttime } from '$lib/jshelper/misc.js';
+	let { exams } = $props();
 
-	let searchTermAncode = '';
-	let searchTermTeachers = '';
-	let searchTermModule = '';
-	let searchTermGroups = '';
+	let searchTermAncode = $state('');
+	let searchTermTeachers = $state('');
+	let searchTermModule = $state('');
+	let searchTermGroups = $state('');
 
 	// Filter kombinieren (UND): jedes gesetzte Feld grenzt weiter ein.
-	$: filteredExams = exams.filter((/** @type {any} */ exam) => {
+	let filteredExams = $derived(exams.filter((/** @type {any} */ exam) => {
 		if (searchTermAncode && !exam.ancode.toString().startsWith(searchTermAncode.trim())) {
 			return false;
 		}
@@ -34,9 +34,9 @@
 			if (!hit) return false;
 		}
 		return true;
-	});
+	}));
 
-	$: hasFilter = !!(searchTermAncode || searchTermModule || searchTermTeachers || searchTermGroups);
+	let hasFilter = $derived(!!(searchTermAncode || searchTermModule || searchTermTeachers || searchTermGroups));
 
 	function clearFilters() {
 		searchTermAncode = '';
@@ -117,7 +117,7 @@
 				{filteredExams.length} / {exams.length}
 			</span>
 			{#if hasFilter}
-				<button class="btn btn-ghost btn-sm" on:click={clearFilters}>zurücksetzen</button>
+				<button class="btn btn-ghost btn-sm" onclick={clearFilters}>zurücksetzen</button>
 			{/if}
 		</div>
 	</div>
@@ -155,7 +155,7 @@
 						<td>
 							<button
 								class="link link-primary font-medium tabular-nums"
-								on:click={() => gotoo(exam.ancode)}
+								onclick={() => gotoo(exam.ancode)}
 							>
 								{exam.ancode}
 							</button>

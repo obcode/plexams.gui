@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Cannot set properties of undefined (setting 'next') -->
 <!--
 	Drop-in-Ersatz für <button>, der bei geschütztem (read-only) Semester
 	automatisch deaktiviert wird. Korrektheit liegt am Backend + hooks.server.js;

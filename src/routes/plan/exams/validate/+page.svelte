@@ -1,10 +1,10 @@
 <script>
-	export let data;
 	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
 	import { schedulingValidators } from '$lib/validation/validators';
+	let { data } = $props();
 
-	let onlyPlannedByMe = true;
-	let ancode = 0;
+	let onlyPlannedByMe = $state(true);
+	let ancode = $state(0);
 
 	// geplante Prüfungen für das Dropdown: "<ancode>. <module> (<mainexamer>)"
 	const exams = [...(data.plannedExams ?? [])]
@@ -16,9 +16,9 @@
 		.sort((a, b) => a.ancode - b.ancode);
 
 	/** @type {any} */
-	let group;
+	let group = $state();
 
-	$: argOverrides = { validateConflicts: { onlyPlannedByMe, ancode } };
+	let argOverrides = $derived({ validateConflicts: { onlyPlannedByMe, ancode } });
 
 	// Bei Änderung der Parameter nur die Konflikt-Prüfung neu starten.
 	function rerunConflicts() {
@@ -38,7 +38,7 @@
 					type="checkbox"
 					class="toggle toggle-primary"
 					bind:checked={onlyPlannedByMe}
-					on:change={rerunConflicts}
+					onchange={rerunConflicts}
 				/>
 				<span class="label-text">{onlyPlannedByMe ? 'nur eigene Planung' : 'alle'}</span>
 			</label>
@@ -49,7 +49,7 @@
 			<select
 				class="select select-bordered select-sm w-96 max-w-full"
 				bind:value={ancode}
-				on:change={rerunConflicts}
+				onchange={rerunConflicts}
 			>
 				<option value={0}>Alle Ancodes</option>
 				{#each exams as e}

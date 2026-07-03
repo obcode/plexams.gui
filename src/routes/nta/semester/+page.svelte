@@ -2,22 +2,22 @@
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 	import NtaCard from '$lib/nta/NTACard.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// Studierenden-Sicht: Filter
-	let showRoomAlone = false;
-	let showHardware = false;
-	$: filteredNtas = (data.ntasWithRegs ?? []).filter((/** @type {any} */ s) => {
+	let showRoomAlone = $state(false);
+	let showHardware = $state(false);
+	let filteredNtas = $derived((data.ntasWithRegs ?? []).filter((/** @type {any} */ s) => {
 		if (showRoomAlone && !s.nta.needsRoomAlone) return false;
 		if (showHardware && !s.nta.needsHardware) return false;
 		return true;
-	});
+	}));
 
 	// Prüfungs-Sicht: Suche
-	let searchAncode = '';
-	let searchModule = '';
-	let searchTeacher = '';
-	$: filteredExams = (data.examsWithNtas ?? []).filter((/** @type {any} */ exam) => {
+	let searchAncode = $state('');
+	let searchModule = $state('');
+	let searchTeacher = $state('');
+	let filteredExams = $derived((data.examsWithNtas ?? []).filter((/** @type {any} */ exam) => {
 		if (searchAncode && !exam.ancode.toString().startsWith(searchAncode)) return false;
 		if (searchModule && !exam.zpaExam.module.toLowerCase().includes(searchModule.toLowerCase()))
 			return false;
@@ -27,7 +27,7 @@
 		)
 			return false;
 		return true;
-	});
+	}));
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">

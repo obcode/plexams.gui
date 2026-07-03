@@ -1,29 +1,33 @@
 <script>
-	export let data;
+	import { run } from 'svelte/legacy';
+
+	let { data } = $props();
 
 	// Gestreamte Load-Daten: Seite rendert sofort, Tabelle füllt sich nach.
 	/** @type {any[]} */
-	let teachers = [];
+	let teachers = $state([]);
 	/** @type {Record<number, boolean>} */
-	let invigById = {};
-	let invigilatorCount = 0;
-	let missingReqCount = 0;
+	let invigById = $state({});
+	let invigilatorCount = $state(0);
+	let missingReqCount = $state(0);
 	/** @type {string | null} */
-	let currentSemester = null;
-	let loading = true;
-	$: data.people.then((/** @type {any} */ p) => {
-		teachers = p.teachers;
-		invigById = p.invigById;
-		invigilatorCount = p.invigilatorCount;
-		missingReqCount = p.missingReqCount;
-		currentSemester = p.currentSemester;
-		loading = false;
+	let currentSemester = $state(null);
+	let loading = $state(true);
+	run(() => {
+		data.people.then((/** @type {any} */ p) => {
+			teachers = p.teachers;
+			invigById = p.invigById;
+			invigilatorCount = p.invigilatorCount;
+			missingReqCount = p.missingReqCount;
+			currentSemester = p.currentSemester;
+			loading = false;
+		});
 	});
 
-	let searchTerm = '';
-	let onlyInvigilators = false;
-	let onlyMissingReq = false;
-	let groupBySemester = true;
+	let searchTerm = $state('');
+	let onlyInvigilators = $state(false);
+	let onlyMissingReq = $state(false);
+	let groupBySemester = $state(true);
 
 	/** @param {any} t */
 	function roles(t) {
@@ -43,8 +47,8 @@
 			? { isInvig: true, submitted: invigById[t.id] }
 			: { isInvig: false, submitted: false };
 
-	$: term = searchTerm.trim().toLowerCase();
-	$: rows = teachers.filter((/** @type {any} */ t) => {
+	let term = $derived(searchTerm.trim().toLowerCase());
+	let rows = $derived(teachers.filter((/** @type {any} */ t) => {
 		if (term) {
 			const hit =
 				t.fullname.toLowerCase().includes(term) ||
@@ -56,7 +60,7 @@
 		if (onlyMissingReq) return s.isInvig && !s.submitted;
 		if (onlyInvigilators) return s.isInvig;
 		return true;
-	});
+	}));
 
 	// Chronologischer Schlüssel für „YYYY SS"/„YYYY WS" (SS vor WS); null = unbekannt.
 	/** @param {string | null | undefined} s */
@@ -107,16 +111,18 @@
 			a.sortKey !== b.sortKey ? b.sortKey - a.sortKey : a.label.localeCompare(b.label)
 		);
 	}
-	$: sections = buildSections(rows, groupBySemester, currentSemester);
+	let sections = $derived(buildSections(rows, groupBySemester, currentSemester));
 
 	// Einklappen: nur die neueste Sektion offen; bei aktiver Suche alles offen.
 	/** @type {Set<string>} */
-	let openSections = new Set();
-	let openInit = false;
-	$: if (!loading && groupBySemester && !openInit && sections.length) {
-		openSections = new Set([sections[0].key]);
-		openInit = true;
-	}
+	let openSections = $state(new Set());
+	let openInit = $state(false);
+	run(() => {
+		if (!loading && groupBySemester && !openInit && sections.length) {
+			openSections = new Set([sections[0].key]);
+			openInit = true;
+		}
+	});
 	// open/t als Argumente, damit das Template auf openSections/term reagiert.
 	/** @param {{ key: string, label: string | null }} sec @param {Set<string>} open @param {string} t */
 	const isOpen = (sec, open, t) => sec.label === null || !!t || open.has(sec.key);
@@ -176,8 +182,8 @@
 		</label>
 		{#if groupBySemester && !term}
 			<div class="flex gap-1">
-				<button class="btn btn-ghost btn-xs" on:click={expandAll}>alle ausklappen</button>
-				<button class="btn btn-ghost btn-xs" on:click={collapseAll}>alle einklappen</button>
+				<button class="btn btn-ghost btn-xs" onclick={expandAll}>alle ausklappen</button>
+				<button class="btn btn-ghost btn-xs" onclick={collapseAll}>alle einklappen</button>
 			</div>
 		{/if}
 		<div class="flex-1"></div>
@@ -212,7 +218,7 @@
 								<td colspan="6" class="p-0">
 									<button
 										class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold hover:bg-base-200"
-										on:click={() => toggleSection(sec.key)}
+										onclick={() => toggleSection(sec.key)}
 									>
 										<span class="text-base-content/50"
 											>{isOpen(sec, openSections, term) ? '▾' : '▸'}</span

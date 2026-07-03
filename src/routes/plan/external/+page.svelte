@@ -3,28 +3,28 @@
 	import ExternalExamRow from '$lib/exam/ExternalExamRow.svelte';
 	import { buildGroups, hasTime } from '$lib/exam/otherFkGroups';
 
-	export let data;
+	let { data } = $props();
 
-	let onlyMissing = false;
+	let onlyMissing = $state(false);
 	/** @type {'all' | 'mucdai' | 'zpa'} */
-	let source = 'all';
+	let source = $state('all');
 	/** '' = alle FKs */
-	let fkFilter = '';
+	let fkFilter = $state('');
 
 	// alle vorkommenden FKs (für den Filter), sortiert
-	$: fks = [...new Set((data.items ?? []).map((/** @type {any} */ e) => e.fk || '—'))].sort();
+	let fks = $derived([...new Set((data.items ?? []).map((/** @type {any} */ e) => e.fk || '—'))].sort());
 
 	// gefilterte + zu Zeilen aufbereitete Items, nach FK gruppiert
 	// (Logik in $lib/exam/otherFkGroups, unit-getestet).
-	$: groups = buildGroups(data.items ?? [], { onlyMissing, source, fk: fkFilter });
+	let groups = $derived(buildGroups(data.items ?? [], { onlyMissing, source, fk: fkFilter }));
 
 	// Gesamtzahlen für die Kopfzeile
-	$: total = (data.items ?? []).filter(
+	let total = $derived((data.items ?? []).filter(
 		(/** @type {any} */ e) => source === 'all' || e.source === source
-	).length;
-	$: missing = (data.items ?? []).filter(
+	).length);
+	let missing = $derived((data.items ?? []).filter(
 		(/** @type {any} */ e) => (source === 'all' || e.source === source) && !hasTime(e)
-	).length;
+	).length);
 
 	const onSaved = () => invalidateAll();
 </script>
@@ -53,13 +53,13 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<!-- Quelle -->
 		<div role="tablist" class="tabs tabs-boxed">
-			<button role="tab" class="tab {source === 'all' ? 'tab-active' : ''}" on:click={() => (source = 'all')}>
+			<button role="tab" class="tab {source === 'all' ? 'tab-active' : ''}" onclick={() => (source = 'all')}>
 				alle Quellen
 			</button>
-			<button role="tab" class="tab {source === 'zpa' ? 'tab-active' : ''}" on:click={() => (source = 'zpa')}>
+			<button role="tab" class="tab {source === 'zpa' ? 'tab-active' : ''}" onclick={() => (source = 'zpa')}>
 				ZPA (nicht von mir)
 			</button>
-			<button role="tab" class="tab {source === 'mucdai' ? 'tab-active' : ''}" on:click={() => (source = 'mucdai')}>
+			<button role="tab" class="tab {source === 'mucdai' ? 'tab-active' : ''}" onclick={() => (source = 'mucdai')}>
 				MUC.DAI
 			</button>
 		</div>

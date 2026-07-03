@@ -2,15 +2,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
-	$: permIds = new Set(data.permanent.map((/** @type {any} */ p) => p.teacherID));
-	$: addable = data.candidates.filter((/** @type {any} */ t) => !permIds.has(t.id));
+	let permIds = $derived(new Set(data.permanent.map((/** @type {any} */ p) => p.teacherID)));
+	let addable = $derived(data.candidates.filter((/** @type {any} */ t) => !permIds.has(t.id)));
 
-	let teacherID = 0;
-	let reason = '';
-	let busy = false;
-	let error = '';
+	let teacherID = $state(0);
+	let reason = $state('');
+	let busy = $state(false);
+	let error = $state('');
 
 	async function add() {
 		const id = Number(teacherID);

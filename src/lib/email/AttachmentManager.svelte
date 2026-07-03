@@ -12,56 +12,70 @@
 	// (kind). Zeigt Anzahl + Liste, erlaubt ZIP-Upload und Leeren und gleicht
 	// optional gegen erwartete keys ab (z. B. fehlende Lehrer-IDs).
 
-	/** 'cover-page' | 'invigilation-image'
-	 * @type {string} */
-	export let kind;
-	/** Überschrift
-	 * @type {string} */
-	export let title;
-	/** kurze Beschreibung */
-	export let description = '';
-	/** Bezeichnung der Einheit, Plural (für Texte), z. B. 'Deckblätter' */
-	export let unitPlural = 'Anhänge';
-	/** ZIP-Upload anbieten (für cover-page) */
-	export let acceptZip = false;
-	/** Einzeldatei-Upload („nachreichen") anbieten */
-	export let acceptSingle = false;
-	/** accept-Attribut des Einzeldatei-Inputs, z. B. '.pdf' */
-	export let singleAccept = '';
-	/** optional: erwartete keys für Abgleich, [{ key, label }]
-	 * @type {{ key: string | number, label: string }[]} */
-	export let expectedKeys = [];
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} kind - 'cover-page' | 'invigilation-image'
+	 * @property {string} title - Überschrift
+	 * @property {string} [description] - kurze Beschreibung
+	 * @property {string} [unitPlural] - Bezeichnung der Einheit, Plural (für Texte), z. B. 'Deckblätter'
+	 * @property {boolean} [acceptZip] - ZIP-Upload anbieten (für cover-page)
+	 * @property {boolean} [acceptSingle] - Einzeldatei-Upload („nachreichen") anbieten
+	 * @property {string} [singleAccept] - accept-Attribut des Einzeldatei-Inputs, z. B. '.pdf'
+	 * @property {{ key: string | number, label: string }[]} [expectedKeys] - optional: erwartete keys für Abgleich, [{ key, label }]
+	 * @property {import('svelte').Snippet} [actions]
+	 */
+
+	/** @type {Props} */
+	let {
+		kind,
+		title,
+		description = '',
+		unitPlural = 'Anhänge',
+		acceptZip = false,
+		acceptSingle = false,
+		singleAccept = '',
+		expectedKeys = [],
+		actions
+	} = $props();
 
 	/** @type {import('$lib/email/attachments').Attachment[]} */
-	let attachments = [];
-	let loading = true;
+	let attachments = $state([]);
+	let loading = $state(true);
 	/** @type {string | null} */
-	let loadError = null;
+	let loadError = $state(null);
 
-	let uploading = false;
+	let uploading = $state(false);
 	/** @type {{ stored: number, skipped: string[] } | null} */
-	let uploadResult = null;
-	let uploadBlocked = false;
+	let uploadResult = $state(null);
+	let uploadBlocked = $state(false);
 	/** @type {string | null} */
-	let uploadError = null;
+	let uploadError = $state(null);
 
-	let confirming = false;
-	let clearing = false;
+	let confirming = $state(false);
+	let clearing = $state(false);
 
 	// Einzeldatei nachreichen
 	/** gewählter key (leer = aus Dateiname ableiten) */
-	let singleKey = '';
-	let singleUploading = false;
+	let singleKey = $state('');
+	let singleUploading = $state(false);
 	/** @type {{ filename: string, key: string } | null} */
-	let singleResult = null;
-	let singleBlocked = false;
+	let singleResult = $state(null);
+	let singleBlocked = $state(false);
 	/** @type {string | null} */
-	let singleError = null;
+	let singleError = $state(null);
 
 	/** @type {HTMLInputElement} */
-	let fileInput;
+	let fileInput = $state();
 	/** @type {HTMLInputElement} */
-	let singleInput;
+	let singleInput = $state();
 
 	// meldet den aktuellen Anhang-Stand nach oben (nach Laden/Upload/Leeren)
 	const dispatch = createEventDispatcher();
@@ -162,8 +176,8 @@
 		return `${(n / (1024 * 1024)).toFixed(1)} MB`;
 	};
 
-	$: uploadedKeys = new Set(attachments.map((a) => String(a.key)));
-	$: missing = expectedKeys.filter((e) => !uploadedKeys.has(String(e.key)));
+	let uploadedKeys = $derived(new Set(attachments.map((a) => String(a.key))));
+	let missing = $derived(expectedKeys.filter((e) => !uploadedKeys.has(String(e.key))));
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -223,7 +237,7 @@
 			<button
 				class="btn btn-primary btn-sm gap-2"
 				disabled={uploading}
-				on:click={() => fileInput.click()}
+				onclick={() => fileInput.click()}
 			>
 				{#if uploading}
 					<span class="loading loading-spinner loading-xs"></span>
@@ -235,28 +249,28 @@
 				type="file"
 				accept=".zip"
 				class="hidden"
-				on:change={onZipSelected}
+				onchange={onZipSelected}
 			/>
 		{/if}
 
 		<!-- zusätzliche, kind-spezifische Aktion (z. B. Link zur Erzeugung) -->
-		<slot name="actions" />
+		{@render actions?.()}
 
-		<button class="btn btn-ghost btn-sm" on:click={load} disabled={loading}>↻ Aktualisieren</button>
+		<button class="btn btn-ghost btn-sm" onclick={load} disabled={loading}>↻ Aktualisieren</button>
 
 		<div class="flex-1"></div>
 
 		{#if confirming}
 			<div class="flex items-center gap-2 rounded-lg bg-error/10 px-2 py-1" transition:slide>
 				<span class="text-xs font-medium text-error">Wirklich alle {unitPlural} löschen?</span>
-				<button class="btn btn-error btn-xs" disabled={clearing} on:click={doClear}>Ja</button>
-				<button class="btn btn-ghost btn-xs" on:click={() => (confirming = false)}>Abbrechen</button>
+				<button class="btn btn-error btn-xs" disabled={clearing} onclick={doClear}>Ja</button>
+				<button class="btn btn-ghost btn-xs" onclick={() => (confirming = false)}>Abbrechen</button>
 			</div>
 		{:else}
 			<button
 				class="btn btn-outline btn-error btn-sm"
 				disabled={clearing || !attachments.length}
-				on:click={() => (confirming = true)}
+				onclick={() => (confirming = true)}
 			>
 				🗑 Anhänge leeren
 			</button>
@@ -278,7 +292,7 @@
 			<button
 				class="btn btn-primary btn-sm gap-2"
 				disabled={singleUploading}
-				on:click={() => singleInput.click()}
+				onclick={() => singleInput.click()}
 			>
 				{#if singleUploading}
 					<span class="loading loading-spinner loading-xs"></span>
@@ -290,7 +304,7 @@
 				type="file"
 				accept={singleAccept}
 				class="hidden"
-				on:change={onSingleSelected}
+				onchange={onSingleSelected}
 			/>
 		</div>
 		{#if singleBlocked}

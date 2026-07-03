@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import EmailSender from '$lib/email/EmailSender.svelte';
 
 	// „Prüfungsplanungs-Info" an die Prüfenden: erst Empfänger auswählen, dann
@@ -6,33 +8,41 @@
 	// Ersetzt die früheren Einzelversände „Constraints/Wünsche" + „Vorbereitete
 	// Prüfungen". Wiederholbar (Versand an Teilmengen / erneut möglich).
 
-	/** @type {Array<{ teacher: { id: number, shortname: string, fullname: string, email: string, fk: string, isLBA: boolean }, category: string, exams: { ancode: number, module: string }[] }>} */
-	export let recipients = [];
+	
 
 	/** @param {any[]} exams → „425 Statistik …, 486 Datenbanksysteme" */
 	const examList = (exams) =>
 		(exams ?? []).map((/** @type {any} */ e) => `${e.ancode} ${e.module}`).join(', ');
-	/** @type {Record<string, boolean>} */
-	export let conditionsDone = {};
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {Array<{ teacher: { id: number, shortname: string, fullname: string, email: string, fk: string, isLBA: boolean }, category: string, exams: { ancode: number, module: string }[] }>} [recipients]
+	 * @property {Record<string, boolean>} [conditionsDone]
+	 */
 
-	$: withEmail = recipients.filter((r) => r.teacher?.email);
-	$: withoutEmail = recipients.filter((r) => !r.teacher?.email);
+	/** @type {Props} */
+	let { recipients = [], conditionsDone = {} } = $props();
+
+	let withEmail = $derived(recipients.filter((r) => r.teacher?.email));
+	let withoutEmail = $derived(recipients.filter((r) => !r.teacher?.email));
 
 	/** @type {Set<number>} */
-	let selected = new Set();
-	let initialized = false;
+	let selected = $state(new Set());
+	let initialized = $state(false);
 	// Default: alle mit E-Mail ausgewählt (einmalig, sobald Empfänger da sind).
-	$: if (!initialized && withEmail.length) {
-		selected = new Set(withEmail.map((r) => r.teacher.id));
-		initialized = true;
-	}
+	run(() => {
+		if (!initialized && withEmail.length) {
+			selected = new Set(withEmail.map((r) => r.teacher.id));
+			initialized = true;
+		}
+	});
 
-	let q = '';
-	$: filtered = recipients.filter((r) => {
+	let q = $state('');
+	let filtered = $derived(recipients.filter((r) => {
 		if (!q.trim()) return true;
 		const t = q.trim().toLowerCase();
 		return `${r.teacher?.shortname ?? ''} ${r.teacher?.email ?? ''}`.toLowerCase().includes(t);
-	});
+	}));
 
 	/** @param {number} id */
 	function toggle(id) {
@@ -44,7 +54,7 @@
 	const selectAll = () => (selected = new Set(withEmail.map((r) => r.teacher.id)));
 	const selectNone = () => (selected = new Set());
 
-	$: selectedIds = [...selected];
+	let selectedIds = $derived([...selected]);
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -61,8 +71,8 @@
 		<span class="text-sm tabular-nums">
 			<strong>{selected.size}</strong> / {withEmail.length} ausgewählt
 		</span>
-		<button class="btn btn-ghost btn-xs" on:click={selectAll}>alle</button>
-		<button class="btn btn-ghost btn-xs" on:click={selectNone}>keine</button>
+		<button class="btn btn-ghost btn-xs" onclick={selectAll}>alle</button>
+		<button class="btn btn-ghost btn-xs" onclick={selectNone}>keine</button>
 		{#if withoutEmail.length}
 			<span class="badge badge-warning badge-sm">{withoutEmail.length} ohne E-Mail</span>
 		{/if}
@@ -89,7 +99,7 @@
 					class="checkbox checkbox-xs mt-0.5"
 					checked={selected.has(r.teacher.id)}
 					disabled={noMail}
-					on:change={() => toggle(r.teacher.id)}
+					onchange={() => toggle(r.teacher.id)}
 				/>
 				<div class="min-w-0 flex-1">
 					<div class="flex flex-wrap items-center gap-x-2">

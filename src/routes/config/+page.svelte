@@ -3,23 +3,23 @@
 	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	/** @type {SemesterConfigForm} */
-	let formComp;
-	let saving = false;
-	let errorMsg = '';
+	let formComp = $state();
+	let saving = $state(false);
+	let errorMsg = $state('');
 	/** @type {string[]} */
-	let warnings = [];
-	let showWarnings = false;
-	let savedAt = '';
+	let warnings = $state([]);
+	let showWarnings = $state(false);
+	let savedAt = $state('');
 
 	// Planer (global, semesterübergreifend in der DB)
-	let planerName = data.planer?.name ?? '';
-	let planerEmail = data.planer?.email ?? '';
-	let planerSaving = false;
-	let planerError = '';
-	let planerSavedAt = '';
+	let planerName = $state(data.planer?.name ?? '');
+	let planerEmail = $state(data.planer?.email ?? '');
+	let planerSaving = $state(false);
+	let planerError = $state('');
+	let planerSavedAt = $state('');
 
 	async function savePlaner() {
 		if (planerSaving) return;
@@ -150,10 +150,10 @@
 				{/each}
 			</ul>
 			<div class="modal-action">
-				<button class="btn btn-sm" on:click={() => (showWarnings = false)}>verstanden</button>
+				<button class="btn btn-sm" onclick={() => (showWarnings = false)}>verstanden</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" on:click={() => (showWarnings = false)}
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (showWarnings = false)}
 		></button>
 	</div>
 {/if}

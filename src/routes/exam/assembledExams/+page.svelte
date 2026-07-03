@@ -1,24 +1,24 @@
 <script>
-	export let data;
 	import { invalidateAll } from '$app/navigation';
 	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
 	import { assembledExamsState } from '$lib/assembledExams/store';
 	import { studentRegsState } from '$lib/studentRegs/store';
 	import { preparing, regeneratePreparation } from '$lib/prepare';
+	let { data } = $props();
 
 	// Vorbedingungen: ZPA & Primuss importiert UND die manuellen Haken
 	// „ZPA- & Primuss-Prüfungen verknüpft" und „Constraints eingepflegt" gesetzt.
 	// Connected Exams werden live berechnet — kein separater Schritt.
-	$: canGenerate =
-		!!data.conditions?.zpaImported &&
+	let canGenerate =
+		$derived(!!data.conditions?.zpaImported &&
 		!!data.conditions?.primussImported &&
 		!!data.conditions?.zpaPrimussConnected &&
-		!!data.conditions?.constraintsEntered;
-	$: stale = $assembledExamsState.dirty || $studentRegsState.dirty;
+		!!data.conditions?.constraintsEntered);
+	let stale = $derived($assembledExamsState.dirty || $studentRegsState.dirty);
 
 	/** @type {{ changes: any[]; studentCount: number } | null} */
-	let prepResult = null;
-	let prepError = '';
+	let prepResult = $state(null);
+	let prepError = $state('');
 	const KIND_BADGE = /** @type {Record<string, string>} */ ({
 		added: 'badge-success',
 		removed: 'badge-error',
@@ -58,7 +58,7 @@
 			<button
 				class="btn btn-primary btn-sm"
 				disabled={!canGenerate || $preparing}
-				on:click={runPrepare}
+				onclick={runPrepare}
 			>
 				{$preparing ? 'generiert …' : stale ? 'neu generieren' : 'Generieren'}
 			</button>
@@ -85,7 +85,7 @@
 				<div class="flex items-center gap-2 text-sm font-medium">
 					Generiert: {prepResult.changes.length} Änderung(en) · {prepResult.studentCount} StudentRegs
 					<div class="flex-1"></div>
-					<button class="btn btn-ghost btn-xs" on:click={() => (prepResult = null)}>schließen</button>
+					<button class="btn btn-ghost btn-xs" onclick={() => (prepResult = null)}>schließen</button>
 				</div>
 				{#if prepResult.changes.length}
 					<ul class="mt-1 flex max-h-72 flex-col gap-1 overflow-y-auto text-sm">

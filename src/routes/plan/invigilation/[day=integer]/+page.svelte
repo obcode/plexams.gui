@@ -1,12 +1,12 @@
-<script>
-	export let data;
+<script lang="ts">
 	import InvigilatorsForDay from '$lib/invigilator/InvigilatorsForDay.svelte';
 	import InvigilationDayPlanning from '$lib/invigilator/InvigilationDayPlanning.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
+	let { data } = $props();
 
-	let selectedInvigilator = 0;
-	let details = true;
+	let selectedInvigilator = $state(0);
+	let details = $state(true);
 
 	/** @param {{ selectedInvigilator: any }} detail */
 	async function handleSelect(detail) {
@@ -33,20 +33,20 @@
 				type="checkbox"
 				checked
 				class="toggle mx-3"
-				on:click={() => {
+				onclick={() => {
 					details = !details;
 				}}
 			/>
 		</label>
 		{#each data.semesterConfig.days as day}
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			{#if day.number == data.day}
-				<!-- svelte-ignore a11y-missing-attribute -->
+				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab tab-active" href="./{day.number}">
 					Tag {day.number}: {mkDate(day.date)}
 				</a>
 			{:else}
-				<!-- svelte-ignore a11y-missing-attribute -->
+				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab" href="./{day.number}">
 					Tag {day.number}: {mkDateShort(day.date)}
 				</a>

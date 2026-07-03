@@ -1,8 +1,16 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	// Wiederverwendbares Formular für die Semester-Config (bearbeiten + neu anlegen).
 	// Initialwerte über `config` (null = leer). Das gebaute Input liefert getInput().
-	/** @type {any} */
-	export let config = null;
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} [config]
+	 */
+
+	/** @type {Props} */
+	let { config = null } = $props();
 
 	/** @param {string} iso */
 	const datePart = (iso) => (iso ?? '').slice(0, 10);
@@ -42,12 +50,14 @@
 		};
 	}
 
-	let form = initForm(config);
-	let lastConfig = config;
-	$: if (config !== lastConfig) {
-		form = initForm(config);
-		lastConfig = config;
-	}
+	let form = $state(initForm(config));
+	let lastConfig = $state(config);
+	run(() => {
+		if (config !== lastConfig) {
+			form = initForm(config);
+			lastConfig = config;
+		}
+	});
 
 	const addSlot = () => (form.slots = [...form.slots, '']);
 	/** @param {number} i */
@@ -98,12 +108,12 @@
 		return out;
 	}
 
-	$: matrixDays = examDays(form.from, form.until);
+	let matrixDays = $derived(examDays(form.from, form.until));
 	// Zeilen aus den (editierbaren) Slot-Startzeiten; Slot-Nr = Position (1-basiert).
-	$: matrixRows = form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() }));
-	$: forbiddenSet = new Set(
+	let matrixRows = $derived(form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() })));
+	let forbiddenSet = $derived(new Set(
 		form.forbiddenDays.filter(Boolean).map((/** @type {string} */ x) => x.slice(0, 10))
-	);
+	));
 
 	/** @param {number} day @param {number} slot @param {Set<string>} mucDai */
 	const cellChecked = (day, slot, mucDai) => mucDai.has(`${day}-${slot}`);
@@ -178,7 +188,7 @@
 					type="date"
 					class="input input-bordered input-sm"
 					value={datePart(form.from)}
-					on:change={(e) => (form.from = setDate(form.from, e.currentTarget.value))}
+					onchange={(e) => (form.from = setDate(form.from, e.currentTarget.value))}
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
@@ -187,7 +197,7 @@
 					type="date"
 					class="input input-bordered input-sm"
 					value={datePart(form.until)}
-					on:change={(e) => (form.until = setDate(form.until, e.currentTarget.value))}
+					onchange={(e) => (form.until = setDate(form.until, e.currentTarget.value))}
 				/>
 			</label>
 		</div>
@@ -199,7 +209,7 @@
 		<div class="flex items-center gap-2">
 			<span class="font-semibold">Slot-Startzeiten</span>
 			<span class="badge badge-ghost badge-sm">{form.slots.length}</span>
-			<button class="btn btn-ghost btn-xs" on:click={addSlot}>+ Slot</button>
+			<button class="btn btn-ghost btn-xs" onclick={addSlot}>+ Slot</button>
 		</div>
 		{#if form.slots.length === 0}
 			<div class="text-xs text-base-content/50">keine</div>
@@ -213,7 +223,7 @@
 							class="input input-bordered input-sm w-28"
 							bind:value={form.slots[i]}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => rmSlot(i)}>✕</button>
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmSlot(i)}>✕</button>
 					</div>
 				{/each}
 			</div>
@@ -226,7 +236,7 @@
 			<span class="font-semibold">MUC.DAI-Slots</span>
 			<span class="badge badge-ghost badge-sm">{form.mucDai.size}</span>
 			<div class="flex-1"></div>
-			<button class="btn btn-ghost btn-xs" on:click={clearMucDai} disabled={form.mucDai.size === 0}>
+			<button class="btn btn-ghost btn-xs" onclick={clearMucDai} disabled={form.mucDai.size === 0}>
 				alle abwählen
 			</button>
 		</div>
@@ -258,7 +268,7 @@
 										title="Tag {d.number} – ganze Spalte umschalten{forbiddenSet.has(d.iso)
 											? ' (Sperrtag)'
 											: ''}"
-										on:click={() => toggleDay(d.number)}
+										onclick={() => toggleDay(d.number)}
 									>
 										<span class="text-[10px] font-medium">{d.wd}</span>
 										<span class="text-[10px] tabular-nums">{d.label}</span>
@@ -275,7 +285,7 @@
 									<button
 										class="flex w-full items-center justify-end gap-1 rounded px-2 py-0.5 hover:bg-base-200"
 										title="Slot {r.slotNumber} – ganze Zeile umschalten"
-										on:click={() => toggleSlotRow(r.slotNumber)}
+										onclick={() => toggleSlotRow(r.slotNumber)}
 									>
 										<span class="tabular-nums">{r.time || `Slot ${r.slotNumber}`}</span>
 									</button>
@@ -286,7 +296,7 @@
 											type="checkbox"
 											class="checkbox checkbox-xs"
 											checked={cellChecked(d.number, r.slotNumber, form.mucDai)}
-											on:change={() => toggleCell(d.number, r.slotNumber)}
+											onchange={() => toggleCell(d.number, r.slotNumber)}
 											title="Tag {d.number} ({d.wd} {d.label}) · Slot {r.slotNumber} ({r.time})"
 										/>
 									</td>
@@ -304,7 +314,7 @@
 		<div class="flex items-center gap-2">
 			<span class="font-semibold">Sperrtage (forbiddenDays)</span>
 			<span class="badge badge-ghost badge-sm">{form.forbiddenDays.length}</span>
-			<button class="btn btn-ghost btn-xs" on:click={addForbidden}>+ Sperrtag</button>
+			<button class="btn btn-ghost btn-xs" onclick={addForbidden}>+ Sperrtag</button>
 		</div>
 		{#if form.forbiddenDays.length === 0}
 			<div class="text-xs text-base-content/50">keine</div>
@@ -316,10 +326,10 @@
 							type="date"
 							class="input input-bordered input-sm"
 							value={datePart(form.forbiddenDays[i])}
-							on:change={(e) =>
+							onchange={(e) =>
 								(form.forbiddenDays[i] = setDate(form.forbiddenDays[i], e.currentTarget.value))}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" on:click={() => rmForbidden(i)}
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmForbidden(i)}
 							>✕</button
 						>
 					</div>
@@ -376,7 +386,7 @@
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center gap-2">
 				<span class="text-sm font-medium">zusätzliche Prüfende (additionalExamer)</span>
-				<button class="btn btn-ghost btn-xs" on:click={addExaminer}>+ Adresse</button>
+				<button class="btn btn-ghost btn-xs" onclick={addExaminer}>+ Adresse</button>
 			</div>
 			{#if form.emails.additionalExamer.length === 0}
 				<div class="text-xs text-base-content/50">keine</div>
@@ -389,7 +399,7 @@
 								class="input input-bordered input-sm w-80"
 								bind:value={form.emails.additionalExamer[i]}
 							/>
-							<button class="btn btn-ghost btn-xs text-error" on:click={() => rmExaminer(i)}
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => rmExaminer(i)}
 								>✕</button
 							>
 						</div>

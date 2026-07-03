@@ -6,14 +6,14 @@
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	export let data;
+	let { data } = $props();
 
 	// Konflikt-Diff: vor einem Schreiblauf die Konfliktliste festhalten, danach
 	// vergleichen (weg / geblieben / neu).
 	/** @type {any[] | null} */
 	let conflictSnapshot = null;
 	/** @type {{ removed: any[], stayed: any[], added: any[] } | null} */
-	let conflictDiff = null;
+	let conflictDiff = $state(null);
 
 	/** @param {any} c */
 	const cKey = (c) => [c.ancode1, c.ancode2].sort((a, b) => a - b).join('-');
@@ -45,28 +45,28 @@
 	}
 
 	// EXAMS gesperrt (draftSent/examPlanPublished gesetzt) → nur Probelauf erlaubt.
-	$: examsBlocked = (data.blockedAreas ?? []).includes('EXAMS');
+	let examsBlocked = $derived((data.blockedAreas ?? []).includes('EXAMS'));
 
 	// --- Eingaben ---
 	/** @type {number | ''} */
-	let seed = 1;
+	let seed = $state(1);
 	// Terminplan: Qualität plateaut bei ~1 Mio.; darüber bringt es nichts (die auf
 	// die Iterationszahl normierte Abkühlung kann sogar leicht schlechter werden).
 	// Daher enger Bereich 100k–2M statt 1–20 Mio. wie bei den Aufsichten.
-	let iterations = 1_000_000;
+	let iterations = $state(1_000_000);
 	const ITER_MIN = 100_000;
 	const ITER_MAX = 2_000_000;
 	const ITER_STEP = 100_000;
 	// Warm-Start: bestehenden Plan als Ausgangspunkt behalten (nur verbessern).
-	let keepAssigned = false;
+	let keepAssigned = $state(false);
 
 	// Zwischenzeit zwischen Prüfungen (Semester-Config; wirkt bei der Generierung).
 	// Bearbeiten via Round-Trip über setSemesterConfigInput (kein Einzelfeld-Setter).
 	/** @type {number | ''} */
-	let examGap = data.semesterConfigInput?.examGapMinutes ?? '';
-	let gapBusy = false;
-	let gapInfo = '';
-	let gapError = '';
+	let examGap = $state(data.semesterConfigInput?.examGapMinutes ?? '');
+	let gapBusy = $state(false);
+	let gapInfo = $state('');
+	let gapError = $state('');
 	async function saveGap() {
 		if (gapBusy) return;
 		const base = data.semesterConfigInput;
@@ -118,25 +118,25 @@
 	}
 
 	// --- Laufzeit-Status ---
-	let running = false;
-	let writeRun = false; // letzter/aktueller Lauf schreibt in die DB?
-	let ignoreRun = false; // Lauf ignoriert Ratings & canShareSlot
+	let running = $state(false);
+	let writeRun = $state(false); // letzter/aktueller Lauf schreibt in die DB?
+	let ignoreRun = $state(false); // Lauf ignoriert Ratings & canShareSlot
 	/** @type {string | null} */
-	let errorMsg = null;
-	let done = false;
+	let errorMsg = $state(null);
+	let done = $state(false);
 
 	// Terminal: alle Zeilen ausser PROGRESS werden angehaengt; die jeweils letzte
 	// PROGRESS-Zeile wird in-place aktualisiert (Spinner-Gefuehl). Fortschritt
 	// kommt beim Terminplan als Text (kein strukturiertes progress-Objekt).
 	/** @type {{ level: string, html: string }[]} */
-	let lines = [];
+	let lines = $state([]);
 	/** @type {{ html: string } | null} */
-	let current = null;
+	let current = $state(null);
 	/** @type {any} */
-	let examReport = null;
+	let examReport = $state(null);
 
 	/** @type {HTMLDivElement} */
-	let termEl;
+	let termEl = $state();
 
 	/** @type {any} */
 	let convert = null;
@@ -375,9 +375,9 @@
 	});
 
 	// --- Terminplan zurücksetzen (destruktiv) ---
-	let resetBusy = false;
-	let resetInfo = '';
-	let resetError = '';
+	let resetBusy = $state(false);
+	let resetInfo = $state('');
+	let resetError = $state('');
 	async function resetSchedule() {
 		if (resetBusy || examsBlocked) return;
 		if (
@@ -521,7 +521,7 @@
 					disabled={gapBusy}
 				/>
 			</label>
-			<button class="btn btn-outline btn-sm" disabled={gapBusy} on:click={saveGap}>
+			<button class="btn btn-outline btn-sm" disabled={gapBusy} onclick={saveGap}>
 				{gapBusy ? 'speichert …' : 'speichern'}
 			</button>
 			{#if gapInfo}<span class="text-xs text-success">{gapInfo}</span>{/if}
@@ -537,15 +537,15 @@
 
 	<div class="flex flex-wrap items-center gap-3">
 		{#if running}
-			<button class="btn btn-error btn-sm gap-2" on:click={stop}>
+			<button class="btn btn-error btn-sm gap-2" onclick={stop}>
 				<span class="loading loading-spinner loading-xs"></span> Abbrechen
 			</button>
 		{:else}
-			<button class="btn btn-outline btn-sm" on:click={() => start(true)}>▷ Probelauf</button>
+			<button class="btn btn-outline btn-sm" onclick={() => start(true)}>▷ Probelauf</button>
 			<button
 				class="btn btn-primary btn-sm"
 				disabled={examsBlocked}
-				on:click={() => start(false)}
+				onclick={() => start(false)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
 					: 'schreibt den Plan mit dem aktuellen Seed — identisch zum Probelauf mit demselben Seed'}
@@ -554,7 +554,7 @@
 			</button>
 			<button
 				class="btn btn-ghost btn-sm"
-				on:click={newSuggestion}
+				onclick={newSuggestion}
 				title="anderen Seed (aktueller + 1) als Probelauf → anderer Plan"
 			>
 				🎲 Neuer Vorschlag
@@ -562,7 +562,7 @@
 			<button
 				class="btn btn-ghost btn-sm"
 				disabled={examsBlocked}
-				on:click={() => start(false, true)}
+				onclick={() => start(false, true)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
 					: 'ignoriert alle Bewertungen & „darf zeitgleich" für diesen Lauf (gespeichert bleiben sie)'}
