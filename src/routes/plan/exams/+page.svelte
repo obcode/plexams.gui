@@ -336,6 +336,10 @@
 	$: timeCal = (() => {
 		const items = [];
 		for (const e of plannedFiltered) {
+			// Nur echte Slots (1-basiert): externe Out-of-Period-Prüfungen (Slot 0/0)
+			// liefern zwar ihre externalTime als starttime, gehören aber mangels Slot
+			// nicht in den Plan.
+			if (!e.planEntry?.slotNumber) continue;
 			const iso = e.planEntry?.starttime;
 			const dt = dateObj(iso);
 			const startMin = minutesOfDay(iso);
