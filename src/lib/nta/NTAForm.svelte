@@ -1,19 +1,21 @@
-<script>
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines NTA. Beim Bearbeiten
 	// ist die mtknr (Schlüssel) gesperrt. exams/deactivated/lastSemester sind
 	// nicht Teil des Inputs und werden serverseitig nicht überschrieben.
 
-	/** 'add' | 'edit'
-	 * @type {string} */
-	export let mode = 'add';
-	/** vorhandener NTA zum Vorbefüllen (edit)
-	 * @type {any} */
-	export let nta = null;
-
-	const dispatch = createEventDispatcher();
+	let {
+		mode = 'add',
+		nta = null,
+		onsaved,
+		oncancel
+	}: {
+		mode?: string;
+		nta?: any;
+		onsaved?: (data: any) => void;
+		oncancel?: () => void;
+	} = $props();
 
 	const empty = {
 		name: '',
@@ -31,19 +33,16 @@
 	// „Bescheid vom" wird als DD.MM.YYYY gespeichert, das <input type="date">
 	// braucht aber YYYY-MM-DD — daher beim Vorbefüllen/Speichern konvertieren
 	// (Speicherformat bleibt DD.MM.YYYY, damit nichts anderes bricht).
-	/** @param {string} d */
-	function toISO(d) {
+	function toISO(d: string) {
 		const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(d ?? '');
 		return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
 	}
-	/** @param {string} d */
-	function fromISO(d) {
+	function fromISO(d: string) {
 		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d ?? '');
 		return m ? `${m[3]}.${m[2]}.${m[1]}` : (d ?? '');
 	}
 
-	/** @param {any} n */
-	function pick(n) {
+	function pick(n: any) {
 		return {
 			name: n.name ?? '',
 			email: n.email ?? '',
@@ -58,19 +57,20 @@
 		};
 	}
 
-	let form = nta ? pick(nta) : { ...empty };
+	let form = $state(nta ? pick(nta) : { ...empty });
 
-	let saving = false;
-	/** @type {string | null} */
-	let errorMsg = null;
+	let saving = $state(false);
+	let errorMsg = $state<string | null>(null);
 
 	// Clientseitige Validierung. E-Mail nur prüfen, wenn ausgefüllt (optional).
 	// Die mtknr ist der Schlüssel: nur Ziffern, aber als String übertragen
 	// (führende Nullen müssen erhalten bleiben → kein type="number").
 	const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	$: emailError = form.email && !emailRe.test(form.email) ? 'Ungültige E-Mail-Adresse.' : '';
-	$: mtknrError = form.mtknr && !/^\d+$/.test(form.mtknr) ? 'Nur Ziffern erlaubt.' : '';
-	$: formValid = form.name.trim() !== '' && /^\d+$/.test(form.mtknr) && !emailError;
+	const emailError = $derived(
+		form.email && !emailRe.test(form.email) ? 'Ungültige E-Mail-Adresse.' : ''
+	);
+	const mtknrError = $derived(form.mtknr && !/^\d+$/.test(form.mtknr) ? 'Nur Ziffern erlaubt.' : '');
+	const formValid = $derived(form.name.trim() !== '' && /^\d+$/.test(form.mtknr) && !emailError);
 
 	async function submit() {
 		if (!formValid) {
@@ -103,7 +103,7 @@
 		} finally {
 			saving = false;
 		}
-		dispatch('saved', data);
+		onsaved?.(data);
 	}
 </script>
 
@@ -205,10 +205,10 @@
 	{/if}
 
 	<div class="flex justify-end gap-2">
-		<button class="btn btn-ghost btn-sm" on:click={() => dispatch('cancel')} disabled={saving}>
+		<button class="btn btn-ghost btn-sm" onclick={() => oncancel?.()} disabled={saving}>
 			Abbrechen
 		</button>
-		<WriteButton class="btn btn-primary btn-sm gap-2" on:click={submit} disabled={saving || !formValid}>
+		<WriteButton class="btn btn-primary btn-sm gap-2" onclick={submit} disabled={saving || !formValid}>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
 		</WriteButton>
