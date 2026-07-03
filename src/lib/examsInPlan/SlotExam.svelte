@@ -150,10 +150,9 @@
 			colors = 'border-l-accent bg-accent/15';
 		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
 			colors = 'border-l-error bg-error/15';
-		} else if (exam.constraints && exam.constraints.notPlannedByMe && exam.ancode > 999) {
-			colors = 'border-l-base-300 bg-base-200';
 		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
-			colors = 'border-l-error/50 bg-error/5';
+			// von anderer FK geplant (MUC.DAI oder ZPA notPlannedByMe) → grau, read-only-Anmutung
+			colors = 'border-l-base-300 bg-base-200';
 		} else if (exam.zpaExam.isRepeaterExam) {
 			colors = 'border-l-warning bg-warning/10';
 		} else {
@@ -265,16 +264,17 @@
 		width = 'w-min';
 	}
 
-	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
-	// Primuss-Ancode darstellen, z. B. „FK03: 123" — statt Ancode-Präfix-Parsing.
-	let ancodeToShow = exam.zpaExam.faculty
-		? `${exam.zpaExam.faculty}: ${exam.zpaExam.primussAncodes?.[0]?.ancode ?? exam.zpaExam.ancode}`
-		: exam.zpaExam.ancode.toString();
+	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
+	// FK bei „nicht von mir geplant" (Constraint-Feld, z. B. „10"). Rein numerisch
+	// → „FK"-Präfix. Leer ⇒ eigene Prüfung (FK07).
+	const rawFk = exam.zpaExam.faculty || exam.constraints?.notPlannedByMeInFK || '';
+	const notMeFk = /^\d+$/.test(rawFk) ? `FK${rawFk}` : rawFk;
 
-	// Planende FK bei „nicht von mir geplant": Constraint-Feld zuerst, sonst die
-	// Fakultät der Prüfung (MUC.DAI/andere FK). Rein numerisch → „FK"-Präfix.
-	const rawNotMeFk = exam.constraints?.notPlannedByMeInFK || exam.zpaExam.faculty || '';
-	const notMeFk = /^\d+$/.test(rawNotMeFk) ? `FK${rawNotMeFk}` : rawNotMeFk;
+	// Externe/fremd-geplante Prüfungen über FK + Primuss-Ancode darstellen, z. B.
+	// „FK03: 123" bzw. „FK10: 456" — statt Ancode-Präfix-Parsing.
+	let ancodeToShow = notMeFk
+		? `${notMeFk}: ${exam.zpaExam.primussAncodes?.[0]?.ancode ?? exam.zpaExam.ancode}`
+		: exam.zpaExam.ancode.toString();
 </script>
 
 {#if show}

@@ -394,7 +394,7 @@
 
 	/** @param {any} x → Zustands-Akzent für einen Zeit-Block */
 	const blockColor = (x) => {
-		if (x.e.constraints?.notPlannedByMe) return 'border-l-accent border-dashed';
+		if (x.e.constraints?.notPlannedByMe) return 'border-l-base-content/30 border-dashed opacity-70';
 		if (x.e.planEntry?.phaseFixed) return 'border-l-info';
 		if (x.e.planEntry?.locked) return 'border-l-base-content/40';
 		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
@@ -406,11 +406,19 @@
 	const fmtAncode = (z) =>
 		z.faculty ? `${z.faculty}: ${z.primussAncodes?.[0]?.ancode ?? z.ancode}` : z.ancode.toString();
 
-	// planende FK: Constraint-Feld zuerst, sonst die Fakultät; rein numerisch → „FK…"
+	// planende FK: Fakultät zuerst, sonst Constraint-Feld; rein numerisch → „FK…"
 	/** @param {any} e */
 	const otherFk = (e) => {
-		const raw = e.constraints?.notPlannedByMeInFK || e.zpaExam?.faculty || '';
+		const raw = e.zpaExam?.faculty || e.constraints?.notPlannedByMeInFK || '';
 		return /^\d+$/.test(raw) ? `FK${raw}` : raw;
+	};
+
+	// „FK10: 456" — FK-Präfix + Primuss-Ancode, wie in den Slot-Kästchen.
+	/** @param {any} e */
+	const otherFkAncode = (e) => {
+		const fk = otherFk(e);
+		const a = e.zpaExam?.primussAncodes?.[0]?.ancode ?? e.zpaExam?.ancode ?? e.ancode;
+		return fk ? `${fk}: ${a}` : String(a);
 	};
 
 	/** @param {string|null|undefined} iso → „Mo 06.07. 11:00" (Berlin) */
@@ -700,10 +708,10 @@
 		/>
 
 		{#if otherFkNoSlot.length}
-			<div class="flex flex-col gap-2 rounded-lg border border-accent/40 bg-accent/5 p-3">
+			<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-200 p-3">
 				<div class="flex items-center gap-2">
 					<h2 class="text-lg font-semibold">Von anderen FKs geplant (ohne Slot)</h2>
-					<span class="badge badge-accent badge-sm tabular-nums">{otherFkNoSlot.length}</span>
+					<span class="badge badge-neutral badge-sm tabular-nums">{otherFkNoSlot.length}</span>
 				</div>
 				<p class="text-sm text-base-content/60">
 					Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald sie
@@ -714,12 +722,11 @@
 					{#each otherFkNoSlot as e (e.ancode)}
 						{@const t = fmtDateTime(e.planEntry?.starttime)}
 						<div
-							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-accent bg-base-100 p-2 text-xs"
+							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-base-content/30 bg-base-200 p-2 text-xs opacity-90"
 						>
 							<div class="flex items-center gap-1 font-semibold">
 								{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
-								<span class="font-mono">{fmtAncode(e.zpaExam)}</span>
-								{#if otherFk(e)}<span class="badge badge-accent badge-xs">{otherFk(e)}</span>{/if}
+								<span class="font-mono">{otherFkAncode(e)}</span>
 							</div>
 							<div class="truncate">{e.zpaExam?.module}</div>
 							<div class="text-base-content/50">{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}</div>
