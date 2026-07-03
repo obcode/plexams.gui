@@ -1,17 +1,19 @@
-<script>
-	export let day;
-	export let time;
-	export let details;
-	export let selectedInvigilator;
+<script lang="ts">
 	import Room from './Room.svelte';
 	import { onMount } from 'svelte';
 
-	let slot;
+	let {
+		day,
+		time,
+		details,
+		selectedInvigilator
+	}: { day: any; time: any; details: boolean; selectedInvigilator: any } = $props();
 
-	let noRooms = true;
-	let loading = true;
+	let slot = $state<any>(undefined);
+	let noRooms = $state(true);
+	let loading = $state(true);
 
-	async function fetchSlot(day, time) {
+	async function fetchSlot(day: any, time: any) {
 		const response = await fetch('/api/plan/roomsWithInvigilationsForSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
@@ -25,22 +27,12 @@
 		loading = false;
 	}
 
-	let bgSlot = '';
-	$: {
+	const bgSlot = $derived.by(() => {
 		if (slot && slot.reserve) {
-			if (slot.reserve.id == selectedInvigilator) {
-				bgSlot = 'bg-blue-400';
-			} else {
-				bgSlot = 'bg-green-300';
-			}
-		} else {
-			if (slot) {
-				bgSlot = 'bg-red-300';
-			} else {
-				bgSlot = '';
-			}
+			return slot.reserve.id == selectedInvigilator ? 'bg-blue-400' : 'bg-green-300';
 		}
-	}
+		return slot ? 'bg-red-300' : '';
+	});
 
 	onMount(() => {
 		fetchSlot(day, time.number);

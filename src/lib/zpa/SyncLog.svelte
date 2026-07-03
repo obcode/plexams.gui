@@ -1,9 +1,7 @@
-<script>
-	/** @type {any[]} */
-	export let entries = [];
+<script lang="ts">
+	let { entries = [] }: { entries?: any[] } = $props();
 
-	/** @param {string} iso */
-	function fmt(iso) {
+	function fmt(iso: string) {
 		const d = new Date(iso);
 		if (isNaN(d.getTime())) return iso;
 		return d.toLocaleString('de-DE', {
@@ -16,15 +14,13 @@
 	}
 
 	// neuester Eintrag je operation (entries kommen neueste zuerst)
-	$: latest = (() => {
-		/** @type {Map<string, any>} */
-		const seen = new Map();
+	const latest = $derived.by(() => {
+		const seen = new Map<string, any>();
 		for (const e of entries) if (!seen.has(e.operation)) seen.set(e.operation, e);
 		return [...seen.values()];
-	})();
+	});
 
-	/** @param {string} dir */
-	const dirLabel = (dir) => (dir === 'upload' ? '↑ Upload' : '↓ Import');
+	const dirLabel = (dir: string) => (dir === 'upload' ? '↑ Upload' : '↓ Import');
 </script>
 
 <div class="flex flex-col gap-4">
