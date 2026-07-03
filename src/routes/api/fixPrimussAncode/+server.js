@@ -1,7 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { request as gqlrequest, gql } from 'graphql-request';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
 import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
 
 /** @type {import('./$types').RequestHandler} */
@@ -21,15 +19,10 @@ export async function POST({ request }) {
 		}
 	`;
 
-	try {
-		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, {
-			zpaAncode: Number(zpaAncode),
-			program,
-			fromAncode: Number(fromAncode),
-			toAncode: Number(toAncode)
-		});
-		return json(data);
-	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
-	}
+	return gqlProxy(mutation, {
+		zpaAncode: Number(zpaAncode),
+		program,
+		fromAncode: Number(fromAncode),
+		toAncode: Number(toAncode)
+	});
 }

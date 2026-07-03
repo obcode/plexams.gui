@@ -1,7 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { request as gqlrequest, gql } from 'graphql-request';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
 
 /**
  * Personalisierungs-Namen setzen (Mehrfachnamen). Wirkt sofort auf `mine` der
@@ -18,13 +16,8 @@ export async function POST({ request }) {
 			}
 		}
 	`;
-	try {
-		const clean = Array.isArray(names)
-			? names.map((/** @type {unknown} */ n) => String(n).trim()).filter(Boolean)
-			: [];
-		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, { names: clean });
-		return json(data);
-	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
-	}
+	const clean = Array.isArray(names)
+		? names.map((/** @type {unknown} */ n) => String(n).trim()).filter(Boolean)
+		: [];
+	return gqlProxy(mutation, { names: clean });
 }

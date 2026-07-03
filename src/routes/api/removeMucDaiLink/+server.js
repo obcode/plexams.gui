@@ -1,7 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { request as gqlrequest, gql } from 'graphql-request';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
 
 /**
  * Manuelle Verknüpfung einer MUC.DAI-Prüfung entfernen (fällt auf die
@@ -21,13 +19,8 @@ export async function POST({ request }) {
 			}
 		}
 	`;
-	try {
-		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, {
-			program: String(program),
-			primussAncode: Number(primussAncode)
-		});
-		return json(data);
-	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
-	}
+	return gqlProxy(mutation, {
+		program: String(program),
+		primussAncode: Number(primussAncode)
+	});
 }
