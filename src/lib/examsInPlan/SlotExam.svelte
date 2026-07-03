@@ -136,31 +136,28 @@
 		conflictCount = 0;
 	}
 
+	// Karten-Zustand → farbiger Links-Akzent (border-l) + dezente Tönung, auf
+	// Theme-Tokens statt hartkodierter Farben. Kaskade wie zuvor (Auswahl > gleiche:r
+	// Prüfende:r > sameSlot > Konflikt > extern/nicht-von-mir > Wiederholung > normal).
 	let colors;
 	$: {
-		if (conflictingAncodes.includes(exam.ancode)) {
-			showConflictCount = true;
-		} else {
-			showConflictCount = false;
-		}
+		showConflictCount = conflictingAncodes.includes(exam.ancode);
 		if (selectedExam == exam.ancode) {
-			colors = 'bg-cyan-700 border-cyan-900 text-white';
+			colors = 'border-l-primary bg-primary/15 ring-1 ring-primary/60';
 		} else if (selectedExamerID == exam.zpaExam.mainExamerID) {
-			colors = 'bg-blue-200 border-blue-900';
+			colors = 'border-l-info bg-info/10';
 		} else if (sameSlot) {
-			colors = 'bg-cyan-500 border-cyan-900 text-white';
+			colors = 'border-l-accent bg-accent/15';
 		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
-			colors = 'bg-red-700 border-red-900 text-white';
+			colors = 'border-l-error bg-error/15';
 		} else if (exam.constraints && exam.constraints.notPlannedByMe && exam.ancode > 999) {
-			colors = 'bg-cyan-100 border-cyan-300';
+			colors = 'border-l-base-300 bg-base-200';
 		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
-			colors = 'bg-red-200 border-red-300';
-		} else if (locked) {
-			colors = 'bg-grey-100';
+			colors = 'border-l-error/50 bg-error/5';
 		} else if (exam.zpaExam.isRepeaterExam) {
-			colors = ' bg-orange-200 border-orange-500';
+			colors = 'border-l-warning bg-warning/10';
 		} else {
-			colors = ' bg-green-200 border-green-500';
+			colors = 'border-l-success/60';
 		}
 	}
 
@@ -282,130 +279,71 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		transition:fade
-		class="shadow-lg m-1 p-2 border-2 rounded-lg {colors} shadow-slate-300 {width}"
-		on:click={select(exam.ancode)}
+		class="m-1 cursor-pointer rounded-lg border border-base-300 border-l-4 bg-base-100 p-2 shadow-sm transition-shadow hover:shadow-md {colors} {width}"
+		on:click={() => select(exam.ancode)}
 	>
-		<!-- <div> -->
 		{#if showConflictCount}
-			<div class="alert {alertstyle(conflictCount)} shadow-lg p-1 mb-1 w-full">
-				<div class="flex justify-between">
-					<span class="text-xl">⚠️</span>
-					<span
-						>{conflictCount}
-						{#if details || !inSlot}
-							{#if conflictCount == 1}Konflikt{:else}Konflikte{/if}
-						{/if}
-					</span>
-				</div>
+			<div class="mb-1">
+				<span
+					class="badge badge-sm gap-1 {conflictCount >= 15
+						? 'badge-info'
+						: conflictCount >= 5
+							? 'badge-success'
+							: 'badge-ghost'}"
+				>
+					⚠️ {conflictCount}
+					{#if details || !inSlot}{conflictCount == 1 ? 'Konflikt' : 'Konflikte'}{/if}
+				</span>
 			</div>
 		{/if}
-		<!-- <div class="flex justify-between">
-				<a href="/examGroups/{examGroupCode}">
-					<div class="border border-gray-400 rounded-lg p-1 mx-2">
-						<div>#{examGroupCode} / {examGroupInfo.maxDuration}Min.</div>
-					</div>
-				</a>
-				{#if online}
-					<div class="badge badge-error">online</div>
-				{/if}
-				{#if exahm}
-					<div class="badge badge-error">EXaHM</div>
-				{/if}
-				{#if seb}
-					<div class="badge badge-error">S.E.B.</div>
-				{/if}
-				<div
-					class="border border-gray-400 rounded-lg p-1 mx-2"
-					on:click={select(examGroupCode)}
-				>
-					{examGroupInfo.programs} /
-					{examGroupInfo.studentRegs}
-				</div>
-			</div>
-			{#if details}
-				<div class="flex justify-between m-2">
-					<div>{regs} Regs</div>
-					<div class="w-1/2">
-						<progress class="progress {regsColor} w-full" value={regs} max={regsMax} />
-					</div>
-				</div>
-				<div class="flex justify-between m-2" on:click={select(examGroupCode)}>
-					<div>{slots} Slots</div>
-					<div class="w-1/2">
-						<progress class="progress {slotsColor} w-full" value={slots} max={slotsmax} />
-					</div>
-				</div>
-				<div class="flex justify-between m-2" on:click={select(examGroupCode)}>
-					<div>{conflicts} Konflikte</div>
-					<div class="w-1/2">
-						<progress
-							class="progress {conflictsColor} w-full"
-							value={conflicts}
-							max={conflictsMax}
-						/>
-					</div>
-				</div>
-			{/if} -->
+
 		{#if !details && inSlot}
-			<Tooltip
-				content="{exam.zpaExam.module}
-					({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}"
-			>
-				{#if exam.zpaExam.isRepeaterExam}
-					<div class="mt-2 mr-3">
-						<span title="Wiederholungsprüfung">🔁</span>
-					</div>
-				{/if}
-				{ancodeToShow}
+			<!-- kompakt: Ancode + Icons + Anmeldezahl; Details im Tooltip -->
+			<Tooltip content="{exam.zpaExam.module} ({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}">
+				<div class="flex items-center gap-1 whitespace-nowrap">
+					{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
+					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">🔒</span
+						>{/if}
+					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
+							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
+						>{/if}
+					<span class="font-mono font-semibold">{ancodeToShow}</span>
+					<span class="text-xs tabular-nums text-base-content/50">&sum;{exam.studentRegsCount}</span>
+				</div>
 			</Tooltip>
 		{:else}
 			{#if exam.planEntry && exam.planEntry.externalTime != null}
-				<div class="badge bg-white-300">
+				<div class="badge badge-ghost badge-sm mb-1 tabular-nums">
 					{mkStarttime(exam.planEntry.externalTime)}
 				</div>
 			{/if}
-			<div class="flex">
-				<div class="flex-none">
-					<div class="flex">
-						<div>
-							{#if exam.planEntry != null && exam.planEntry.locked}
-								<div class="mt-2 mr-3">
-									<span title="manuell gesperrt">🔒</span>
-								</div>
-							{/if}
-							{#if exam.planEntry != null && exam.planEntry.phaseFixed}
-								<div class="mt-2 mr-3">
-									<span title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span>
-								</div>
-							{/if}
-							{#if exam.zpaExam.isRepeaterExam}
-								<div class="mt-2 mr-3">
-									<span title="Wiederholungsprüfung">🔁</span>
-								</div>
-							{/if}
-						</div>
+			<div class="flex items-start gap-2">
+				<div class="flex shrink-0 gap-0.5">
+					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">🔒</span
+						>{/if}
+					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
+							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
+						>{/if}
+					{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
+				</div>
+				<div class="min-w-0 grow">
+					<div class="font-medium">
+						<span class="font-mono">{ancodeToShow}</span> · {exam.zpaExam.module}
 					</div>
-					<br />
+					<div class="text-xs text-base-content/60">{exam.zpaExam.mainExamer}</div>
 				</div>
-				<div class="grow">
-					{ancodeToShow}.
-					{exam.zpaExam.module}
-					({exam.zpaExam.mainExamer})
-				</div>
-				<div class="min-w-fit flex flex-col place-items-end">
+				<div class="flex shrink-0 flex-col items-end gap-1">
 					{#if exam.primussExams.length > 0}
-						<div class="badge badge-outline min-w-fit">
+						<span class="badge badge-outline badge-sm tabular-nums" title="Anmeldungen">
 							&sum; {exam.studentRegsCount}
-						</div>
-						<div class="badge badge-outline min-w-fit my-1">
-							<span title="Dauer">⏱️</span>
-							{exam.zpaExam.duration}
-						</div>
+						</span>
+						<span class="badge badge-outline badge-sm tabular-nums" title="Dauer">
+							⏱️ {exam.zpaExam.duration}
+						</span>
 						{#if exam.maxDuration > exam.zpaExam.duration}
-							<div class="badge badge-outline min-w-fit">
-								<span title="max. Dauer">⏳</span>
-								{exam.maxDuration}
-							</div>
+							<span class="badge badge-outline badge-sm tabular-nums" title="max. Dauer (NTA)">
+								⏳ {exam.maxDuration}
+							</span>
 						{/if}
 					{/if}
 				</div>
@@ -413,91 +351,45 @@
 		{/if}
 
 		{#if details || !inSlot}
-			<div>
+			<div class="mt-1 flex flex-wrap items-center gap-1">
 				{#each exam.primussExams as primussExam}
 					{#if primussExam.exam.ancode != exam.ancode}
-						<div class="badge">{primussExam.exam.program}/{primussExam.exam.ancode}</div>
+						<span class="badge badge-ghost badge-sm">{primussExam.exam.program}/{primussExam.exam.ancode}</span>
 					{/if}
 				{/each}
 			</div>
 
-			<a href="/examWithRegs/{exam.zpaExam.ancode}">
+			<a class="mt-1 flex flex-wrap items-center gap-1" href="/examWithRegs/{exam.zpaExam.ancode}">
 				{#each exam.primussExams as primussExam}
 					{#if primussExam.studentRegs.length > 0}
-						<div class="badge badge-outline gap-2 mx-1">
+						<span class="badge badge-outline badge-sm gap-1">
 							{primussExam.exam.program}
 							{primussExam.studentRegs.length}
-						</div>
+						</span>
 					{/if}
 				{/each}
-				<div class="badge gap-2 mx-1">
-					{exam.zpaExam.groups}
-				</div>
+				{#each exam.zpaExam.groups as g}
+					<span class="badge badge-sm">{g}</span>
+				{/each}
 			</a>
 
-			{#if exam.constraints && exam.constraints.online}
-				<div class="badge badge-error">online</div>
-			{/if}
-			{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
-				<div class="badge badge-error rounded-lg border-black">EXaHM</div>
-			{/if}
-			{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
-				<div class="badge badge-error rounded-lg border-black">SEB</div>
-			{/if}
-			{#if exam.constraints != null && exam.constraints.sameSlot != null && exam.constraints.sameSlot.length > 0}
-				<div class="badge badge-warning rounded-lg border-black">sameSlot</div>
-			{/if}
+			<div class="mt-1 flex flex-wrap gap-1">
+				{#if exam.constraints && exam.constraints.online}
+					<span class="badge badge-info badge-sm">online</span>
+				{/if}
+				{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.exahm}
+					<span class="badge badge-error badge-sm">EXaHM</span>
+				{/if}
+				{#if exam.constraints && exam.constraints.roomConstraints && exam.constraints.roomConstraints.seb}
+					<span class="badge badge-error badge-sm">SEB</span>
+				{/if}
+				{#if exam.constraints != null && exam.constraints.sameSlot != null && exam.constraints.sameSlot.length > 0}
+					<span class="badge badge-warning badge-sm">sameSlot</span>
+				{/if}
+				{#if exam.constraints && exam.constraints.notPlannedByMe}
+					<span class="badge badge-outline badge-sm">nicht von mir geplant</span>
+				{/if}
+			</div>
 		{/if}
 	</div>
-	<!-- <div>
-			{#if moveable || selected}
-				{#if exam.constraints && exam.constraints.notPlannedByMe}
-					<div class="alert shadow-lg p-1 w-full">
-						<div>
-							<span class="text-xl">⚠️</span>
-							<span>Nicht von mir geplant</span>
-						</div>
-					</div>
-				{:else if allowedSlots.length == 0}
-					<div class="alert shadow-lg p-1 w-full">
-						<div>
-							<span class="text-xl">⚠️</span>
-							<span>nicht verschiebbar</span>
-						</div>
-					</div>
-				{:else}
-					<div class="border-slate-400 p-1 m-2 border-2 rounded-lg">
-						<select
-							class="select select-sm select-bordered select-ghost m-2"
-							bind:value={slotToMove}
-						>
-							<option selected value="none">Slot auswählen</option>
-							{#each allowedSlots as slot}
-								<option value={slot}
-									>({slot.dayNumber}, {slot.slotNumber})
-									<span class="font-mono"> {mkDateTimeShort(slot.starttime)}</span></option
-								>
-							{/each}
-						</select>
-						<div class="flex mx-2">
-							<button
-								class="btn btn-xs btn-outline"
-								disabled={enabledButton(slotToMove)}
-								on:click={addToSlot}
-							>
-								{#if inSlot}
-									verschieben
-								{:else}
-									In Slot einplanen
-								{/if}
-							</button>
-							{#if inSlot}
-								<button class="btn-xs btn btn-outline mx-2" on:click={rmFromSlot}>entfernen</button>
-							{/if}
-						</div>
-					</div>
-				{/if}
-			{/if}
-		</div> -->
-	<!-- </div> -->
 {/if}
