@@ -7,7 +7,7 @@
 
 	let examsWithoutSlot = data.examsWithoutSlot ?? [];
 
-	let onlyPlannedByMe = false;
+	let onlyPlannedByMe = true;
 	let details = false;
 	let moveable = false;
 
