@@ -4,14 +4,14 @@
 
 	let collapsed = $state(group.examGroupInfo.notPlannedByMe);
 
-	function bg(notPlannedByMe) {
+	function bg(notPlannedByMe: any) {
 		if (notPlannedByMe) {
 			return 'bg-red-200';
 		}
 		return '';
 	}
 
-	function regs(exam) {
+	function regs(exam: any) {
 		let sum = 0;
 		for (const reg of exam.studentRegs) {
 			sum += reg.studentRegs.length;

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
@@ -30,7 +28,7 @@
 		refresh = $bindable()
 	} = $props();
 
-	let exams = $state([]);
+	let exams = $state<any[]>([]);
 
 	async function fetchExams() {
 		const response = await fetch('/api/examsInSlot', {
@@ -77,7 +75,7 @@
 		count = counted;
 	}
 
-	function badgeColor(count) {
+	function badgeColor(count: any) {
 		if (count < 50) {
 			return 'badge-success';
 		}
@@ -91,27 +89,27 @@
 		fetchExams();
 	});
 
-	function forwardSelected(event) {
+	function forwardSelected(event: any) {
 		dispatch('selected', event.detail);
 	}
-	function forwardUnselected(event) {
+	function forwardUnselected(event: any) {
 		dispatch('unselected', event.detail);
 	}
-	function forwardAddToSlot(event) {
+	function forwardAddToSlot(event: any) {
 		dispatch('addToSlot', {
 			examGroupCode: event.detail.examGroupCode,
 			slot: event.detail.slot,
 			oldslot: { dayNumber: day, slotNumber: time }
 		});
 	}
-	function forwardRmFromSlot(event) {
+	function forwardRmFromSlot(event: any) {
 		dispatch('rmFromSlot', {
 			examGroupCode: event.detail.examGroupCode,
 			slot: { dayNumber: day, slotNumber: time }
 		});
 	}
 
-	run(() => {
+	$effect(() => {
 		if (refresh) {
 			fetchExams();
 			refresh = false;

@@ -31,16 +31,16 @@
 
 	let showExamsPlannedByMe = $state(true);
 
-	function forwardSelected(event) {
+	function forwardSelected(event: any) {
 		dispatch('selected', event.detail);
 	}
-	function forwardUnselected(event) {
+	function forwardUnselected(event: any) {
 		dispatch('unselected', event.detail);
 	}
-	function forwardAddToSlot(event) {
+	function forwardAddToSlot(event: any) {
 		dispatch('addToSlot', event.detail);
 	}
-	function forwardRmFromSlot(event) {
+	function forwardRmFromSlot(event: any) {
 		dispatch('rmFromSlot', event.detail);
 	}
 </script>
@@ -74,6 +74,7 @@
 					{details}
 					{moveable}
 					inSlot={false}
+					onlyConflicts={false}
 					{conflictingAncodes}
 					on:selected={forwardSelected}
 					on:unselected={forwardUnselected}
@@ -113,6 +114,7 @@
 				{details}
 				{moveable}
 				inSlot={false}
+				onlyConflicts={false}
 				{conflictingAncodes}
 				on:selected={forwardSelected}
 				on:unselected={forwardUnselected}
