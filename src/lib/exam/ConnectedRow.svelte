@@ -1,45 +1,45 @@
-<script>
+<script lang="ts">
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
 	// Aktionen (add/remove/fix) liefern das aktualisierte ConnectedExam,
-	// das per `updated`-Event nach oben gereicht und im State ersetzt wird.
-	import { createEventDispatcher } from 'svelte';
+	// das per onupdated-Callback nach oben gereicht und im State ersetzt wird.
 	import { LEVEL, warningsOf } from '$lib/exam/connected.js';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	/** @type {any} */
-	export let exam;
-	/** @type {Record<string, {ancode:number, module:string, mainExamer:string}[]>} */
-	export let primussByProgram = {};
+	let {
+		exam,
+		primussByProgram = {},
+		onupdated
+	}: {
+		exam: any;
+		primussByProgram?: Record<string, { ancode: number; module: string; mainExamer: string }[]>;
+		onupdated?: (updated: any) => void;
+	} = $props();
 
-	const dispatch = createEventDispatcher();
+	const programOptions = $derived(Object.keys(primussByProgram).sort((a, b) => a.localeCompare(b)));
+	let addProgram = $state('');
+	let addAncode: number | string = $state('');
 
-	$: programOptions = Object.keys(primussByProgram).sort((a, b) => a.localeCompare(b));
-	let addProgram = '';
-	/** @type {number | string} */
-	let addAncode = '';
+	const lvl = $derived(LEVEL[exam.level]);
+	const errs = $derived(warningsOf(exam, 'error'));
+	const warns = $derived(warningsOf(exam, 'warning'));
+	const infos = $derived(warningsOf(exam, 'info'));
+	const connectedProgs = $derived(
+		new Set((exam.primussExams ?? []).map((p: any) => p.program))
+	);
 
-	$: lvl = LEVEL[exam.level];
-	$: errs = warningsOf(exam, 'error');
-	$: warns = warningsOf(exam, 'warning');
-	$: infos = warningsOf(exam, 'info');
-	$: connectedProgs = new Set((exam.primussExams ?? []).map((/** @type {any} */ p) => p.program));
-
-	let editing = false;
-	let busy = false;
-	let actionError = '';
-	/** @type {Record<string, number>} Zielnummer je Studiengang fürs Umnummerieren */
-	let fixTo = {};
+	let editing = $state(false);
+	let busy = $state(false);
+	let actionError = $state('');
+	// Zielnummer je Studiengang fürs Umnummerieren
+	let fixTo: Record<string, number> = $state({});
 
 	function startEdit() {
-		fixTo = Object.fromEntries(
-			(exam.primussExams ?? []).map((/** @type {any} */ p) => [p.program, p.ancode])
-		);
+		fixTo = Object.fromEntries((exam.primussExams ?? []).map((p: any) => [p.program, p.ancode]));
 		actionError = '';
 		editing = true;
 	}
 
-	/** @param {string} path @param {any} body */
-	async function call(path, body) {
+	async function call(path: string, body: any) {
 		if (busy) return;
 		busy = true;
 		actionError = '';
@@ -54,7 +54,7 @@
 				actionError = result?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			dispatch('updated', result[path]);
+			onupdated?.(result[path]);
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -62,12 +62,10 @@
 		}
 	}
 
-	/** @param {string} program @param {number} primussAncode */
-	const add = (program, primussAncode) => call('addPrimussAncode', { program, primussAncode });
-	/** @param {string} program */
-	const remove = (program) => call('removePrimussAncode', { program });
-	/** @param {string} program @param {number} fromAncode @param {number} toAncode */
-	const fix = (program, fromAncode, toAncode) =>
+	const add = (program: string, primussAncode: number) =>
+		call('addPrimussAncode', { program, primussAncode });
+	const remove = (program: string) => call('removePrimussAncode', { program });
+	const fix = (program: string, fromAncode: number, toAncode: number) =>
 		call('fixPrimussAncode', { program, fromAncode, toAncode });
 
 	async function manualAdd() {
@@ -126,7 +124,7 @@
 								class="btn btn-ghost btn-xs"
 								disabled={busy || Number(fixTo[p.program]) === p.ancode}
 								title="umnummerieren {p.ancode} → {fixTo[p.program]}"
-								on:click={() => fix(p.program, p.ancode, Number(fixTo[p.program]))}
+								onclick={() => fix(p.program, p.ancode, Number(fixTo[p.program]))}
 							>
 								↻ Nr.
 							</WriteButton>
@@ -134,7 +132,7 @@
 								class="btn btn-ghost btn-xs text-error"
 								disabled={busy}
 								title="entfernen"
-								on:click={() => remove(p.program)}
+								onclick={() => remove(p.program)}
 							>
 								✕
 							</WriteButton>
@@ -155,7 +153,7 @@
 				<button
 					class="btn btn-ghost btn-xs"
 					class:btn-active={editing}
-					on:click={() => (editing ? (editing = false) : startEdit())}
+					onclick={() => (editing ? (editing = false) : startEdit())}
 				>
 					{editing ? 'fertig' : '✎ bearbeiten'}
 				</button>
@@ -172,7 +170,7 @@
 							class="btn btn-ghost btn-xs"
 							disabled={busy}
 							title="{o.program}/{o.ancode} hinzufügen"
-							on:click={() => add(o.program, o.ancode)}
+							onclick={() => add(o.program, o.ancode)}
 						>
 							＋
 						</WriteButton>
@@ -187,7 +185,7 @@
 				<select
 					class="select select-bordered select-xs w-24"
 					bind:value={addProgram}
-					on:change={() => (addAncode = '')}
+					onchange={() => (addAncode = '')}
 				>
 					<option value="">Studiengang</option>
 					{#each programOptions as p}
@@ -207,7 +205,7 @@
 				<WriteButton
 					class="btn btn-xs"
 					disabled={busy || !addProgram || !addAncode}
-					on:click={manualAdd}
+					onclick={manualAdd}
 				>
 					＋ hinzufügen
 				</WriteButton>
@@ -230,7 +228,7 @@
 				>
 					<span>{w.message}</span>
 					{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
-						<WriteButton class="btn btn-xs" disabled={busy} on:click={() => add(w.program, w.ancode)}>
+						<WriteButton class="btn btn-xs" disabled={busy} onclick={() => add(w.program, w.ancode)}>
 							＋ {w.program}/{w.ancode} hinzufügen
 						</WriteButton>
 					{/if}
@@ -258,7 +256,7 @@
 								class="btn btn-ghost btn-xs"
 								disabled={busy}
 								title="{w.program}/{w.ancode} hinzufügen"
-								on:click={() => add(w.program, w.ancode)}
+								onclick={() => add(w.program, w.ancode)}
 							>
 								＋ hinzufügen
 							</WriteButton>

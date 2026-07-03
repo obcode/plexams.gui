@@ -15,9 +15,8 @@
 		lastData = data.connectedExams;
 	}
 
-	/** @param {CustomEvent<any>} ev → aktualisiertes ConnectedExam einsetzen */
-	function onUpdated(ev) {
-		const updated = ev.detail;
+	/** @param {any} updated → aktualisiertes ConnectedExam einsetzen */
+	function onUpdated(updated) {
 		if (!updated) return;
 		const i = exams.findIndex(
 			(/** @type {any} */ e) => e.zpaExam.ancode === updated.zpaExam.ancode
@@ -166,7 +165,7 @@
 
 		<div class="flex flex-col gap-1.5">
 			{#each filtered as exam (exam.zpaExam.ancode)}
-				<ConnectedRow {exam} primussByProgram={data.primussByProgram} on:updated={onUpdated} />
+				<ConnectedRow {exam} primussByProgram={data.primussByProgram} onupdated={onUpdated} />
 			{:else}
 				<div class="p-6 text-center text-sm text-base-content/50">
 					Keine Prüfungen entsprechen dem Filter.
