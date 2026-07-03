@@ -10,7 +10,7 @@
 	
 	/**
 	 * @typedef {Object} Props
-	 * @property {string} field - Subscription-Feldname @type {string}
+	 * @property {string} field - Subscription-Feldname
 	 * @property {any} title
 	 * @property {string} [description]
 	 * @property {boolean} [hasDryRun] - Feld hat ein dryRun-Argument

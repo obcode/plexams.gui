@@ -17,12 +17,12 @@
 	 * @property {any} details
 	 * @property {any} showRooms
 	 * @property {boolean} [dimOthers] - bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen
-	 * @property {number | null} [day] - Tag dieser Karte — für die Raum-Vorplanung (freie Plätze pro Slot) @type {number | null}
-	 * @property {number | null} [time] - Slot dieser Karte @type {number | null}
+	 * @property {number | null} [day] - Tag dieser Karte (Raum-Vorplanung, freie Plätze pro Slot)
+	 * @property {number | null} [time] - Slot dieser Karte
 	 * @property {boolean} [showOnlyWithoutRoom] - nur Prüfungen anzeigen, die (noch) keinen Raum haben
 	 * @property {boolean} [highlightNotPrePlanned] - nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt
-	 * @property {Record<string, number>} [prePlannedSeats] - fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>}
-	 * @property {Set<number>} [unplacedAncodes] - Ancodes mit nicht zugeordneten Studierenden (für „nur ohne Raum") @type {Set<number>}
+	 * @property {Record<string, number>} [prePlannedSeats] - fix vorgeplante Platzzahlen je „ancode|raum|mtknr"
+	 * @property {Set<number>} [unplacedAncodes] - Ancodes mit nicht zugeordneten Studierenden (für „nur ohne Raum")
 	 */
 
 	/** @type {Props} */
