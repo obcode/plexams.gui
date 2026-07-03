@@ -33,7 +33,7 @@
 	// Reaktiv (referenziert conditionsDone), damit sich die Sortierung aktualisiert,
 	// sobald die async geladenen Bedingungen eintreffen.
 	/** @param {import('$lib/email/emails').EmailDef} email */
-	let isSent = $derived((email) => {
+	let isSent = $derived((/** @type {any} */ email) => {
 		const k = email.conditionKey || EMAIL_CONDITION[email.key];
 		return !!k && conditionsDone[k] === true;
 	});

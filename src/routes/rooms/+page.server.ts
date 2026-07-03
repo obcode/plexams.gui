@@ -21,7 +21,7 @@ export async function load() {
 		}
 	`;
 
-	let data = await request(env.PLEXAMS_SERVER, query);
+	let data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	return {
 		rooms: data.rooms

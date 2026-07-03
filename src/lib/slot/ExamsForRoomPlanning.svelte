@@ -20,7 +20,7 @@
 		time: number;
 		showOnlyExamsWithNTAs: boolean;
 		details: boolean;
-		showRooms: boolean;
+		showRooms: any;
 		dimOthers?: boolean;
 		showOnlyWithoutRoom?: boolean;
 		highlightNotPrePlanned?: boolean;

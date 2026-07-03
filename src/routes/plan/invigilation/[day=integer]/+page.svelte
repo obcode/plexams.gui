@@ -8,8 +8,7 @@
 	let selectedInvigilator = $state(0);
 	let details = $state(true);
 
-	/** @param {{ selectedInvigilator: any }} detail */
-	async function handleSelect(detail) {
+	async function handleSelect(detail: { selectedInvigilator: any }) {
 		selectedInvigilator = 0;
 		selectedInvigilator = detail.selectedInvigilator;
 	}

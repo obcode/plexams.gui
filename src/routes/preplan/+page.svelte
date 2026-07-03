@@ -564,7 +564,7 @@
 
 	// Zuordnung generieren & validieren
 	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[]}|null} */
-	let validation = $state(null);
+	let validation = $state(/** @type {any} */ (null));
 	let validationKind = $state('');
 	let validating = $state(false);
 	let generating = $state(false);

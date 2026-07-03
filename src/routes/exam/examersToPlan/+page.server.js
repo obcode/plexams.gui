@@ -35,19 +35,19 @@ export async function load({ params }) {
 
 	// Filtere Prüfungen, die von mir zu planen sind (keine constraints ODER notPlannedByMe === false)
 	const examsToPlan = data.zpaExamsToPlanWithConstraints.filter(
-		(exam) => !exam.constraints || exam.constraints.notPlannedByMe === false
+		(/** @type {any} */ exam) => !exam.constraints || exam.constraints.notPlannedByMe === false
 	);
 
 	// Erstelle eine Map von Teacher IDs zu Teacher Objekten
 	const teacherMap = new Map();
-	data.teachers.forEach((teacher) => {
+	data.teachers.forEach((/** @type {any} */ teacher) => {
 		teacherMap.set(teacher.id, teacher);
 	});
 
 	// Gruppiere Prüfungen nach Prüfenden
 	const examerMap = new Map();
 
-	examsToPlan.forEach((exam) => {
+	examsToPlan.forEach((/** @type {any} */ exam) => {
 		const examerId = exam.zpaExam.mainExamerID;
 		const teacher = teacherMap.get(examerId);
 

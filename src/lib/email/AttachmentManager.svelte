@@ -237,7 +237,7 @@
 			<button
 				class="btn btn-primary btn-sm gap-2"
 				disabled={uploading}
-				onclick={() => fileInput.click()}
+				onclick={() => fileInput?.click()}
 			>
 				{#if uploading}
 					<span class="loading loading-spinner loading-xs"></span>
@@ -292,7 +292,7 @@
 			<button
 				class="btn btn-primary btn-sm gap-2"
 				disabled={singleUploading}
-				onclick={() => singleInput.click()}
+				onclick={() => singleInput?.click()}
 			>
 				{#if singleUploading}
 					<span class="loading loading-spinner loading-xs"></span>

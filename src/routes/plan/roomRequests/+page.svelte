@@ -143,7 +143,7 @@
 	// ===== Zeit-Modal (bearbeiten + hinzufügen) =====
 	let modalOpen = $state(false);
 	/** @type {'edit' | 'add'} */
-	let modalMode = $state('edit');
+	let modalMode = $state(/** @type {'add' | 'edit'} */ ('edit'));
 	/** @type {any} */
 	let mEditReq = $state(null);
 	let mRoom = $state('');
