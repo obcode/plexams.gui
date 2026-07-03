@@ -258,7 +258,6 @@
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/plan/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
 				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau (Phase A)' },
 				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren (Phase B)' },
@@ -304,6 +303,7 @@
 				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
 				{ href: '/students', label: '🎓 Studierende' },
 				{ section: 'Weitere' },
+				{ href: '/plan/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
 				{ href: '/plan/annyBookings', label: '📅 Anny-Buchungen' },
 				{ href: '/nta/semester', label: '♿ NTA' },
 				{ href: '/log', label: '🧾 Mutations-Log' },
