@@ -183,6 +183,7 @@
 						proximity
 						canShareSlot
 						infoOnly
+						diffStatus
 						affectedStudents {
 							mtknr
 							name
@@ -192,6 +193,16 @@
 							decision
 							accepted
 						}
+					}
+					resolvedConflicts {
+						ancode1
+						module1
+						mainExamer1
+						ancode2
+						module2
+						mainExamer2
+						studentCount
+						proximity
 					}
 					diagnostics {
 						students
@@ -763,6 +774,7 @@
 	     gespeicherten Plans (examScheduleConflicts aus dem Load). -->
 	<ExamConflictsPanel
 		conflicts={examReport?.conflicts ?? data.conflicts}
+		resolvedConflicts={examReport?.resolvedConflicts ?? []}
 		sourceLabel={examReport?.conflicts
 			? examReport.written
 				? 'aus dem gerade geschriebenen Plan'

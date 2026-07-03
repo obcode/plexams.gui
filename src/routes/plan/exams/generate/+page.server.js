@@ -109,6 +109,7 @@ export async function load() {
 						proximity
 						canShareSlot
 						infoOnly
+						diffStatus
 						affectedStudents {
 							mtknr
 							name

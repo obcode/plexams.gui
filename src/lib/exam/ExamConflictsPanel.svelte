@@ -14,9 +14,30 @@
 	export let suggestions = [];
 	/** @type {any[]} */
 	export let shareList = [];
+	/** @type {any[]} im letzten Lauf gelöste Konflikte (nicht mehr im Plan) */
+	export let resolvedConflicts = [];
 	export let loadError = '';
 	/** woher die angezeigten Konflikte stammen (Lauf-Snapshot vs. gespeichert) */
 	export let sourceLabel = '';
+
+	// Diff-Status je Konflikt (nach einem (Probe-)Lauf gesetzt): zeigt auf einen
+	// Blick, was der Lauf am Konfliktbild verändert hat. Backend liefert einen
+	// String — defensiv/normalisiert behandelt.
+	/** @param {string} [s] Diff-Status; liefert Stil-Meta oder null */
+	function diffMeta(s) {
+		const n = (s ?? '').toLowerCase();
+		if (n === 'new' || n === 'neu')
+			return { row: 'bg-error/10', badge: 'badge-error', label: 'neu' };
+		if (n === 'worse' || n === 'schlimmer' || n === 'increased')
+			return { row: 'bg-warning/10', badge: 'badge-warning', label: '↑ schlimmer' };
+		if (n === 'better' || n === 'besser' || n === 'decreased')
+			return { row: 'bg-success/10', badge: 'badge-success', label: '↓ besser' };
+		return null; // unverändert / kein Diff → neutral
+	}
+	// Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
+	$: hasDiff =
+		resolvedConflicts.length > 0 ||
+		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus));
 
 	/** @param {number} a @param {number} b → reihenfolge-unabhängiger Schlüssel */
 	const pairKey = (a, b) => [a, b].sort((x, y) => x - y).join('-');
@@ -189,6 +210,62 @@
 		<div class="alert alert-error py-2 text-sm"><span>{actionError}</span></div>
 	{/if}
 
+	{#if hasDiff}
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/60">
+			<span class="font-medium text-base-content/70">Diff zum vorigen Plan:</span>
+			<span class="flex items-center gap-1"><span class="badge badge-error badge-xs">neu</span> hinzugekommen</span>
+			<span class="flex items-center gap-1"><span class="badge badge-warning badge-xs">↑ schlimmer</span> mehr Betroffene</span>
+			<span class="flex items-center gap-1"><span class="badge badge-success badge-xs">↓ besser</span> weniger Betroffene</span>
+			<span class="flex items-center gap-1"><span class="badge badge-success badge-outline badge-xs">gelöst</span> nicht mehr im Plan</span>
+			<span>· ohne Markierung = unverändert</span>
+		</div>
+	{/if}
+
+	{#if resolvedConflicts.length}
+		<details open class="collapse-arrow collapse border border-success/40 bg-success/5">
+			<summary class="collapse-title text-sm font-medium">
+				✅ Im letzten Lauf gelöst
+				<span class="badge badge-success badge-sm ml-1 tabular-nums">{resolvedConflicts.length}</span>
+			</summary>
+			<div class="collapse-content">
+				<div class="overflow-x-auto rounded-lg border border-base-200">
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>Nähe</th>
+								<th>Prüfung 1</th>
+								<th>Prüfung 2</th>
+								<th class="text-right">Studis</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each resolvedConflicts as c (pairKey(c.ancode1, c.ancode2))}
+								<tr class="line-through opacity-60">
+									<td>
+										<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
+											{PROX[c.proximity]?.label ?? c.proximity}
+										</span>
+									</td>
+									<td>
+										<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
+										<div class="font-medium">{c.module1}</div>
+										<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+									</td>
+									<td>
+										<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
+										<div class="font-medium">{c.module2}</div>
+										<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+									</td>
+									<td class="text-right tabular-nums">{c.studentCount}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</details>
+	{/if}
+
 	{#if ratable.length}
 		<p class="max-w-3xl text-xs text-base-content/50">
 			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong>pro
@@ -199,11 +276,15 @@
 		</p>
 		{#snippet conflictRow(/** @type {any} */ c)}
 						{@const key = pairKey(c.ancode1, c.ancode2)}
-						<tr class="hover">
+						{@const diff = diffMeta(c.diffStatus)}
+						<tr class="hover {diff?.row ?? ''}">
 							<td>
 								<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
 									{PROX[c.proximity]?.label ?? c.proximity}
 								</span>
+								{#if diff}
+									<span class="badge badge-sm {diff.badge} mt-1 block w-fit">{diff.label}</span>
+								{/if}
 							</td>
 							<td>
 								{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot1)}</div>{/if}
