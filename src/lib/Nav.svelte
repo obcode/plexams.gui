@@ -260,7 +260,8 @@
 			items: [
 				{ href: '/plan/external', label: '🌐 Externe Termine (MUC.DAI & andere FKs)' },
 				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
-				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren' },
+				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau (Phase A)' },
+				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren (Phase B)' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
 			]
 		},
