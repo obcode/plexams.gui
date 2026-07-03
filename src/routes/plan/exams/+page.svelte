@@ -291,6 +291,89 @@
 		return { weekList, cols };
 	})();
 
+	// ---- Zeitbasierte Kalenderansicht (Blöcke nach echter Start-Zeit + Dauer) ----
+	const PX_PER_MIN = 1.1;
+	/** @param {string} iso → Minuten seit Mitternacht (Wanduhr aus dem ISO-Offset) */
+	const minutesOfDay = (iso) => {
+		const m = /T(\d{2}):(\d{2})/.exec(String(iso ?? ''));
+		return m ? +m[1] * 60 + +m[2] : null;
+	};
+	/** @param {number} min → „08:30" */
+	const hhmm = (min) =>
+		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+
+	$: timeCal = (() => {
+		const items = [];
+		for (const e of data.plannedExams ?? []) {
+			const iso = e.planEntry?.starttime;
+			const dt = dateObj(iso);
+			const startMin = minutesOfDay(iso);
+			if (!dt || startMin == null) continue;
+			const dur = e.maxDuration || e.zpaExam?.duration || 60;
+			items.push({ e, dt, startMin, endMin: startMin + dur, dur });
+		}
+		if (!items.length) return { weekList: [], cols: [], min: 480, max: 600, hours: [] };
+		const min = Math.floor(Math.min(...items.map((x) => x.startMin)) / 60) * 60;
+		const max = Math.ceil(Math.max(...items.map((x) => x.endMin)) / 60) * 60;
+		/** @type {Map<string, any>} */
+		const weeks = new Map();
+		/** @type {Set<number>} */
+		const usedWd = new Set();
+		for (const x of items) {
+			const wd = isoWeekday(x.dt);
+			usedWd.add(wd);
+			const mon = mondayOf(x.dt);
+			const key = mon.toISOString().slice(0, 10);
+			if (!weeks.has(key)) weeks.set(key, { monday: mon, weekNum: isoWeekNum(x.dt), byWd: new Map() });
+			const w = weeks.get(key);
+			if (!w.byWd.has(wd)) w.byWd.set(wd, []);
+			w.byWd.get(wd).push(x);
+		}
+		// Überlappende Prüfungen eines Tages in Spalten aufteilen (greedy).
+		for (const w of weeks.values()) {
+			for (const [wd, arr] of w.byWd) {
+				arr.sort(
+					(/** @type {any} */ a, /** @type {any} */ b) => a.startMin - b.startMin || a.endMin - b.endMin
+				);
+				/** @type {number[]} */
+				const colEnds = [];
+				for (const x of arr) {
+					let c = colEnds.findIndex((end) => end <= x.startMin);
+					if (c === -1) {
+						c = colEnds.length;
+						colEnds.push(x.endMin);
+					} else colEnds[c] = x.endMin;
+					x.col = c;
+				}
+				w.byWd.set(wd, { items: arr, ncols: colEnds.length || 1 });
+			}
+		}
+		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
+		const weekList = [...weeks.values()].sort(
+			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+		);
+		const hours = [];
+		for (let h = min; h <= max; h += 60) hours.push(h);
+		return { weekList, cols, min, max, hours };
+	})();
+
+	/** @param {any} x → Zustands-Akzent für einen Zeit-Block */
+	const blockColor = (x) => {
+		if (x.e.planEntry?.phaseFixed) return 'border-l-info';
+		if (x.e.planEntry?.locked) return 'border-l-base-content/40';
+		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
+		return 'border-l-primary';
+	};
+	/** @param {number} ancode */
+	const fmtAncode = (ancode) => {
+		let s = ancode.toString();
+		if (ancode >= 1000) {
+			s = s.replace('0', ': ').replace('', 'FK');
+			if (ancode < 100000) s = s.replace('FK', 'FK0');
+		}
+		return s;
+	};
+
 	function forbiddenSlot(day, time) {
 		const key = `${day},${time}`;
 		return data.globalSlotStatus.get(key) === 'forbidden';
@@ -324,11 +407,15 @@
 			<div class="join">
 				<button
 					class="btn join-item btn-sm {view === 'kalender' ? 'btn-primary' : 'btn-ghost'}"
-					on:click={() => (view = 'kalender')}>🗓 Kalender</button
+					on:click={() => (view = 'kalender')}>🗓 Slots</button
 				>
 				<button
 					class="btn join-item btn-sm {view === 'raster' ? 'btn-primary' : 'btn-ghost'}"
 					on:click={() => (view = 'raster')}>▦ Raster</button
+				>
+				<button
+					class="btn join-item btn-sm {view === 'zeit' ? 'btn-primary' : 'btn-ghost'}"
+					on:click={() => (view = 'zeit')}>⏱ Zeit</button
 				>
 			</div>
 			{#if selectedExam !== -1}
@@ -479,7 +566,7 @@
 					</div>
 				{/each}
 			</div>
-		{:else}
+		{:else if view === 'raster'}
 			<div class="overflow-x-auto rounded-lg border border-base-300">
 				<table class="table table-sm w-full">
 					<thead>
@@ -508,6 +595,56 @@
 					</tbody>
 				</table>
 			</div>
+		{:else}
+			{#if !timeCal.weekList.length}
+				<div class="text-sm text-base-content/50">Keine geplanten Prüfungen mit Zeit.</div>
+			{:else}
+				<div class="flex flex-col gap-6">
+					{#each timeCal.weekList as w}
+						<div class="flex flex-col gap-1">
+							<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
+							<div class="overflow-x-auto">
+								<div class="flex gap-2" style="min-width:max-content">
+									<div class="relative w-12 shrink-0" style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px">
+										{#each timeCal.hours as h}
+											<div class="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-base-content/50" style="top:{(h - timeCal.min) * PX_PER_MIN}px">{hhmm(h)}</div>
+										{/each}
+									</div>
+									{#each timeCal.cols as wd}
+										{@const dd = w.byWd.get(wd)}
+										<div class="flex-1" style="min-width:11rem">
+											<div class="mb-1 text-center text-xs font-medium text-base-content/60">{WD2[wd]}{#if dd} · {ddmm(dd.items[0].dt)}{/if}</div>
+											<div class="relative rounded border border-base-200 bg-base-100" style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px">
+												{#each timeCal.hours as h}
+													<div class="absolute inset-x-0 border-t border-base-200/70" style="top:{(h - timeCal.min) * PX_PER_MIN}px"></div>
+												{/each}
+												{#if dd}
+													{#each dd.items as x}
+														<div
+															class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(x)}"
+															style="top:{(x.startMin - timeCal.min) * PX_PER_MIN}px; height:{x.dur * PX_PER_MIN}px; left:calc({(x.col / dd.ncols) * 100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
+															title="{fmtAncode(x.e.zpaExam.ancode)} · {x.e.zpaExam.module} ({x.e.zpaExam.mainExamer}) · {hhmm(x.startMin)}–{hhmm(x.endMin)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
+														>
+															<div class="flex items-center gap-1 text-[11px] font-semibold leading-tight">
+																{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span>{/if}
+																{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert">🏗️</span>{/if}
+																{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
+																<span class="font-mono">{fmtAncode(x.e.zpaExam.ancode)}</span>
+															</div>
+															<div class="truncate text-[10px] leading-tight">{x.e.zpaExam.module}</div>
+															<div class="text-[10px] leading-tight tabular-nums text-base-content/60">{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}</div>
+														</div>
+													{/each}
+												{/if}
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
 		{/if}
 
 		<ExamsWithoutSlot

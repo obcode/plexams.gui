@@ -137,6 +137,41 @@ export async function load({ params }) {
 
 	const data = await request(env.PLEXAMS_SERVER, examsWithoutSlotQuery);
 
+	// Kompakte Liste der geplanten Prüfungen für die zeitbasierte Kalenderansicht
+	// (Blöcke nach echter Start-Zeit + Dauer). Robust gegen Slot-0/0-externe
+	// (planEntry.starttime wirft dort) via Teil-Daten.
+	const plannedQuery = gql`
+		query {
+			plannedExams {
+				ancode
+				zpaExam {
+					ancode
+					module
+					mainExamer
+					duration
+					isRepeaterExam
+				}
+				studentRegsCount
+				maxDuration
+				planEntry {
+					dayNumber
+					slotNumber
+					starttime
+					locked
+					phaseFixed
+				}
+			}
+		}
+	`;
+	let plannedExams = [];
+	try {
+		const pd = await request(env.PLEXAMS_SERVER, plannedQuery);
+		plannedExams = pd.plannedExams ?? [];
+	} catch (e) {
+		const resp = /** @type {any} */ (e)?.response;
+		if (resp?.data?.plannedExams) plannedExams = resp.data.plannedExams;
+	}
+
 	let semesterConfig = semesterData.semesterConfig;
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
@@ -176,6 +211,7 @@ export async function load({ params }) {
 	return {
 		semesterConfig: semesterData.semesterConfig,
 		examsWithoutSlot: data.examsWithoutSlot,
+		plannedExams,
 		globalSlotStatus: globalSlotStatus,
 		roomsForSlots: roomForSlotsMap
 	};
