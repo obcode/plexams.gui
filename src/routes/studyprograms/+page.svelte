@@ -49,8 +49,7 @@
 			category: 'fk07',
 			active: true,
 			retired: false,
-			externalExamsBase: '',
-			faculty: ''
+			externalExamsBase: ''
 		};
 		isNew = true;
 		editError = '';
@@ -64,8 +63,7 @@
 			category: p.category || 'misc',
 			active: !!p.active,
 			retired: !!p.retired,
-			externalExamsBase: p.externalExamsBase ?? '',
-			faculty: p.faculty ?? ''
+			externalExamsBase: p.externalExamsBase ?? ''
 		};
 		isNew = false;
 		editError = '';
@@ -102,8 +100,7 @@
 				externalExamsBase:
 					editing.externalExamsBase === '' || editing.externalExamsBase == null
 						? null
-						: Number(editing.externalExamsBase),
-				faculty: (editing.faculty ?? '').trim() || null
+						: Number(editing.externalExamsBase)
 			});
 			closeEdit();
 			await invalidateAll();
@@ -127,8 +124,7 @@
 				category: p.category || 'misc',
 				active: !p.active,
 				retired: !!p.retired,
-				externalExamsBase: p.externalExamsBase ?? null,
-				faculty: p.faculty ?? null
+				externalExamsBase: p.externalExamsBase ?? null
 			});
 			await invalidateAll();
 		} catch (e) {
@@ -257,11 +253,6 @@
 												Basis {p.externalExamsBase}
 											</span>
 										{/if}
-										{#if p.faculty}
-											<span class="badge badge-outline badge-sm ml-1" title="Fakultät (Prüfungsplanung)">
-												{p.faculty}
-											</span>
-										{/if}
 									</td>
 									<td class="text-sm text-base-content/70">{p.degree || '—'}</td>
 									<td>
@@ -345,18 +336,6 @@
 						/>
 						<span class="text-xs text-base-content/40">
 							lokaler ZPA-Ancode = Basis + Primuss-Ancode
-						</span>
-					</label>
-					<label class="flex flex-col gap-1">
-						<span class="text-xs font-medium text-base-content/60">Fakultät (Prüfungsplanung)</span>
-						<input
-							type="text"
-							class="input input-bordered input-sm w-40"
-							bind:value={editing.faculty}
-							placeholder="z. B. FK10"
-						/>
-						<span class="text-xs text-base-content/40">
-							Anzeige externer Prüfungen (z. B. „FK03: 123"); leer ⇒ FK07
 						</span>
 					</label>
 				{/if}
