@@ -13,6 +13,11 @@
 	let items = $state([]);
 	/** @type {any} */
 	let lastData = $state();
+	// Status-Filter: beim Laden nur „zu planen" (wird im run() unten anhand der
+	// Daten überschrieben). Deklaration muss vor dem run()-Block stehen, sonst
+	// greift die Zuweisung dort in die Temporal Dead Zone.
+	/** @type {string | null} */
+	let filterStatus = $state('toPlan');
 	run(() => {
 		if (data.items !== lastData) {
 			items = data.items.map((/** @type {any} */ e) => ({ ...e }));
@@ -181,9 +186,7 @@
 	let durZeroCount = $derived(items.filter(isDurZero).length);
 
 	// --- Filter ---
-	// Status: beim Laden nur „zu planen"
-	/** @type {string | null} */
-	let filterStatus = $state('toPlan');
+	// (filterStatus ist oben vor dem run()-Block deklariert)
 	let cFilter = $state('alle');
 	let durZero = $state(false);
 	let nonFK07 = $state(false);
