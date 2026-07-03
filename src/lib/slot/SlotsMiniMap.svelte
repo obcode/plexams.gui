@@ -1,24 +1,24 @@
-<script>
-	export let slots;
-	export let planned = {
-		dayNumber: null,
-		slotNumber: null
-	};
+<script lang="ts">
+	type MiniSlot = { dayNumber: number; slotNumber: number };
+	type Planned = { dayNumber: number | null; slotNumber: number | null };
 
-	let plan = new Map();
+	let {
+		slots,
+		planned = { dayNumber: null, slotNumber: null }
+	}: { slots: MiniSlot[]; planned?: Planned } = $props();
 
-	let days = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-	let times = [1, 2, 3, 4, 5, 6];
+	const days = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+	const times = [1, 2, 3, 4, 5, 6];
 
-	for (let i of days) {
-		for (let j of times) {
-			plan[[i, j]] = 'bg-red-500';
-		}
-	}
-
-	for (const slot of slots) {
-		plan[[slot.dayNumber, slot.slotNumber]] = 'bg-green-500';
-	}
+	// Farb-Map je (Tag,Slot): rot = kein Raum, grün = Raum vorhanden. Reaktiv zu
+	// `slots` (früher lief das nur einmal beim Init). Schlüssel „tag,slot" — die
+	// Bracket-Notation [[day,time]] im Markup ergibt denselben String.
+	const plan = $derived.by(() => {
+		const m: Record<string, string> = {};
+		for (const i of days) for (const j of times) m[`${i},${j}`] = 'bg-red-500';
+		for (const slot of slots) m[`${slot.dayNumber},${slot.slotNumber}`] = 'bg-green-500';
+		return m;
+	});
 </script>
 
 <table>
@@ -31,12 +31,10 @@
 							<span class="m-2 bg-yellow-200">
 								<span>📍</span>
 							</span>
-							<!-- &nbsp;&nbsp;&nbsp;&nbsp; -->
 						</span>
 					{:else}
 						<span class="m-1 {plan[[day, time]]}">
 							({day},{time})
-							<!-- &nbsp;&nbsp;&nbsp;&nbsp; -->
 						</span>
 					{/if}
 				</td>

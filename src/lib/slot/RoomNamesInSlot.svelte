@@ -1,28 +1,21 @@
-<script>
-	/** @type {number} */
-	export let day;
-	/** @type {number} */
-	export let time;
+<script lang="ts">
 	import { onMount } from 'svelte';
 
-	/** @type {string[]} */
-	let roomNames = [];
+	let { day, time }: { day: number; time: number } = $props();
+
+	let roomNames = $state<string[]>([]);
 
 	async function fetchRoomNames() {
 		const response = await fetch('/api/plan/roomNamesInSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
-			headers: {
-				'content-type': 'application/json'
-			}
+			headers: { 'content-type': 'application/json' }
 		});
-		let data = await response.json();
-		roomNames = data.plannedRoomNamesInSlot.filter((name) => name != 'ONLINE');
+		const data = await response.json();
+		roomNames = data.plannedRoomNamesInSlot.filter((name: string) => name != 'ONLINE');
 	}
 
-	onMount(() => {
-		fetchRoomNames();
-	});
+	onMount(fetchRoomNames);
 </script>
 
 {#if roomNames.length > 0}
