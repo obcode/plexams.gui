@@ -1,7 +1,6 @@
-<script>
+<script lang="ts">
 	// Belegung eines Raums in einem Slot: geplante Prüfung(en) + NTAs.
-	/** @type {any[]} */
-	export let planned = [];
+	let { planned = [] }: { planned?: any[] } = $props();
 </script>
 
 {#if !planned.length}

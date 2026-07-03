@@ -1,11 +1,16 @@
-<script>
+<script lang="ts">
 	import EmailSender from '$lib/email/EmailSender.svelte';
+	import type { EmailDef } from '$lib/email/emails';
 
-	/** @type {import('$lib/email/emails').EmailDef} */
-	export let email;
-	/** @type {Record<string, boolean>} */
-	export let conditionsDone = {};
-	export let allRequirementsPresent = false;
+	let {
+		email,
+		conditionsDone = {},
+		allRequirementsPresent = false
+	}: {
+		email: EmailDef;
+		conditionsDone?: Record<string, boolean>;
+		allRequirementsPresent?: boolean;
+	} = $props();
 </script>
 
 <div class="flex flex-col gap-2">

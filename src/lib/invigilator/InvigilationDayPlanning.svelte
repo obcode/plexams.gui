@@ -1,10 +1,17 @@
-<script>
-	export let semesterConfig;
-	export let day;
-	export let details;
-	export let selectedInvigilator;
-
+<script lang="ts">
 	import InvigilationSlotPlanning from './InvigilationSlotPlanning.svelte';
+
+	let {
+		semesterConfig,
+		day,
+		details,
+		selectedInvigilator
+	}: {
+		semesterConfig: { starttimes: any[] };
+		day: any;
+		details: boolean;
+		selectedInvigilator: any;
+	} = $props();
 </script>
 
 {#each semesterConfig.starttimes as time}

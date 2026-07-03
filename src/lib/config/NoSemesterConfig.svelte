@@ -1,7 +1,6 @@
-<script>
+<script lang="ts">
 	// Anzeige, wenn semesterConfig null ist (Semester noch nicht konfiguriert).
-	/** @type {string} */
-	export let semester = '';
+	let { semester = '' }: { semester?: string } = $props();
 </script>
 
 <div class="mx-2 mt-10 flex justify-center">
