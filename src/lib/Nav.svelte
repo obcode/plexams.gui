@@ -2,7 +2,7 @@
 	import { run } from 'svelte/legacy';
 
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		validationSummary,
 		validationDots,
@@ -80,7 +80,7 @@
 	let allSemesters = $state<Sem[]>([]);
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
-	let readOnly = $derived($page.data?.readOnly ?? currentSem?.readOnly ?? false);
+	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
 	let logicalSem =
 		$derived(currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '');
@@ -333,7 +333,7 @@
 		return 0;
 	}
 
-	let pathname = $derived($page.url.pathname);
+	let pathname = $derived(page.url.pathname);
 	// bei jedem Seitenwechsel den „veraltet"-Zustand neu prüfen (im SPA feuert
 	// window.focus nicht, und der Intervall hätte bis zu 20 s Latenz)
 	let lastCheckedPath = $state('');

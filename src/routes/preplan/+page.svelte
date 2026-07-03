@@ -1,5 +1,5 @@
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
@@ -1099,7 +1099,7 @@
 											? ''
 											: 'select-warning text-warning'}"
 										value={slotValue(e)}
-										disabled={busy.has(e.id) || e.isFixed || $page.data?.readOnly}
+										disabled={busy.has(e.id) || e.isFixed || page.data?.readOnly}
 										onchange={(ev) => setSlot(e, ev.currentTarget.value)}
 									>
 										<option value="" class="text-warning">— nicht zugeordnet</option>

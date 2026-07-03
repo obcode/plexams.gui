@@ -2,7 +2,7 @@
 	import { run } from 'svelte/legacy';
 
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
@@ -414,7 +414,7 @@
 	}
 
 	onMount(() => {
-		const a = Number($page.url.searchParams.get('ancode'));
+		const a = Number(page.url.searchParams.get('ancode'));
 		if (a) {
 			const it = items.find((/** @type {any} */ e) => e.ancode === a);
 			if (it) {

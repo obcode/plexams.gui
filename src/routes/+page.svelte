@@ -1,5 +1,7 @@
 <!-- @migration-task Error while migrating Svelte code: can't migrate `let state = data.planningState;` to `$state` because there's a variable named state.
      Rename the variable and try again or migrate by hand. -->
+<!-- @migration-task Error while migrating Svelte code: can't migrate `let state = data.planningState;` to `$state` because there's a variable named state.
+     Rename the variable and try again or migrate by hand. -->
 <script>
 	import { page } from '$app/stores';
 
