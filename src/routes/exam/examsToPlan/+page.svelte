@@ -268,8 +268,9 @@
 		// notPlannedByMe darf keine anderen Constraints haben → vollständig ersetzen.
 		// location bleibt aber erhalten (gilt auch für notPlannedByMe-Prüfungen).
 		const loc = e.constraints?.location || null;
+		const fk = e.constraints?.notPlannedByMeInFK || null;
 		e.constraints = want
-			? { notPlannedByMe: true, location: loc }
+			? { notPlannedByMe: true, location: loc, notPlannedByMeInFK: fk }
 			: loc
 				? { notPlannedByMe: false, location: loc }
 				: null;
@@ -282,7 +283,9 @@
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					ancode: e.ancode,
-					constraints: { notPlannedByMe: want, location: loc }
+					constraints: want
+						? { notPlannedByMe: true, location: loc, notPlannedByMeInFK: fk }
+						: { notPlannedByMe: false, location: loc }
 				})
 			});
 			const d = await res.json().catch(() => ({}));
@@ -302,14 +305,17 @@
 		}
 	}
 
-	/** Ort inline setzen — nur bei notPlannedByMe (Constraints sind dort simpel).
-	 * @param {any} e @param {string} location */
-	async function setLocation(e, location) {
+	/** notPlannedByMe-Constraints (Ort + planende FK) inline speichern; das jeweils
+	 * andere Feld bleibt erhalten. Constraints sind bei notPlannedByMe simpel.
+	 * @param {any} e @param {{location?: string|null, fk?: string|null}} patch */
+	async function saveNotMe(e, patch) {
 		if (busy.has(e.ancode)) return;
 		const prev = e.constraints;
-		const loc = location || null;
 		const doNotPublish = !!e.constraints?.doNotPublish;
-		e.constraints = { notPlannedByMe: true, doNotPublish, location: loc };
+		const loc = ('location' in patch ? patch.location : e.constraints?.location) || null;
+		const fk = ('fk' in patch ? patch.fk : e.constraints?.notPlannedByMeInFK) || null;
+		const next = { notPlannedByMe: true, doNotPublish, location: loc, notPlannedByMeInFK: fk };
+		e.constraints = next;
 		items = items;
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
@@ -317,10 +323,7 @@
 			const res = await fetch('/api/addConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({
-					ancode: e.ancode,
-					constraints: { notPlannedByMe: true, doNotPublish, location: loc }
-				})
+				body: JSON.stringify({ ancode: e.ancode, constraints: next })
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
@@ -635,13 +638,23 @@
 						</label>
 						{#if c?.notPlannedByMe}
 							<span class="badge badge-neutral badge-sm">geplant von anderen</span>
+							<!-- planende FK inline (z. B. „FK10“) -->
+							<input
+								type="text"
+								class="input input-bordered input-xs w-16"
+								placeholder="FK…"
+								title="planende Fakultät (z. B. „FK10“)"
+								value={c?.notPlannedByMeInFK ?? ''}
+								disabled={busy.has(e.ancode)}
+								on:change={(ev) => saveNotMe(e, { fk: ev.currentTarget.value.trim() })}
+							/>
 							<!-- Ort inline (ohne Modal), da für notPlannedByMe interessant -->
 							<select
 								class="select select-bordered select-xs"
 								title="Ort/Campus (wirkt im Terminplan)"
 								value={c?.location ?? ''}
 								disabled={busy.has(e.ancode)}
-								on:change={(ev) => setLocation(e, ev.currentTarget.value)}
+								on:change={(ev) => saveNotMe(e, { location: ev.currentTarget.value })}
 							>
 								<option value="">Lothstraße</option>
 								<option value="Campus Pasing">Campus Pasing</option>

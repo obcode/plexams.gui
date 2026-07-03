@@ -54,6 +54,8 @@
 	// Formularzustand
 	let form = {
 		notPlannedByMe: !!c.notPlannedByMe,
+		// planende Fakultät bei „nicht von mir geplant“ (z. B. „FK10“)
+		notPlannedByMeInFK: c.notPlannedByMeInFK ?? '',
 		// Ort/Campus (leer = Standard = Lothstraße); wirkt im Terminplan-Generator
 		location: c.location ?? '',
 		doNotPublish: !!c.doNotPublish,
@@ -111,8 +113,9 @@
 
 		// location gilt auch für notPlannedByMe-Prüfungen (FK10)
 		const location = form.location || null;
+		const notPlannedByMeInFK = form.notPlannedByMe ? form.notPlannedByMeInFK.trim() || null : null;
 		const constraints = form.notPlannedByMe
-			? { notPlannedByMe: true, doNotPublish: form.doNotPublish, location }
+			? { notPlannedByMe: true, doNotPublish: form.doNotPublish, location, notPlannedByMeInFK }
 			: {
 					notPlannedByMe: false,
 					location,
@@ -147,6 +150,7 @@
 			dispatch('saved', {
 				ancode: exam.ancode,
 				notPlannedByMe: form.notPlannedByMe,
+				notPlannedByMeInFK,
 				location,
 				doNotPublish: form.doNotPublish,
 				online: form.notPlannedByMe ? false : form.online,
@@ -187,6 +191,20 @@
 			<span class="font-medium">nicht von mir geplant</span>
 			<span class="text-xs text-base-content/50">(dann sind keine weiteren Constraints nötig)</span>
 		</label>
+
+		{#if form.notPlannedByMe}
+			<!-- planende Fakultät (z. B. „FK10") — nur bei „nicht von mir geplant" -->
+			<label class="mt-1 ml-7 flex flex-wrap items-center gap-2">
+				<span class="font-medium">planende FK</span>
+				<input
+					type="text"
+					class="input input-bordered input-sm w-24"
+					placeholder="FK10"
+					bind:value={form.notPlannedByMeInFK}
+				/>
+				<span class="text-xs text-base-content/50">welche Fakultät plant diese Prüfung</span>
+			</label>
+		{/if}
 
 		<label class="mt-1 flex cursor-pointer items-center gap-2">
 			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={form.doNotPublish} />
