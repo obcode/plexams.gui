@@ -34,6 +34,16 @@
 		conflictDiff = computeDiff(before, data.conflicts ?? []);
 	}
 
+	// Faustregel: examReport.conflicts/resolvedConflicts (inkl. diffStatus) gehören zu
+	// EINEM Lauf. Sobald sich der Plan ändert (Reset o. Ä.), ist dieser Snapshot
+	// veraltet — verwerfen, damit der Konflikt-Panel wieder die Dauer-Ansicht aus
+	// examScheduleConflicts (data.conflicts, per invalidateAll frisch) zeigt.
+	function discardRunReport() {
+		examReport = null;
+		conflictDiff = null;
+		conflictSnapshot = null;
+	}
+
 	// EXAMS gesperrt (draftSent/examPlanPublished gesetzt) → nur Probelauf erlaubt.
 	$: examsBlocked = (data.blockedAreas ?? []).includes('EXAMS');
 
@@ -387,8 +397,8 @@
 				return;
 			}
 			resetInfo = `${fmt(d.resetExamSchedule)} Prüfung(en) aus dem Plan entfernt.`;
-			examReport = null;
-			conflictDiff = null;
+			// Lauf-Report gehört zum alten Plan → verwerfen, danach live nachladen.
+			discardRunReport();
 			await invalidateAll();
 		} catch (e) {
 			resetError = e instanceof Error ? e.message : String(e);

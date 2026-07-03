@@ -258,7 +258,7 @@
 		{
 			label: 'Terminplanung',
 			items: [
-				{ href: '/plan/exams', label: '🗓️ Prüfungen planen' },
+				{ href: '/plan/exams', label: '🗓️ Terminplanung' },
 				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau (Phase A)' },
 				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren (Phase B)' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
@@ -547,8 +547,7 @@
 				{#each themes as theme}
 					<li>
 						<button
-							class="flex items-center justify-between rounded-lg capitalize {theme ===
-							currentTheme
+							class="flex items-center justify-between rounded-lg capitalize {theme === currentTheme
 								? 'bg-primary font-semibold text-primary-content'
 								: ''}"
 							data-set-theme={theme}
