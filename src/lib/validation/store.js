@@ -60,7 +60,7 @@ export function setGroupStats(id, stats) {
  * @param {number} expected Anzahl erwarteter Gruppen (für "unvollständig")
  */
 function summarize(raw, expected) {
-	const entries = raw.filter(Boolean);
+	const entries = /** @type {any[]} */ (raw.filter(Boolean));
 	const doneEntries = entries.filter((e) => e.done);
 	const running = entries.some((e) => e.running);
 	const errors = doneEntries.reduce((a, e) => a + (e.errors ?? 0), 0);

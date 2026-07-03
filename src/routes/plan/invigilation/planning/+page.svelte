@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import { fade } from 'svelte/transition';
 
 	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
@@ -11,12 +9,11 @@
 	const todos = data.todos;
 
 	let searchTerm = $state('');
-	let filteredInvigilators = $state([]);
 
 	let sortOpen = $state(true);
 	let showInvigilations = $state(true);
 
-	let stillOpen = $state(0);
+	let stillOpen = 0;
 	for (const invig of data.todos.invigilators) {
 		stillOpen += invig.todos.totalMinutes - invig.todos.doingMinutes;
 	}
@@ -124,41 +121,35 @@
 		dotFilter = null;
 	}
 
-	run(() => {
-		let filteredInvigilatorsTmp = [];
-		filteredInvigilators = filteredInvigilatorsTmp;
+	const filteredInvigilators = $derived.by(() => {
+		/** @type {any[]} */
+		let tmp;
 		if (searchTerm) {
 			const term = searchTerm.trim().toLowerCase();
 			// nach Name, Kürzel oder Aufsichts-Nummer (teacher.id) suchen
-			filteredInvigilatorsTmp = invigilators.filter(
+			tmp = invigilators.filter(
 				(/** @type {any} */ invig) =>
 					invig.teacher.fullname.toLowerCase().includes(term) ||
 					(invig.teacher.shortname ?? '').toLowerCase().includes(term) ||
 					String(invig.teacher.id).includes(term)
 			);
 		} else {
-			filteredInvigilatorsTmp = [...invigilators];
+			tmp = [...invigilators];
 		}
 		if (dotFilter) {
 			const ids = dotFilter.ids;
-			filteredInvigilatorsTmp = filteredInvigilatorsTmp.filter((/** @type {any} */ invig) =>
-				ids.has(invig.teacher.id)
-			);
+			tmp = tmp.filter((/** @type {any} */ invig) => ids.has(invig.teacher.id));
 		}
 		if (sortOpen) {
-			filteredInvigilatorsTmp.sort((a, b) => {
+			tmp.sort((/** @type {any} */ a, /** @type {any} */ b) => {
 				const x = a.todos.totalMinutes - a.todos.doingMinutes;
 				const y = b.todos.totalMinutes - b.todos.doingMinutes;
-				if (x < y) {
-					return 1;
-				}
-				if (x > y) {
-					return -1;
-				}
+				if (x < y) return 1;
+				if (x > y) return -1;
 				return 0;
 			});
 		}
-		filteredInvigilators = filteredInvigilatorsTmp;
+		return tmp;
 	});
 
 	let exporting = $state(false);
