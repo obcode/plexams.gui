@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import ExternalExamRow from '$lib/exam/ExternalExamRow.svelte';
+	import { buildGroups, hasTime } from '$lib/exam/otherFkGroups';
 
 	export let data;
 
@@ -10,52 +11,12 @@
 	/** '' = alle FKs */
 	let fkFilter = '';
 
-	const SOURCE_LABEL = { mucdai: 'MUC.DAI', zpa: 'ZPA' };
-
-	/** @param {any} e */
-	const hasTime = (e) => !!e.planEntry?.externalTime;
-
 	// alle vorkommenden FKs (für den Filter), sortiert
 	$: fks = [...new Set((data.items ?? []).map((/** @type {any} */ e) => e.fk || '—'))].sort();
 
 	// gefilterte + zu Zeilen aufbereitete Items, nach FK gruppiert
-	$: groups = buildGroups(data.items ?? [], onlyMissing, source, fkFilter);
-
-	/**
-	 * @param {any[]} items @param {boolean} miss
-	 * @param {'all'|'mucdai'|'zpa'} src @param {string} fk
-	 */
-	function buildGroups(items, miss, src, fk) {
-		/** @type {Map<string, any[]>} */
-		const m = new Map();
-		for (const e of items) {
-			if (miss && hasTime(e)) continue;
-			if (src !== 'all' && e.source !== src) continue;
-			const key = e.fk || '—';
-			if (fk && key !== fk) continue;
-			const row = {
-				ancode: e.ancode,
-				primussAncode: e.primussAncode,
-				module: e.module,
-				mainExamer: e.mainExamer,
-				examType: e.examType,
-				isRepeaterExam: e.isRepeaterExam,
-				sourceLabel: SOURCE_LABEL[/** @type {'mucdai'|'zpa'} */ (e.source)] ?? '',
-				// Programm (MUC.DAI) bzw. Gruppen (ZPA) als Kontext-Badges
-				extra: e.program ? [e.program, ...(e.groups ?? [])] : (e.groups ?? []),
-				fkLabel: '',
-				planEntry: e.planEntry
-			};
-			if (!m.has(key)) m.set(key, []);
-			m.get(key)?.push(row);
-		}
-		return [...m.entries()]
-			.sort((a, b) => a[0].localeCompare(b[0]))
-			.map(([fkKey, exams]) => ({
-				fk: fkKey,
-				exams: exams.sort((x, y) => (x.ancode ?? 0) - (y.ancode ?? 0))
-			}));
-	}
+	// (Logik in $lib/exam/otherFkGroups, unit-getestet).
+	$: groups = buildGroups(data.items ?? [], { onlyMissing, source, fk: fkFilter });
 
 	// Gesamtzahlen für die Kopfzeile
 	$: total = (data.items ?? []).filter(

@@ -6,6 +6,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import { diffMeta } from '$lib/exam/conflictDiff';
+	import { pairKey, isAutoConflict } from '$lib/exam/conflictLoop';
 
 	/** @type {any[]} */
 	export let conflicts = [];
@@ -27,8 +28,7 @@
 		resolvedConflicts.length > 0 ||
 		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus));
 
-	/** @param {number} a @param {number} b → reihenfolge-unabhängiger Schlüssel */
-	const pairKey = (a, b) => [a, b].sort((x, y) => x - y).join('-');
+	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
 
 	// Lokale, patchbare Kopie: die Konflikte können aus einem Lauf-Snapshot
 	// (examReport.conflicts) kommen, der sich bei Bewertungen nicht von selbst
@@ -63,10 +63,6 @@
 	// gleicher Slot — niemand schreibt beide) →
 	// separate, eingeklappte Section. „nicht-auto" (mind. ein:e Studierende:r
 	// braucht eine Entscheidung) oben und offen.
-	/** @param {any} c */
-	const isAutoConflict = (c) =>
-		(c.affectedStudents?.length ?? 0) > 0 &&
-		c.affectedStudents.every((/** @type {any} */ s) => s.autoAccepted);
 	$: ratableNonAuto = ratable.filter((/** @type {any} */ c) => !isAutoConflict(c));
 	$: ratableAuto = ratable.filter(isAutoConflict);
 
