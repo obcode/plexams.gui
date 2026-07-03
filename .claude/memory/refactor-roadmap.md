@@ -34,8 +34,8 @@ Großer Architektur-Refactor der über Jahre gewachsenen, kaum refactorten Codeb
 1. **POST-MIGRATE-CLEANUP (jetzt priorität):** check 134→**119** (Batch 1: examersToPlan, InvigilatorTR, ExamsWithoutSlot). Muster: `run(() => { x = expr })` aus `svelte/legacy` → `const x = $derived[.by](...)`; implizite `any` typisieren (ACHTUNG: `lang="ts"`-Components → `: any`; reine `<script>`-Components → JSDoc `/** @param {any} */`, TS-Syntax verboten!). Noch **~13 Dateien mit `run()`** + Dispatcher-Reste (sv migrate ließ `createEventDispatcher` teils stehen). Ziel check→0. Größte Brocken: `/plan/exams/+page.svelte` (29, nicht migriert, `slotsStatus[[day,time]]`-Array-Index), ExamWithNTAsForRoomPlanning (13).
 2. **Event-Migration-Rezept** (falls noch nötig): Kind `dispatch('x',v)` → Callback-Prop `onx?.(v)`; native `on:click`→`onclick`; Eltern `on:x={h}`→`onx={h}`, Handler nimmt Wert direkt. `WriteButton` (Legacy) nimmt `onclick={fn}` via `$$restProps` — verifiziert. Endschalter `compilerOptions.runes: true` ganz zuletzt.
 3. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `plan/external`.
-3. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
-4. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
-5. **17 übersprungene `/api`-Proxies** (Sonder-Fehlerbehandlung) an gqlProxy angleichen.
-6. **e2e-Smoke-Tests** (Playwright gegen gemockten GraphQL-Endpunkt).
-7. GraphQL-Fragmente nur wo Feld-Sets **exakt** identisch (constraints/zpaExam sind bewusst divergent).
+4. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
+5. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
+6. **17 übersprungene `/api`-Proxies** (Sonder-Fehlerbehandlung) an gqlProxy angleichen.
+7. **e2e-Smoke-Tests** (Playwright gegen gemockten GraphQL-Endpunkt).
+8. GraphQL-Fragmente nur wo Feld-Sets **exakt** identisch (constraints/zpaExam sind bewusst divergent).

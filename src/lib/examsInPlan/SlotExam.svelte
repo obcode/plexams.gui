@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
@@ -38,7 +36,7 @@
 	async function fetchAllowedSlots() {
 		const response = await fetch('/api/allowedSlots', {
 			method: 'POST',
-			body: JSON.stringify({ ancode: ancode }),
+			body: JSON.stringify({ ancode: exam.ancode }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -61,72 +59,55 @@
 	// 	awkwardSlots = data.awkwardSlots;
 	// }
 
-	let selected = $state(false);
-	let sameSlot = $state(false);
-
-	run(() => {
-		selected = selectedExam == exam.ancode || selectedExamerID == exam.zpaExam.mainExamerID;
-		sameSlot =
-			exam.constraints != null &&
+	const selected = $derived(
+		selectedExam == exam.ancode || selectedExamerID == exam.zpaExam.mainExamerID
+	);
+	const sameSlot = $derived(
+		exam.constraints != null &&
 			exam.constraints.sameSlot != null &&
-			exam.constraints.sameSlot.includes(selectedExam);
-	});
+			exam.constraints.sameSlot.includes(selectedExam)
+	);
 
 	let slotToMove = 'none';
 
-	let show = $state(true);
-
-	let online = $state(false);
-	online = exam.constraints && exam.constraints.online;
-
-	let exahm = $state(false);
-	exahm =
+	const online = $derived(exam.constraints && exam.constraints.online);
+	const exahm = $derived(
 		exam.constraints &&
-		exam.constraints.roomConstraints &&
-		(exam.constraints.roomConstraints.exahm || exam.constraints.roomConstraints.seb);
+			exam.constraints.roomConstraints &&
+			(exam.constraints.roomConstraints.exahm || exam.constraints.roomConstraints.seb)
+	);
 
-	let programs = [];
+	const programs: string[] = [];
 	for (const primussExam of exam.primussExams) {
 		if (primussExam.studentRegs.length > 0) programs.push(primussExam.exam.program);
 	}
 
-	run(() => {
+	const show = $derived.by(() => {
 		if (onlyPlannedByMe && exam.constraints != null && exam.constraints.notPlannedByMe) {
-			show = false;
-		} else if (
+			return false;
+		}
+		if (
 			!selected &&
 			conflictingAncodes.length > 0 &&
 			!conflictingAncodes.includes(exam.ancode) &&
 			onlyConflicts
 		) {
-			show = false;
-		} else {
-			if (showExam == 'all' || conflictingAncodes.includes(exam.ancode)) {
-				show = true;
-			} else {
-				show = programs.includes(showExam);
-			}
-			if (showExamerID != 'all') {
-				show = show && exam.zpaExam.mainExamerID == showExamerID;
-			}
-			if (showAncode != '0') {
-				show = show && exam.ancode == showAncode;
-			}
-			if (showOnlyOnline) {
-				show = online;
-			}
-			if (showOnlyExahm) {
-				show = exahm;
-			}
+			return false;
 		}
-
-		// 	fetchAllowedSlots();
-		// 	fetchAwkwardSlots();
+		let s;
+		if (showExam == 'all' || conflictingAncodes.includes(exam.ancode)) {
+			s = true;
+		} else {
+			s = programs.includes(showExam);
+		}
+		if (showExamerID != 'all') s = s && exam.zpaExam.mainExamerID == showExamerID;
+		if (showAncode != '0') s = s && exam.ancode == showAncode;
+		if (showOnlyOnline) s = online;
+		if (showOnlyExahm) s = exahm;
+		return s;
 	});
 
-	let showConflictCount = $state(false);
-	let conflictCount = $state(0);
-	function calcConflictCount(ancode) {
+	function calcConflictCount(ancode: any) {
 		for (const conflict of exam.conflicts) {
 			if (conflict.ancode == ancode) {
 				return conflict.numberOfStuds;
@@ -134,40 +115,25 @@
 		}
 		return 0;
 	}
-
-	run(() => {
-		if (showConflictCount) {
-			conflictCount = calcConflictCount(selectedExam);
-		} else {
-			conflictCount = 0;
-		}
-	});
+	const showConflictCount = $derived(conflictingAncodes.includes(exam.ancode));
+	const conflictCount = $derived(showConflictCount ? calcConflictCount(selectedExam) : 0);
 
 	// Karten-Zustand → farbiger Links-Akzent (border-l) + dezente Tönung, auf
 	// Theme-Tokens statt hartkodierter Farben. Kaskade wie zuvor (Auswahl > gleiche:r
 	// Prüfende:r > sameSlot > Konflikt > extern/nicht-von-mir > Wiederholung > normal).
-	let colors = $state();
-	run(() => {
-		showConflictCount = conflictingAncodes.includes(exam.ancode);
-		if (selectedExam == exam.ancode) {
-			colors = 'border-l-primary bg-primary/15 ring-1 ring-primary/60';
-		} else if (selectedExamerID == exam.zpaExam.mainExamerID) {
-			colors = 'border-l-info bg-info/10';
-		} else if (sameSlot) {
-			colors = 'border-l-accent bg-accent/15';
-		} else if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts) {
-			colors = 'border-l-error bg-error/15';
-		} else if (exam.constraints && exam.constraints.notPlannedByMe) {
-			// von anderer FK geplant (MUC.DAI oder ZPA notPlannedByMe) → grau, read-only-Anmutung
-			colors = 'border-l-base-300 bg-base-200';
-		} else if (exam.zpaExam.isRepeaterExam) {
-			colors = 'border-l-warning bg-warning/10';
-		} else {
-			colors = 'border-l-success/60';
-		}
+	const colors = $derived.by(() => {
+		if (selectedExam == exam.ancode) return 'border-l-primary bg-primary/15 ring-1 ring-primary/60';
+		if (selectedExamerID == exam.zpaExam.mainExamerID) return 'border-l-info bg-info/10';
+		if (sameSlot) return 'border-l-accent bg-accent/15';
+		if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts)
+			return 'border-l-error bg-error/15';
+		// von anderer FK geplant (MUC.DAI oder ZPA notPlannedByMe) → grau, read-only-Anmutung
+		if (exam.constraints && exam.constraints.notPlannedByMe) return 'border-l-base-300 bg-base-200';
+		if (exam.zpaExam.isRepeaterExam) return 'border-l-warning bg-warning/10';
+		return 'border-l-success/60';
 	});
 
-	function select(code) {
+	function select(code: any) {
 		if (!selected) {
 			dispatch('selected', {
 				ancode: code,
@@ -251,7 +217,7 @@
 	// 	});
 	// }
 
-	function alertstyle(count) {
+	function alertstyle(count: any) {
 		if (count < 5) return '';
 		else if (count < 15) return 'alert-success';
 		else return 'alert-info';
@@ -263,15 +229,7 @@
 		// 	fetchAwkwardSlots();
 	});
 
-	let width = $state('w-96');
-
-	run(() => {
-		if (details || !inSlot) {
-			width = 'w-96';
-		} else {
-			width = 'w-min';
-		}
-	});
+	const width = $derived(details || !inSlot ? 'w-96' : 'w-min');
 
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
 	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld

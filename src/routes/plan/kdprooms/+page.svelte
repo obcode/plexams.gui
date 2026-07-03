@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	let { data } = $props();
 	let slots = data.slots;
 	let hideEmpty = $state(true);
@@ -56,18 +54,16 @@
 		return m ? m[1] : '--:--';
 	}
 
-	/** @type {any[]} */
-	let filteredSlots = $state([]);
-	run(() => {
-		filteredSlots = hideEmpty
+	const filteredSlots = $derived(
+		hideEmpty
 			? slots.filter(
 					(/** @type {any} */ s) =>
 						(s.exams && s.exams.length > 0) ||
 						(s.tRooms && s.tRooms.length > 0) ||
 						(s.annyBookings && s.annyBookings.length > 0)
 				)
-			: slots;
-	});
+			: slots
+	);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
