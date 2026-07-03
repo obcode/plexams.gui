@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
+import type { PageServerLoad } from './$types';
 
 // „Prüfungen anderer FKs": Termine für Prüfungen, die eine andere Fakultät plant.
 // Zwei Quellen, nach FK zusammengeführt:
@@ -9,9 +10,62 @@ import { gqlErrorMessage } from '$lib/gqlError';
 //   (b) MUC.DAI-Prüfungen anderer FKs → FK = plannedBy (≠ FK07)
 // Beide werden über setExternalExamTime(ancode) terminiert; außerhalb des
 // Zeitraums liegende Prüfungen behalten nur eine Zeit (externalTime), keinen Slot.
-export async function load() {
+
+type PlanEntryTime = {
+	externalTime: string | null;
+	dayNumber: number;
+	slotNumber: number;
+};
+
+// Ergebnis-Shape der Query (nur die selektierten Felder — bewusst schlanker als
+// die vollen Schema-Typen aus $lib/gql/types).
+type QueryResult = {
+	mucdaiExams: {
+		primussAncode: number;
+		module: string;
+		mainExamer: string;
+		examType: string;
+		duration: number;
+		isRepeaterExam: boolean;
+		program: string;
+		plannedBy: string;
+		ancode: number;
+		planEntry: PlanEntryTime | null;
+	}[];
+	zpaExamsToPlanWithConstraints: {
+		zpaExam: {
+			ancode: number;
+			module: string;
+			mainExamer: string;
+			mainExamerID: number;
+			examType: string;
+			examTypeFull: string;
+			groups: string[];
+		};
+		constraints: { notPlannedByMe: boolean; notPlannedByMeInFK: string | null } | null;
+		planEntry: PlanEntryTime | null;
+	}[];
+	teachers: { id: number; fk: string }[];
+};
+
+// Die vereinheitlichte Zeile, die die Seite (und $lib/exam/otherFkGroups) konsumiert.
+export type OtherFkItem = {
+	source: 'zpa' | 'mucdai';
+	ancode: number;
+	primussAncode?: number;
+	module: string;
+	mainExamer: string;
+	examType: string;
+	isRepeaterExam: boolean;
+	fk: string;
+	program: string | null;
+	groups: string[];
+	planEntry: PlanEntryTime | null;
+};
+
+export const load: PageServerLoad = async () => {
 	try {
-		const data = await request(
+		const data = await request<QueryResult>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
@@ -60,12 +114,10 @@ export async function load() {
 		);
 
 		// FK je Prüfenden-ID (Fallback für ZPA-Prüfungen ohne notPlannedByMeInFK)
-		/** @type {Record<number, string>} */
-		const fkById = {};
+		const fkById: Record<number, string> = {};
 		for (const t of data.teachers ?? []) fkById[t.id] = t.fk;
 
-		/** @type {any[]} */
-		const items = [];
+		const items: OtherFkItem[] = [];
 
 		// (a) ZPA notPlannedByMe
 		for (const e of data.zpaExamsToPlanWithConstraints ?? []) {
@@ -105,6 +157,6 @@ export async function load() {
 
 		return { items, loadError: '' };
 	} catch (e) {
-		return { items: [], loadError: gqlErrorMessage(e) };
+		return { items: [] as OtherFkItem[], loadError: gqlErrorMessage(e) };
 	}
-}
+};
