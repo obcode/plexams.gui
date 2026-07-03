@@ -102,6 +102,7 @@ export async function POST({ request }) {
 					slotNumber
 					ancode
 					locked
+					phaseFixed
 					externalTime
 				}
 				plannedRooms {

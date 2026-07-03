@@ -370,7 +370,12 @@
 						<div>
 							{#if exam.planEntry != null && exam.planEntry.locked}
 								<div class="mt-2 mr-3">
-									<span title="festgelegt">🔒</span>
+									<span title="manuell gesperrt">🔒</span>
+								</div>
+							{/if}
+							{#if exam.planEntry != null && exam.planEntry.phaseFixed}
+								<div class="mt-2 mr-3">
+									<span title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span>
 								</div>
 							{/if}
 							{#if exam.zpaExam.isRepeaterExam}

@@ -7,7 +7,11 @@ metadata:
   originSessionId: c5f57170-c127-4286-8376-33501b96ade2
 ---
 
-Der automatische Terminplan wird auf **/plan/exams/generate** erzeugt (Nav „✨ Terminplan generieren" unter Terminplanung).
+Zweistufig (beide unter Terminplanung, Phase 1):
+
+**Phase A — /plan/exams/roomsphase** (Nav „🏗️ EXaHM/SEB in T-Bau (Phase A)"): Subscription `generateExamRoomsPhase(dryRun, seed, iterations)` (gleiche LogLine/ExamScheduleReport-Mechanik; examReport.unplacedAncodes = SEB-Prüfungen, die nicht in den T-Bau passten). Danach fixieren: `fixExamRoomsPhase` (Int! = Anzahl) / `unfixExamRoomsPhase` (Boolean!, lässt manuelles Locked unangetastet) via /api-Proxies. Setzt Planning-State `exahmSebPlanned`/`exahmSebFixed` (Phase 1). PENDING: `PlanEntry.phaseFixed` (Boolean) noch nicht im Live-Schema → optische Unterscheidung „automatisch fixiert (Raumphase)" vs. „manuell gesperrt" (SlotExam.svelte:~371, Icon aus planEntry.locked) noch nicht gebaut.
+
+**Phase B — /plan/exams/generate** (Nav „✨ Terminplan generieren"): der eigentliche Terminplan; respektiert PhaseFixed automatisch.
 
 - **Subscription** `generateExamSchedule(dryRun: Boolean!, seed: Int, iterations: Int): LogLine!` — gleiche WS-/LogLine-Mechanik wie `assignInvigilations` (siehe `/plan/invigilation/generate`), aber PROGRESS kommt als **Text** (kein `progress`-Objekt) und die RESULT-Zeile trägt **`examReport`** (statt `report`). Zwei Aktionen: „Probelauf" = `dryRun:true` (schreibt nichts, liefert trotzdem `examReport`), „Generieren & schreiben" = `dryRun:false`.
 - **Gate**: Steht `EXAMS` in `planningState.blockedAreas` (gesetzt, sobald `draftSent`/`examPlanPublished` gehakt sind, PlanningGate-Enum EXAMS), ist der Schreib-Button gesperrt, Probelauf bleibt erlaubt. Startseiten-Label in `AREA_LABEL` (src/routes/+page.svelte).

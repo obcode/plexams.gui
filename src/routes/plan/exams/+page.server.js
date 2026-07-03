@@ -129,6 +129,7 @@ export async function load({ params }) {
 					slotNumber
 					ancode
 					locked
+					phaseFixed
 				}
 			}
 		}
