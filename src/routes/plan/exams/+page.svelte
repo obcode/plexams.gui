@@ -99,28 +99,10 @@
 		}
 	}
 
-	// let examGroupsWithoutSlot = [];
-	// async function fetchExamGroupsWithoutSlot() {
-	// 	const response = await fetch('/api/examGroupsWithoutSlot', {
-	// 		method: 'GET',
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	examGroupsWithoutSlot = data.examGroupsWithoutSlot;
-	// 	examGroupsWithoutSlot.sort(
-	// 		(g1, g2) => g2.examGroupInfo.studentRegs - g1.examGroupInfo.studentRegs
-	// 	);
-	// }
-
 	onMount(() => {
-		// 	initSlotsStatus('unknown');
-		// 	initRefresh();
 		getPrograms();
 		getAncodes();
 		getExamer();
-		// 	fetchExamGroupsWithoutSlot();
 	});
 
 	let selectedExam = -1;
@@ -152,49 +134,10 @@
 		conflictingAncodes = [];
 	}
 
-	async function handleAddToSlot(event) {
-		// 	let success = await addToSlot(event.detail);
-		// 	if (success) {
-		// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
-		// 		if (event.detail.oldslot) {
-		// 			refresh[[event.detail.oldslot.dayNumber, event.detail.oldslot.slotNumber]] = true;
-		// 		} else {
-		// 			fetchExamGroupsWithoutSlot();
-		// 		}
-		// 	}
-	}
-
-	async function handleRmFromSlot(event) {
-		// 	let success = await rmFromSlot(event.detail);
-		// 	if (success) {
-		// 		refresh[[event.detail.slot.dayNumber, event.detail.slot.slotNumber]] = true;
-		// 		fetchExamGroupsWithoutSlot();
-		// 	}
-	}
-
-	async function addToSlot(args) {
-		// 	const response = await fetch('/api/slot/addToSlot', {
-		// 		method: 'POST',
-		// 		body: JSON.stringify(args),
-		// 		headers: {
-		// 			'content-type': 'application/json'
-		// 		}
-		// 	});
-		// 	let data = await response.json();
-		// 	return data.addExamGroupToSlot;
-	}
-
-	async function rmFromSlot(args) {
-		// 	const response = await fetch('/api/slot/rmFromSlot', {
-		// 		method: 'POST',
-		// 		body: JSON.stringify(args),
-		// 		headers: {
-		// 			'content-type': 'application/json'
-		// 		}
-		// 	});
-		// 	let data = await response.json();
-		// 	return data.rmExamGroupFromSlot;
-	}
+	// Drag-and-Drop von Prüfungen in Slots ist auf dieser Seite derzeit deaktiviert;
+	// die Slot-Komponente feuert die Events weiterhin — hier bewusst No-ops.
+	async function handleAddToSlot() {}
+	async function handleRmFromSlot() {}
 
 	async function fetchAllowedSlots(ancode) {
 		const response = await fetch('/api/allowedSlots', {
