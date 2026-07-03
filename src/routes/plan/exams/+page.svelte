@@ -510,12 +510,6 @@
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={details} /> Details
 			</label>
 			<label class="flex cursor-pointer items-center gap-2">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={moveable} /> veränderbar
-			</label>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyOnline} /> online
-			</label>
-			<label class="flex cursor-pointer items-center gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyExahm} /> EXaHM/SEB
 			</label>
 			<label class="flex cursor-pointer items-center gap-2">
