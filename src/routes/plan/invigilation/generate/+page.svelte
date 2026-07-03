@@ -25,13 +25,11 @@
 	// letzte PROGRESS-Zeile wird in-place aktualisiert (Spinner-Gefuehl).
 	/** @type {{ level: string, html: string }[]} */
 	let lines = $state([]);
-	/** @type {{ html: string, progress: any } | null} */
-	let current = $state(null);
+	let current = $state(/** @type {{ html: string, progress: any } | null} */ (null));
 	/** @type {any} */
 	let report = $state(null);
 
-	/** @type {HTMLDivElement} */
-	let termEl = $state();
+	let termEl = $state(/** @type {HTMLDivElement | undefined} */ (undefined));
 
 	// ANSI->HTML Konverter und WS-Client werden nur im Browser geladen.
 	/** @type {any} */
