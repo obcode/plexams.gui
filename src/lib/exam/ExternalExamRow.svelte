@@ -1,17 +1,13 @@
-<script>
+<script lang="ts">
 	// Eine Prüfungszeile mit Inline-Termineingabe (Datum + Zeit, kein Popup).
 	// Setzt die externe Zeit über /api/setExternalExamTime(ancode) und meldet
-	// Erfolg per `saved`-Event nach oben (dort invalidateAll).
-	import { createEventDispatcher } from 'svelte';
+	// Erfolg per onsaved-Callback nach oben (dort invalidateAll).
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	/** @type {any} */
-	export let exam;
+	let { exam, onsaved }: { exam: any; onsaved?: () => void } = $props();
 
-	const dispatch = createEventDispatcher();
-
-	/** @param {string} iso → „13.07. 08:30" (Berlin) */
-	const dateTime = (iso) => {
+	/** „13.07. 08:30" (Berlin) */
+	const dateTime = (iso: string) => {
 		const d = new Date(iso);
 		return Number.isNaN(d.getTime())
 			? ''
@@ -24,8 +20,8 @@
 					minute: '2-digit'
 				});
 	};
-	/** @param {string} iso → {date:'yyyy-mm-dd', time:'HH:MM'} in Berlin */
-	function berlinParts(iso) {
+	/** {date:'yyyy-mm-dd', time:'HH:MM'} in Berlin */
+	function berlinParts(iso: string) {
 		const d = new Date(iso);
 		if (Number.isNaN(d.getTime())) return { date: '', time: '' };
 		const s = new Intl.DateTimeFormat('sv-SE', {
@@ -40,32 +36,31 @@
 		const [date, time] = s.replace(',', '').split(' ');
 		return { date, time };
 	}
-	/** @param {string} iso „yyyy-mm-dd" → „dd.mm.yyyy" */
-	function toServerDate(iso) {
+	/** „yyyy-mm-dd" → „dd.mm.yyyy" */
+	function toServerDate(iso: string) {
 		const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? '');
 		return m ? `${m[3]}.${m[2]}.${m[1]}` : '';
 	}
 
-	let date = '';
-	let time = '';
-	// Eingaben aus dem (ggf. nach dem Speichern aktualisierten) externalTime
-	// vorbelegen. Läuft nur neu, wenn sich die externe Zeit ändert — nicht
-	// während des Tippens.
-	$: syncFrom(exam.planEntry?.externalTime);
-	/** @param {string | null | undefined} iso */
-	function syncFrom(iso) {
+	let date = $state('');
+	let time = $state('');
+	// Eingaben aus externalTime vorbelegen; reseedet nur bei Änderung der externen
+	// Zeit (der Effekt liest nur externalTime, nicht date/time → nicht beim Tippen).
+	$effect(() => {
+		const iso = exam.planEntry?.externalTime;
 		const p = iso ? berlinParts(iso) : { date: '', time: '' };
 		date = p.date;
 		time = p.time;
-	}
+	});
 
-	$: hasTime = !!exam.planEntry?.externalTime;
+	const hasTime = $derived(!!exam.planEntry?.externalTime);
 	// Zeit außerhalb des Prüfungszeitraums: nur externalTime, kein echter Slot
 	// (dayNumber/slotNumber == 0). Dann keinen Slot zeigen, nur die Zeit + Hinweis.
-	$: outsidePeriod =
-		hasTime && !exam.planEntry?.dayNumber && !exam.planEntry?.slotNumber;
-	let saving = false;
-	let error = '';
+	const outsidePeriod = $derived(
+		hasTime && !exam.planEntry?.dayNumber && !exam.planEntry?.slotNumber
+	);
+	let saving = $state(false);
+	let error = $state('');
 
 	async function save() {
 		if (!date || !time) {
@@ -85,7 +80,7 @@
 				error = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			dispatch('saved');
+			onsaved?.();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -133,11 +128,7 @@
 			{/if}
 			<input type="date" class="input input-bordered input-xs w-36" bind:value={date} />
 			<input type="time" class="input input-bordered input-xs w-24" bind:value={time} />
-			<WriteButton
-				class="btn btn-primary btn-xs"
-				disabled={saving || !date || !time}
-				on:click={save}
-			>
+			<WriteButton class="btn btn-primary btn-xs" disabled={saving || !date || !time} onclick={save}>
 				{saving ? '…' : hasTime ? 'ändern' : 'setzen'}
 			</WriteButton>
 			{#if outsidePeriod}

@@ -105,7 +105,7 @@
 						</thead>
 						<tbody>
 							{#each group.exams as exam (exam.sourceLabel + '-' + exam.ancode)}
-								<ExternalExamRow {exam} on:saved={onSaved} />
+								<ExternalExamRow {exam} onsaved={onSaved} />
 							{/each}
 						</tbody>
 					</table>
