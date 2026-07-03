@@ -196,6 +196,55 @@ export async function load({ params }) {
 		if (resp?.data?.plannedExams) plannedExams = resp.data.plannedExams;
 	}
 
+	// „nicht von mir geplant"-Prüfungen (andere FK): zu-planende ZPA-Prüfungen mit
+	// gesetztem Flag. Die mit echtem Slot erscheinen bereits über examsInSlot bzw.
+	// plannedExams im Raster/Zeit-View; hier brauchen wir v. a. die OHNE Slot
+	// (Slot 0/0 out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
+	let otherFkExams = [];
+	try {
+		const od = await request(
+			env.PLEXAMS_SERVER,
+			gql`
+				query {
+					zpaExamsToPlanWithConstraints {
+						zpaExam {
+							ancode
+							module
+							mainExamer
+							faculty
+							isRepeaterExam
+							primussAncodes {
+								program
+								ancode
+							}
+						}
+						constraints {
+							notPlannedByMe
+							notPlannedByMeInFK
+						}
+						planEntry {
+							dayNumber
+							slotNumber
+							starttime
+						}
+						studentRegsCount
+					}
+				}
+			`
+		);
+		otherFkExams = (od.zpaExamsToPlanWithConstraints ?? [])
+			.filter((/** @type {any} */ e) => e.constraints?.notPlannedByMe)
+			.map((/** @type {any} */ e) => ({
+				ancode: e.zpaExam.ancode,
+				zpaExam: e.zpaExam,
+				constraints: e.constraints,
+				planEntry: e.planEntry,
+				studentRegsCount: e.studentRegsCount
+			}));
+	} catch {
+		otherFkExams = [];
+	}
+
 	let semesterConfig = semesterData.semesterConfig;
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
@@ -236,6 +285,7 @@ export async function load({ params }) {
 		semesterConfig: semesterData.semesterConfig,
 		examsWithoutSlot: data.examsWithoutSlot,
 		plannedExams,
+		otherFkExams,
 		globalSlotStatus: globalSlotStatus,
 		roomsForSlots: roomForSlotsMap
 	};

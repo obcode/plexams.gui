@@ -394,6 +394,7 @@
 
 	/** @param {any} x → Zustands-Akzent für einen Zeit-Block */
 	const blockColor = (x) => {
+		if (x.e.constraints?.notPlannedByMe) return 'border-l-accent border-dashed';
 		if (x.e.planEntry?.phaseFixed) return 'border-l-info';
 		if (x.e.planEntry?.locked) return 'border-l-base-content/40';
 		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
@@ -404,6 +405,38 @@
 	/** @param {any} z zpaExam */
 	const fmtAncode = (z) =>
 		z.faculty ? `${z.faculty}: ${z.primussAncodes?.[0]?.ancode ?? z.ancode}` : z.ancode.toString();
+
+	// planende FK: Constraint-Feld zuerst, sonst die Fakultät; rein numerisch → „FK…"
+	/** @param {any} e */
+	const otherFk = (e) => {
+		const raw = e.constraints?.notPlannedByMeInFK || e.zpaExam?.faculty || '';
+		return /^\d+$/.test(raw) ? `FK${raw}` : raw;
+	};
+
+	/** @param {string|null|undefined} iso → „Mo 06.07. 11:00" (Berlin) */
+	const fmtDateTime = (iso) => {
+		if (!iso) return '';
+		const d = new Date(iso);
+		return Number.isNaN(d.getTime())
+			? ''
+			: d.toLocaleString('de-DE', {
+					timeZone: 'Europe/Berlin',
+					weekday: 'short',
+					day: '2-digit',
+					month: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit'
+				});
+	};
+
+	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, nur
+	// externalTime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
+	// im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
+	$: otherFkNoSlot = (data.otherFkExams ?? [])
+		.filter(
+			(/** @type {any} */ e) => !(e.planEntry?.dayNumber > 0 && e.planEntry?.slotNumber > 0)
+		)
+		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode);
 
 	function forbiddenSlot(day, time) {
 		const key = `${day},${time}`;
@@ -665,5 +698,42 @@
 			on:unselected={handleUnselect}
 			on:addToSlot={handleAddToSlot}
 		/>
+
+		{#if otherFkNoSlot.length}
+			<div class="flex flex-col gap-2 rounded-lg border border-accent/40 bg-accent/5 p-3">
+				<div class="flex items-center gap-2">
+					<h2 class="text-lg font-semibold">Von anderen FKs geplant (ohne Slot)</h2>
+					<span class="badge badge-accent badge-sm tabular-nums">{otherFkNoSlot.length}</span>
+				</div>
+				<p class="text-sm text-base-content/60">
+					Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald sie
+					eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster. Zeiten
+					setzt du unter <a href="/plan/external" class="link link-primary">Prüfungen anderer FKs</a>.
+				</p>
+				<div class="flex flex-wrap gap-2">
+					{#each otherFkNoSlot as e (e.ancode)}
+						{@const t = fmtDateTime(e.planEntry?.starttime)}
+						<div
+							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-accent bg-base-100 p-2 text-xs"
+						>
+							<div class="flex items-center gap-1 font-semibold">
+								{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
+								<span class="font-mono">{fmtAncode(e.zpaExam)}</span>
+								{#if otherFk(e)}<span class="badge badge-accent badge-xs">{otherFk(e)}</span>{/if}
+							</div>
+							<div class="truncate">{e.zpaExam?.module}</div>
+							<div class="text-base-content/50">{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}</div>
+							{#if t}
+								<div class="tabular-nums text-base-content/70">
+									{t} Uhr <span class="text-base-content/40">(außerhalb Zeitraum)</span>
+								</div>
+							{:else}
+								<div class="text-warning">noch keine Zeit</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
 	</div>
 {/if}
