@@ -1,0 +1,21 @@
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
+import type { RequestHandler } from './$types';
+
+/**
+ * Constraints einer Preplan-Prüfung setzen. `constraints` ist ein (flacher)
+ * ConstraintsInput. sameSlot enthält Preplan-IDs (nicht Ancodes).
+ *
+ * @type {import('./$types').RequestHandler}
+ */
+export const POST: RequestHandler = async ({ request }) => {
+	const { id, constraints } = await request.json();
+	const mutation = gql`
+		mutation ($id: Int!, $constraints: ConstraintsInput!) {
+			setPreplanExamConstraints(id: $id, constraints: $constraints) {
+				id
+			}
+		}
+	`;
+	return gqlProxy(mutation, { id: Number(id), constraints });
+};
