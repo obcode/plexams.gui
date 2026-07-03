@@ -47,6 +47,8 @@
 	const ITER_MIN = 100_000;
 	const ITER_MAX = 2_000_000;
 	const ITER_STEP = 100_000;
+	// Warm-Start: bestehenden Plan als Ausgangspunkt behalten (nur verbessern).
+	let keepAssigned = false;
 
 	// --- Laufzeit-Status ---
 	let running = false;
@@ -77,8 +79,8 @@
 	let unsubscribe = null;
 
 	const SUBSCRIPTION = `
-		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int, $ignoreRatings: Boolean) {
-			generateExamSchedule(dryRun: $dryRun, seed: $seed, iterations: $iterations, ignoreRatings: $ignoreRatings) {
+		subscription Generate($dryRun: Boolean!, $seed: Int, $iterations: Int, $ignoreRatings: Boolean, $keepAssigned: Boolean) {
+			generateExamSchedule(dryRun: $dryRun, seed: $seed, iterations: $iterations, ignoreRatings: $ignoreRatings, keepAssigned: $keepAssigned) {
 				level
 				text
 				examReport {
@@ -221,7 +223,8 @@
 					dryRun,
 					seed: seed === '' || seed == null ? 1 : Number(seed),
 					iterations: Number(iterations),
-					ignoreRatings
+					ignoreRatings,
+					keepAssigned
 				}
 			},
 			{
@@ -354,6 +357,9 @@
 			{#if ignoreRun}
 				<span class="badge badge-ghost">ohne Bewertungen</span>
 			{/if}
+			{#if keepAssigned}
+				<span class="badge badge-ghost">Warm-Start</span>
+			{/if}
 		{/if}
 	</div>
 
@@ -409,6 +415,16 @@
 				(beste Qualität).
 			</span>
 		</div>
+		<label class="flex max-w-xs flex-col gap-1">
+			<span class="flex cursor-pointer items-center gap-2 text-xs font-medium text-base-content/60">
+				<input type="checkbox" class="toggle toggle-sm" bind:checked={keepAssigned} disabled={running} />
+				bestehenden Plan verbessern (Warm-Start)
+			</span>
+			<span class="text-xs text-base-content/50">
+				Ändert nur, was den Plan verbessert — sinnvoll nach kleinen Anpassungen/Sperren. Für einen
+				komplett neuen Plan aus lassen.
+			</span>
+		</label>
 	</div>
 
 	<div class="flex flex-wrap items-center gap-3">
