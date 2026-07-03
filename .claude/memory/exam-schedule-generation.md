@@ -9,7 +9,7 @@ metadata:
 
 Zweistufig (beide unter Terminplanung, Phase 1):
 
-**Phase A — /plan/exams/roomsphase** (Nav „🏗️ EXaHM/SEB in T-Bau (Phase A)"): Subscription `generateExamRoomsPhase(dryRun, seed, iterations)` (gleiche LogLine/ExamScheduleReport-Mechanik; examReport.unplacedAncodes = SEB-Prüfungen, die nicht in den T-Bau passten). Danach fixieren: `fixExamRoomsPhase` (Int! = Anzahl) / `unfixExamRoomsPhase` (Boolean!, lässt manuelles Locked unangetastet) via /api-Proxies. Setzt Planning-State `exahmSebPlanned`/`exahmSebFixed` (Phase 1). PENDING: `PlanEntry.phaseFixed` (Boolean) noch nicht im Live-Schema → optische Unterscheidung „automatisch fixiert (Raumphase)" vs. „manuell gesperrt" (SlotExam.svelte:~371, Icon aus planEntry.locked) noch nicht gebaut.
+**Phase A — /plan/exams/roomsphase** (Nav „🏗️ EXaHM/SEB in T-Bau (Phase A)"): Subscription `generateExamRoomsPhase(dryRun, seed, iterations)` (gleiche LogLine/ExamScheduleReport-Mechanik; examReport.unplacedAncodes = SEB-Prüfungen, die nicht in den T-Bau passten). Danach fixieren: `fixExamRoomsPhase` (Int! = Anzahl) / `unfixExamRoomsPhase` (Boolean!, lässt manuelles Locked unangetastet) via /api-Proxies. Setzt Planning-State `exahmSebPlanned`/`exahmSebFixed` (Phase 1). `PlanEntry.phaseFixed` (Boolean!) unterscheidet in der Plan-Ansicht die Raumphasen-Fixierung (🏗️) vom manuellen Locked (🔒) — beide unabhängig in `SlotExam.svelte`; Grid-Datenquelle ist `/api/examsInSlot` (dort + im /plan/exams-Load abgefragt).
 
 **Phase B — /plan/exams/generate** (Nav „✨ Terminplan generieren"): der eigentliche Terminplan; respektiert PhaseFixed automatisch.
 

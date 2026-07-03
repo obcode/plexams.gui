@@ -4,6 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import { invalidateAll } from '$app/navigation';
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
+	import WriteButton from '$lib/WriteButton.svelte';
 
 	export let data;
 
@@ -292,6 +293,39 @@
 		if (wsClient) wsClient.dispose();
 	});
 
+	// --- Terminplan zurücksetzen (destruktiv) ---
+	let resetBusy = false;
+	let resetInfo = '';
+	let resetError = '';
+	async function resetSchedule() {
+		if (resetBusy || examsBlocked) return;
+		if (
+			!confirm(
+				'Generierten Terminplan zurücksetzen? Manuell gesperrte, externe und fixierte EXaHM/SEB-Prüfungen bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+			)
+		)
+			return;
+		resetBusy = true;
+		resetInfo = '';
+		resetError = '';
+		try {
+			const res = await fetch('/api/resetExamSchedule', { method: 'POST' });
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				resetError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			resetInfo = `${fmt(d.resetExamSchedule)} Prüfung(en) aus dem Plan entfernt.`;
+			examReport = null;
+			conflictDiff = null;
+			await invalidateAll();
+		} catch (e) {
+			resetError = e instanceof Error ? e.message : String(e);
+		} finally {
+			resetBusy = false;
+		}
+	}
+
 	/** @param {number} n */
 	const fmt = (n) => (n ?? 0).toLocaleString('de-DE');
 
@@ -416,6 +450,30 @@
 			Probelauf schreibt nichts. Derselbe Seed erzeugt bei unveränderten Daten &amp; Bewertungen
 			denselben Plan — nach einem guten Probelauf einfach mit demselben Seed „schreiben".
 		</span>
+	</div>
+
+	<!-- Zurücksetzen (destruktiv) -->
+	<div class="flex flex-col gap-1 border-t border-base-300 pt-2">
+		<div class="flex flex-wrap items-center gap-3">
+			<WriteButton
+				class="btn btn-outline btn-error btn-sm"
+				disabled={examsBlocked || resetBusy}
+				title={examsBlocked ? 'Plan veröffentlicht — Zurücksetzen gesperrt' : ''}
+				on:click={resetSchedule}
+			>
+				{resetBusy ? 'Setzt zurück…' : 'Generierten Terminplan zurücksetzen'}
+			</WriteButton>
+			<span class="text-xs text-base-content/50">
+				Entfernt die generierten Termine. Manuell gesperrte, externe und fixierte EXaHM/SEB-Prüfungen
+				bleiben — für einen vollständigen Reset vorher auf der Phase-A-Seite „Fixierung aufheben".
+			</span>
+		</div>
+		{#if resetInfo}
+			<div class="alert alert-success py-2 text-sm"><span>{resetInfo}</span></div>
+		{/if}
+		{#if resetError}
+			<div class="alert alert-error py-2 text-sm"><span>{resetError}</span></div>
+		{/if}
 	</div>
 
 	{#if errorMsg}
