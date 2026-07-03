@@ -270,6 +270,11 @@
 	let ancodeToShow = exam.zpaExam.faculty
 		? `${exam.zpaExam.faculty}: ${exam.zpaExam.primussAncodes?.[0]?.ancode ?? exam.zpaExam.ancode}`
 		: exam.zpaExam.ancode.toString();
+
+	// Planende FK bei „nicht von mir geplant": Constraint-Feld zuerst, sonst die
+	// Fakultät der Prüfung (MUC.DAI/andere FK). Rein numerisch → „FK"-Präfix.
+	const rawNotMeFk = exam.constraints?.notPlannedByMeInFK || exam.zpaExam.faculty || '';
+	const notMeFk = /^\d+$/.test(rawNotMeFk) ? `FK${rawNotMeFk}` : rawNotMeFk;
 </script>
 
 {#if show}
@@ -386,9 +391,7 @@
 				{/if}
 				{#if exam.constraints && exam.constraints.notPlannedByMe}
 					<span class="badge badge-outline badge-sm">
-						nicht von mir geplant{exam.constraints.notPlannedByMeInFK
-							? ` · ${exam.constraints.notPlannedByMeInFK}`
-							: ''}
+						nicht von mir geplant{notMeFk ? ` · ${notMeFk}` : ''}
 					</span>
 				{/if}
 			</div>
