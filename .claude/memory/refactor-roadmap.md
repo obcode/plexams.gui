@@ -29,7 +29,7 @@ Großer Architektur-Refactor der über Jahre gewachsenen, kaum refactorten Codeb
 
 **OFFENE BLÖCKE:**
 
-1. **Event-Migration (der harte Kern):** Komponenten mit `createEventDispatcher`/`on:` (~63 Dateien) → Callback-Props (`onsave={…}`), Kind+Eltern koordiniert. ACHTUNG `WriteButton` (Legacy, `on:click`-Forwarding + `$$restProps`) wird breit genutzt — Konsumenten können ihm `onclick={…}` via restProps geben, aber vor Rollout verifizieren. Einfachster Erstfall: `exam/ExternalExamRow` (1 dispatch, Elternteil `/plan/external`).
+1. **Event-Migration GESTARTET (der harte Kern):** Muster etabliert an `exam/ExternalExamRow`(+`/plan/external`) und `nta/NtaTR`(+`/nta/all`). Rezept: Kind `createEventDispatcher`+`dispatch('x',v)` → Callback-Prop `onx?.(v)`; native `on:click/on:change` → `onclick/onchange`; Elternteil `on:x={h}` → `onx={h}`, Handler nimmt Wert direkt (kein `e.detail`). **`WriteButton` (bleibt Legacy) nimmt `onclick={fn}` via `$$restProps`-Spread — funktioniert, verifiziert.** Noch ~61 Dispatcher/on:-Dateien; einfachste zuerst (wenige Eltern). Endschalter `compilerOptions.runes: true` ganz zuletzt.
 2. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `plan/external`.
 3. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
 4. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
