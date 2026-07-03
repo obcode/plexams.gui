@@ -148,11 +148,28 @@ export async function load({ params }) {
 					ancode
 					module
 					mainExamer
+					mainExamerID
 					duration
 					isRepeaterExam
 				}
 				studentRegsCount
 				maxDuration
+				constraints {
+					notPlannedByMe
+					online
+					roomConstraints {
+						exahm
+						seb
+					}
+				}
+				primussExams {
+					exam {
+						program
+					}
+					studentRegs {
+						mtknr
+					}
+				}
 				planEntry {
 					dayNumber
 					slotNumber

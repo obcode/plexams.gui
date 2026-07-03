@@ -302,9 +302,41 @@
 	const hhmm = (min) =>
 		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
+	// Filter der geplanten Prüfungen für die Zeit-Ansicht. Alle Toggle-Variablen
+	// als Parameter, damit die reaktive Anweisung sie trackt.
+	/**
+	 * @param {any[]} list @param {boolean} onlyMine @param {string} prog
+	 * @param {string|number} examerID @param {string|number} anc
+	 * @param {boolean} onlyOnline @param {boolean} onlyExahm
+	 */
+	function filterPlanned(list, onlyMine, prog, examerID, anc, onlyOnline, onlyExahm) {
+		return (list ?? []).filter((/** @type {any} */ e) => {
+			const c = e.constraints;
+			if (onlyMine && c?.notPlannedByMe) return false;
+			const progs = (e.primussExams ?? [])
+				.filter((/** @type {any} */ p) => (p.studentRegs?.length ?? 0) > 0)
+				.map((/** @type {any} */ p) => p.exam.program);
+			let show = prog === 'all' ? true : progs.includes(prog);
+			if (examerID !== 'all') show = show && e.zpaExam.mainExamerID == examerID;
+			if (anc !== '0') show = show && e.ancode == anc;
+			if (onlyOnline) show = !!c?.online;
+			if (onlyExahm) show = !!(c?.roomConstraints?.exahm || c?.roomConstraints?.seb);
+			return show;
+		});
+	}
+	$: plannedFiltered = filterPlanned(
+		data.plannedExams,
+		onlyPlannedByMe,
+		showExam,
+		showExamerID,
+		showAncode,
+		showOnlyOnline,
+		showOnlyExahm
+	);
+
 	$: timeCal = (() => {
 		const items = [];
-		for (const e of data.plannedExams ?? []) {
+		for (const e of plannedFiltered) {
 			const iso = e.planEntry?.starttime;
 			const dt = dateObj(iso);
 			const startMin = minutesOfDay(iso);
