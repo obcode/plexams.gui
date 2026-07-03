@@ -21,14 +21,11 @@ jobs:
           cache: npm
       - run: npm clean-install
 
-      # svelte-kit sync + Typprüfung. Aktuell NICHT blockierend (Baseline > 0);
-      # sobald `npm run check` fehlerfrei ist, continue-on-error entfernen →
-      # dann ist die Typ-Baseline scharf und darf nie wieder steigen.
-      - name: check (informativ)
+      # Harte Gates (svelte-check ist seit 2026-07 fehlerfrei → blockierend;
+      # svelte-check endet mit Exit 0 bei reinen Warnungen, nur Fehler brechen):
+      - name: check (svelte-check, blockierend)
         run: npm run check
-        continue-on-error: true
 
-      # Harte Gates:
       - name: unit tests
         run: npm test
       - name: build
