@@ -1,15 +1,23 @@
-<script>
-	export let day;
-	export let selectedInvigilator;
+<script lang="ts">
 	import InvigilatorForDay from '$lib/invigilator/InvigilatorForDay.svelte';
 	import { onMount } from 'svelte';
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
 
-	let want = [];
-	let can = [];
+	let {
+		day,
+		selectedInvigilator,
+		onselected,
+		onunselected
+	}: {
+		day: any;
+		selectedInvigilator: any;
+		onselected?: (detail: any) => void;
+		onunselected?: (detail: any) => void;
+	} = $props();
 
-	async function fetchInviglatorsForDay(day) {
+	let want = $state<any[]>([]);
+	let can = $state<any[]>([]);
+
+	async function fetchInviglatorsForDay(day: any) {
 		const response = await fetch('/api/plan/invigilatorsForDay', {
 			method: 'POST',
 			body: JSON.stringify({ day }),
@@ -19,20 +27,13 @@
 		});
 		let data = await response.json();
 		want = data.invigilatorsForDay.want;
-		can = data.invigilatorsForDay.can.sort(function (invig1, invig2) {
+		can = data.invigilatorsForDay.can.sort(function (invig1: any, invig2: any) {
 			return (
 				invig2.todos.totalMinutes -
 				invig2.todos.doingMinutes -
 				(invig1.todos.totalMinutes - invig1.todos.doingMinutes)
 			);
 		});
-	}
-
-	function forwardSelected(event) {
-		dispatch('selected', event.detail);
-	}
-	function forwardUnselected(event) {
-		dispatch('unselected', event.detail);
 	}
 
 	onMount(() => {
@@ -50,12 +51,7 @@
 		<ul>
 			{#each want as invigilator}
 				<li>
-					<InvigilatorForDay
-						{invigilator}
-						{selectedInvigilator}
-						on:selected={forwardSelected}
-						on:unselected={forwardUnselected}
-					/>
+					<InvigilatorForDay {invigilator} {selectedInvigilator} {onselected} {onunselected} />
 				</li>
 			{/each}
 		</ul>
@@ -66,12 +62,7 @@
 		<ul>
 			{#each can as invigilator}
 				<li>
-					<InvigilatorForDay
-						{invigilator}
-						{selectedInvigilator}
-						on:selected={forwardSelected}
-						on:unselected={forwardUnselected}
-					/>
+					<InvigilatorForDay {invigilator} {selectedInvigilator} {onselected} {onunselected} />
 				</li>
 			{/each}
 		</ul>

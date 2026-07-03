@@ -8,12 +8,13 @@
 	let selectedInvigilator = 0;
 	let details = true;
 
-	async function handleSelect(event) {
+	/** @param {{ selectedInvigilator: any }} detail */
+	async function handleSelect(detail) {
 		selectedInvigilator = 0;
-		selectedInvigilator = event.detail.selectedInvigilator;
+		selectedInvigilator = detail.selectedInvigilator;
 	}
 
-	async function handleUnselect(event) {
+	async function handleUnselect() {
 		selectedInvigilator = 0;
 	}
 </script>
@@ -58,8 +59,8 @@
 			<InvigilatorsForDay
 				day={data.day}
 				{selectedInvigilator}
-				on:selected={handleSelect}
-				on:unselected={handleUnselect}
+				onselected={handleSelect}
+				onunselected={handleUnselect}
 			/>
 		</div>
 		<div class="col-span-10">

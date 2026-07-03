@@ -1,54 +1,39 @@
-<script>
-	export let invigilator;
-	export let selectedInvigilator;
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+<script lang="ts">
+	let {
+		invigilator,
+		selectedInvigilator,
+		onselected,
+		onunselected
+	}: {
+		invigilator: any;
+		selectedInvigilator: any;
+		onselected?: (detail: { selectedInvigilator: any }) => void;
+		onunselected?: (detail: { selectedInvigilator: any }) => void;
+	} = $props();
 
-	let stillTodo = invigilator.todos.totalMinutes - invigilator.todos.doingMinutes;
+	const stillTodo = $derived(invigilator.todos.totalMinutes - invigilator.todos.doingMinutes);
 
-	function select(id) {
+	function select(id: any) {
 		if (invigilator.teacher.id != selectedInvigilator) {
-			dispatch('selected', {
-				selectedInvigilator: id
-			});
+			onselected?.({ selectedInvigilator: id });
 		} else {
-			dispatch('unselected', {
-				selectedInvigilator: id
-			});
+			onunselected?.({ selectedInvigilator: id });
 		}
 	}
 
-	let selected = false;
-
-	let bg = 'bg-green-300';
-	$: {
-		if (invigilator.teacher.id == selectedInvigilator) bg = 'bg-blue-400';
-		else if (invigilator.todos.enough) {
-			bg = 'bg-red-300';
-		} else if (stillTodo <= 0) {
-			bg = 'bg-yellow-300';
-		} else {
-			bg = 'bg-green-300';
-		}
-	}
-
-	function bg2() {
-		if (selected) return 'bg-blue-400';
-		if (invigilator.todos.enough) {
-			return 'bg-red-300';
-		}
-		if (stillTodo <= 0) {
-			return 'bg-yellow-300';
-		}
+	const bg = $derived.by(() => {
+		if (invigilator.teacher.id == selectedInvigilator) return 'bg-blue-400';
+		if (invigilator.todos.enough) return 'bg-red-300';
+		if (stillTodo <= 0) return 'bg-yellow-300';
 		return 'bg-green-300';
-	}
+	});
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="w-full border-solid border-2 border-black {bg} mb-2 p-2 rounded-lg shadow-xl text-center"
-	on:click={select(invigilator.teacher.id)}
+	onclick={() => select(invigilator.teacher.id)}
 >
 	<div class="flex justify-between">
 		{invigilator.teacher.id}. {invigilator.teacher.shortname}: offen
