@@ -1,15 +1,14 @@
-<script>
-	export let group;
-	export let count;
+<script lang="ts">
+	let { group, count }: { group: any; count: number } = $props();
 
-	function bg(notPlannedByMe) {
+	function bg(notPlannedByMe: boolean) {
 		if (notPlannedByMe) {
 			return 'bg-red-200';
 		}
 		return '';
 	}
 
-	function regs(exam) {
+	function regs(exam: any) {
 		let sum = 0;
 		for (const reg of exam.studentRegs) {
 			sum += reg.studentRegs.length;

@@ -1,23 +1,34 @@
-<script>
-	/** @type {number} */
-	export let day;
-	/** @type {number} */
-	export let time;
-	export let showOnlyExamsWithNTAs;
-	export let details;
-	export let showRooms;
-	export let dimOthers = false;
-	export let showOnlyWithoutRoom = false;
-	export let highlightNotPrePlanned = false;
-	/** fix vorgeplante Platzzahlen je „ancode|raum|mtknr" @type {Record<string, number>} */
-	export let prePlannedSeats = {};
-	/** Ancodes mit nicht zugeordneten Studierenden @type {Set<number>} */
-	export let unplacedAncodes = new Set();
+<script lang="ts">
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
 
-	/** @type {any[]} */
-	let examsInSlot = [];
+	let {
+		day,
+		time,
+		showOnlyExamsWithNTAs,
+		details,
+		showRooms,
+		dimOthers = false,
+		showOnlyWithoutRoom = false,
+		highlightNotPrePlanned = false,
+		// fix vorgeplante Platzzahlen je „ancode|raum|mtknr"
+		prePlannedSeats = {},
+		// Ancodes mit nicht zugeordneten Studierenden
+		unplacedAncodes = new Set()
+	}: {
+		day: number;
+		time: number;
+		showOnlyExamsWithNTAs: boolean;
+		details: boolean;
+		showRooms: boolean;
+		dimOthers?: boolean;
+		showOnlyWithoutRoom?: boolean;
+		highlightNotPrePlanned?: boolean;
+		prePlannedSeats?: Record<string, number>;
+		unplacedAncodes?: Set<number>;
+	} = $props();
+
+	let examsInSlot = $state<any[]>([]);
 
 	async function fetchExamsInSlot() {
 		const response = await fetch('/api/examsInSlot', {

@@ -1,32 +1,27 @@
-<script>
-	export let roomsWithInvigilators;
-	export let details;
-	export let selectedInvigilator;
+<script lang="ts">
+	let {
+		roomsWithInvigilators,
+		details,
+		selectedInvigilator
+	}: { roomsWithInvigilators: any; details: boolean; selectedInvigilator: any } = $props();
 
-	let teacherIds = new Set();
-	if (roomsWithInvigilators.invigilator) {
-		teacherIds.add(roomsWithInvigilators.invigilator.id);
-	}
-	for (const roomAndExam of roomsWithInvigilators.roomAndExams) {
-		teacherIds.add(roomAndExam.exam.mainExamerID);
-	}
-
-	let bgRoom = 'bg-red-400';
-	$: {
-		if (teacherIds.has(selectedInvigilator)) {
-			bgRoom = 'bg-blue-400';
-		} else {
-			bgRoom = 'bg-red-400';
-			if (roomsWithInvigilators) {
-				if (roomsWithInvigilators.invigilator) {
-					bgRoom = 'bg-green-300';
-				}
-				if (roomsWithInvigilators.name == 'No Room') {
-					bgRoom = 'bg-cyan-100';
-				}
-			}
+	const teacherIds = $derived.by(() => {
+		const ids = new Set<number>();
+		if (roomsWithInvigilators.invigilator) ids.add(roomsWithInvigilators.invigilator.id);
+		for (const roomAndExam of roomsWithInvigilators.roomAndExams) {
+			ids.add(roomAndExam.exam.mainExamerID);
 		}
-	}
+		return ids;
+	});
+
+	const bgRoom = $derived.by(() => {
+		if (teacherIds.has(selectedInvigilator)) return 'bg-blue-400';
+		if (roomsWithInvigilators) {
+			if (roomsWithInvigilators.name == 'No Room') return 'bg-cyan-100';
+			if (roomsWithInvigilators.invigilator) return 'bg-green-300';
+		}
+		return 'bg-red-400';
+	});
 </script>
 
 <div class="card card-compact lg:card-side {bgRoom} shadow-xl m-2 border-2 border-black rounded-lg">

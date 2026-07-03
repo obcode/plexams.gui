@@ -1,17 +1,14 @@
-<script>
-	export let plannedExam;
-	export let showOnlyExamsWithNTAs;
-	export let details;
+<script lang="ts">
+	let {
+		plannedExam,
+		showOnlyExamsWithNTAs,
+		details
+	}: { plannedExam: any; showOnlyExamsWithNTAs: boolean; details: boolean } = $props();
 
-	let exam = plannedExam.exam;
-	let ntas = plannedExam.nta;
+	const exam = $derived(plannedExam.exam);
+	const ntas = $derived(plannedExam.nta);
 
-	let show = true;
-	$: if (showOnlyExamsWithNTAs) {
-		show = ntas && ntas.length > 0;
-	} else {
-		show = true;
-	}
+	const show = $derived(showOnlyExamsWithNTAs ? !!(ntas && ntas.length > 0) : true);
 
 	function bg() {
 		if (ntas && ntas.length > 0) return 'bg-yellow-200';
