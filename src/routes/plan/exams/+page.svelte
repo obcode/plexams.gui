@@ -3,7 +3,6 @@
 	import Slot from '$lib/slot/Slot.svelte';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
 	import { onMount } from 'svelte';
 
 	let examsWithoutSlot = data.examsWithoutSlot ?? [];
@@ -442,10 +441,6 @@
 					on:click={() => (view = 'kalender')}>🗓 Slots</button
 				>
 				<button
-					class="btn join-item btn-sm {view === 'raster' ? 'btn-primary' : 'btn-ghost'}"
-					on:click={() => (view = 'raster')}>▦ Raster</button
-				>
-				<button
 					class="btn join-item btn-sm {view === 'zeit' ? 'btn-primary' : 'btn-ghost'}"
 					on:click={() => (view = 'zeit')}>⏱ Zeit</button
 				>
@@ -597,35 +592,6 @@
 						</div>
 					</div>
 				{/each}
-			</div>
-		{:else if view === 'raster'}
-			<div class="overflow-x-auto rounded-lg border border-base-300">
-				<table class="table table-sm w-full">
-					<thead>
-						<tr>
-							<th class="w-16 bg-base-200"></th>
-							{#each data.semesterConfig.days as day}
-								<th class="bg-base-200 text-center">
-									<div>#{day.number}</div>
-									<div class="text-xs font-normal text-base-content/60">{mkDateShort(day.date)}</div>
-								</th>
-							{/each}
-						</tr>
-					</thead>
-					<tbody>
-						{#each data.semesterConfig.starttimes as time}
-							<tr>
-								<td class="bg-base-200 text-center align-top text-xs tabular-nums">
-									<div class="font-semibold">{time.start}</div>
-									<div class="text-base-content/50">#{time.number}</div>
-								</td>
-								{#each data.semesterConfig.days as day}
-									<td class="align-top">{@render slotCell(day, time)}</td>
-								{/each}
-							</tr>
-						{/each}
-					</tbody>
-				</table>
 			</div>
 		{:else}
 			{#if !timeCal.weekList.length}
