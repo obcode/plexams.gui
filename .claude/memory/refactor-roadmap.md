@@ -25,11 +25,12 @@ Großer Architektur-Refactor der über Jahre gewachsenen, kaum refactorten Codeb
 - **codegen repariert** (Schema war korrupt) — läuft offline gegen `schema.graphql`; `lib/gql/{fragments.js,types.ts,__generated__}`
 - **Phase-0-Infra:** `.github/workflows/quality.yml` (test+build hart, check informativ via continue-on-error) + `.github/dependabot.yml`
 - **Gesamte `/api`-Schicht → TypeScript** (104 Handler, `RequestHandler`-Typ; `request<any>` wo nötig). Referenz-Load `plan/external/+page.server.ts` (echtes QueryResult + exportierter `OtherFkItem`).
-- **Runes-Migration gestartet:** 6 Blatt-Komponenten auf Runes+TS (`slot/{RoomNamesInSlot,SlotsMiniMap}`, `config/NoSemesterConfig`, `invigilator/InvigilationDayPlanning`, `room/RoomRequestPlanned`, `email/EmailCard`). Stand check: **134/8**.
+- **Runes-Migration:** 12 event-freie Blatt-Komponenten auf Runes+TS (slot/{RoomNamesInSlot,SlotsMiniMap}, config/NoSemesterConfig, invigilator/{InvigilationDayPlanning,Room,InvigilationSlotPlanning}, room/RoomRequestPlanned, email/EmailCard, examGroups/ExamGroupConflictCard, slot/ExamsForRoomPlanning, exam/ExamWithNTAsCard, zpa/SyncLog). `$:` → `$derived[.by]`, State → `$state`. Stand check: **124/8**. Nur noch 2 große event-freie Blätter (invigilator/InvigilatorTR 247z, InvigilatorDays 328z).
 
 **OFFENE BLÖCKE:**
 
-1. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `plan/external`.
+1. **Event-Migration (der harte Kern):** Komponenten mit `createEventDispatcher`/`on:` (~63 Dateien) → Callback-Props (`onsave={…}`), Kind+Eltern koordiniert. ACHTUNG `WriteButton` (Legacy, `on:click`-Forwarding + `$$restProps`) wird breit genutzt — Konsumenten können ihm `onclick={…}` via restProps geben, aber vor Rollout verifizieren. Einfachster Erstfall: `exam/ExternalExamRow` (1 dispatch, Elternteil `/plan/external`).
+2. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `plan/external`.
 2. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
 3. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
 4. **17 übersprungene `/api`-Proxies** (Sonder-Fehlerbehandlung) an gqlProxy angleichen.
