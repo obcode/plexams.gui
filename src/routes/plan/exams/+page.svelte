@@ -42,7 +42,7 @@
 	let showOnlyEXaHMRooms = $state(false);
 	let showMucdaiSlots = $state(false);
 
-	let allProgramsInPlan = $state([]);
+	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
 	async function getPrograms() {
 		const response = await fetch('/api/allProgramsInPlan', {
 			method: 'GET'
@@ -50,7 +50,7 @@
 
 		allProgramsInPlan = await response.json();
 	}
-	let allAncodes = $state([]);
+	let allAncodes = $state(/** @type {any[]} */ ([]));
 	async function getAncodes() {
 		const response = await fetch('/api/ancodesInPlan', {
 			method: 'GET'
@@ -58,7 +58,7 @@
 
 		allAncodes = await response.json();
 	}
-	let allExamer = $state([]);
+	let allExamer = $state(/** @type {any[]} */ ([]));
 	async function getExamer() {
 		const response = await fetch('/api/examerInPlan', {
 			method: 'GET'
@@ -67,40 +67,40 @@
 		allExamer = await response.json();
 	}
 
-	let slotsStatus = $state(new Map());
+	let slotsStatus = $state(/** @type {any} */ (new Map()));
 
-	function initSlotsStatus(status) {
+	function initSlotsStatus(/** @type {any} */ status) {
 		for (let day of data.semesterConfig?.days ?? []) {
 			for (let time of data.semesterConfig?.starttimes ?? []) {
-				slotsStatus[[day.number, time.number]] = status;
+				slotsStatus[`${day.number},${time.number}`] = status;
 			}
 		}
 	}
 
-	let refresh = $state(new Map());
+	let refresh = $state(/** @type {any} */ (new Map()));
 
 	function initRefresh() {
 		for (let day of data.semesterConfig?.days ?? []) {
 			for (let time of data.semesterConfig?.starttimes ?? []) {
-				refresh[[day.number, time.number]] = false;
+				refresh[`${day.number},${time.number}`] = false;
 			}
 		}
 	}
 
-	function statusColor(status) {
+	function statusColor(/** @type {any} */ status) {
 		if (status == 'allowed') return 'bg-success/20';
 		if (status == 'awkward') return 'bg-warning/30';
 		if (status == 'forbidden') return 'bg-error/15';
 		return '';
 	}
 
-	let mucdaiSlot = new Map();
+	let mucdaiSlot = /** @type {any} */ (new Map());
 
 	for (const slot of data.semesterConfig?.mucDaiSlots ?? []) {
-		mucdaiSlot[[slot.dayNumber, slot.slotNumber]] = 'rounded ring-2 ring-error/70';
+		mucdaiSlot[`${slot.dayNumber},${slot.slotNumber}`] = 'rounded ring-2 ring-error/70';
 	}
 
-	let mucdaiSlotToShow = $state(new Map());
+	let mucdaiSlotToShow = $state(/** @type {any} */ (new Map()));
 
 	function handleMucdaiSlots() {
 		if (showMucdaiSlots) {
@@ -117,28 +117,28 @@
 	});
 
 	let selectedExam = $state(-1);
-	let conflictingAncodes = $state([]);
+	let conflictingAncodes = $state(/** @type {any[]} */ ([]));
 	let selectedExamerID = $state(-1);
 
-	async function handleSelect(event) {
+	async function handleSelect(/** @type {any} */ event) {
 		initSlotsStatus('forbidden');
 		selectedExam = event.detail.ancode;
 		selectedExamerID = event.detail.mainExamerID;
 		let allowedSlots = await fetchAllowedSlots(event.detail.ancode);
 		for (let slot of allowedSlots) {
-			slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'allowed';
+			slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'allowed';
 		}
 		let akwardSlots = await fetchAwkwardSlots(event.detail.ancode);
 		for (let slot of akwardSlots) {
-			if (slotsStatus[[slot.dayNumber, slot.slotNumber]] == 'allowed') {
-				slotsStatus[[slot.dayNumber, slot.slotNumber]] = 'awkward';
+			if (slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] == 'allowed') {
+				slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'awkward';
 			}
 		}
 		let res = await fetchconflictingAncodes(event.detail.ancode);
-		conflictingAncodes = res.map((conflict) => conflict.ancode);
+		conflictingAncodes = res.map((/** @type {any} */ conflict) => conflict.ancode);
 	}
 
-	async function handleUnselect(event) {
+	async function handleUnselect(/** @type {any} */ event) {
 		initSlotsStatus('unknown');
 		selectedExam = -1;
 		selectedExamerID = -1;
@@ -150,7 +150,7 @@
 	async function handleAddToSlot() {}
 	async function handleRmFromSlot() {}
 
-	async function fetchAllowedSlots(ancode) {
+	async function fetchAllowedSlots(/** @type {any} */ ancode) {
 		const response = await fetch('/api/allowedSlots', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
@@ -162,7 +162,7 @@
 		return data.allowedSlots;
 	}
 
-	async function fetchAwkwardSlots(ancode) {
+	async function fetchAwkwardSlots(/** @type {any} */ ancode) {
 		const response = await fetch('/api/awkwardSlots', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
@@ -174,7 +174,7 @@
 		return data.awkwardSlots;
 	}
 
-	async function fetchconflictingAncodes(ancode) {
+	async function fetchconflictingAncodes(/** @type {any} */ ancode) {
 		const response = await fetch('/api/conflictingAncodes', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
@@ -186,7 +186,7 @@
 		return data.conflictingAncodes;
 	}
 
-	function globalForbiddenSlot(day, time) {
+	function globalForbiddenSlot(/** @type {any} */ day, /** @type {any} */ time) {
 		const key = `${day},${time}`;
 		if (data.globalSlotStatus.get(key) === 'forbidden') {
 			return 'bg-base-300';
@@ -344,12 +344,12 @@
 		)
 		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode));
 
-	function forbiddenSlot(day, time) {
+	function forbiddenSlot(/** @type {any} */ day, /** @type {any} */ time) {
 		const key = `${day},${time}`;
 		return data.globalSlotStatus.get(key) === 'forbidden';
 	}
 
-	function unplannedExams(program) {
+	function unplannedExams(/** @type {any} */ program) {
 		let count = 0;
 		for (const exam of examsWithoutSlot) {
 			if (exam.constraints && exam.constraints.notPlannedByMe) {
@@ -357,7 +357,7 @@
 			}
 			if (
 				exam.primussExams.some(
-					(primussExam) =>
+					(/** @type {any} */ primussExam) =>
 						primussExam.exam.program === program && primussExam.studentRegs.length > 0
 				)
 			) {
@@ -446,10 +446,10 @@
 		<!-- Slot-Zelle: in beiden Ansichten identisch (eigenes Fetching + Events) -->
 		{#snippet slotCell(/** @type {any} */ day, /** @type {any} */ time)}
 			<div
-				class="h-full rounded {statusColor(slotsStatus[[day.number, time.number]])} {globalForbiddenSlot(
+				class="h-full rounded {statusColor(slotsStatus[`${day.number},${time.number}`])} {globalForbiddenSlot(
 					day.number,
 					time.number
-				) ?? ''} {mucdaiSlotToShow[[day.number, time.number]] ?? ''}"
+				) ?? ''} {mucdaiSlotToShow[`${day.number},${time.number}`] ?? ''}"
 			>
 				<Slot
 					{day}
@@ -473,7 +473,7 @@
 					{showOnlySEB}
 					{showOnlyEXaHMRooms}
 					{conflictingAncodes}
-					refresh={refresh[[day.number, time.number]]}
+					refresh={refresh[`${day.number},${time.number}`]}
 					on:selected={handleSelect}
 					on:unselected={handleUnselect}
 					on:addToSlot={handleAddToSlot}
@@ -498,7 +498,7 @@
 												<div>{WD2[wd]}</div>
 												{#if d}
 													<div class="text-xs font-normal text-base-content/60">
-														#{d.number} · {ddmm(dateObj(d.date))}
+														#{d.number} · {ddmm(/** @type {Date} */ (dateObj(d.date)))}
 													</div>
 												{/if}
 											</th>
@@ -590,7 +590,6 @@
 			{selectedExam}
 			{selectedExamerID}
 			{onlyPlannedByMe}
-			{onlyConflicts}
 			{details}
 			{moveable}
 			{conflictingAncodes}
