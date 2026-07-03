@@ -103,8 +103,11 @@
 	</td>
 	<td class="align-top">
 		<div class="font-medium">{exam.module}</div>
-		{#if (exam.extra ?? []).length || exam.isRepeaterExam}
+		{#if (exam.extra ?? []).length || exam.isRepeaterExam || exam.sourceLabel}
 			<div class="flex flex-wrap items-center gap-1">
+				{#if exam.sourceLabel}
+					<span class="badge badge-outline badge-xs" title="Quelle">{exam.sourceLabel}</span>
+				{/if}
 				{#each exam.extra ?? [] as x}<span class="badge badge-ghost badge-xs">{x}</span>{/each}
 				{#if exam.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
 			</div>

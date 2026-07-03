@@ -2,9 +2,13 @@ import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
 
-// Termine für extern geplante Prüfungen: von anderen FKs geplante MUC.DAI-
-// Prüfungen sowie ZPA-Prüfungen mit dem Constraint notPlannedByMe. Beide werden
-// über setExternalExamTime(ancode) terminiert.
+// „Prüfungen anderer FKs": Termine für Prüfungen, die eine andere Fakultät plant.
+// Zwei Quellen, nach FK zusammengeführt:
+//   (a) ZPA-Prüfungen mit Constraint notPlannedByMe → FK = notPlannedByMeInFK
+//       (Fallback: Fakultät des/der Prüfenden)
+//   (b) MUC.DAI-Prüfungen anderer FKs → FK = plannedBy (≠ FK07)
+// Beide werden über setExternalExamTime(ancode) terminiert; außerhalb des
+// Zeitraums liegende Prüfungen behalten nur eine Zeit (externalTime), keinen Slot.
 export async function load() {
 	try {
 		const data = await request(
@@ -39,6 +43,7 @@ export async function load() {
 						}
 						constraints {
 							notPlannedByMe
+							notPlannedByMeInFK
 						}
 						planEntry {
 							externalTime
@@ -54,31 +59,52 @@ export async function load() {
 			`
 		);
 
-		// FK je Prüfenden-ID (für den FK-Badge der ZPA-Prüfungen)
+		// FK je Prüfenden-ID (Fallback für ZPA-Prüfungen ohne notPlannedByMeInFK)
 		/** @type {Record<number, string>} */
 		const fkById = {};
 		for (const t of data.teachers ?? []) fkById[t.id] = t.fk;
 
-		// MUC.DAI: nur von anderen FKs geplante (externe) Prüfungen
-		const mucdai = (data.mucdaiExams ?? []).filter(
-			(/** @type {any} */ e) => e.plannedBy !== 'FK07'
-		);
+		/** @type {any[]} */
+		const items = [];
 
-		// ZPA-Prüfungen mit notPlannedByMe (werden von anderen geplant)
-		const zpa = (data.zpaExamsToPlanWithConstraints ?? [])
-			.filter((/** @type {any} */ e) => e.constraints?.notPlannedByMe)
-			.map((/** @type {any} */ e) => ({
+		// (a) ZPA notPlannedByMe
+		for (const e of data.zpaExamsToPlanWithConstraints ?? []) {
+			if (!e.constraints?.notPlannedByMe) continue;
+			const fk = e.constraints?.notPlannedByMeInFK || fkById[e.zpaExam.mainExamerID] || '';
+			items.push({
+				source: 'zpa',
 				ancode: e.zpaExam.ancode,
 				module: e.zpaExam.module,
 				mainExamer: e.zpaExam.mainExamer,
 				examType: e.zpaExam.examTypeFull || e.zpaExam.examType,
+				isRepeaterExam: false,
+				fk,
+				program: null,
 				groups: e.zpaExam.groups ?? [],
-				fk: fkById[e.zpaExam.mainExamerID] ?? '',
 				planEntry: e.planEntry
-			}));
+			});
+		}
 
-		return { mucdai, zpa, loadError: '' };
+		// (b) MUC.DAI anderer FKs (FK07 = wir selbst)
+		for (const e of data.mucdaiExams ?? []) {
+			if (e.plannedBy === 'FK07') continue;
+			items.push({
+				source: 'mucdai',
+				ancode: e.ancode,
+				primussAncode: e.primussAncode,
+				module: e.module,
+				mainExamer: e.mainExamer,
+				examType: e.examType,
+				isRepeaterExam: !!e.isRepeaterExam,
+				fk: e.plannedBy || '',
+				program: e.program ?? null,
+				groups: [],
+				planEntry: e.planEntry
+			});
+		}
+
+		return { items, loadError: '' };
 	} catch (e) {
-		return { mucdai: [], zpa: [], loadError: gqlErrorMessage(e) };
+		return { items: [], loadError: gqlErrorMessage(e) };
 	}
 }
