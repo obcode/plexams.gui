@@ -31,8 +31,8 @@ Großer Architektur-Refactor der über Jahre gewachsenen, kaum refactorten Codeb
 
 1. **Event-Migration (der harte Kern):** Komponenten mit `createEventDispatcher`/`on:` (~63 Dateien) → Callback-Props (`onsave={…}`), Kind+Eltern koordiniert. ACHTUNG `WriteButton` (Legacy, `on:click`-Forwarding + `$$restProps`) wird breit genutzt — Konsumenten können ihm `onclick={…}` via restProps geben, aber vor Rollout verifizieren. Einfachster Erstfall: `exam/ExternalExamRow` (1 dispatch, Elternteil `/plan/external`).
 2. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `plan/external`.
-2. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
-3. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
-4. **17 übersprungene `/api`-Proxies** (Sonder-Fehlerbehandlung) an gqlProxy angleichen.
-5. **e2e-Smoke-Tests** (Playwright gegen gemockten GraphQL-Endpunkt).
-6. GraphQL-Fragmente nur wo Feld-Sets **exakt** identisch (constraints/zpaExam sind bewusst divergent).
+3. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
+4. **check → 0**, dann `continue-on-error` in quality.yml entfernen (Typ-Baseline scharf).
+5. **17 übersprungene `/api`-Proxies** (Sonder-Fehlerbehandlung) an gqlProxy angleichen.
+6. **e2e-Smoke-Tests** (Playwright gegen gemockten GraphQL-Endpunkt).
+7. GraphQL-Fragmente nur wo Feld-Sets **exakt** identisch (constraints/zpaExam sind bewusst divergent).

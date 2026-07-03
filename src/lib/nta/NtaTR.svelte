@@ -1,13 +1,13 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import { createEventDispatcher } from 'svelte';
 
-	/** @type {any} */
-	export let nta;
+	let {
+		nta,
+		ontoggle,
+		onedit
+	}: { nta: any; ontoggle?: (nta: any) => void; onedit?: (nta: any) => void } = $props();
 
-	const dispatch = createEventDispatcher();
-
-	$: maybeColor = nta.needsRoomAlone ? 'text-error' : '';
+	const maybeColor = $derived(nta.needsRoomAlone ? 'text-error' : '');
 </script>
 
 <tr class={nta.deactivated ? 'opacity-50' : ''}>
@@ -34,7 +34,7 @@
 				class="toggle toggle-sm toggle-success"
 				checked={!nta.deactivated}
 				disabled={$page.data?.readOnly}
-				on:change={() => dispatch('toggle', nta)}
+				onchange={() => ontoggle?.(nta)}
 			/>
 			<span class="text-xs {nta.deactivated ? 'text-error' : 'text-success'}">
 				{nta.deactivated ? 'inaktiv' : 'aktiv'}
@@ -42,6 +42,6 @@
 		</label>
 	</td>
 	<td>
-		<button class="btn btn-ghost btn-xs" on:click={() => dispatch('edit', nta)}>✎ Bearbeiten</button>
+		<button class="btn btn-ghost btn-xs" onclick={() => onedit?.(nta)}>✎ Bearbeiten</button>
 	</td>
 </tr>

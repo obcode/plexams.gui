@@ -43,9 +43,9 @@
 		editNta = null;
 		showModal = true;
 	}
-	/** @param {CustomEvent} e */
-	function openEdit(e) {
-		editNta = e.detail;
+	/** @param {any} nta */
+	function openEdit(nta) {
+		editNta = nta;
 		showModal = true;
 	}
 	async function onSaved() {
@@ -55,9 +55,8 @@
 
 	/** @type {string | null} */
 	let toggleError = null;
-	/** @param {CustomEvent} e */
-	async function onToggle(e) {
-		const nta = e.detail;
+	/** @param {any} nta */
+	async function onToggle(nta) {
 		toggleError = null;
 		try {
 			const res = await fetch('/api/setNTAActive', {
@@ -145,7 +144,7 @@
 				</thead>
 				<tbody>
 					{#each filteredNTAs as nta}
-						<NtaTr {nta} on:edit={openEdit} on:toggle={onToggle} />
+						<NtaTr {nta} onedit={openEdit} ontoggle={onToggle} />
 					{/each}
 				</tbody>
 			</table>
