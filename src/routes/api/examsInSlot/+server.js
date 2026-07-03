@@ -63,6 +63,7 @@ export async function POST({ request }) {
 				constraints {
 					ancode
 					notPlannedByMe
+					notPlannedByMeInFK
 					excludeDays
 					possibleDays
 					fixedDay

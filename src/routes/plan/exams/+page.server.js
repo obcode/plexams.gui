@@ -101,6 +101,7 @@ export async function load({ params }) {
 				constraints {
 					ancode
 					notPlannedByMe
+					notPlannedByMeInFK
 					excludeDays
 					possibleDays
 					fixedDay
@@ -161,6 +162,7 @@ export async function load({ params }) {
 				maxDuration
 				constraints {
 					notPlannedByMe
+					notPlannedByMeInFK
 					online
 					roomConstraints {
 						exahm

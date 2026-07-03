@@ -385,7 +385,11 @@
 					<span class="badge badge-warning badge-sm">sameSlot</span>
 				{/if}
 				{#if exam.constraints && exam.constraints.notPlannedByMe}
-					<span class="badge badge-outline badge-sm">nicht von mir geplant</span>
+					<span class="badge badge-outline badge-sm">
+						nicht von mir geplant{exam.constraints.notPlannedByMeInFK
+							? ` · ${exam.constraints.notPlannedByMeInFK}`
+							: ''}
+					</span>
 				{/if}
 			</div>
 		{/if}
