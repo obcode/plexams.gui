@@ -40,7 +40,7 @@
 	/** @type {{ html: string } | null} */
 	let current = $state(null);
 
-	/** @type {HTMLDivElement} */
+	/** @type {HTMLDivElement | undefined} */
 	let termEl = $state();
 	/** @type {any} */
 	let convert = null;

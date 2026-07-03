@@ -5,7 +5,7 @@
 
 	let { data } = $props();
 
-	/** @type {SemesterConfigForm} */
+	/** @type {SemesterConfigForm | undefined} */
 	let formComp = $state();
 	let saving = $state(false);
 	let errorMsg = $state('');
@@ -55,7 +55,7 @@
 			const res = await fetch('/api/setSemesterConfigInput', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ input: formComp.getInput() })
+				body: JSON.stringify({ input: formComp?.getInput() })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {

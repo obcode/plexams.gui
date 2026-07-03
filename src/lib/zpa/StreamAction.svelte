@@ -62,7 +62,7 @@
 	let wsClient = null;
 	/** @type {(() => void) | null} */
 	let unsubscribe = null;
-	/** @type {HTMLDivElement} */
+	/** @type {HTMLDivElement | undefined} */
 	let termEl = $state();
 
 	async function scrollToBottom() {

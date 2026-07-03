@@ -4,7 +4,7 @@
 
 	let { data } = $props();
 
-	/** @type {SemesterConfigForm} */
+	/** @type {SemesterConfigForm | undefined} */
 	let formComp = $state();
 	let name = $state('');
 	let creating = $state(false);
@@ -29,7 +29,7 @@
 			const res = await fetch('/api/createSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ semester: name.trim(), input: formComp.getInput() })
+				body: JSON.stringify({ semester: name.trim(), input: formComp?.getInput() })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {

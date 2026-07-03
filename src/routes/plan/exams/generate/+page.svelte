@@ -135,7 +135,7 @@
 	/** @type {any} */
 	let examReport = $state(null);
 
-	/** @type {HTMLDivElement} */
+	/** @type {HTMLDivElement | undefined} */
 	let termEl = $state();
 
 	/** @type {any} */

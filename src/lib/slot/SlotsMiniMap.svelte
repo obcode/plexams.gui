@@ -27,13 +27,13 @@
 			{#each days as day}
 				<td>
 					{#if planned.dayNumber == day && planned.slotNumber == time}
-						<span class="m-1 {plan[[day, time]]}">
+						<span class="m-1 {plan[`${day},${time}`]}">
 							<span class="m-2 bg-yellow-200">
 								<span>📍</span>
 							</span>
 						</span>
 					{:else}
-						<span class="m-1 {plan[[day, time]]}">
+						<span class="m-1 {plan[`${day},${time}`]}">
 							({day},{time})
 						</span>
 					{/if}

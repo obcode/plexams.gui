@@ -83,7 +83,7 @@ versenden ist; optionaler Hinweistext dazu
 
 	let showTerminal = $state(true);
 
-	/** @type {HTMLDivElement} */
+	/** @type {HTMLDivElement | undefined} */
 	let termEl = $state();
 
 	/** @type {any} */

@@ -72,9 +72,9 @@
 	/** @type {string | null} */
 	let singleError = $state(null);
 
-	/** @type {HTMLInputElement} */
+	/** @type {HTMLInputElement | undefined} */
 	let fileInput = $state();
-	/** @type {HTMLInputElement} */
+	/** @type {HTMLInputElement | undefined} */
 	let singleInput = $state();
 
 	// meldet den aktuellen Anhang-Stand nach oben (nach Laden/Upload/Leeren)
