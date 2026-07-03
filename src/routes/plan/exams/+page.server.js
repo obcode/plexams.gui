@@ -57,6 +57,7 @@ export async function load({ params }) {
 					examTypeFull
 					duration
 					isRepeaterExam
+					faculty
 					groups
 					primussAncodes {
 						program
@@ -151,6 +152,10 @@ export async function load({ params }) {
 					mainExamerID
 					duration
 					isRepeaterExam
+					faculty
+					primussAncodes {
+						ancode
+					}
 				}
 				studentRegsCount
 				maxDuration

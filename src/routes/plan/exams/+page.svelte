@@ -395,15 +395,11 @@
 		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
 		return 'border-l-primary';
 	};
-	/** @param {number} ancode */
-	const fmtAncode = (ancode) => {
-		let s = ancode.toString();
-		if (ancode >= 1000) {
-			s = s.replace('0', ': ').replace('', 'FK');
-			if (ancode < 100000) s = s.replace('FK', 'FK0');
-		}
-		return s;
-	};
+	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
+	// Primuss-Ancode darstellen, z. B. „FK03: 123".
+	/** @param {any} z zpaExam */
+	const fmtAncode = (z) =>
+		z.faculty ? `${z.faculty}: ${z.primussAncodes?.[0]?.ancode ?? z.ancode}` : z.ancode.toString();
 
 	function forbiddenSlot(day, time) {
 		const key = `${day},${time}`;
@@ -621,13 +617,13 @@
 														<div
 															class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(x)}"
 															style="top:{(x.startMin - timeCal.min) * PX_PER_MIN}px; height:{x.dur * PX_PER_MIN}px; left:calc({(x.col / dd.ncols) * 100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
-															title="{fmtAncode(x.e.zpaExam.ancode)} · {x.e.zpaExam.module} ({x.e.zpaExam.mainExamer}) · {hhmm(x.startMin)}–{hhmm(x.endMin)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
+															title="{fmtAncode(x.e.zpaExam)} · {x.e.zpaExam.module} ({x.e.zpaExam.mainExamer}) · {hhmm(x.startMin)}–{hhmm(x.endMin)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
 														>
 															<div class="flex items-center gap-1 text-[11px] font-semibold leading-tight">
 																{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span>{/if}
 																{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert">🏗️</span>{/if}
 																{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
-																<span class="font-mono">{fmtAncode(x.e.zpaExam.ancode)}</span>
+																<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
 															</div>
 															<div class="truncate text-[10px] leading-tight">{x.e.zpaExam.module}</div>
 															<div class="text-[10px] leading-tight tabular-nums text-base-content/60">{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}</div>

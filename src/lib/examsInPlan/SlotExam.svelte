@@ -265,13 +265,11 @@
 		width = 'w-min';
 	}
 
-	let ancodeToShow = exam.zpaExam.ancode.toString();
-	if (exam.zpaExam.ancode >= 1000) {
-		ancodeToShow = ancodeToShow.replace('0', ': ').replace('', 'FK');
-		if (exam.zpaExam.ancode < 100000) {
-			ancodeToShow = ancodeToShow.replace('FK', 'FK0');
-		}
-	}
+	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
+	// Primuss-Ancode darstellen, z. B. „FK03: 123" — statt Ancode-Präfix-Parsing.
+	let ancodeToShow = exam.zpaExam.faculty
+		? `${exam.zpaExam.faculty}: ${exam.zpaExam.primussAncodes?.[0]?.ancode ?? exam.zpaExam.ancode}`
+		: exam.zpaExam.ancode.toString();
 </script>
 
 {#if show}

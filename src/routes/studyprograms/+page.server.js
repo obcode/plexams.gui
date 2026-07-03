@@ -14,6 +14,7 @@ export async function load() {
 					active
 					retired
 					externalExamsBase
+					faculty
 				}
 			}
 		`

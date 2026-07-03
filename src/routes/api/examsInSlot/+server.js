@@ -20,6 +20,7 @@ export async function POST({ request }) {
 					examTypeFull
 					duration
 					isRepeaterExam
+					faculty
 					groups
 					primussAncodes {
 						program
