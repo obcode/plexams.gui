@@ -93,10 +93,32 @@ export const schedulingValidators = [
 	}
 ];
 
+// Grundlegende, phasenübergreifende Konsistenzprüfungen (Daten/DB), die nicht zu
+// einer der Planungsphasen (Termine/Räume/Aufsichten) gehören.
+/** @type {ValidatorDef[]} */
+export const basicsValidators = [
+	{
+		key: 'validateStudentRegs',
+		title: 'Anmeldungen (Primuss)',
+		description: 'importierte Anmeldungen konsistent'
+	},
+	{
+		key: 'validateDB',
+		title: 'Datenbank-Konsistenz',
+		description: 'interne DB-Konsistenz'
+	},
+	{
+		key: 'validatePrePlannedExahmRooms',
+		title: 'EXaHM Vorplanung Räume',
+		description: 'vorgeplante EXaHM-Räume gültig'
+	}
+];
+
 // Kanonische Reihenfolge/Registry aller Gruppen für die Gesamtseite /validate
 // und den Status-Indikator in der Nav. Weitere Gruppen hier ergänzen.
 /** @type {ValidatorGroup[]} */
 export const validationGroups = [
+	{ id: 'basics', title: 'Grundlagen', validators: basicsValidators },
 	{ id: 'scheduling', title: 'Terminplanung', validators: schedulingValidators },
 	{ id: 'rooms', title: 'Räume', validators: roomValidators },
 	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }
