@@ -1,12 +1,13 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
+import type { PageServerLoad } from './$types';
 
 // Erwartete keys für den Abgleich:
 //  - Deckblätter (cover-page): Prüfende mit von mir geplanten Prüfungen
 //    (examersWithExamsPlannedByMe).
 //  - Aufsichtskalender (invigilation-image): alle Aufsichten (invigilatorTodos).
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			examersWithExamsPlannedByMe {
@@ -32,32 +33,32 @@ export async function load() {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Prüfende mit von mir geplanten Prüfungen (eindeutig nach ID)
-	const examerMap = new Map();
-	(data.examersWithExamsPlannedByMe ?? []).forEach((/** @type {any} */ e) => {
+	const examerMap = new Map<string | number, { key: string | number; label: string }>();
+	(data.examersWithExamsPlannedByMe ?? []).forEach((e: any) => {
 		if (!examerMap.has(e.id)) {
 			examerMap.set(e.id, { key: e.id, label: e.shortname });
 		}
 	});
-	/** @type {{ key: string | number, label: string }[]} */
 	const expectedExamers = Array.from(examerMap.values()).sort((a, b) =>
 		a.label.localeCompare(b.label)
 	);
 
 	// alle Aufsichten
-	/** @type {{ key: string | number, label: string }[]} */
-	const expectedInvigilators = (data.invigilatorTodos?.invigilators ?? [])
-		.map((/** @type {any} */ i) => ({
+	const expectedInvigilators: { key: string | number; label: string }[] = (
+		data.invigilatorTodos?.invigilators ?? []
+	)
+		.map((i: any) => ({
 			key: i.teacher.id,
 			label: i.teacher.shortname
 		}))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label));
+		.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
 	return {
 		expectedExamers,
 		expectedInvigilators,
 		conditionsDone: conditionsDoneMap(data.planningState)
 	};
-}
+};

@@ -1,11 +1,12 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
+import type { PageServerLoad } from './$types';
 
 // Promises NICHT awaiten → SvelteKit streamt sie: die Seite ist sofort da,
 // die Inhalte (Gating „bereits gesendet", „alle Anforderungen") laufen nach.
-export function load() {
-	const conditionsDone = request(
+export const load: PageServerLoad = () => {
+	const conditionsDone = request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -20,12 +21,12 @@ export function load() {
 			}
 		`
 	)
-		.then((/** @type {any} */ d) => conditionsDoneMap(d.planningState))
-		.catch(() => /** @type {Record<string, boolean>} */ ({}));
+		.then((d) => conditionsDoneMap(d.planningState))
+		.catch(() => ({}) as Record<string, boolean>);
 
 	// „alle Anforderungen da": jede Aufsicht hat ihre Anforderungen eingetragen
 	// → für „Fehlende Anforderungen" ist dann kein echter Versand nötig.
-	const allRequirementsPresent = request(
+	const allRequirementsPresent = request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -35,17 +36,14 @@ export function load() {
 			}
 		`
 	)
-		.then((/** @type {any} */ d) => {
+		.then((d) => {
 			const invigilators = d.invigilators ?? [];
-			return (
-				invigilators.length > 0 &&
-				invigilators.every((/** @type {any} */ i) => i.hasSubmittedRequirements)
-			);
+			return invigilators.length > 0 && invigilators.every((i: any) => i.hasSubmittedRequirements);
 		})
 		.catch(() => false);
 
 	// Empfänger-Kandidaten für die Prüfungsplanungs-Info (Auswahl im UI).
-	const examPlanningMailRecipients = request(
+	const examPlanningMailRecipients = request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -67,8 +65,8 @@ export function load() {
 			}
 		`
 	)
-		.then((/** @type {any} */ d) => d.examPlanningMailRecipients ?? [])
-		.catch(() => /** @type {any[]} */ ([]));
+		.then((d) => d.examPlanningMailRecipients ?? [])
+		.catch(() => [] as any[]);
 
 	return { conditionsDone, allRequirementsPresent, examPlanningMailRecipients };
-}
+};

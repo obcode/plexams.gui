@@ -1,8 +1,11 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+type SpecialInterest = { name: string; filename: string; ancodes: number[] };
+
+export const load: PageServerLoad = async () => {
+	const data = await request<{ specialInterests: SpecialInterest[] }>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -15,4 +18,4 @@ export async function load() {
 		`
 	);
 	return { interests: data.specialInterests ?? [] };
-}
+};

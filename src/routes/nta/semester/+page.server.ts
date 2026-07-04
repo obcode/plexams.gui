@@ -1,17 +1,18 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
 // Zwei Sichten auf dieselben Semester-NTAs: nach Studierenden (teuer, N+1)
 // und nach Prüfungen. Es wird nur die aktive Sicht (?view) serverseitig
 // geladen — Default ist die Studierenden-Sicht.
-export async function load({ url }) {
+export const load: PageServerLoad = async ({ url }) => {
 	const view = url.searchParams.get('view') === 'exams' ? 'exams' : 'students';
 
 	if (view === 'exams') {
 		return { view, examsWithNtas: await loadExams() };
 	}
 	return { view, ntasWithRegs: await loadStudents() };
-}
+};
 
 async function loadExams() {
 	const query = gql`
@@ -53,7 +54,7 @@ async function loadExams() {
 			}
 		}
 	`;
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<{ examsWithNtas: any[] }>(env.PLEXAMS_SERVER, query);
 	return data.examsWithNtas;
 }
 
@@ -83,12 +84,12 @@ async function loadStudents() {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<{ ntasWithRegs: any[] }>(env.PLEXAMS_SERVER, query);
 	const ntasWithRegs = data.ntasWithRegs;
 
 	if (ntasWithRegs != null) {
-		for (let nta of ntasWithRegs) {
-			let exams = [];
+		for (const nta of ntasWithRegs) {
+			const exams = [];
 			for (const ancode of nta.regs) {
 				const examQuery = gql`
 					query {
@@ -114,9 +115,9 @@ async function loadStudents() {
 				// andere Teil-Query-Fehler) überspringen, statt die Seite mit 500
 				// abstürzen zu lassen; die Prüfungsdetails erscheinen nach dem
 				// Generieren.
-				let examData;
+				let examData: any;
 				try {
-					examData = await request(env.PLEXAMS_SERVER, examQuery);
+					examData = await request<any>(env.PLEXAMS_SERVER, examQuery);
 				} catch {
 					continue;
 				}
@@ -135,7 +136,7 @@ async function loadStudents() {
 							}
 						}
 					`;
-					const roomData = await request(env.PLEXAMS_SERVER, roomQuery);
+					const roomData = await request<any>(env.PLEXAMS_SERVER, roomQuery);
 
 					if (roomData?.plannedRoomForStudent?.room != null) {
 						examData.assembledExam.roomName = roomData.plannedRoomForStudent.room.name;
@@ -152,7 +153,7 @@ async function loadStudents() {
 							}
 						}
 					`;
-					const planData = await request(env.PLEXAMS_SERVER, plannedExamQuery);
+					const planData = await request<any>(env.PLEXAMS_SERVER, plannedExamQuery);
 
 					if (planData?.plannedExam?.planEntry != null) {
 						examData.assembledExam.starttime = planData.plannedExam.planEntry.starttime;
@@ -165,7 +166,7 @@ async function loadStudents() {
 									}
 								}
 							`;
-							const invigilatorData = await request(env.PLEXAMS_SERVER, invigilatorQuery);
+							const invigilatorData = await request<any>(env.PLEXAMS_SERVER, invigilatorQuery);
 							if (invigilatorData?.invigilator?.shortname != null) {
 								examData.assembledExam.invigilator = invigilatorData.invigilator.shortname;
 							}

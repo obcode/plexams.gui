@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async ({ params }) => {
 	const query = gql`
 		query {
 			nta(mtknr: "${params.mtknr}") {
@@ -26,14 +27,14 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
-	let nta = data.nta;
+	const nta = data.nta;
 
 	if (data.nta != null) {
-		let exams = [];
+		const exams = [];
 		for (const ancode of data.nta.regs.ancodes) {
-			const query = gql`
+			const examQuery = gql`
 		query {
 			zpaExam(ancode: ${ancode}) {
 				ancode
@@ -44,8 +45,8 @@ export async function load({ params }) {
 		}
 	`;
 
-			const data = await request(env.PLEXAMS_SERVER, query);
-			exams.push(data.zpaExam);
+			const examData = await request<any>(env.PLEXAMS_SERVER, examQuery);
+			exams.push(examData.zpaExam);
 		}
 
 		nta.exams = exams;
@@ -54,4 +55,4 @@ export async function load({ params }) {
 	return {
 		nta
 	};
-}
+};

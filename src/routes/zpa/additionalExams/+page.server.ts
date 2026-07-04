@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+export const load: PageServerLoad = async () => {
+	const data = await request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -31,10 +32,10 @@ export async function load() {
 	);
 	const teachers = (data.teachers ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.fullname.localeCompare(b.fullname));
+		.sort((a: any, b: any) => a.fullname.localeCompare(b.fullname));
 	return {
 		exams: data.additionalExams ?? [],
-		rooms: (data.rooms ?? []).map((/** @type {any} */ r) => r.name),
+		rooms: (data.rooms ?? []).map((r: any) => r.name),
 		teachers
 	};
-}
+};

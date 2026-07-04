@@ -1,10 +1,11 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
 // syncLog NICHT awaiten → gestreamt: die Seite (Im-/Export-Buttons) ist sofort
 // da, der Verlauf füllt sich nach.
-export function load() {
-	const syncLog = request(
+export const load: PageServerLoad = () => {
+	const syncLog = request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -32,8 +33,8 @@ export function load() {
 			}
 		`
 	)
-		.then((/** @type {any} */ d) => d.syncLog ?? [])
+		.then((d) => d.syncLog ?? [])
 		.catch(() => []);
 
 	return { syncLog };
-}
+};

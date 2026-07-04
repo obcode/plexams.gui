@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			ntas {
@@ -21,7 +22,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	let data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<{ ntas: any[] }>(env.PLEXAMS_SERVER, query);
 
 	const semesterQuery = gql`
 		query {
@@ -31,10 +32,13 @@ export async function load({ params }) {
 		}
 	`;
 
-	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await request<{ semester: { id: string } }>(
+		env.PLEXAMS_SERVER,
+		semesterQuery
+	);
 
 	return {
 		semester: semesterData.semester.id,
 		ntas: data.ntas
 	};
-}
+};
