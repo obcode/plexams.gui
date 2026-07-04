@@ -280,7 +280,7 @@
 			description="Holt die aktuellen Buchungen aus Anny (Log-Stream) und lädt die Ansicht neu."
 			accent="info"
 			actionLabel="Abrufen"
-			on:done={() => invalidateAll()}
+			ondone={() => invalidateAll()}
 		/>
 
 		<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">

@@ -102,7 +102,7 @@
 					description={d.desc}
 					accent="info"
 					actionLabel="Laden"
-					on:done={refreshLog}
+					ondone={refreshLog}
 				/>
 			{/each}
 		</div>
@@ -134,7 +134,7 @@
 					hasDryRun={u.hasDryRun}
 					accent="success"
 					actionLabel="Übertragen"
-					on:done={refreshLog}
+					ondone={refreshLog}
 				/>
 			{/each}
 		</div>

@@ -784,7 +784,7 @@
 	<!-- 🔌 Anny importieren → danach Übersicht (seatsBooked) neu laden -->
 	<SubscriptionTerminal
 		actions={[{ field: 'importAnnyBookings', label: '🔌 Anny-Buchungen importieren' }]}
-		on:done={() => invalidateAll()}
+		ondone={() => invalidateAll()}
 	/>
 
 	<div class="alert alert-info py-2 text-sm">

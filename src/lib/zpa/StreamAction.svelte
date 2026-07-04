@@ -1,9 +1,7 @@
 <script>
-	import { onDestroy, tick, createEventDispatcher } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-
-	const dispatch = createEventDispatcher();
 
 	/**
 	 * @typedef {Object} Props
@@ -13,6 +11,7 @@
 	 * @property {boolean} [hasDryRun] - Feld hat ein dryRun-Argument
 	 * @property {string} [accent] - Akzentfarbe: 'info' (Download) | 'success' (Upload)
 	 * @property {string} [actionLabel]
+	 * @property {(info: { field: string }) => void} [ondone] - meldet Abschluss
 	 */
 
 	/** @type {Props} */
@@ -22,7 +21,8 @@
 		description = '',
 		hasDryRun = false,
 		accent = 'info',
-		actionLabel = 'Starten'
+		actionLabel = 'Starten',
+		ondone
 	} = $props();
 
 	let dryRun = $state(true);
@@ -146,7 +146,7 @@
 						current = null;
 					}
 					if (status === 'running') status = 'done';
-					dispatch('done', { field });
+					ondone?.({ field });
 				}
 			}
 		);

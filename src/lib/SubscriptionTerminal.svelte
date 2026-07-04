@@ -1,5 +1,5 @@
 <script>
-	import { onDestroy, tick, createEventDispatcher } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 	import { checkAssembledExams } from '$lib/assembledExams/store';
@@ -13,12 +13,11 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {{ field: string, label: string, primary?: boolean, disabled?: boolean }[]} [actions]
+	 * @property {(info: { field: string, blocked: boolean }) => void} [ondone] - meldet Abschluss einer Aktion
 	 */
 
 	/** @type {Props} */
-	let { actions = [] } = $props();
-
-	const dispatch = createEventDispatcher();
+	let { actions = [], ondone } = $props();
 
 	let running = $state(false);
 	/** @type {string | null} */
@@ -134,7 +133,7 @@
 					}
 					running = false;
 					done = true;
-					dispatch('done', { field, blocked });
+					ondone?.({ field, blocked });
 					// Subscriptions (z. B. importExamsFromZPA/importStudentsFromZPA)
 					// können aufbereitete Prüfungen / StudentRegs invalidieren →
 					// Banner-Zustände sofort neu prüfen.

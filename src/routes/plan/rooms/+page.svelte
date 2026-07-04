@@ -280,7 +280,7 @@
 					},
 					{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }
 				]}
-				on:done={onGenerated}
+				ondone={onGenerated}
 			/>
 			<p class="text-xs text-base-content/50">
 				EXaHM-Raum-Slots kommen ausschließlich aus dem Anny-Import — ohne Import keine
