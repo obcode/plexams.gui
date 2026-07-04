@@ -1,7 +1,6 @@
 <script lang="ts">
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 
-	import { createEventDispatcher } from 'svelte';
 	let {
 		examsWithoutSlot,
 		maxSlots,
@@ -16,9 +15,10 @@
 		onlyPlannedByMe,
 		details,
 		moveable,
-		conflictingAncodes
+		conflictingAncodes,
+		onselected,
+		onunselected
 	} = $props();
-	const dispatch = createEventDispatcher();
 	const grouped = $derived.by(() => {
 		const result: [any[], any[]] = [[], []];
 		for (const element of examsWithoutSlot) {
@@ -30,19 +30,6 @@
 	const examsNotPlannedByMe = $derived(grouped[1]);
 
 	let showExamsPlannedByMe = $state(true);
-
-	function forwardSelected(event: any) {
-		dispatch('selected', event.detail);
-	}
-	function forwardUnselected(event: any) {
-		dispatch('unselected', event.detail);
-	}
-	function forwardAddToSlot(event: any) {
-		dispatch('addToSlot', event.detail);
-	}
-	function forwardRmFromSlot(event: any) {
-		dispatch('rmFromSlot', event.detail);
-	}
 </script>
 
 {#if examsPlannedByMe.length > 0}
@@ -76,10 +63,8 @@
 					inSlot={false}
 					onlyConflicts={false}
 					{conflictingAncodes}
-					on:selected={forwardSelected}
-					on:unselected={forwardUnselected}
-					on:addToSlot={forwardAddToSlot}
-					on:rmFromSlot={forwardRmFromSlot}
+					{onselected}
+					{onunselected}
 				/>
 			{/each}
 		</div>
@@ -116,10 +101,8 @@
 				inSlot={false}
 				onlyConflicts={false}
 				{conflictingAncodes}
-				on:selected={forwardSelected}
-				on:unselected={forwardUnselected}
-				on:addToSlot={forwardAddToSlot}
-				on:rmFromSlot={forwardRmFromSlot}
+				{onselected}
+				{onunselected}
 			/>
 		{/each}
 	</div>

@@ -120,35 +120,30 @@
 	let conflictingAncodes = $state(/** @type {any[]} */ ([]));
 	let selectedExamerID = $state(-1);
 
-	async function handleSelect(/** @type {any} */ event) {
+	async function handleSelect(/** @type {any} */ payload) {
 		initSlotsStatus('forbidden');
-		selectedExam = event.detail.ancode;
-		selectedExamerID = event.detail.mainExamerID;
-		let allowedSlots = await fetchAllowedSlots(event.detail.ancode);
+		selectedExam = payload.ancode;
+		selectedExamerID = payload.mainExamerID;
+		let allowedSlots = await fetchAllowedSlots(payload.ancode);
 		for (let slot of allowedSlots) {
 			slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'allowed';
 		}
-		let akwardSlots = await fetchAwkwardSlots(event.detail.ancode);
+		let akwardSlots = await fetchAwkwardSlots(payload.ancode);
 		for (let slot of akwardSlots) {
 			if (slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] == 'allowed') {
 				slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'awkward';
 			}
 		}
-		let res = await fetchconflictingAncodes(event.detail.ancode);
+		let res = await fetchconflictingAncodes(payload.ancode);
 		conflictingAncodes = res.map((/** @type {any} */ conflict) => conflict.ancode);
 	}
 
-	async function handleUnselect(/** @type {any} */ event) {
+	function handleUnselect() {
 		initSlotsStatus('unknown');
 		selectedExam = -1;
 		selectedExamerID = -1;
 		conflictingAncodes = [];
 	}
-
-	// Drag-and-Drop von Prüfungen in Slots ist auf dieser Seite derzeit deaktiviert;
-	// die Slot-Komponente feuert die Events weiterhin — hier bewusst No-ops.
-	async function handleAddToSlot() {}
-	async function handleRmFromSlot() {}
 
 	async function fetchAllowedSlots(/** @type {any} */ ancode) {
 		const response = await fetch('/api/allowedSlots', {
@@ -492,10 +487,8 @@
 					{showOnlyEXaHMRooms}
 					{conflictingAncodes}
 					refresh={refresh[`${day.number},${time.number}`]}
-					on:selected={handleSelect}
-					on:unselected={handleUnselect}
-					on:addToSlot={handleAddToSlot}
-					on:rmFromSlot={handleRmFromSlot}
+					onselected={handleSelect}
+					onunselected={handleUnselect}
 				/>
 			</div>
 		{/snippet}
@@ -645,9 +638,8 @@
 			{details}
 			{moveable}
 			{conflictingAncodes}
-			on:selected={handleSelect}
-			on:unselected={handleUnselect}
-			on:addToSlot={handleAddToSlot}
+			onselected={handleSelect}
+			onunselected={handleUnselect}
 		/>
 
 		{#if otherFkNoSlot.length}

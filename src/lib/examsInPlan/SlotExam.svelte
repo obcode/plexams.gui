@@ -1,10 +1,6 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { mkDateTimeShort } from '$lib/jshelper/misc.js';
 	import { mkStarttime } from '$lib/jshelper/misc.js';
-	import { onMount } from 'svelte';
-	import ExamWithNtAsCard from '$lib/exam/ExamWithNTAsCard.svelte';
 	import { planningFk, displayAncode } from '$lib/exam/fk';
 	import { Tooltip } from '@svelte-plugins/tooltips';
 	let {
@@ -23,41 +19,10 @@
 		details,
 		moveable,
 		inSlot,
-		conflictingAncodes
+		conflictingAncodes,
+		onselected,
+		onunselected
 	} = $props();
-
-	const dispatch = createEventDispatcher();
-
-	let allowedSlots = [];
-	let locked = false;
-
-	// $: locked = allowedSlots.length == 0;
-
-	async function fetchAllowedSlots() {
-		const response = await fetch('/api/allowedSlots', {
-			method: 'POST',
-			body: JSON.stringify({ ancode: exam.ancode }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		allowedSlots = data.allowedSlots;
-	}
-
-	// let awkwardSlots = [];
-
-	// async function fetchAwkwardSlots() {
-	// 	const response = await fetch('/api/awkwardSlots', {
-	// 		method: 'POST',
-	// 		body: JSON.stringify({ examGroupCode: examGroupCode }),
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		}
-	// 	});
-	// 	let data = await response.json();
-	// 	awkwardSlots = data.awkwardSlots;
-	// }
 
 	const selected = $derived(
 		selectedExam == exam.ancode || selectedExamerID == exam.zpaExam.mainExamerID
@@ -67,8 +32,6 @@
 			exam.constraints.sameSlot != null &&
 			exam.constraints.sameSlot.includes(selectedExam)
 	);
-
-	let slotToMove = 'none';
 
 	const online = $derived(exam.constraints && exam.constraints.online);
 	const exahm = $derived(
@@ -135,93 +98,17 @@
 
 	function select(code: any) {
 		if (!selected) {
-			dispatch('selected', {
+			onselected?.({
 				ancode: code,
 				mainExamerID: exam.zpaExam.mainExamerID
 			});
 		} else {
-			dispatch('unselected', {
+			onunselected?.({
 				ancode: code,
 				mainExamerID: exam.zpaExam.mainExamerID
 			});
 		}
 	}
-
-	// function bgColorExam(isRepeaterExam) {
-	// 	if (exam.studentRegsCount == 0) {
-	// 		return ' bg-slate-100';
-	// 	}
-	// 	if (exam.zpaExam.isRepeaterExam) {
-	// 		return ' bg-yellow-100  ';
-	// 	} else {
-	// 		return '   ';
-	// 	}
-	// }
-
-	// let slots = allowedSlots.length;
-	// let slotsmax = maxSlots;
-	// let slotsColor = ' progress-success ';
-
-	// $: {
-	// 	slots = allowedSlots.length;
-	// 	slotsmax = maxSlots;
-	// 	slotsColor = ' progress-success ';
-	// 	if (slots < slotsmax / 2) {
-	// 		slotsColor = ' progress-warning ';
-	// 	}
-	// 	if (slots < slotsmax / 4) {
-	// 		slotsColor = ' progress-error ';
-	// 	}
-	// }
-
-	// let regs = examGroupInfo.studentRegs;
-	// let regsMax = 200;
-	// let regsColor = ' progress-error ';
-	// if (regs < regsMax / 2) {
-	// 	regsColor = ' progress-warning ';
-	// }
-	// if (regs < regsMax / 4) {
-	// 	regsColor = ' progress-success ';
-	// }
-
-	// let conflicts = examGroupInfo.conflicts.length;
-	// let conflictsMax = 25;
-	// let conflictsColor = ' progress-error ';
-	// if (conflicts < conflictsMax / 2) {
-	// 	conflictsColor = ' progress-warning ';
-	// }
-	// if (conflicts < conflictsMax / 4) {
-	// 	conflictsColor = ' progress-success ';
-	// }
-
-	// function enabledButton(slot) {
-	// 	return slot == 'none';
-	// }
-
-	// function addToSlot() {
-	// 	dispatch('addToSlot', {
-	// 		examGroupCode: examGroupCode,
-	// 		slot: slotToMove
-	// 	});
-	// }
-
-	// function rmFromSlot() {
-	// 	dispatch('rmFromSlot', {
-	// 		examGroupCode: examGroupCode
-	// 	});
-	// }
-
-	function alertstyle(count: any) {
-		if (count < 5) return '';
-		else if (count < 15) return 'alert-success';
-		else return 'alert-info';
-	}
-
-	onMount(() => {
-		// allStudentRegs = allStudentRegsExam(exam.primussExams);
-		// 	fetchAllowedSlots();
-		// 	fetchAwkwardSlots();
-	});
 
 	const width = $derived(details || !inSlot ? 'w-96' : 'w-min');
 

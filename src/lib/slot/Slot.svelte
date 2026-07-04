@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
 	import { onMount } from 'svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 
@@ -25,7 +23,9 @@
 		showOnlySEB,
 		showOnlyEXaHMRooms,
 		conflictingAncodes,
-		refresh = $bindable()
+		refresh = $bindable(),
+		onselected,
+		onunselected
 	} = $props();
 
 	let exams = $state<any[]>([]);
@@ -89,26 +89,6 @@
 		fetchExams();
 	});
 
-	function forwardSelected(event: any) {
-		dispatch('selected', event.detail);
-	}
-	function forwardUnselected(event: any) {
-		dispatch('unselected', event.detail);
-	}
-	function forwardAddToSlot(event: any) {
-		dispatch('addToSlot', {
-			examGroupCode: event.detail.examGroupCode,
-			slot: event.detail.slot,
-			oldslot: { dayNumber: day, slotNumber: time }
-		});
-	}
-	function forwardRmFromSlot(event: any) {
-		dispatch('rmFromSlot', {
-			examGroupCode: event.detail.examGroupCode,
-			slot: { dayNumber: day, slotNumber: time }
-		});
-	}
-
 	$effect(() => {
 		if (refresh) {
 			fetchExams();
@@ -163,9 +143,7 @@
 		{moveable}
 		inSlot={true}
 		{conflictingAncodes}
-		on:selected={forwardSelected}
-		on:unselected={forwardUnselected}
-		on:addToSlot={forwardAddToSlot}
-		on:rmFromSlot={forwardRmFromSlot}
+		{onselected}
+		{onunselected}
 	/>
 {/each}
