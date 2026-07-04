@@ -4,10 +4,11 @@
 	"author": "Oliver Braun <oliver.braun@hm.edu>",
 	"license": "BSD-3-Clause",
 	"private": true,
+	"packageManager": "pnpm@11.9.0",
 	"scripts": {
 		"dev": "vite dev",
 		"devhost": "vite dev --host",
-		"update-schema.graphql": "bash -lc 'set -a && [ -f .env ] && . .env || true; npx --yes get-graphql-schema \"$PLEXAMS_SERVER\" > schema.graphql && npm run codegen'",
+		"update-schema.graphql": "bash -lc 'set -a && [ -f .env ] && . .env || true; pnpm dlx get-graphql-schema \"$PLEXAMS_SERVER\" > schema.graphql && pnpm codegen'",
 		"codegen": "graphql-codegen",
 		"build": "vite build",
 		"package": "svelte-kit package",
@@ -18,8 +19,8 @@
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"test:e2e": "playwright test",
-		"lint": "prettier --check --plugin-search-dir=. . && eslint .",
-		"format": "prettier --write --plugin-search-dir=. ."
+		"lint": "prettier --check .",
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
 		"@graphql-codegen/cli": "^5.0.7",
@@ -33,7 +34,7 @@
 		"@tailwindcss/typography": "^0.5.16",
 		"@vitest/coverage-v8": "^4.1.9",
 		"daisyui": "^5.0.43",
-		"graphql-request": "^7.2.0",
+		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
 		"svelte": "^5.34.8",
 		"svelte-check": "^4.2.2",
@@ -47,6 +48,10 @@
 	"type": "module",
 	"dependencies": {
 		"ansi-to-html": "^0.7.2",
+		"dotenv": "^16.6.0",
+		"graphql": "^16.11.0",
+		"graphql-request": "^7.2.0",
+		"graphql-tag": "^2.12.6",
 		"graphql-ws": "^6.0.8",
 		"html-to-image": "^1.11.13",
 		"jszip": "^3.10.1"

@@ -12,6 +12,7 @@ README.md
 .svelte-kit
 .vscode
 node_modules
+.pnpm-store
 build
 package
 **/.env

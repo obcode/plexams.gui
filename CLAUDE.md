@@ -8,23 +8,27 @@ A SvelteKit GUI for planning university exams (Prüfungsplanung) at HM (Hochschu
 
 ## Commands
 
+The package manager is **pnpm** (pinned via the `packageManager` field; use Corepack).
+
 ```bash
-npm run dev          # dev server (vite)
-npm run devhost      # dev server exposed on the network (--host)
-npm run build        # production build (adapter-node → ./build)
-npm run preview      # serve the production build on :4173
-npm run check        # svelte-check type checking (checkJs is on; .js files are type-checked)
-npm run lint         # prettier --check + eslint
-npm run format       # prettier --write
-npm test             # playwright (builds + previews first, see playwright.config.js)
-npx playwright test tests/test.js   # run a single test file
+pnpm install         # install deps (CI uses --frozen-lockfile)
+pnpm dev             # dev server (vite)
+pnpm devhost         # dev server exposed on the network (--host)
+pnpm build           # production build (adapter-node → ./build)
+pnpm preview         # serve the production build on :4173
+pnpm check           # svelte-check type checking (checkJs is on; .js files are type-checked)
+pnpm lint            # prettier --check (eslint is not configured; see below)
+pnpm format          # prettier --write (formats .svelte too, via prettier-plugin-svelte)
+pnpm test            # vitest unit tests (run once)
+pnpm test:e2e        # playwright (builds + previews first, see playwright.config.js)
+pnpm exec vitest run src/lib/foo.test.js   # run a single unit-test file
 ```
 
 Codegen / schema:
 
 ```bash
-npm run codegen                  # regenerate src/lib/__generated__/graphql.ts from schema.graphql
-npm run update-schema.graphql    # refetch schema from $PLEXAMS_SERVER, then codegen
+pnpm codegen                  # regenerate src/lib/__generated__/graphql.ts from schema.graphql
+pnpm run update-schema.graphql    # refetch schema from $PLEXAMS_SERVER, then codegen
 ```
 
 ## Backend connection
@@ -71,7 +75,7 @@ Route folders mirror the planning workflow. Key domain terms:
 - **Svelte 5 with legacy (non-runes) syntax** — components use `export let` props and `$store` auto-subscriptions, not `$props()`/`$state()`. Match the existing style; don't introduce runes unless migrating deliberately.
 - Mixed `.js`/`.ts` for server files — both are type-checked (`checkJs: true`, `strict: true`). New server files can be either; follow the neighbours in the folder.
 - Styling is **Tailwind v4 + daisyUI**; theme switching uses `theme-change` (see the theme list in `Nav.svelte`).
-- Prettier: tabs, single quotes, no trailing commas, printWidth 100. Run `npm run format` before committing.
+- Prettier: tabs, single quotes, no trailing commas, printWidth 100. Run `pnpm format` before committing.
 - Route param matchers live in `src/params/` (`string`, `integer`), used as `[mtknr=string]`.
 
 ## Tests

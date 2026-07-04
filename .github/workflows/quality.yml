@@ -15,18 +15,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 'lts/*'
-          cache: npm
-      - run: npm clean-install
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
 
       # Harte Gates (svelte-check ist seit 2026-07 fehlerfrei → blockierend;
       # svelte-check endet mit Exit 0 bei reinen Warnungen, nur Fehler brechen):
       - name: check (svelte-check, blockierend)
-        run: npm run check
+        run: pnpm run check
 
       - name: unit tests
-        run: npm test
+        run: pnpm test
       - name: build
-        run: npm run build
+        run: pnpm run build

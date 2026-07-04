@@ -1,11 +1,17 @@
 .DS_Store
 node_modules
+.pnpm-store
 /build
 /.svelte-kit
 /package
 .env
 .env.*
 !.env.example
+
+# generierter Code / externes Schema — nicht von Prettier prüfen
+src/lib/__generated__
+schema.graphql
+.claude
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
