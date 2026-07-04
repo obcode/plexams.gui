@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
@@ -8,26 +6,26 @@
 
 	let { data } = $props();
 
-	// lokaler State (optimistisches Umschalten ohne Voll-Reload)
+	// Lokale, optimistisch patchbare Liste als writable $derived: folgt den
+	// Load-Daten (Reset bei jedem neuen Load) und wird zwischendurch per
+	// Reassignment — nie in-place — aktualisiert, damit das $derived reaktiv
+	// bleibt. $derived füllt die Liste auch bei SSR (kein leeres Flackern).
 	/** @type {any[]} */
-	let items = $state([]);
-	/** @type {any} */
-	let lastData = $state();
-	// Status-Filter: beim Laden nur „zu planen" (wird im run() unten anhand der
-	// Daten überschrieben). Deklaration muss vor dem run()-Block stehen, sonst
-	// greift die Zuweisung dort in die Temporal Dead Zone.
+	let items = $derived((data.items ?? []).map((/** @type {any} */ e) => ({ ...e })));
+	// Status-Filter: beim Laden nur „zu planen"; gibt es „nicht zugeordnete",
+	// zunächst nur die zeigen. Snapshot der Load-Daten (bewusst nicht reaktiv).
 	/** @type {string | null} */
-	let filterStatus = $state('toPlan');
-	run(() => {
-		if (data.items !== lastData) {
-			items = data.items.map((/** @type {any} */ e) => ({ ...e }));
-			lastData = data.items;
-			// beim Laden: gibt es „nicht zugeordnete", nur die zeigen, sonst „zu planen"
-			filterStatus = items.some((/** @type {any} */ e) => e.status === 'unknown')
-				? 'unknown'
-				: 'toPlan';
-		}
-	});
+	// svelte-ignore state_referenced_locally
+	let filterStatus = $state(
+		(data.items ?? []).some((/** @type {any} */ e) => e.status === 'unknown') ? 'unknown' : 'toPlan'
+	);
+
+	/** Genau einen Eintrag (per ancode) optimistisch ersetzen — Reassignment statt
+	 * In-place-Mutation, damit das writable $derived reaktiv bleibt.
+	 * @param {number} ancode @param {(e:any)=>any} fn */
+	function patchItem(ancode, fn) {
+		items = items.map((/** @type {any} */ e) => (e.ancode === ancode ? fn(e) : e));
+	}
 
 	let byAncode = $derived(new Map(items.map((/** @type {any} */ e) => [e.ancode, e])));
 
@@ -150,8 +148,7 @@
 				actionError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			e.durationOverride = v;
-			items = items;
+			patchItem(e.ancode, (it) => ({ ...it, durationOverride: v }));
 			durInput[e.ancode] = '';
 		} catch (err) {
 			actionError = err instanceof Error ? err.message : String(err);
@@ -177,8 +174,7 @@
 				actionError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			e.durationOverride = null;
-			items = items;
+			patchItem(e.ancode, (it) => ({ ...it, durationOverride: null }));
 		} catch (err) {
 			actionError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -190,7 +186,7 @@
 	let durZeroCount = $derived(items.filter(isDurZero).length);
 
 	// --- Filter ---
-	// (filterStatus ist oben vor dem run()-Block deklariert)
+	// (filterStatus ist oben deklariert und aus den Load-Daten initialisiert)
 	let cFilter = $state('alle');
 	let durZero = $state(false);
 	let nonFK07 = $state(false);
@@ -284,12 +280,12 @@
 		// location bleibt aber erhalten (gilt auch für notPlannedByMe-Prüfungen).
 		const loc = e.constraints?.location || null;
 		const fk = e.constraints?.notPlannedByMeInFK || null;
-		e.constraints = want
+		const next = want
 			? { notPlannedByMe: true, location: loc, notPlannedByMeInFK: fk }
 			: loc
 				? { notPlannedByMe: false, location: loc }
 				: null;
-		items = items;
+		patchItem(e.ancode, (it) => ({ ...it, constraints: next }));
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
@@ -305,13 +301,11 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				e.constraints = prev;
-				items = items;
+				patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
 				actionError = d?.error || `Fehler (HTTP ${res.status})`;
 			}
 		} catch (err) {
-			e.constraints = prev;
-			items = items;
+			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
 			actionError = err instanceof Error ? err.message : String(err);
 		} finally {
 			const s = new Set(busy);
@@ -330,8 +324,7 @@
 		const loc = ('location' in patch ? patch.location : e.constraints?.location) || null;
 		const fk = ('fk' in patch ? patch.fk : e.constraints?.notPlannedByMeInFK) || null;
 		const next = { notPlannedByMe: true, doNotPublish, location: loc, notPlannedByMeInFK: fk };
-		e.constraints = next;
-		items = items;
+		patchItem(e.ancode, (it) => ({ ...it, constraints: next }));
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
@@ -342,13 +335,11 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				e.constraints = prev;
-				items = items;
+				patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
 				actionError = d?.error || `Fehler (HTTP ${res.status})`;
 			}
 		} catch (err) {
-			e.constraints = prev;
-			items = items;
+			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
 			actionError = err instanceof Error ? err.message : String(err);
 		} finally {
 			const s = new Set(busy);
@@ -361,8 +352,7 @@
 	async function setStatus(item, target) {
 		if (item.status === target || busy.has(item.ancode)) return;
 		const prev = item.status;
-		item.status = target;
-		items = items;
+		patchItem(item.ancode, (it) => ({ ...it, status: target }));
 		busy = new Set(busy).add(item.ancode);
 		actionError = '';
 		try {
@@ -374,8 +364,7 @@
 			});
 			if (!res.ok) throw new Error(`Fehler (HTTP ${res.status})`);
 		} catch (e) {
-			item.status = prev;
-			items = items;
+			patchItem(item.ancode, (it) => ({ ...it, status: prev }));
 			actionError = e instanceof Error ? e.message : String(e);
 		} finally {
 			const s = new Set(busy);
@@ -395,32 +384,40 @@
 		// sameSlot ist symmetrisch: setzt/entfernt man den Bezug an einer Prüfung,
 		// ändert das Backend auch die Partner. Diese hier lokal mitziehen, sonst
 		// zeigen sie den neuen/entfernten sameSlot erst nach einem Voll-Reload.
+		// Alles in einem Reassignment (Kopien der betroffenen Einträge).
 		const oldSame = new Set((it?.constraints?.sameSlot ?? []).map(Number));
 		const newSame = new Set((nc.sameSlot ?? []).map(Number));
-		if (it) it.constraints = nc;
-		for (const p of newSame) if (!oldSame.has(p)) addSameSlotPartner(p, nc.ancode);
-		for (const p of oldSame) if (!newSame.has(p)) removeSameSlotPartner(p, nc.ancode);
-		items = items;
+		items = items.map((/** @type {any} */ e) => {
+			if (e.ancode === nc.ancode) return { ...e, constraints: nc };
+			if (newSame.has(e.ancode) && !oldSame.has(e.ancode)) return withSameSlotPartner(e, nc.ancode);
+			if (oldSame.has(e.ancode) && !newSame.has(e.ancode))
+				return withoutSameSlotPartner(e, nc.ancode);
+			return e;
+		});
 		editExam = null;
 	}
 
-	/** @param {number} partner @param {number} ancode Partner-sameSlot um `ancode` ergänzen */
-	function addSameSlotPartner(partner, ancode) {
-		const it = byAncode.get(partner);
-		if (!it) return;
-		if (!it.constraints) it.constraints = { ancode: partner, sameSlot: [] };
-		if (!it.constraints.sameSlot) it.constraints.sameSlot = [];
-		if (!it.constraints.sameSlot.map(Number).includes(ancode))
-			it.constraints.sameSlot = [...it.constraints.sameSlot, ancode];
+	/** Kopie von `e` mit `ancode` in constraints.sameSlot ergänzt.
+	 * @param {any} e @param {number} ancode */
+	function withSameSlotPartner(e, ancode) {
+		const c = e.constraints ?? { ancode: e.ancode, sameSlot: [] };
+		const same = c.sameSlot ?? [];
+		if (same.map(Number).includes(ancode)) return e;
+		return { ...e, constraints: { ...c, sameSlot: [...same, ancode] } };
 	}
 
-	/** @param {number} partner @param {number} ancode `ancode` aus Partner-sameSlot entfernen */
-	function removeSameSlotPartner(partner, ancode) {
-		const it = byAncode.get(partner);
-		if (!it?.constraints?.sameSlot) return;
-		it.constraints.sameSlot = it.constraints.sameSlot.filter(
-			(/** @type {number} */ x) => Number(x) !== ancode
-		);
+	/** Kopie von `e` mit `ancode` aus constraints.sameSlot entfernt.
+	 * @param {any} e @param {number} ancode */
+	function withoutSameSlotPartner(e, ancode) {
+		const c = e.constraints;
+		if (!c?.sameSlot) return e;
+		return {
+			...e,
+			constraints: {
+				...c,
+				sameSlot: c.sameSlot.filter((/** @type {number} */ x) => Number(x) !== ancode)
+			}
+		};
 	}
 
 	onMount(() => {
