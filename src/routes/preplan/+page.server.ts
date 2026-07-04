@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+export const load: PageServerLoad = async () => {
+	const data = await request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -124,20 +125,18 @@ export async function load() {
 
 	const teachers = (data.teachers ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
+		.sort((a: any, b: any) => a.shortname.localeCompare(b.shortname));
 
 	// Prüfungszeitraum = konfigurierte Prüfungstage (z. B. 2026 SS: 13.–24.07.).
-	/** @param {string | null | undefined} v */
-	const dayKey = (v) => (String(v ?? '').match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] ?? null;
-	/** @type {Set<string>} */
-	const examDates = new Set(
-		(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => dayKey(d.date)).filter(Boolean)
+	const dayKey = (v: string | null | undefined) =>
+		(String(v ?? '').match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] ?? null;
+	const examDates = new Set<string>(
+		(data.semesterConfig?.days ?? []).map((d: any) => dayKey(d.date)).filter(Boolean)
 	);
 
 	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert) — nur innerhalb
 	// der Prüfungszeit (Datum aus starttime muss ein konfigurierter Prüfungstag sein).
-	/** @type {Map<string, any>} */
-	const slotMap = new Map();
+	const slotMap = new Map<string, any>();
 	for (const s of [
 		...(data.semesterConfig?.slots ?? []),
 		...(data.semesterConfig?.mucDaiSlots ?? [])
@@ -147,8 +146,7 @@ export async function load() {
 		slotMap.set(`${s.dayNumber}-${s.slotNumber}`, s);
 	}
 	const slots = [...slotMap.values()].sort(
-		(/** @type {any} */ a, /** @type {any} */ b) =>
-			a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber
+		(a: any, b: any) => a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber
 	);
 
 	// --- Anny-Buchungen je Slot (für „gebucht/ungenutzt" im Kalender) ---
@@ -166,8 +164,7 @@ export async function load() {
 		minute: '2-digit',
 		hour12: false
 	});
-	/** @param {string | null | undefined} value */
-	function toDateKey(value) {
+	function toDateKey(value: string | null | undefined) {
 		if (value == null) return null;
 		const raw = String(value);
 		const m = raw.match(/^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}/);
@@ -175,8 +172,7 @@ export async function load() {
 		const d = new Date(raw);
 		return Number.isNaN(d.getTime()) ? null : dateFmt.format(d);
 	}
-	/** @param {string | null | undefined} value */
-	function toMinutes(value) {
+	function toMinutes(value: string | null | undefined) {
 		if (value == null) return null;
 		const raw = String(value);
 		const m = raw.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})/);
@@ -187,8 +183,7 @@ export async function load() {
 		return t ? Number(t[1]) * 60 + Number(t[2]) : null;
 	}
 
-	/** @type {Map<string, {start:number,end:number}[]>} */
-	const annyByDayRoom = new Map();
+	const annyByDayRoom = new Map<string, { start: number; end: number }[]>();
 	for (const b of data.allAnnyBookings ?? []) {
 		// nur eigene Buchungen (mine) zählen — fremde Anny-Buchungen sind nicht „unsere"
 		// gebuchten Räume (entspricht der seatsBooked-Logik des Servers).
@@ -201,14 +196,13 @@ export async function load() {
 		if (!annyByDayRoom.has(key)) annyByDayRoom.set(key, []);
 		annyByDayRoom.get(key)?.push({ start: s, end: e });
 	}
-	/** Räume mit Anny-Buchung, die das Slot-Fenster überlappen. @param {any} starttime */
-	function bookedRoomsForSlot(starttime) {
+	// Räume mit Anny-Buchung, die das Slot-Fenster überlappen.
+	function bookedRoomsForSlot(starttime: any) {
 		const dk = toDateKey(starttime);
 		const ss = toMinutes(starttime);
 		if (dk == null || ss == null) return [];
 		const se = ss + SLOT_DURATION_MINUTES;
-		/** @type {string[]} */
-		const rooms = [];
+		const rooms: string[] = [];
 		for (const [key, ivs] of annyByDayRoom) {
 			const [d, room] = key.split('|');
 			if (d !== dk) continue;
@@ -220,31 +214,29 @@ export async function load() {
 	// Übersicht: „ohne Slot"-Eimer (dayNumber == null) zuerst, dann nach Tag/Slot.
 	const overview = (data.preplanOverview?.slots ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => {
+		.sort((a: any, b: any) => {
 			if (a.dayNumber == null) return -1;
 			if (b.dayNumber == null) return 1;
 			return a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber;
 		})
-		.map((/** @type {any} */ s) => ({
+		.map((s: any) => ({
 			...s,
 			bookedRooms: s.dayNumber == null ? [] : bookedRoomsForSlot(s.starttime)
 		}));
 
 	// --- Kalender-Slots: alle Slot-Zeiten mit Prüfung ODER gebuchten Räumen ---
 	// Genutzte Räume eines Slots = decken einen Bedarf (rooms \ roomsToBook).
-	/** @param {any} ov */
-	function usedRoomsOf(ov) {
-		/** @type {Set<string>} */
-		const set = new Set();
+	function usedRoomsOf(ov: any) {
+		const set = new Set<string>();
 		for (const need of [ov?.exahm, ov?.seb]) {
 			for (const r of need?.rooms || []) if (!(need?.roomsToBook || []).includes(r)) set.add(r);
 		}
 		return set;
 	}
-	const overviewByKey = new Map(
+	const overviewByKey = new Map<string, any>(
 		overview
-			.filter((/** @type {any} */ s) => s.dayNumber != null)
-			.map((/** @type {any} */ s) => [`${s.dayNumber}-${s.slotNumber}`, s])
+			.filter((s: any) => s.dayNumber != null)
+			.map((s: any) => [`${s.dayNumber}-${s.slotNumber}`, s])
 	);
 	const emptyNeed = {
 		examCount: 0,
@@ -259,8 +251,8 @@ export async function load() {
 	for (const cs of slots) {
 		const ov = overviewByKey.get(`${cs.dayNumber}-${cs.slotNumber}`);
 		const booked = bookedRoomsForSlot(cs.starttime);
-		const used = ov ? usedRoomsOf(ov) : new Set();
-		const freeRooms = booked.filter((/** @type {string} */ r) => !used.has(r));
+		const used = ov ? usedRoomsOf(ov) : new Set<string>();
+		const freeRooms = booked.filter((r: string) => !used.has(r));
 		const hasExam = !!ov && ((ov.exahm?.examCount || 0) > 0 || (ov.seb?.examCount || 0) > 0);
 		if (!hasExam && freeRooms.length === 0) continue;
 		calendarSlots.push({
@@ -286,4 +278,4 @@ export async function load() {
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
 		zpaPresent: (data.zpaExams ?? []).length > 0
 	};
-}
+};

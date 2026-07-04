@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const queryTodos = gql`
 		query {
 			invigilatorTodos {
@@ -71,7 +72,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const dataTodos = await request(env.PLEXAMS_SERVER, queryTodos);
+	const dataTodos = await request<any>(env.PLEXAMS_SERVER, queryTodos);
 
 	const semesterQuery = gql`
 		query {
@@ -88,7 +89,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
 
 	// Personen, die Aufsicht machen würden (factor > 0), aber per
 	// invigilatorConstraints.<id>.isNotInvigilator in der semester.yaml manuell
@@ -107,11 +108,11 @@ export async function load({ params }) {
 		}
 	`;
 
-	const excludedData = await request(env.PLEXAMS_SERVER, excludedQuery);
+	const excludedData = await request<any>(env.PLEXAMS_SERVER, excludedQuery);
 
 	return {
 		semesterConfig: semesterData.semesterConfig,
 		todos: dataTodos.invigilatorTodos,
 		excludedByConfig: excludedData.invigilatorsExcludedByConfig ?? []
 	};
-}
+};

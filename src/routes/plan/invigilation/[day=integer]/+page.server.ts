@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async ({ params }) => {
 	const semesterQuery = gql`
 		query {
 			semesterConfig {
@@ -17,10 +18,10 @@ export async function load({ params }) {
 		}
 	`;
 
-	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
 
 	return {
 		semesterConfig: semesterData.semesterConfig,
 		day: params.day
 	};
-}
+};

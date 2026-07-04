@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ url }) {
+export const load: PageServerLoad = async ({ url }) => {
 	const semesterQuery = gql`
 		query {
 			semesterConfig {
@@ -20,15 +21,15 @@ export async function load({ url }) {
 		}
 	`;
 
-	const { semesterConfig, planningState } = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const { semesterConfig, planningState } = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
 	const invigilationsBlocked = (planningState?.blockedAreas ?? []).includes('INVIGILATIONS');
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
 	if (!semesterConfig) {
 		return {
 			semesterConfig: null,
-			days: [],
-			ntas: [],
+			days: [] as any[],
+			ntas: [] as any[],
 			invigilationsBlocked,
 			focus: url.searchParams.get('focus')
 		};
@@ -83,19 +84,17 @@ export async function load({ url }) {
 
 	// load the NTA list and every (day, time) slot in parallel
 	const [ntaData, days] = await Promise.all([
-		request(env.PLEXAMS_SERVER, ntaQuery),
+		request<any>(env.PLEXAMS_SERVER, ntaQuery),
 		Promise.all(
-			semesterConfig.days.map(async (/** @type {{ number: number, date: string }} */ day) => {
+			semesterConfig.days.map(async (day: { number: number; date: string }) => {
 				const slots = await Promise.all(
-					semesterConfig.starttimes.map(
-						async (/** @type {{ number: number, start: string }} */ time) => {
-							const data = await request(env.PLEXAMS_SERVER, slotQuery, {
-								day: day.number,
-								time: time.number
-							});
-							return { time, slot: data.roomsWithInvigilationsForSlot };
-						}
-					)
+					semesterConfig.starttimes.map(async (time: { number: number; start: string }) => {
+						const data = await request<any>(env.PLEXAMS_SERVER, slotQuery, {
+							day: day.number,
+							time: time.number
+						});
+						return { time, slot: data.roomsWithInvigilationsForSlot };
+					})
 				);
 				return { ...day, slots };
 			})
@@ -109,4 +108,4 @@ export async function load({ url }) {
 		invigilationsBlocked,
 		focus: url.searchParams.get('focus')
 	};
-}
+};

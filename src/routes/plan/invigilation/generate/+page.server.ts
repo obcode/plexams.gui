@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
 const FIELDS = `
 	timelagMin
@@ -18,8 +19,8 @@ const FIELDS = `
 	weightDaySpan
 `;
 
-export async function load() {
-	const data = await request(
+export const load: PageServerLoad = async () => {
+	const data = await request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -30,4 +31,4 @@ export async function load() {
 		`
 	);
 	return { config: data.generationConfig ?? null };
-}
+};

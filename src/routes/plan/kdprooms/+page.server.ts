@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
 const BOOKING_TIMEZONE = 'Europe/Berlin';
 const bookingDateFormatter = new Intl.DateTimeFormat('sv-SE', {
@@ -15,7 +16,7 @@ const bookingTimeFormatter = new Intl.DateTimeFormat('en-GB', {
 	hour12: false
 });
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const query = `
 		query {
 			roomsForSlots {
@@ -83,31 +84,31 @@ export async function load() {
 			}
 		}
 	`;
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Build slot map
-	const slotMap = new Map();
+	const slotMap = new Map<string, any>();
 
 	// Build room seat map (all rooms)
-	const roomSeatMap = new Map();
+	const roomSeatMap = new Map<string, number>();
 	for (const r of data.rooms) roomSeatMap.set(r.name, r.seats);
 
 	// Initialize with T rooms availability per slot
 	for (const rs of data.roomsForSlots) {
 		const key = `${rs.day}-${rs.slot}`;
 		const tRooms = rs.rooms
-			.filter((/** @type {{name: string, seats: number}} */ r) => r.name.startsWith('T'))
-			.map((/** @type {{name: string, seats: number}} */ r) => ({ name: r.name, seats: r.seats }));
+			.filter((r: { name: string; seats: number }) => r.name.startsWith('T'))
+			.map((r: { name: string; seats: number }) => ({ name: r.name, seats: r.seats }));
 		if (!slotMap.has(key)) {
 			slotMap.set(key, { day: rs.day, slot: rs.slot, tRooms, exams: [], annyBookings: [] });
 		} else slotMap.get(key).tRooms = tRooms;
 	}
 
 	// Index prePlanned rooms by ancode
-	const prePlannedByAncode = new Map();
+	const prePlannedByAncode = new Map<number, any[]>();
 	for (const ppr of data.prePlannedRooms) {
 		if (!prePlannedByAncode.has(ppr.ancode)) prePlannedByAncode.set(ppr.ancode, []);
-		prePlannedByAncode.get(ppr.ancode).push({
+		prePlannedByAncode.get(ppr.ancode)?.push({
 			name: ppr.roomName,
 			seats: roomSeatMap.get(ppr.roomName) ?? null,
 			prePlanned: true,
@@ -135,12 +136,14 @@ export async function load() {
 			});
 		}
 		// Collect plannedRooms from exam OR fallback to prePlannedByAncode
-		let plannedRooms = [];
+		let plannedRooms: any[] = [];
 		if (exam.plannedRooms && exam.plannedRooms.length > 0) {
 			plannedRooms = exam.plannedRooms.map(
-				(
-					/** @type {{room?: {name?: string, seats?: number}, prePlanned: boolean, reserve: boolean}} */ pr
-				) => ({
+				(pr: {
+					room?: { name?: string; seats?: number };
+					prePlanned: boolean;
+					reserve: boolean;
+				}) => ({
 					name: pr.room?.name,
 					seats: pr.room?.seats,
 					prePlanned: pr.prePlanned,
@@ -149,7 +152,7 @@ export async function load() {
 			);
 		}
 		if (plannedRooms.length === 0 && prePlannedByAncode.has(exam.ancode)) {
-			plannedRooms = prePlannedByAncode.get(exam.ancode);
+			plannedRooms = prePlannedByAncode.get(exam.ancode) ?? [];
 		}
 		slotMap.get(key).exams.push({
 			ancode: exam.ancode,
@@ -162,10 +165,10 @@ export async function load() {
 	}
 
 	// Convert semester config to maps for quick lookup
-	const dayMap = new Map();
-	const dayByDate = new Map();
-	const starttimeMap = new Map();
-	const sortedStarttimes = /** @type {{number: number, minutes: number}[]} */ ([]);
+	const dayMap = new Map<number, string>();
+	const dayByDate = new Map<string, number>();
+	const starttimeMap = new Map<number, string>();
+	const sortedStarttimes: { number: number; minutes: number }[] = [];
 	if (data.semesterConfig) {
 		for (const d of data.semesterConfig.days || []) {
 			dayMap.set(d.number, d.date);
@@ -184,8 +187,7 @@ export async function load() {
 	}
 	sortedStarttimes.sort((a, b) => a.minutes - b.minutes);
 
-	/** @param {string | Date | null | undefined} value */
-	const toDateKey = (value) => {
+	const toDateKey = (value: string | Date | null | undefined) => {
 		if (value === null || value === undefined) return null;
 		const raw = String(value);
 		const localIsoMatch = raw.match(/^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/);
@@ -195,8 +197,7 @@ export async function load() {
 		return bookingDateFormatter.format(parsed);
 	};
 
-	/** @param {string | Date | null | undefined} value */
-	const toMinutes = (value) => {
+	const toMinutes = (value: string | Date | null | undefined) => {
 		const raw = String(value || '');
 		const localIsoMatch = raw.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/);
 		if (localIsoMatch) return Number(localIsoMatch[1]) * 60 + Number(localIsoMatch[2]);
@@ -213,14 +214,13 @@ export async function load() {
 	 * Assign a booking only to slots that are fully covered by the booking.
 	 * A slot is 2h long from its configured start time.
 	 * Example: 08:00-11:30 -> slot 08:30 yes, slot 10:30 no (needs booking until 12:30).
-	 * @param {{start: number, end: number}[]} intervals
 	 */
-	const findSlotNumbersFromIntervals = (intervals) => {
+	const findSlotNumbersFromIntervals = (intervals: { start: number; end: number }[]) => {
 		if (!intervals || intervals.length === 0) return [];
 		const SLOT_DURATION_MINUTES = 120;
 
 		// Merge touching/overlapping intervals so consecutive bookings can cover one slot together.
-		const merged = /** @type {{start: number, end: number}[]} */ ([]);
+		const merged: { start: number; end: number }[] = [];
 		for (const interval of [...intervals].sort((a, b) => a.start - b.start)) {
 			if (merged.length === 0) {
 				merged.push({ start: interval.start, end: interval.end });
@@ -244,10 +244,10 @@ export async function load() {
 			.map((s) => s.number);
 	};
 
-	const bookingsByDayRoom =
-		/** @type {Map<string, {booking: any, startMinutes: number, endMinutes: number}[]>} */ (
-			new Map()
-		);
+	const bookingsByDayRoom = new Map<
+		string,
+		{ booking: any; startMinutes: number; endMinutes: number }[]
+	>();
 	for (const booking of data.allAnnyBookings || []) {
 		if (!booking.room || booking.canceledAt) continue;
 		const dateKey = toDateKey(booking.startDate);
@@ -274,7 +274,7 @@ export async function load() {
 		if (!Number.isFinite(dayNumber)) continue;
 
 		const slotNumbers = findSlotNumbersFromIntervals(
-			entries.map((/** @type {{startMinutes: number, endMinutes: number}} */ e) => ({
+			entries.map((e: { startMinutes: number; endMinutes: number }) => ({
 				start: e.startMinutes,
 				end: e.endMinutes
 			}))
@@ -331,4 +331,4 @@ export async function load() {
 	slots.sort((a, b) => (a.day === b.day ? a.slot - b.slot : a.day - b.day));
 
 	return { slots };
-}
+};

@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			invigilatorConstraints {
@@ -33,32 +34,28 @@ export async function load() {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Kandidaten-Pool (enthält auch Ausgeschlossene — nötig für die Pflege).
 	const candidates = (data.invigilatorCandidates ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
-	/** @type {Map<number, any>} */
-	const teacherById = new Map(candidates.map((/** @type {any} */ t) => [t.id, t]));
+		.sort((a: any, b: any) => a.shortname.localeCompare(b.shortname));
+	const teacherById = new Map<number, any>(candidates.map((t: any) => [t.id, t]));
 
-	/** @param {number} id */
-	const nameOf = (id) => {
+	const nameOf = (id: number) => {
 		const t = teacherById.get(id);
 		return { shortname: t?.shortname ?? `#${id}`, fullname: t?.fullname ?? '' };
 	};
 
 	const constraints = (data.invigilatorConstraints ?? [])
-		.map((/** @type {any} */ c) => ({ ...c, ...nameOf(c.teacherID) }))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.shortname.localeCompare(b.shortname));
+		.map((c: any) => ({ ...c, ...nameOf(c.teacherID) }))
+		.sort((a: any, b: any) => a.shortname.localeCompare(b.shortname));
 
 	// Permanente Nicht-Aufsichten (global, semesterübergreifend). Name kommt aus
 	// dem Datensatz selbst — so bleiben auch Ehemalige (nicht mehr im Pool) lesbar.
 	const permanent = (data.permanentNonInvigilators ?? [])
 		.slice()
-		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
-			(a.name ?? '').localeCompare(b.name ?? '')
-		);
+		.sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''));
 
 	return {
 		constraints,
@@ -66,4 +63,4 @@ export async function load() {
 		permanent,
 		days: data.semesterConfig?.days ?? []
 	};
-}
+};
