@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import EmailSender from '$lib/email/EmailSender.svelte';
 
 	// „Prüfungsplanungs-Info" an die Prüfenden: erst Empfänger auswählen, dann
@@ -28,7 +26,7 @@
 	let selected = $state(new Set());
 	let initialized = $state(false);
 	// Default: alle mit E-Mail ausgewählt (einmalig, sobald Empfänger da sind).
-	run(() => {
+	$effect(() => {
 		if (!initialized && withEmail.length) {
 			selected = new Set(withEmail.map((r) => r.teacher.id));
 			initialized = true;

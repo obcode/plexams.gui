@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import EmailCard from '$lib/email/EmailCard.svelte';
 	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
@@ -24,7 +22,7 @@
 	let puEmail = $state('');
 	let newNtaMtknr = $state('');
 	let roomAloneMtknr = $state('');
-	run(() => {
+	$effect(() => {
 		data.conditionsDone.then((/** @type {Record<string, boolean>} */ v) => (conditionsDone = v));
 	});
 	// „bereits gesendet": zugehörige Bedingung ist done. Solche Versände wandern
@@ -37,10 +35,10 @@
 		return !!k && conditionsDone[k] === true;
 	});
 	let sentEmails = $derived(emailGroups.flatMap((g) => g.emails).filter(isSent));
-	run(() => {
+	$effect(() => {
 		data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
 	});
-	run(() => {
+	$effect(() => {
 		data.examPlanningMailRecipients.then(
 			(/** @type {any[]} */ v) => (examPlanningMailRecipients = v)
 		);

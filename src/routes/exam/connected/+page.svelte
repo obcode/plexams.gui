@@ -1,23 +1,13 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import { levelOf, zpaPrograms, primussPrograms } from '$lib/exam/connected.js';
 	import ConnectedRow from '$lib/exam/ConnectedRow.svelte';
 
 	let { data } = $props();
 
-	// lokaler, bearbeitbarer State — Mutationen ersetzen nur den betroffenen
-	// Eintrag (kein Voll-Reload).
+	// Writable derived: folgt den Load-Daten, Mutationen ersetzen optimistisch nur
+	// den betroffenen Eintrag (kein Voll-Reload); Reset beim nächsten Load.
 	/** @type {any[]} */
-	let exams = $state([]);
-	/** @type {any} */
-	let lastData = $state();
-	run(() => {
-		if (data.connectedExams !== lastData) {
-			exams = [...(data.connectedExams ?? [])];
-			lastData = data.connectedExams;
-		}
-	});
+	let exams = $derived([...(data.connectedExams ?? [])]);
 
 	/** @param {any} updated → aktualisiertes ConnectedExam einsetzen */
 	function onUpdated(updated) {
@@ -25,9 +15,7 @@
 		const i = exams.findIndex(
 			(/** @type {any} */ e) => e.zpaExam.ancode === updated.zpaExam.ancode
 		);
-		if (i >= 0) exams[i] = updated;
-		else exams = [...exams, updated];
-		exams = exams;
+		exams = i >= 0 ? exams.map((e, idx) => (idx === i ? updated : e)) : [...exams, updated];
 	}
 
 	let rows = $derived(exams.map((/** @type {any} */ e) => ({ ...e, level: levelOf(e) })));

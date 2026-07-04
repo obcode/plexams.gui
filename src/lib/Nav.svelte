@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import {
@@ -338,7 +336,7 @@
 	// bei jedem Seitenwechsel den „veraltet"-Zustand neu prüfen (im SPA feuert
 	// window.focus nicht, und der Intervall hätte bis zu 20 s Latenz)
 	let lastCheckedPath = $state('');
-	run(() => {
+	$effect(() => {
 		if (pathname && pathname !== lastCheckedPath) {
 			lastCheckedPath = pathname;
 			checkStaleStates();

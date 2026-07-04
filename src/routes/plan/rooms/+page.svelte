@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
@@ -96,7 +94,7 @@
 		}
 		showDays = showDays;
 	}
-	run(() => {
+	$effect(() => {
 		applyDayDefaults(showRooms, showAllDays);
 	});
 

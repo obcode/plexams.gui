@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	let { data } = $props();
 
 	// Gestreamte Load-Daten: Seite rendert sofort, Tabelle füllt sich nach.
@@ -13,7 +11,7 @@
 	/** @type {string | null} */
 	let currentSemester = $state(null);
 	let loading = $state(true);
-	run(() => {
+	$effect(() => {
 		data.people.then((/** @type {any} */ p) => {
 			teachers = p.teachers;
 			invigById = p.invigById;
@@ -119,7 +117,7 @@
 	/** @type {Set<string>} */
 	let openSections = $state(new Set());
 	let openInit = $state(false);
-	run(() => {
+	$effect(() => {
 		if (!loading && groupBySemester && !openInit && sections.length) {
 			openSections = new Set([sections[0].key]);
 			openInit = true;
