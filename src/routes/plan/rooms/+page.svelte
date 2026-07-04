@@ -290,7 +290,7 @@
 				<WriteButton
 					class="btn btn-outline btn-error btn-sm"
 					disabled={data.roomsBlocked || resetBusy}
-					on:click={resetRooms}
+					onclick={resetRooms}
 				>
 					{resetBusy ? 'Setzt zurück…' : 'Raumzuteilung zurücksetzen'}
 				</WriteButton>
@@ -507,7 +507,7 @@
 														title={isBlocked
 															? `gesperrt${blockedReason ? ': ' + blockedReason : ''} — klicken zum Entsperren`
 															: `Tag ${day.number} · Slot ${slot.number}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
-														on:click={() => toggleBlock(day.number, slot.number, roomName)}
+														onclick={() => toggleBlock(day.number, slot.number, roomName)}
 													>
 														{slot.number}
 													</WriteButton>
@@ -519,7 +519,7 @@
 													title={dayAllBlocked
 														? 'ganzen Tag freigeben'
 														: 'ganzen Tag für diesen Raum sperren'}
-													on:click={() => toggleBlockDay(day.number, roomName)}
+													onclick={() => toggleBlockDay(day.number, roomName)}
 												>
 													Tag
 												</WriteButton>

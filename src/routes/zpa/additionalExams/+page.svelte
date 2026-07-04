@@ -195,7 +195,7 @@
 							<td class="text-right whitespace-nowrap">
 								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}>Bearbeiten</button
 								>
-								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(ex)}
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(ex)}
 									>Löschen</WriteButton
 								>
 							</td>
@@ -291,7 +291,7 @@
 			<div class="modal-action">
 				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
-				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
 			</div>

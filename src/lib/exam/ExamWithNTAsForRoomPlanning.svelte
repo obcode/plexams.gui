@@ -343,7 +343,7 @@
 							title={room.prePlanned
 								? 'in Vorplanung fixiert – klicken zum Lösen'
 								: 'in Vorplanung fixieren (überlebt Neuzuordnung)'}
-							on:click={() =>
+							onclick={() =>
 								room.prePlanned ? removePrePlan(exam.ancode, room) : prePlanRoom(exam.ancode, room)}
 						>
 							📌
@@ -435,7 +435,7 @@
 											? 'opacity-70'
 											: ''}"
 										title={c.dimReason ? `${c.dimReason} — trotzdem wählbar` : 'vorplanen'}
-										on:click={() => addRoom(c)}
+										onclick={() => addRoom(c)}
 									>
 										<div class="flex w-full flex-wrap items-center gap-1">
 											<span class="font-medium">{c.roomName}</span>

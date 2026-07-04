@@ -772,7 +772,7 @@
 		</button>
 		<WriteButton
 			class="btn btn-secondary btn-sm"
-			on:click={generate}
+			onclick={generate}
 			disabled={validating || generating}
 			title="Verteilt alle nicht-fixierten Prüfungen neu (auch bereits gesetzte); fixierte bleiben."
 		>
@@ -1121,7 +1121,7 @@
 											class="btn btn-ghost btn-xs"
 											title="fixiert — klicken zum Lösen"
 											disabled={busy.has(e.id)}
-											on:click={() => setFixed(e, false)}
+											onclick={() => setFixed(e, false)}
 										>
 											🔒
 										</WriteButton>
@@ -1132,7 +1132,7 @@
 												? 'Slot fixieren (bleibt bei „Automatisch verteilen")'
 												: 'erst einen Slot setzen, dann fixierbar'}
 											disabled={busy.has(e.id) || !slotValue(e)}
-											on:click={() => setFixed(e, true)}
+											onclick={() => setFixed(e, true)}
 										>
 											🔓
 										</WriteButton>
@@ -1155,7 +1155,7 @@
 											class="btn btn-ghost btn-xs text-error"
 											title="Slot-Zuordnung aufheben"
 											disabled={busy.has(e.id)}
-											on:click={() => setSlot(e, '')}
+											onclick={() => setSlot(e, '')}
 										>
 											✕
 										</WriteButton>
@@ -1165,7 +1165,7 @@
 							<td>
 								{#if e.ancode}
 									<span class="badge badge-success badge-sm tabular-nums">✓ {e.ancode}</span>
-									<WriteButton class="btn btn-ghost btn-xs" on:click={() => disconnect(e)}
+									<WriteButton class="btn btn-ghost btn-xs" onclick={() => disconnect(e)}
 										>Lösen</WriteButton
 									>
 								{:else}
@@ -1182,7 +1182,7 @@
 									Constraints
 								</button>
 								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(e)}>Bearbeiten</button>
-								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(e)}
 									>Löschen</WriteButton
 								>
 							</td>
@@ -1330,7 +1330,7 @@
 			<div class="modal-action">
 				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
-				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
 			</div>
@@ -1414,7 +1414,7 @@
 											<WriteButton
 												class="btn btn-primary btn-xs"
 												disabled={connecting}
-												on:click={() => connect(s.ancode)}
+												onclick={() => connect(s.ancode)}
 											>
 												verknüpfen
 											</WriteButton>
@@ -1443,7 +1443,7 @@
 					<WriteButton
 						class="btn btn-outline btn-sm"
 						disabled={connecting || !manualAncode}
-						on:click={() => connect(manualAncode)}
+						onclick={() => connect(manualAncode)}
 					>
 						verknüpfen
 					</WriteButton>
@@ -1583,7 +1583,7 @@
 				<button class="btn btn-ghost btn-sm" onclick={closeConstraints} disabled={conSaving}>
 					Abbrechen
 				</button>
-				<WriteButton class="btn btn-primary btn-sm" on:click={saveConstraints} disabled={conSaving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={saveConstraints} disabled={conSaving}>
 					{conSaving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
 			</div>

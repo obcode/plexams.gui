@@ -306,7 +306,7 @@
 										{c._empty ? 'Anlegen' : 'Bearbeiten'}
 									</button>
 									{#if !c._empty}
-										<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(c)}
+										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(c)}
 											>Löschen</WriteButton
 										>
 									{/if}
@@ -407,7 +407,7 @@
 			<div class="modal-action">
 				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
-				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert…' : 'Speichern'}
 				</WriteButton>
 			</div>

@@ -364,7 +364,7 @@
 			</div>
 
 			<div>
-				<WriteButton class="btn btn-outline btn-sm" disabled={cfgSaving} on:click={saveConfig}>
+				<WriteButton class="btn btn-outline btn-sm" disabled={cfgSaving} onclick={saveConfig}>
 					{cfgSaving ? 'speichert …' : 'Parameter speichern'}
 				</WriteButton>
 			</div>

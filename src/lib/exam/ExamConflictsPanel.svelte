@@ -354,7 +354,7 @@
 								class="btn btn-ghost btn-xs text-error"
 								disabled={busy === `s${key}`}
 								title="zurücknehmen"
-								on:click={() => removeShare(c.ancode1, c.ancode2)}
+								onclick={() => removeShare(c.ancode1, c.ancode2)}
 							>
 								✕
 							</WriteButton>
@@ -364,7 +364,7 @@
 							class="btn btn-ghost btn-xs"
 							disabled={busy === `s${key}`}
 							title="nur bei fehlerhafter Anmeldung sinnvoll — wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf"
-							on:click={() => allowShare(c.ancode1, c.ancode2)}
+							onclick={() => allowShare(c.ancode1, c.ancode2)}
 						>
 							＋ erlauben
 						</WriteButton>
@@ -405,7 +405,7 @@
 											<WriteButton
 												class="btn btn-ghost btn-xs"
 												disabled={busy === `a${key}-${s.mtknr}`}
-												on:click={() => clearDecision(c, s)}
+												onclick={() => clearDecision(c, s)}
 											>
 												Veto zurücknehmen
 											</WriteButton>
@@ -414,7 +414,7 @@
 												class="btn btn-ghost btn-xs text-error"
 												disabled={busy === `a${key}-${s.mtknr}`}
 												title="doch nicht akzeptieren — Nähe-Strafe für diese:n Studierende:n wieder aktivieren"
-												on:click={() => decide(c, s, 'VETO')}
+												onclick={() => decide(c, s, 'VETO')}
 											>
 												Veto
 											</WriteButton>
@@ -424,7 +424,7 @@
 										<WriteButton
 											class="btn btn-ghost btn-xs text-error"
 											disabled={busy === `a${key}-${s.mtknr}`}
-											on:click={() => clearDecision(c, s)}
+											onclick={() => clearDecision(c, s)}
 										>
 											zurücknehmen
 										</WriteButton>
@@ -432,7 +432,7 @@
 										<WriteButton
 											class="btn btn-outline btn-xs"
 											disabled={busy === `a${key}-${s.mtknr}`}
-											on:click={() => decide(c, s, 'ACCEPT')}
+											onclick={() => decide(c, s, 'ACCEPT')}
 										>
 											akzeptieren
 										</WriteButton>
@@ -659,7 +659,7 @@
 										<WriteButton
 											class="btn btn-primary btn-xs"
 											disabled={busy === `s${key}`}
-											on:click={() => allowShare(s.ancode1, s.ancode2)}
+											onclick={() => allowShare(s.ancode1, s.ancode2)}
 										>
 											bestätigen
 										</WriteButton>
@@ -694,7 +694,7 @@
 							<WriteButton
 								class="btn btn-ghost btn-xs text-error"
 								disabled={busy === `s${key}`}
-								on:click={() => removeShare(s.ancode1, s.ancode2)}
+								onclick={() => removeShare(s.ancode1, s.ancode2)}
 							>
 								entfernen
 							</WriteButton>

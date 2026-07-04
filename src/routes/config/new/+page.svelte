@@ -120,7 +120,7 @@
 		<WriteButton
 			class="btn btn-primary"
 			disabled={creating || !nameOk || !!createdName}
-			on:click={create}
+			onclick={create}
 		>
 			{creating ? 'legt an …' : 'Semester anlegen'}
 		</WriteButton>

@@ -399,14 +399,14 @@
 				class="btn btn-primary btn-sm"
 				disabled={examsBlocked || fixBusy}
 				title={examsBlocked ? 'gesperrt — siehe Hinweis oben' : ''}
-				on:click={doFix}
+				onclick={doFix}
 			>
 				EXaHM/SEB fixieren
 			</WriteButton>
 			<WriteButton
 				class="btn btn-ghost btn-sm"
 				disabled={examsBlocked || fixBusy}
-				on:click={doUnfix}
+				onclick={doUnfix}
 			>
 				Fixierung aufheben
 			</WriteButton>

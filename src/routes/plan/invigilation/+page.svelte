@@ -351,7 +351,7 @@
 				<WriteButton
 					class="btn btn-outline btn-error btn-xs"
 					disabled={data.invigilationsBlocked || resetBusy}
-					on:click={resetInvigilations}
+					onclick={resetInvigilations}
 				>
 					{resetBusy ? 'Setzt zurück…' : 'Aufsichteneinteilung zurücksetzen'}
 				</WriteButton>
@@ -482,7 +482,7 @@
 												class="badge badge-success badge-sm gap-1"
 												disabled={busy.has(rKey)}
 												title="Reserve aus der Vorplanung entfernen"
-												on:click={() =>
+												onclick={() =>
 													removePre(
 														day.number,
 														s.time.number,
@@ -498,7 +498,7 @@
 													class="badge badge-ghost badge-sm"
 													disabled={busy.has(rKey)}
 													title="aktuelle Reserve in die Vorplanung übernehmen"
-													on:click={() =>
+													onclick={() =>
 														fixCurrent(
 															day.number,
 															s.time.number,
@@ -526,7 +526,7 @@
 												<WriteButton
 													class="btn btn-primary btn-xs"
 													disabled={!pickSel || busy.has(rKey)}
-													on:click={() =>
+													onclick={() =>
 														assignPerson(
 															day.number,
 															s.time.number,
@@ -659,7 +659,7 @@
 																	class="badge badge-success badge-sm gap-1"
 																	disabled={busy.has(rKey)}
 																	title="aus der Vorplanung entfernen"
-																	on:click={() =>
+																	onclick={() =>
 																		removePre(
 																			day.number,
 																			s.time.number,
@@ -675,7 +675,7 @@
 																		class="badge badge-ghost badge-sm"
 																		disabled={busy.has(rKey)}
 																		title="aktuelle Aufsicht in die Vorplanung übernehmen"
-																		on:click={() =>
+																		onclick={() =>
 																			fixCurrent(
 																				day.number,
 																				s.time.number,
@@ -708,7 +708,7 @@
 																<WriteButton
 																	class="btn btn-primary btn-xs"
 																	disabled={!pickSel || busy.has(rKey)}
-																	on:click={() =>
+																	onclick={() =>
 																		assignPerson(
 																			day.number,
 																			s.time.number,

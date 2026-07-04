@@ -511,7 +511,7 @@
 									<WriteButton
 										class="btn btn-primary btn-xs"
 										disabled={connectBusy || connectTarget === '' || !connectPreview}
-										on:click={doConnect}
+										onclick={doConnect}
 									>
 										{connectBusy ? 'verbindet …' : '✓ verbinden'}
 									</WriteButton>

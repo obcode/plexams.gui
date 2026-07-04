@@ -228,7 +228,7 @@
 				this={collapsible ? 'button' : 'div'}
 				class="flex items-center gap-2 {collapsible ? 'cursor-pointer' : ''}"
 				aria-expanded={collapsible ? open : undefined}
-				on:click={() => collapsible && (open = !open)}
+				onclick={() => collapsible && (open = !open)}
 			>
 				{#if collapsible}
 					<span class="text-base-content/50">{open ? '▾' : '▸'}</span>
@@ -273,7 +273,7 @@
 			</div>
 		</div>
 		<div class="flex-1"></div>
-		<button class="btn btn-primary btn-sm gap-2" on:click={runAll} disabled={anyRunning}>
+		<button class="btn btn-primary btn-sm gap-2" onclick={runAll} disabled={anyRunning}>
 			{#if anyRunning}
 				<span class="loading loading-spinner loading-xs"></span>
 			{/if}

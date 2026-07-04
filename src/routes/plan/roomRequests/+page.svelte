@@ -356,7 +356,7 @@
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={applying}
-					on:click={() => applyPreview(false)}
+					onclick={() => applyPreview(false)}
 				>
 					{#if applying}<span class="loading loading-spinner loading-xs"></span>{/if}
 					Übernehmen
@@ -681,7 +681,7 @@
 					</button>
 					<WriteButton
 						class="btn btn-primary btn-sm gap-2"
-						on:click={saveModal}
+						onclick={saveModal}
 						disabled={mSaving || !modalValid}
 					>
 						{#if mSaving}<span class="loading loading-spinner loading-xs"></span>{/if}

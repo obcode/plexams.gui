@@ -555,12 +555,12 @@
 						<WriteButton
 							class="btn btn-success btn-xs"
 							disabled={busy.has(e.ancode)}
-							on:click={() => setStatus(e, 'toPlan')}>planen</WriteButton
+							onclick={() => setStatus(e, 'toPlan')}>planen</WriteButton
 						>
 						<WriteButton
 							class="btn btn-error btn-xs"
 							disabled={busy.has(e.ancode)}
-							on:click={() => setStatus(e, 'notToPlan')}>nicht</WriteButton
+							onclick={() => setStatus(e, 'notToPlan')}>nicht</WriteButton
 						>
 					{:else}
 						<input
@@ -608,7 +608,7 @@
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode)}
 								title="Dauer-Override entfernen"
-								on:click={() => rmDur(e)}>✕</WriteButton
+								onclick={() => rmDur(e)}>✕</WriteButton
 							>
 						{:else}
 							<span class="badge badge-error badge-sm" title="keine Dauer hinterlegt">Dauer 0</span>
@@ -622,7 +622,7 @@
 							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode) || !durInput[e.ancode]}
-								on:click={() => setDur(e)}>setzen</WriteButton
+								onclick={() => setDur(e)}>setzen</WriteButton
 							>
 						{/if}
 					</div>

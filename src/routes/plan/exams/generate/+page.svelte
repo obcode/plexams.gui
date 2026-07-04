@@ -588,7 +588,7 @@
 				class="btn btn-outline btn-error btn-sm"
 				disabled={examsBlocked || resetBusy}
 				title={examsBlocked ? 'Plan veröffentlicht — Zurücksetzen gesperrt' : ''}
-				on:click={resetSchedule}
+				onclick={resetSchedule}
 			>
 				{resetBusy ? 'Setzt zurück…' : 'Generierten Terminplan zurücksetzen'}
 			</WriteButton>

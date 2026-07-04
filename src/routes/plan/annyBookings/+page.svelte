@@ -313,7 +313,7 @@
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={savingNames || !namesDirty}
-					on:click={saveNames}
+					onclick={saveNames}
 				>
 					{savingNames ? 'speichert …' : 'Speichern'}
 				</WriteButton>

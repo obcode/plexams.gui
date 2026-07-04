@@ -196,7 +196,7 @@
 		{/if}
 		<span class="text-sm text-base-content/50">global, semesterübergreifend</span>
 		<div class="flex-1"></div>
-		<WriteButton class="btn btn-outline btn-sm" disabled={seeding} on:click={seed}>
+		<WriteButton class="btn btn-outline btn-sm" disabled={seeding} onclick={seed}>
 			{seeding ? 'füllt …' : 'fehlende aus Config anlegen'}
 		</WriteButton>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Studiengang</button>
@@ -272,7 +272,7 @@
 										<button class="btn btn-ghost btn-xs" onclick={() => openEdit(p)}
 											>Bearbeiten</button
 										>
-										<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(p)}
+										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(p)}
 											>Löschen</WriteButton
 										>
 									</td>
@@ -359,7 +359,7 @@
 			<div class="modal-action">
 				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
-				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
 			</div>

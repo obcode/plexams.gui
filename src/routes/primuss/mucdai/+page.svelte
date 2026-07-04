@@ -461,7 +461,7 @@
 							</td>
 							<td class="text-right whitespace-nowrap">
 								{#if g.linkStatus === 'unresolved'}
-									<WriteButton class="btn btn-warning btn-xs" on:click={() => openLink(g)}>
+									<WriteButton class="btn btn-warning btn-xs" onclick={() => openLink(g)}>
 										Verknüpfen
 									</WriteButton>
 								{:else}
@@ -535,7 +535,7 @@
 				<button class="btn btn-ghost btn-sm" onclick={() => (timeFor = null)} disabled={timeSaving}>
 					Abbrechen
 				</button>
-				<WriteButton class="btn btn-primary btn-sm" on:click={saveTime} disabled={timeSaving}>
+				<WriteButton class="btn btn-primary btn-sm" onclick={saveTime} disabled={timeSaving}>
 					{timeSaving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
 			</div>
@@ -562,7 +562,7 @@
 					<WriteButton
 						class="btn btn-outline btn-error btn-xs"
 						disabled={linking}
-						on:click={unlinkAll}
+						onclick={unlinkAll}
 					>
 						Verknüpfung entfernen
 					</WriteButton>
@@ -602,7 +602,7 @@
 										<WriteButton
 											class="btn btn-primary btn-xs"
 											disabled={linking || c.ancode === linkFor.ancode}
-											on:click={() => linkTo(c.ancode)}
+											onclick={() => linkTo(c.ancode)}
 										>
 											{c.ancode === linkFor.ancode ? 'verknüpft' : 'verknüpfen'}
 										</WriteButton>

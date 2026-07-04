@@ -381,7 +381,7 @@
 			<button class="btn btn-ghost btn-sm" disabled={saving} onclick={() => dispatch('close')}>
 				Abbrechen
 			</button>
-			<WriteButton class="btn btn-primary btn-sm" disabled={saving} on:click={save}>
+			<WriteButton class="btn btn-primary btn-sm" disabled={saving} onclick={save}>
 				{saving ? 'speichert …' : 'Speichern'}
 			</WriteButton>
 		</div>

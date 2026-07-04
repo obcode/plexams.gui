@@ -102,7 +102,7 @@
 		<WriteButton
 			class="btn btn-neutral btn-sm"
 			disabled={!teacherID || !reason.trim() || busy}
-			on:click={add}
+			onclick={add}
 		>
 			{busy ? 'speichert…' : 'permanent ausschließen'}
 		</WriteButton>
@@ -128,7 +128,7 @@
 							<td class="font-medium">{p.name}</td>
 							<td class="text-base-content/70">{p.reason}</td>
 							<td class="text-right">
-								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => remove(p)}>
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => remove(p)}>
 									aufheben
 								</WriteButton>
 							</td>

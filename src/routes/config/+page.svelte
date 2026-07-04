@@ -106,7 +106,7 @@
 				<span class="text-xs font-medium text-base-content/60">E-Mail</span>
 				<input type="email" class="input input-bordered input-sm w-72" bind:value={planerEmail} />
 			</label>
-			<WriteButton class="btn btn-primary btn-sm" disabled={planerSaving} on:click={savePlaner}>
+			<WriteButton class="btn btn-primary btn-sm" disabled={planerSaving} onclick={savePlaner}>
 				{planerSaving ? 'speichert …' : 'Planer speichern'}
 			</WriteButton>
 			{#if planerSavedAt}
@@ -128,7 +128,7 @@
 	<SemesterConfigForm bind:this={formComp} config={data.config} />
 
 	<div class="flex items-center gap-3">
-		<WriteButton class="btn btn-primary" disabled={saving} on:click={save}>
+		<WriteButton class="btn btn-primary" disabled={saving} onclick={save}>
 			{saving ? 'speichert …' : 'Speichern'}
 		</WriteButton>
 		<span class="text-xs text-base-content/50">
