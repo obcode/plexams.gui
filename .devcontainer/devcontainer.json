@@ -75,7 +75,7 @@
   "remoteEnv": {
     "SHELL": "/bin/zsh"
   },
-  "postCreateCommand": "/usr/local/bin/setup-shell.sh",
+  "postCreateCommand": "/usr/local/bin/setup-shell.sh && pnpm install",
   "runArgs": [
     "--network=host"
   ]

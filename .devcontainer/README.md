@@ -44,23 +44,23 @@ Andere Umgebungsvariablen sollten in der `.env` Datei im Projekt-Root definiert 
 
 ## Post-Create Command
 
-Nach dem Erstellen des Containers werden automatisch ausgeführt:
+Nach dem Erstellen des Containers wird automatisch ausgeführt:
 
-- `npm install` - Installation aller Dependencies
-- `npx playwright install --with-deps` - Installation von Playwright und Browser-Dependencies
+- `pnpm install` - Installation aller Dependencies (pnpm via Corepack, Version aus dem `packageManager`-Feld)
+
+Playwright-Browser bei Bedarf einmalig nachinstallieren: `pnpm exec playwright install --with-deps`.
 
 ## Entwicklungsbefehle
 
 Nach dem Start des DevContainers können Sie folgende Befehle nutzen:
 
 ```bash
-npm run dev          # Startet den Dev-Server
-npm run build        # Baut das Projekt
-npm run preview      # Startet den Preview-Server
-npm run check        # TypeScript & Svelte Check
-npm run lint         # ESLint & Prettier Check
-npm run format       # Code formatieren
-npm run test         # Unit & E2E Tests
-npm run test:unit    # Nur Unit Tests
-npm run test:e2e     # Nur E2E Tests
+pnpm dev             # Startet den Dev-Server
+pnpm build           # Baut das Projekt
+pnpm preview         # Startet den Preview-Server
+pnpm check           # TypeScript & Svelte Check
+pnpm lint            # Prettier Check (ESLint ist nicht konfiguriert)
+pnpm format          # Code formatieren
+pnpm test            # Unit Tests (Vitest)
+pnpm test:e2e        # E2E Tests (Playwright)
 ```

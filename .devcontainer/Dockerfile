@@ -12,6 +12,12 @@ RUN apt-get update \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
+# pnpm via Corepack aktivieren (als root, damit die Shims für den node-User
+# verfügbar sind). Die konkrete pnpm-Version kommt aus dem "packageManager"-Feld
+# der package.json. Der Prompt zum Download der Version wird unterdrückt.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable
+
 # Copy setup script into the container
 COPY setup-shell.sh /usr/local/bin/setup-shell.sh
 RUN chmod +x /usr/local/bin/setup-shell.sh
