@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
 
-/** @type {import('./$types').PageLoad} */
-export function load({ params }) {
+export const load: PageLoad = ({ params }) => {
 	throw redirect(308, `/exam/assembledExams/${params.ancode}`);
-}
+};
