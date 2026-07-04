@@ -1,6 +1,4 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
@@ -34,22 +32,32 @@
 
 	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
 
-	// Lokale, patchbare Kopie: die Konflikte können aus einem Lauf-Snapshot
-	// (examReport.conflicts) kommen, der sich bei Bewertungen nicht von selbst
-	// aktualisiert. Beim Wechsel der Quelle (neuer Lauf / frischer Load) neu
-	// aufsetzen, dazwischen optimistisch patchen.
+	// Lokale, patchbare Kopie als writable $derived: folgt dem `conflicts`-Prop
+	// (Lauf-Snapshot examReport.conflicts oder frischer Load) und wird bei jedem
+	// invalidateAll neu aufgesetzt; dazwischen optimistisch per Reassignment
+	// gepatcht. $derived läuft — anders als $effect — auch bei SSR, sodass die
+	// Konflikte schon im SSR-HTML stehen.
 	/** @type {any[]} */
-	let working = $state([]);
-	/** @type {any} */
-	let seenRef = $state();
-	/** @param {number} a1 @param {number} a2 @param {(c:any)=>void} fn */
+	let working = $derived(
+		conflicts.map((/** @type {any} */ c) => ({
+			...c,
+			affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
+		}))
+	);
+	/** Genau einen Konflikt (per Paar-Schlüssel) optimistisch ersetzen — Reassignment
+	 * statt In-place-Mutation, damit das writable $derived reaktiv bleibt.
+	 * @param {number} a1 @param {number} a2 @param {(c:any)=>void} fn */
 	function patch(a1, a2, fn) {
 		const k = pairKey(a1, a2);
-		const w = working.find((/** @type {any} */ c) => pairKey(c.ancode1, c.ancode2) === k);
-		if (w) {
-			fn(w);
-			working = working;
-		}
+		working = working.map((/** @type {any} */ c) => {
+			if (pairKey(c.ancode1, c.ancode2) !== k) return c;
+			const copy = {
+				...c,
+				affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
+			};
+			fn(copy);
+			return copy;
+		});
 	}
 
 	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
@@ -159,15 +167,6 @@
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
 		);
-	run(() => {
-		if (conflicts !== seenRef) {
-			seenRef = conflicts;
-			working = conflicts.map((/** @type {any} */ c) => ({
-				...c,
-				affectedStudents: (c.affectedStudents ?? []).map((/** @type {any} */ s) => ({ ...s }))
-			}));
-		}
-	});
 	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
 	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
 	let hasDiff = $derived(
