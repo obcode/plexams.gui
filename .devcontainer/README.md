@@ -48,7 +48,17 @@ Nach dem Erstellen des Containers wird automatisch ausgeführt:
 
 - `pnpm install` - Installation aller Dependencies (pnpm via Corepack, Version aus dem `packageManager`-Feld)
 
-Playwright-Browser bei Bedarf einmalig nachinstallieren: `pnpm exec playwright install --with-deps`.
+## Playwright / Browser-Tests
+
+Chromium ist samt Systemabhängigkeiten bereits ins Image gebacken (siehe
+`Dockerfile`), unter `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`. `pnpm test:e2e`
+läuft damit ohne weiteren Download.
+
+Die Browser-Version ist auf **Playwright 1.61.1** gepinnt und muss mit
+`@playwright/test` in der `package.json` des Projekts übereinstimmen. Weicht die
+Projekt-Version ab, verlangt Playwright einen Neu-Download; dann entweder die
+Version dort angleichen oder einmalig `pnpm exec playwright install chromium`.
+Nur ein anderer Browser (Firefox/WebKit) → `pnpm exec playwright install <name>`.
 
 ## Entwicklungsbefehle
 
