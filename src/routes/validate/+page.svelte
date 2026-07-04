@@ -7,10 +7,10 @@
 
 	/**
 	 * @param {string} id
-	 * @param {CustomEvent<any>} e
+	 * @param {any} s die Kennzahlen der Gruppe
 	 */
-	function onStats(id, e) {
-		stats = { ...stats, [id]: e.detail };
+	function onStats(id, s) {
+		stats = { ...stats, [id]: s };
 	}
 
 	let all = $derived(Object.values(stats));
@@ -65,7 +65,7 @@
 			storeId={group.id}
 			collapsible
 			collapsed
-			on:stats={(e) => onStats(group.id, e)}
+			onstats={(s) => onStats(group.id, s)}
 		/>
 	{/each}
 </div>

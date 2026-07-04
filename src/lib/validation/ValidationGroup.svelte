@@ -1,36 +1,37 @@
-<!-- @migration-task Error while migrating Svelte code: can't migrate `let open = !collapsed;` to `$state` because there's a variable named state.
-     Rename the variable and try again or migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: can't migrate `let open = !collapsed;` to `$state` because there's a variable named state.
-     Rename the variable and try again or migrate by hand. -->
 <script>
-	import { onMount, onDestroy, createEventDispatcher } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 	import { setGroupStats } from '$lib/validation/store';
 	import ValidatorCard from '$lib/validation/ValidatorCard.svelte';
 
-	/** @type {import('$lib/validation/validators').ValidatorDef[]} */
-	export let validators;
-	/** optionale Überschrift über der Gruppe */
-	export let title = '';
-	/** automatisch beim Einhängen starten */
-	export let autostart = true;
-	/** wenn gesetzt, wird das Ergebnis unter dieser ID in den globalen Store gespiegelt */
-	export let storeId = '';
-	/** pro Validator-Key überschreibbare Argument-Werte, z. B. { validateConflicts: { ancode: 42 } } */
-	/** @type {Record<string, Record<string, any>>} */
-	export let argOverrides = {};
-	/** Karten ein-/ausklappbar machen (Header bleibt sichtbar) */
-	export let collapsible = false;
-	/** initial eingeklappt (nur relevant bei collapsible) */
-	export let collapsed = false;
-	/** an die ValidatorCard durchgereicht: „eigener Raum"-Verzicht akzeptieren
-	 * @type {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} */
-	export let onAcceptWaiver = null;
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('$lib/validation/validators').ValidatorDef[]} validators
+	 * @property {string} [title] - optionale Überschrift über der Gruppe
+	 * @property {boolean} [autostart] - automatisch beim Einhängen starten
+	 * @property {string} [storeId] - wenn gesetzt, wird das Ergebnis unter dieser ID in den globalen Store gespiegelt
+	 * @property {Record<string, Record<string, any>>} [argOverrides] - pro Validator-Key überschreibbare Argument-Werte, z. B. { validateConflicts: { ancode: 42 } }
+	 * @property {boolean} [collapsible] - Karten ein-/ausklappbar machen (Header bleibt sichtbar)
+	 * @property {boolean} [collapsed] - initial eingeklappt (nur relevant bei collapsible)
+	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - an die ValidatorCard durchgereicht: „eigener Raum"-Verzicht akzeptieren
+	 * @property {(stats: { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }) => void} [onstats] - Kennzahlen nach oben melden (für die Gesamtseite)
+	 */
 
-	let open = !collapsed;
+	/** @type {Props} */
+	let {
+		validators,
+		title = '',
+		autostart = true,
+		storeId = '',
+		argOverrides = {},
+		collapsible = false,
+		collapsed = false,
+		onAcceptWaiver = null,
+		onstats
+	} = $props();
 
-	const dispatch = createEventDispatcher();
+	let open = $state(!collapsed);
 
 	/**
 	 * @type {{
@@ -42,28 +43,30 @@
 	 *   errorMsg: string | null
 	 * }[]}
 	 */
-	let state = validators.map((v) => ({
-		...v,
-		status: /** @type {'idle'} */ ('idle'),
-		lines: /** @type {{ level: string, html: string }[]} */ ([]),
-		current: /** @type {{ html: string } | null} */ (null),
-		report: /** @type {any} */ (null),
-		errorMsg: /** @type {string | null} */ (null)
-	}));
+	let runs = $state(
+		validators.map((v) => ({
+			...v,
+			status: /** @type {'idle'} */ ('idle'),
+			lines: /** @type {{ level: string, html: string }[]} */ ([]),
+			current: /** @type {{ html: string } | null} */ (null),
+			report: /** @type {any} */ (null),
+			errorMsg: /** @type {string | null} */ (null)
+		}))
+	);
 
 	/** @type {(null | (() => void))[]} */
 	let subs = validators.map(() => null);
 
 	// erst nach dem ersten Lauf in den Store spiegeln, damit ein nicht
 	// autostartendes Mounten den letzten gespeicherten Stand nicht überschreibt.
-	let started = false;
+	let started = $state(false);
 
 	/** @type {any} */
 	let convert = null;
 	/** @type {any} */
 	let wsClient = null;
 	/** @type {string | null} */
-	let setupError = null;
+	let setupError = $state(null);
 
 	async function ensureClient() {
 		if (!convert) convert = await getConvert();
@@ -115,7 +118,7 @@
 		}
 
 		started = true;
-		const v = state[i];
+		const v = runs[i];
 		if (subs[i]) {
 			subs[i]?.();
 			subs[i] = null;
@@ -125,7 +128,6 @@
 		v.current = null;
 		v.report = null;
 		v.errorMsg = null;
-		state = state;
 
 		const { query, variables } = buildQuery(v, callVars);
 
@@ -137,7 +139,6 @@
 					if (msg.errors && msg.errors.length) {
 						v.errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
 						v.status = 'error';
-						state = state;
 						return;
 					}
 					const line = msg.data && msg.data[v.key];
@@ -154,7 +155,6 @@
 						if (line.validation) v.report = line.validation;
 						if (line.level === 'DONE') v.status = 'done';
 					}
-					state = state;
 				},
 				/** @param {any} err */
 				error: (err) => {
@@ -167,19 +167,17 @@
 									? err.reason
 									: 'Verbindungsfehler';
 					v.status = 'error';
-					state = state;
 				},
 				complete: () => {
 					v.current = null;
 					if (v.status === 'running') v.status = 'done';
-					state = state;
 				}
 			}
 		);
 	}
 
 	export function runAll() {
-		for (let i = 0; i < state.length; i++) runValidator(i);
+		for (let i = 0; i < runs.length; i++) runValidator(i);
 	}
 
 	/**
@@ -189,7 +187,7 @@
 	 * @param {Record<string, any>} [callVars]
 	 */
 	export function runByKey(key, callVars) {
-		const i = state.findIndex((v) => v.key === key);
+		const i = runs.findIndex((v) => v.key === key);
 		if (i >= 0) runValidator(i, callVars);
 	}
 
@@ -201,23 +199,27 @@
 		for (const u of subs) if (u) u();
 	});
 
-	$: anyRunning = state.some((v) => v.status === 'running');
-	$: totalErrors = state.reduce((s, v) => s + (v.report?.errorCount ?? 0), 0);
-	$: totalWarnings = state.reduce((s, v) => s + (v.report?.warningCount ?? 0), 0);
-	$: totalInfos = state.reduce((s, v) => s + (v.report?.infoCount ?? 0), 0);
-	$: allDone = state.every((v) => v.status === 'done' || v.status === 'error');
-	$: allOk = allDone && state.every((v) => v.report && v.report.ok);
+	let anyRunning = $derived(runs.some((v) => v.status === 'running'));
+	let totalErrors = $derived(runs.reduce((s, v) => s + (v.report?.errorCount ?? 0), 0));
+	let totalWarnings = $derived(runs.reduce((s, v) => s + (v.report?.warningCount ?? 0), 0));
+	let totalInfos = $derived(runs.reduce((s, v) => s + (v.report?.infoCount ?? 0), 0));
+	let allDone = $derived(runs.every((v) => v.status === 'done' || v.status === 'error'));
+	let allOk = $derived(allDone && runs.every((v) => v.report && v.report.ok));
 
 	// Kennzahlen nach oben melden (für die Gesamtseite) und in den globalen Store.
-	$: stats = {
+	let stats = $derived({
 		errors: totalErrors,
 		warnings: totalWarnings,
 		running: anyRunning,
 		done: allDone,
 		ok: allOk
-	};
-	$: dispatch('stats', stats);
-	$: if (storeId && started) setGroupStats(storeId, stats);
+	});
+	$effect(() => {
+		onstats?.(stats);
+	});
+	$effect(() => {
+		if (storeId && started) setGroupStats(storeId, stats);
+	});
 </script>
 
 <div class="flex flex-col gap-3">
@@ -289,8 +291,8 @@
 
 	{#if !collapsible || open}
 		<div class="grid grid-cols-1 gap-3 xl:grid-cols-2" transition:slide>
-			{#each state as validator, i}
-				<ValidatorCard {validator} {onAcceptWaiver} on:restart={() => runValidator(i)} />
+			{#each runs as validator, i}
+				<ValidatorCard {validator} {onAcceptWaiver} onrestart={() => runValidator(i)} />
 			{/each}
 		</div>
 	{/if}

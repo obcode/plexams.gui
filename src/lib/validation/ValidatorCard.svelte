@@ -1,5 +1,4 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	/**
@@ -7,12 +6,11 @@
 	 * @property {any} validator
 	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - Optionaler Callback, um für ein „NTA … not alone"-Finding einen Verzicht
 „eigener Raum" zu akzeptieren. Nur gesetzt, zeigt den Button.
+	 * @property {() => void} [onrestart] - Validator neu starten
 	 */
 
 	/** @type {Props} */
-	let { validator, onAcceptWaiver = null } = $props();
-
-	const dispatch = createEventDispatcher();
+	let { validator, onAcceptWaiver = null, onrestart } = $props();
 
 	let showTerminal = $state(false);
 
@@ -54,7 +52,7 @@
 			const r = await onAcceptWaiver(f.studentMtknr, f.ancode, reason);
 			if (r && r.ok) {
 				cancelWaive();
-				dispatch('restart'); // neu prüfen → Eintrag wird zur Warnung
+				onrestart?.(); // neu prüfen → Eintrag wird zur Warnung
 			} else {
 				waiveError = (r && r.error) || 'Fehler beim Speichern';
 			}
@@ -123,7 +121,7 @@
 				title="Neu starten"
 				aria-label="Neu starten"
 				disabled={validator.status === 'running'}
-				onclick={() => dispatch('restart')}
+				onclick={() => onrestart?.()}
 			>
 				↻
 			</button>
