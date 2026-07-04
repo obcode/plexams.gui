@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			planningState {
@@ -129,14 +130,14 @@ export async function load({ params }) {
 
 	let data;
 	try {
-		data = await request(env.PLEXAMS_SERVER, query);
+		data = await request<any>(env.PLEXAMS_SERVER, query);
 	} catch (e) {
 		// Einzelne planEntry.starttime werfen für externe Zeiten außerhalb des
 		// Prüfungszeitraums (Slot 0/0). GraphQL nullt dadurch nur den betroffenen
 		// planEntry und liefert die übrigen Daten trotzdem — die nutzen wir, statt
 		// die ganze Seite mit 500 abzubrechen (diese Prüfungen zeigen dann keinen
 		// Slot-Termin).
-		const resp = /** @type {any} */ (e)?.response;
+		const resp = (e as any)?.response;
 		if (resp?.data?.plannedExams) data = resp.data;
 		else throw e;
 	}
@@ -146,4 +147,4 @@ export async function load({ params }) {
 		// Vorbedingungen fürs Generieren (Gate des „Generieren"-Buttons)
 		conditions: conditionsDoneMap(data.planningState)
 	};
-}
+};

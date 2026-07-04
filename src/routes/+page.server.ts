@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+export const load: PageServerLoad = async () => {
+	const data = await request<any>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -30,4 +31,4 @@ export async function load() {
 		semester: data.semester.id,
 		planningState: data.planningState
 	};
-}
+};

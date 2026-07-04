@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			zpaExamsToPlanWithConstraints {
@@ -31,23 +32,23 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Filtere Prüfungen, die von mir zu planen sind (keine constraints ODER notPlannedByMe === false)
 	const examsToPlan = data.zpaExamsToPlanWithConstraints.filter(
-		(/** @type {any} */ exam) => !exam.constraints || exam.constraints.notPlannedByMe === false
+		(exam: any) => !exam.constraints || exam.constraints.notPlannedByMe === false
 	);
 
 	// Erstelle eine Map von Teacher IDs zu Teacher Objekten
-	const teacherMap = new Map();
-	data.teachers.forEach((/** @type {any} */ teacher) => {
+	const teacherMap = new Map<number, any>();
+	data.teachers.forEach((teacher: any) => {
 		teacherMap.set(teacher.id, teacher);
 	});
 
 	// Gruppiere Prüfungen nach Prüfenden
-	const examerMap = new Map();
+	const examerMap = new Map<number, any>();
 
-	examsToPlan.forEach((/** @type {any} */ exam) => {
+	examsToPlan.forEach((exam: any) => {
 		const examerId = exam.zpaExam.mainExamerID;
 		const teacher = teacherMap.get(examerId);
 
@@ -75,4 +76,4 @@ export async function load({ params }) {
 	return {
 		examers
 	};
-}
+};

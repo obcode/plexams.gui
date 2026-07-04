@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '$lib/gql/fragments';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			toPlan: zpaExamsToPlanWithConstraints {
@@ -83,23 +84,23 @@ export async function load() {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Prüfer-ID → Fakultät (z. B. „FK07"), für den „nicht-FK07"-Filter.
-	/** @type {Record<number, string>} */
-	const fkById = {};
+	const fkById: Record<number, string> = {};
 	for (const t of data.teachers ?? []) fkById[t.id] = t.fk ?? '';
 
 	// Ancode → manuell gesetzte Dauer (nur bei ZPA-Dauer 0 relevant)
-	/** @type {Record<number, number>} */
-	const durOverride = {};
+	const durOverride: Record<number, number> = {};
 	for (const o of data.examDurationOverrides ?? []) durOverride[o.ancode] = o.duration;
 
 	// „vorgeplant": es gibt einen echten planEntry (Slot im Plan) ODER die
 	// verknüpfte Pre-Exam ist FIXIERT. Ein bloß vorläufiger (nicht-fixierter)
 	// Pre-Plan-Slot zählt NICHT — der kann beim „Automatisch verteilen" umziehen.
-	/** @type {Record<number, {slot: {dayNumber:number, slotNumber:number}|null, preplanned:boolean}>} */
-	const planned = {};
+	const planned: Record<
+		number,
+		{ slot: { dayNumber: number; slotNumber: number } | null; preplanned: boolean }
+	> = {};
 	for (const pe of data.plannedExams ?? []) {
 		if (pe.planEntry && pe.planEntry.slotNumber != null) {
 			planned[pe.ancode] = { slot: pe.planEntry, preplanned: true };
@@ -116,9 +117,8 @@ export async function load() {
 		if (!planned[pp.ancode].slot && slot) planned[pp.ancode].slot = slot;
 	}
 
-	/** @type {any[]} */
-	const items = [
-		...(data.toPlan ?? []).map((/** @type {any} */ x) => ({
+	const items: any[] = [
+		...(data.toPlan ?? []).map((x: any) => ({
 			...x.zpaExam,
 			status: 'toPlan',
 			constraints: x.constraints ?? null,
@@ -127,7 +127,7 @@ export async function load() {
 			preplanned: !!planned[x.zpaExam.ancode]?.preplanned,
 			durationOverride: durOverride[x.zpaExam.ancode] ?? null
 		})),
-		...(data.notToPlan ?? []).map((/** @type {any} */ e) => ({
+		...(data.notToPlan ?? []).map((e: any) => ({
 			...e,
 			status: 'notToPlan',
 			constraints: null,
@@ -136,7 +136,7 @@ export async function load() {
 			preplanned: !!planned[e.ancode]?.preplanned,
 			durationOverride: durOverride[e.ancode] ?? null
 		})),
-		...(data.unknown ?? []).map((/** @type {any} */ e) => ({
+		...(data.unknown ?? []).map((e: any) => ({
 			...e,
 			status: 'unknown',
 			constraints: null,
@@ -151,6 +151,6 @@ export async function load() {
 		items,
 		days: data.semesterConfig?.days ?? [],
 		starttimes: data.semesterConfig?.starttimes ?? [],
-		rooms: (data.rooms ?? []).map((/** @type {any} */ r) => r.name)
+		rooms: (data.rooms ?? []).map((r: any) => r.name)
 	};
-}
+};

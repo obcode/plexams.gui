@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const semesterQuery = gql`
 		query {
 			semesterConfig {
@@ -39,7 +40,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const semesterData = await request(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
 
 	const examsWithoutSlotQuery = gql`
 		query {
@@ -137,7 +138,7 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, examsWithoutSlotQuery);
+	const data = await request<any>(env.PLEXAMS_SERVER, examsWithoutSlotQuery);
 
 	// Kompakte Liste der geplanten Prüfungen für die zeitbasierte Kalenderansicht
 	// (Blöcke nach echter Start-Zeit + Dauer). Robust gegen Slot-0/0-externe
@@ -189,10 +190,10 @@ export async function load({ params }) {
 	`;
 	let plannedExams = [];
 	try {
-		const pd = await request(env.PLEXAMS_SERVER, plannedQuery);
+		const pd = await request<any>(env.PLEXAMS_SERVER, plannedQuery);
 		plannedExams = pd.plannedExams ?? [];
 	} catch (e) {
-		const resp = /** @type {any} */ (e)?.response;
+		const resp = (e as any)?.response;
 		if (resp?.data?.plannedExams) plannedExams = resp.data.plannedExams;
 	}
 
@@ -202,7 +203,7 @@ export async function load({ params }) {
 	// (Slot 0/0 out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
 	let otherFkExams;
 	try {
-		const od = await request(
+		const od = await request<any>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
@@ -233,8 +234,8 @@ export async function load({ params }) {
 			`
 		);
 		otherFkExams = (od.zpaExamsToPlanWithConstraints ?? [])
-			.filter((/** @type {any} */ e) => e.constraints?.notPlannedByMe)
-			.map((/** @type {any} */ e) => ({
+			.filter((e: any) => e.constraints?.notPlannedByMe)
+			.map((e: any) => ({
 				ancode: e.zpaExam.ancode,
 				zpaExam: e.zpaExam,
 				constraints: e.constraints,
@@ -245,37 +246,37 @@ export async function load({ params }) {
 		otherFkExams = [];
 	}
 
-	let semesterConfig = semesterData.semesterConfig;
+	const semesterConfig = semesterData.semesterConfig;
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
 	if (!semesterConfig) {
 		return {
 			semesterConfig: null,
-			examsWithoutSlot: [],
-			globalSlotStatus: new Map(),
-			roomsForSlots: new Map()
+			examsWithoutSlot: [] as any[],
+			globalSlotStatus: new Map<string, string>(),
+			roomsForSlots: new Map<string, any>()
 		};
 	}
 
-	let globalSlotStatus = new Map();
+	const globalSlotStatus = new Map<string, string>();
 
-	for (let day of semesterConfig.days) {
-		for (let time of semesterConfig.starttimes) {
+	for (const day of semesterConfig.days) {
+		for (const time of semesterConfig.starttimes) {
 			const key = `${day.number},${time.number}`;
 			globalSlotStatus.set(key, 'okay');
 		}
 	}
 
 	if (semesterConfig.forbiddenSlots) {
-		for (let slot of semesterConfig.forbiddenSlots) {
+		for (const slot of semesterConfig.forbiddenSlots) {
 			const key = `${slot.dayNumber},${slot.slotNumber}`;
 			globalSlotStatus.set(key, 'forbidden');
 		}
 	}
 
-	let roomForSlotsMap = new Map();
+	const roomForSlotsMap = new Map<string, any>();
 	if (semesterData.roomsForSlots) {
-		for (let slot of semesterData.roomsForSlots) {
+		for (const slot of semesterData.roomsForSlots) {
 			const key = `${slot.day},${slot.slot}`;
 			roomForSlotsMap.set(key, slot.rooms);
 		}
@@ -289,4 +290,4 @@ export async function load({ params }) {
 		globalSlotStatus: globalSlotStatus,
 		roomsForSlots: roomForSlotsMap
 	};
-}
+};

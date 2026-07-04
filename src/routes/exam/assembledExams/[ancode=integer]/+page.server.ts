@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async ({ params }) => {
 	const query = gql`
 			query {
 			assembledExam(ancode: ${params.ancode}) {
@@ -90,9 +91,9 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	return {
 		assembledExam: data.assembledExam
 	};
-}
+};

@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async ({ params }) => {
 	let query = gql`
 		query {
 			examGroup(examGroupCode: ${params.code}) {
@@ -80,11 +81,11 @@ export async function load({ params }) {
 		}
 	`;
 
-	let data = await request(env.PLEXAMS_SERVER, query);
+	let data = await request<any>(env.PLEXAMS_SERVER, query);
 
-	let group = data.examGroup;
+	const group = data.examGroup;
 
-	let conflicts = [];
+	const conflicts = [];
 
 	for (const otherGroup of data.examGroup.examGroupInfo.conflicts) {
 		query = gql`
@@ -164,7 +165,7 @@ export async function load({ params }) {
 			}
 		}
 	`;
-		data = await request(env.PLEXAMS_SERVER, query);
+		data = await request<any>(env.PLEXAMS_SERVER, query);
 
 		conflicts.push({ group: data.examGroup, count: otherGroup.count });
 	}
@@ -173,4 +174,4 @@ export async function load({ params }) {
 		group,
 		conflicts
 	};
-}
+};

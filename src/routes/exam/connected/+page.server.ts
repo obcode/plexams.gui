@@ -1,8 +1,9 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			connectedExams {
@@ -20,19 +21,21 @@ export async function load() {
 	`;
 
 	try {
-		const data = await request(env.PLEXAMS_SERVER, query);
+		const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 		// Studiengang → Primuss-Prüfungen (für „anderes Primuss-Exam hinzufügen")
-		/** @type {Record<string, {ancode:number, module:string, mainExamer:string}[]>} */
-		const primussByProgram = {};
+		const primussByProgram: Record<
+			string,
+			{ ancode: number; module: string; mainExamer: string }[]
+		> = {};
 		for (const pe of data.primussExams ?? []) {
 			primussByProgram[pe.program] = (pe.exams ?? [])
-				.map((/** @type {any} */ e) => ({
+				.map((e: any) => ({
 					ancode: e.ancode,
 					module: e.module,
 					mainExamer: e.mainExamer
 				}))
-				.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode);
+				.sort((a: any, b: any) => a.ancode - b.ancode);
 		}
 
 		return { connectedExams: data.connectedExams ?? [], primussByProgram, loadError: null };
@@ -41,8 +44,11 @@ export async function load() {
 		// Meldung zeigen als die ganze Seite mit 500 abstürzen lassen.
 		return {
 			connectedExams: null,
-			primussByProgram: {},
+			primussByProgram: {} as Record<
+				string,
+				{ ancode: number; module: string; mainExamer: string }[]
+			>,
 			loadError: e instanceof Error ? e.message : String(e)
 		};
 	}
-}
+};

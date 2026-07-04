@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
+import type { PageServerLoad } from './$types';
 
 // Terminplan-Generierung: Gate (EXAMS in blockedAreas → Schreiben gesperrt), die
 // aktuell angewandten Constraints (read-only) sowie der Konflikt-Loop (Konflikte
@@ -14,22 +15,22 @@ const PAIR_FIELDS = `
 	mainExamer2
 `;
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	const out = {
-		blockedAreas: /** @type {string[]} */ ([]),
-		constraints: /** @type {any[]} */ ([]),
-		/** @type {any} volles Config-Input für den examGapMinutes-Round-Trip */
-		semesterConfigInput: null,
+		blockedAreas: [] as string[],
+		constraints: [] as any[],
+		// volles Config-Input für den examGapMinutes-Round-Trip
+		semesterConfigInput: null as any,
 		loadError: '',
-		conflicts: /** @type {any[]} */ ([]),
-		decisions: /** @type {any[]} */ ([]),
-		suggestions: /** @type {any[]} */ ([]),
-		shareList: /** @type {any[]} */ ([]),
+		conflicts: [] as any[],
+		decisions: [] as any[],
+		suggestions: [] as any[],
+		shareList: [] as any[],
 		conflictsError: ''
 	};
 
 	try {
-		const data = await request(
+		const data = await request<any>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
@@ -68,7 +69,7 @@ export async function load() {
 		);
 		out.blockedAreas = data.planningState?.blockedAreas ?? [];
 		out.constraints = [...(data.examScheduleConstraints ?? [])].sort(
-			(/** @type {any} */ a, /** @type {any} */ b) => a.tier - b.tier
+			(a: any, b: any) => a.tier - b.tier
 		);
 		out.semesterConfigInput = data.semesterConfigInput ?? null;
 	} catch (e) {
@@ -78,7 +79,7 @@ export async function load() {
 	// Konflikt-Daten separat: ohne generierten Plan kann das (noch) fehlschlagen —
 	// dann bleibt der Bereich leer statt die Seite zu killen.
 	try {
-		const cd = await request(
+		const cd = await request<any>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
@@ -144,4 +145,4 @@ export async function load() {
 	}
 
 	return out;
-}
+};
