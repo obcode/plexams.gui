@@ -125,7 +125,12 @@
 		<div class="alert alert-success py-2 text-sm"><span>Gespeichert ({savedAt}).</span></div>
 	{/if}
 
-	<SemesterConfigForm bind:this={formComp} config={data.config} />
+	<!-- Nach dem Speichern lädt invalidateAll die serverseitig neu berechnete
+	     Config (Tage/Slots/MUC.DAI-Slots). {#key} baut das Formular dann neu auf,
+	     sodass sein interner $state frisch aus der Config initialisiert wird. -->
+	{#key data.config}
+		<SemesterConfigForm bind:this={formComp} config={data.config} />
+	{/key}
 
 	<div class="flex items-center gap-3">
 		<WriteButton class="btn btn-primary" disabled={saving} onclick={save}>

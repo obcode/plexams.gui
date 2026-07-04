@@ -1,8 +1,13 @@
 <script>
-	import { run } from 'svelte/legacy';
-
 	// Wiederverwendbares Formular für die Semester-Config (bearbeiten + neu anlegen).
 	// Initialwerte über `config` (null = leer). Das gebaute Input liefert getInput().
+	//
+	// `form` ist tief mit `bind:` verdrahtet (bind:value auf verschachtelte Felder,
+	// Slot-/Sperrtag-Arrays, MUC.DAI-Set) und muss daher ein tief-reaktiver $state
+	// bleiben — ein writable $derived würde die bind:-Reaktivität brechen. Beim
+	// Config-Wechsel (nach dem Speichern lädt /config die neu berechnete Config)
+	// setzt der Aufrufer das Formular per {#key config} zurück (Remount), statt hier
+	// einen run()/$effect-Reset zu fahren.
 
 	/**
 	 * @typedef {Object} Props
@@ -51,13 +56,6 @@
 	}
 
 	let form = $state(initForm(config));
-	let lastConfig = $state(config);
-	run(() => {
-		if (config !== lastConfig) {
-			form = initForm(config);
-			lastConfig = config;
-		}
-	});
 
 	const addSlot = () => (form.slots = [...form.slots, '']);
 	/** @param {number} i */
