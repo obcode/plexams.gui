@@ -13,10 +13,11 @@
 	let sortOpen = $state(true);
 	let showInvigilations = $state(true);
 
-	let stillOpen = 0;
-	for (const invig of data.todos.invigilators) {
-		stillOpen += invig.todos.totalMinutes - invig.todos.doingMinutes;
-	}
+	const stillOpen = data.todos.invigilators.reduce(
+		(/** @type {number} */ s, /** @type {any} */ invig) =>
+			s + (invig.todos.totalMinutes - invig.todos.doingMinutes),
+		0
+	);
 
 	const stillOpenPerInvig = Math.round(stillOpen / data.todos.invigilators.length);
 

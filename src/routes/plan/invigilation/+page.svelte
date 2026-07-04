@@ -8,35 +8,41 @@
 	// mtknr -> NTA, to mark NTA students sitting in a room
 	const ntaMap = new Map((data.ntas ?? []).map((/** @type {any} */ n) => [n.mtknr, n]));
 
-	// Dropdown-Quellen: alle Prüfenden und alle tatsächlich verplanten NTAs
-	/** @type {Map<number, string>} */
-	const examinerMap = new Map();
-	// id -> Anzeigename für alle wählbaren Personen (Aufsicht, Reserve, Prüfende)
-	/** @type {Map<number, string>} */
-	const teacherName = new Map();
-	/** @type {Set<string>} */
-	const presentNta = new Set();
-	for (const day of days) {
-		for (const s of day.slots) {
-			if (s.slot?.reserve) teacherName.set(s.slot.reserve.id, s.slot.reserve.shortname);
-			for (const r of s.slot?.roomsWithInvigilators ?? []) {
-				if (r.invigilator) teacherName.set(r.invigilator.id, r.invigilator.shortname);
-				for (const re of r.roomAndExams ?? []) {
-					examinerMap.set(re.exam.mainExamerID, re.exam.mainExamer);
-					teacherName.set(re.exam.mainExamerID, re.exam.mainExamer);
-					for (const m of re.room.studentsInRoom ?? []) if (ntaMap.has(m)) presentNta.add(m);
+	// Dropdown-Quellen: alle Prüfenden und alle tatsächlich verplanten NTAs — reaktiv
+	// aus den (mutierbaren) days abgeleitet.
+	const lookups = $derived.by(() => {
+		/** @type {Map<number, string>} */
+		const examinerMap = new Map();
+		// id -> Anzeigename für alle wählbaren Personen (Aufsicht, Reserve, Prüfende)
+		/** @type {Map<number, string>} */
+		const teacherName = new Map();
+		/** @type {Set<string>} */
+		const presentNta = new Set();
+		for (const day of days) {
+			for (const s of day.slots) {
+				if (s.slot?.reserve) teacherName.set(s.slot.reserve.id, s.slot.reserve.shortname);
+				for (const r of s.slot?.roomsWithInvigilators ?? []) {
+					if (r.invigilator) teacherName.set(r.invigilator.id, r.invigilator.shortname);
+					for (const re of r.roomAndExams ?? []) {
+						examinerMap.set(re.exam.mainExamerID, re.exam.mainExamer);
+						teacherName.set(re.exam.mainExamerID, re.exam.mainExamer);
+						for (const m of re.room.studentsInRoom ?? []) if (ntaMap.has(m)) presentNta.add(m);
+					}
 				}
 			}
 		}
-	}
-	const examiners = [...examinerMap]
-		.map(([id, name]) => ({ id, name }))
-		.sort((a, b) => a.name.localeCompare(b.name));
-	const ntaList = [...presentNta]
-		.map((m) => ntaMap.get(m))
-		.sort((a, b) => a.name.localeCompare(b.name));
+		const examiners = [...examinerMap]
+			.map(([id, name]) => ({ id, name }))
+			.sort((a, b) => a.name.localeCompare(b.name));
+		const ntaList = [...presentNta]
+			.map((m) => ntaMap.get(m))
+			.sort((a, b) => a.name.localeCompare(b.name));
+		return { examinerMap, teacherName, examiners, ntaList };
+	});
 
-	let open = $state(days.map(() => false)); // initial: alle Tage zu
+	// initial: alle Tage zu. days-Länge ist pro Semester fix; Init aus days ist gewollt.
+	// svelte-ignore state_referenced_locally
+	let open = $state(days.map(() => false));
 
 	// Auswahl: entweder Person (Teacher-ID) oder NTA (mtknr) — wechselseitig exklusiv
 	let selKind = $state(''); // '' | 'teacher' | 'nta'
@@ -56,7 +62,7 @@
 		selectedId = id;
 		selectedNta = '';
 		selectedName = name;
-		examinerSel = examinerMap.has(id) ? id : 0;
+		examinerSel = lookups.examinerMap.has(id) ? id : 0;
 		ntaSel = '';
 		open = days.map((/** @type {any} */ d) => dayInvolves(d));
 	}
@@ -328,10 +334,12 @@
 		}
 	}
 
-	// von der Anforderungen-Seite verlinkt: ?focus=<id> hebt diese Aufsicht direkt hervor
+	// von der Anforderungen-Seite verlinkt: ?focus=<id> hebt diese Aufsicht direkt hervor.
+	// Einmalige Init beim Laden — der Namens-Lookup ist bewusst ein Momentanwert.
 	if (data.focus) {
 		const fid = Number(data.focus);
-		selectPerson(fid, teacherName.get(fid) ?? String(fid));
+		// svelte-ignore state_referenced_locally
+		selectPerson(fid, lookups.teacherName.get(fid) ?? String(fid));
 	}
 </script>
 
@@ -375,10 +383,10 @@
 				class="select select-bordered select-sm"
 				bind:value={examinerSel}
 				onchange={() =>
-					examinerSel && selectPerson(examinerSel, examinerMap.get(examinerSel) ?? '')}
+					examinerSel && selectPerson(examinerSel, lookups.examinerMap.get(examinerSel) ?? '')}
 			>
 				<option value={0}>Prüfende wählen…</option>
-				{#each examiners as ex}
+				{#each lookups.examiners as ex}
 					<option value={ex.id}>{ex.name}</option>
 				{/each}
 			</select>
@@ -388,7 +396,7 @@
 				onchange={() => ntaSel && selectNta(ntaSel)}
 			>
 				<option value="">NTA wählen…</option>
-				{#each ntaList as n}
+				{#each lookups.ntaList as n}
 					<option value={n.mtknr}>{n.name} (+{n.deltaDurationPercent} %)</option>
 				{/each}
 			</select>

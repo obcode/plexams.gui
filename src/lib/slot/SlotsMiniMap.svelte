@@ -22,23 +22,25 @@
 </script>
 
 <table>
-	{#each times as time}
-		<tr>
-			{#each days as day}
-				<td>
-					{#if planned.dayNumber == day && planned.slotNumber == time}
-						<span class="m-1 {plan[`${day},${time}`]}">
-							<span class="m-2 bg-yellow-200">
-								<span>📍</span>
+	<tbody>
+		{#each times as time}
+			<tr>
+				{#each days as day}
+					<td>
+						{#if planned.dayNumber == day && planned.slotNumber == time}
+							<span class="m-1 {plan[`${day},${time}`]}">
+								<span class="m-2 bg-yellow-200">
+									<span>📍</span>
+								</span>
 							</span>
-						</span>
-					{:else}
-						<span class="m-1 {plan[`${day},${time}`]}">
-							({day},{time})
-						</span>
-					{/if}
-				</td>
-			{/each}
-		</tr>
-	{/each}
+						{:else}
+							<span class="m-1 {plan[`${day},${time}`]}">
+								({day},{time})
+							</span>
+						{/if}
+					</td>
+				{/each}
+			</tr>
+		{/each}
+	</tbody>
 </table>

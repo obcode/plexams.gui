@@ -52,23 +52,33 @@
 	// Abrechnung der Aufsichten: Eigenaufsicht zählt 0, Reserve pauschal 60,
 	// sonstige Aufsicht mit ihrer tatsächlichen Dauer. Summe = geleistete Minuten.
 	const RESERVE_MINUTES = 60;
-	let selfCount = $state(0);
-	let reserveCount = $state(0);
-	let otherCount = $state(0);
-	let reserveMinutes = $state(0);
-	let otherMinutes = $state(0);
-	for (const inv of invigilator.todos?.invigilations ?? []) {
-		if (inv.isSelfInvigilation) {
-			selfCount++;
-		} else if (inv.isReserve) {
-			reserveCount++;
-			reserveMinutes += RESERVE_MINUTES;
-		} else {
-			otherCount++;
-			otherMinutes += inv.duration ?? 0;
+	// reaktiv aus dem invigilator-Prop abgeleitet (aktualisiert bei Prop-Wechsel)
+	const counts = $derived.by(() => {
+		let selfCount = 0;
+		let reserveCount = 0;
+		let otherCount = 0;
+		let reserveMinutes = 0;
+		let otherMinutes = 0;
+		for (const inv of invigilator.todos?.invigilations ?? []) {
+			if (inv.isSelfInvigilation) {
+				selfCount++;
+			} else if (inv.isReserve) {
+				reserveCount++;
+				reserveMinutes += RESERVE_MINUTES;
+			} else {
+				otherCount++;
+				otherMinutes += inv.duration ?? 0;
+			}
 		}
-	}
-	const billedTotal = reserveMinutes + otherMinutes;
+		return {
+			selfCount,
+			reserveCount,
+			otherCount,
+			reserveMinutes,
+			otherMinutes,
+			billedTotal: reserveMinutes + otherMinutes
+		};
+	});
 
 	// factor breakdown as a single clean string (no dangling separators)
 	const r = invigilator.requirements;
@@ -195,40 +205,40 @@
 
 				<div class="pt-1">
 					<div class="mb-1 font-semibold text-gray-600">Abrechnung der Aufsichten</div>
-					{#if selfCount || reserveCount || otherCount}
+					{#if counts.selfCount || counts.reserveCount || counts.otherCount}
 						<div class="space-y-0.5">
-							{#if selfCount}
+							{#if counts.selfCount}
 								<div class="flex items-center justify-between">
 									<span class="flex items-center gap-1.5">
 										<span class="inline-block h-2 w-2 rounded-full bg-violet-300"></span>
-										Eigenaufsicht <span class="text-gray-400">×{selfCount}</span>
+										Eigenaufsicht <span class="text-gray-400">×{counts.selfCount}</span>
 									</span>
 									<span class="tabular-nums text-gray-400">0 Min.</span>
 								</div>
 							{/if}
-							{#if reserveCount}
+							{#if counts.reserveCount}
 								<div class="flex items-center justify-between">
 									<span class="flex items-center gap-1.5">
 										<span class="inline-block h-2 w-2 rounded-full bg-yellow-300"></span>
-										Reserve <span class="text-gray-400">×{reserveCount}</span>
+										Reserve <span class="text-gray-400">×{counts.reserveCount}</span>
 									</span>
-									<span class="tabular-nums">{reserveMinutes} Min.</span>
+									<span class="tabular-nums">{counts.reserveMinutes} Min.</span>
 								</div>
 							{/if}
-							{#if otherCount}
+							{#if counts.otherCount}
 								<div class="flex items-center justify-between">
 									<span class="flex items-center gap-1.5">
 										<span class="inline-block h-2 w-2 rounded-full bg-orange-300"></span>
-										Aufsicht <span class="text-gray-400">×{otherCount}</span>
+										Aufsicht <span class="text-gray-400">×{counts.otherCount}</span>
 									</span>
-									<span class="tabular-nums">{otherMinutes} Min.</span>
+									<span class="tabular-nums">{counts.otherMinutes} Min.</span>
 								</div>
 							{/if}
 							<div
 								class="mt-0.5 flex items-center justify-between border-t border-base-200 pt-0.5 font-semibold"
 							>
 								<span>Summe</span>
-								<span class="tabular-nums">{billedTotal} Min.</span>
+								<span class="tabular-nums">{counts.billedTotal} Min.</span>
 							</div>
 						</div>
 					{:else}

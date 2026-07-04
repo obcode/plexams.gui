@@ -38,15 +38,15 @@
 			{/each}
 		</ul>
 		{#if !collapsed}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<h3
-				class="text-xl"
+			<button
+				type="button"
+				class="cursor-pointer text-left text-xl"
 				onclick={() => {
 					collapsed = !collapsed;
 				}}
 			>
 				Konflikte:
-			</h3>
+			</button>
 			<div>
 				{#each group.examGroupInfo.conflicts as conflict}
 					<a href="/exam/examGroups/{conflict.examGroupCode}">
@@ -59,14 +59,15 @@
 			</div>
 			<div><SlotsMiniMap slots={group.examGroupInfo.possibleSlots} /></div>
 		{:else}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
-			<span
+			<button
+				type="button"
+				class="cursor-pointer"
 				onclick={() => {
 					collapsed = !collapsed;
 				}}
 			>
 				...more
-			</span>
+			</button>
 		{/if}
 		<div class="card-actions justify-end">
 			Anmeldungen:
