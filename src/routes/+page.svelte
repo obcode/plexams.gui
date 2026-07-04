@@ -1,20 +1,17 @@
-<!-- @migration-task Error while migrating Svelte code: can't migrate `let state = data.planningState;` to `$state` because there's a variable named state.
-     Rename the variable and try again or migrate by hand. -->
-<!-- @migration-task Error while migrating Svelte code: can't migrate `let state = data.planningState;` to `$state` because there's a variable named state.
-     Rename the variable and try again or migrate by hand. -->
 <script>
 	import { page } from '$app/stores';
 
-	export let data;
+	let { data } = $props();
 
+	// Writable derived: folgt den Load-Daten, lässt sich aber nach einem Toggle
+	// optimistisch überschreiben (setzt sich beim nächsten Load-Update neu).
 	/** @type {any} */
-	let state;
-	$: state = data.planningState;
+	let planningState = $derived(data.planningState);
 
 	/** @type {Set<string>} */
-	let busy = new Set();
+	let busy = $state(new Set());
 	/** @type {string | null} */
-	let errorMsg = null;
+	let errorMsg = $state(null);
 
 	/** @type {Record<string, string>} */
 	const AREA_LABEL = {
@@ -39,7 +36,7 @@
 				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			state = result.setPlanningCondition;
+			planningState = result.setPlanningCondition;
 		} catch (e) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -49,10 +46,14 @@
 		}
 	}
 
-	$: doneCount = state.phases
-		.flatMap((/** @type {any} */ p) => p.conditions)
-		.filter((/** @type {any} */ c) => c.done).length;
-	$: totalCount = state.phases.flatMap((/** @type {any} */ p) => p.conditions).length;
+	let doneCount = $derived(
+		planningState.phases
+			.flatMap((/** @type {any} */ p) => p.conditions)
+			.filter((/** @type {any} */ c) => c.done).length
+	);
+	let totalCount = $derived(
+		planningState.phases.flatMap((/** @type {any} */ p) => p.conditions).length
+	);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -61,9 +62,9 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{doneCount}/{totalCount}</span>
 	</div>
 
-	{#if state.blockedAreas.length}
+	{#if planningState.blockedAreas.length}
 		<div class="flex flex-col gap-1">
-			{#each state.blockedAreas as area}
+			{#each planningState.blockedAreas as area}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>🔒 {AREA_LABEL[area] ?? `${area} gesperrt`}</span>
 				</div>
@@ -76,7 +77,7 @@
 	{/if}
 
 	<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-		{#each state.phases as phase}
+		{#each planningState.phases as phase}
 			{@const total = phase.conditions.length}
 			{@const done = phase.conditions.filter((/** @type {any} */ c) => c.done).length}
 			{@const complete = total > 0 && done === total}
@@ -113,7 +114,7 @@
 								class="checkbox checkbox-sm mt-0.5"
 								checked={cond.done}
 								disabled={busy.has(cond.key) || $page.data?.readOnly}
-								on:change={() => toggle(cond)}
+								onchange={() => toggle(cond)}
 							/>
 							<span
 								class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
