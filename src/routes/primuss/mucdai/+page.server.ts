@@ -1,10 +1,11 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
+export const load: PageServerLoad = async () => {
 	try {
-		const data = await request(
+		const data = await request<{ mucdaiExams: any[] }>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
@@ -33,6 +34,6 @@ export async function load() {
 		return { mucdaiExams: data.mucdaiExams ?? [], loadError: '' };
 	} catch (e) {
 		// Backend-Fehler nicht als 500 durchschlagen lassen — Seite zeigt einen Hinweis.
-		return { mucdaiExams: [], loadError: gqlErrorMessage(e) };
+		return { mucdaiExams: [] as any[], loadError: gqlErrorMessage(e) };
 	}
-}
+};

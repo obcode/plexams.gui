@@ -1,7 +1,8 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load({ params }) {
+export const load: PageServerLoad = async () => {
 	const query = gql`
 		query {
 			primussExams {
@@ -38,22 +39,19 @@ export async function load({ params }) {
 		}
 	`;
 
-	const data = await request(env.PLEXAMS_SERVER, query);
+	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
 	// Programm-Kürzel → Kategorie (fk07 | mucdai | misc); unbekannte → Sonstige
-	/** @type {Record<string, string>} */
-	const catByProgram = {};
+	const catByProgram: Record<string, string> = {};
 	for (const sp of data.studyPrograms ?? []) {
 		catByProgram[sp.shortname] = sp.category;
 	}
 
 	// ZPA-Prüfung je Ancode — Ziel-Vorschau beim Inline-Verbinden.
-	/** @type {Record<number, { ancode: number, module: string, mainExamer: string }>} */
-	const zpaByAncode = {};
+	const zpaByAncode: Record<number, { ancode: number; module: string; mainExamer: string }> = {};
 	// verknüpfter ZPA-Ancode je Primuss-Prüfung („program/ancode" → ZPA-Ancode),
 	// um bei verbundenen Prüfungen einen abweichenden ZPA-Ancode anzuzeigen.
-	/** @type {Record<string, number>} */
-	const zpaAncodeByPrimuss = {};
+	const zpaAncodeByPrimuss: Record<string, number> = {};
 	for (const z of data.zpaExams ?? []) {
 		if (z.ancode != null)
 			zpaByAncode[z.ancode] = { ancode: z.ancode, module: z.module, mainExamer: z.mainExamer };
@@ -69,8 +67,7 @@ export async function load({ params }) {
 	// „Goeller"). Zusätzlich ein Fallback für einteilige Primuss-Namen ohne
 	// Initiale („Brockhaus"): matcht, wenn der Nachname eindeutig zu FK07 gehört
 	// (kein/e Namensvetter:in in einer anderen Fakultät).
-	/** @param {string} s */
-	const norm = (s) =>
+	const norm = (s: string) =>
 		(s ?? '')
 			.toLowerCase()
 			.replace(/ö/g, 'oe')
@@ -78,10 +75,10 @@ export async function load({ params }) {
 			.replace(/ä/g, 'ae')
 			.replace(/ß/g, 'ss');
 
-	/** @type {Set<string>} „nachname|i" aller FK07-Prüfenden */
-	const fk07Keys = new Set();
-	/** @type {Map<string, Set<string>>} Nachname → Menge der Fakultäten */
-	const surnameFks = new Map();
+	// „nachname|i" aller FK07-Prüfenden
+	const fk07Keys = new Set<string>();
+	// Nachname → Menge der Fakultäten
+	const surnameFks = new Map<string, Set<string>>();
 	for (const t of data.teachers ?? []) {
 		const raw = t.shortname ?? '';
 		const ci = raw.indexOf(',');
@@ -93,14 +90,14 @@ export async function load({ params }) {
 		surnameFks.get(ln)?.add(t.fk);
 		if (t.fk === 'FK07' && fi) fk07Keys.add(`${ln}|${fi}`);
 	}
-	/** @type {Set<string>} Nachnamen, die eindeutig (nur) zu FK07 gehören */
-	const fk07Surnames = new Set();
+	// Nachnamen, die eindeutig (nur) zu FK07 gehören
+	const fk07Surnames = new Set<string>();
 	for (const [ln, fks] of surnameFks) {
 		if (fks.size === 1 && fks.has('FK07')) fk07Surnames.add(ln);
 	}
 
-	/** @param {string} name → matcht ein Primuss-Name eine:n FK07-Prüfende:n? */
-	const primussIsFK07 = (name) => {
+	// matcht ein Primuss-Name eine:n FK07-Prüfende:n?
+	const primussIsFK07 = (name: string) => {
 		for (const part of (name ?? '').split('/')) {
 			const toks = part.trim().split(/\s+/).filter(Boolean);
 			if (!toks.length) continue;
@@ -120,9 +117,9 @@ export async function load({ params }) {
 	// „FK07"-Flag je Primuss-Prüfung anreichern; `connected` kommt direkt vom
 	// Backend (berücksichtigt auch externe/MUC.DAI-Verknüpfungen). `zpaAncode`
 	// nur setzen, wenn er vom Primuss-Ancode abweicht (sonst nichts anzeigen).
-	const primussExams = (data.primussExams ?? []).map((/** @type {any} */ pe) => ({
+	const primussExams = (data.primussExams ?? []).map((pe: any) => ({
 		...pe,
-		exams: (pe.exams ?? []).map((/** @type {any} */ x) => {
+		exams: (pe.exams ?? []).map((x: any) => {
 			const za = zpaAncodeByPrimuss[`${x.program}/${x.ancode}`];
 			return {
 				...x,
@@ -137,4 +134,4 @@ export async function load({ params }) {
 		catByProgram,
 		zpaByAncode
 	};
-}
+};

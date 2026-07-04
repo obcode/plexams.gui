@@ -1,8 +1,14 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+type PrimussExam = {
+	program: string;
+	exams: { ancode: number; module: string; mainExamer: string }[];
+};
+
+export const load: PageServerLoad = async () => {
+	const data = await request<{ primussExams: PrimussExam[] }>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -19,12 +25,11 @@ export async function load() {
 	);
 
 	// Lookup: "program/ancode" → { module, mainExamer }
-	/** @type {Record<string, {module:string, mainExamer:string}>} */
-	const examByKey = {};
+	const examByKey: Record<string, { module: string; mainExamer: string }> = {};
 	for (const pe of data.primussExams ?? []) {
 		for (const e of pe.exams ?? []) {
 			examByKey[`${pe.program}/${e.ancode}`] = { module: e.module, mainExamer: e.mainExamer };
 		}
 	}
 	return { examByKey };
-}
+};

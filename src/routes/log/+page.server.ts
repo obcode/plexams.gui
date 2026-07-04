@@ -1,8 +1,19 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import type { PageServerLoad } from './$types';
 
-export async function load() {
-	const data = await request(
+type MutationLogEntry = {
+	time: string;
+	name: string;
+	type: string;
+	args: { key: string; value: string }[];
+	ancodes: number[];
+	error: string | null;
+	durationMs: number | null;
+};
+
+export const load: PageServerLoad = async () => {
+	const data = await request<{ mutationLogNames: string[]; mutationLog: MutationLogEntry[] }>(
 		env.PLEXAMS_SERVER,
 		gql`
 			query {
@@ -27,4 +38,4 @@ export async function load() {
 		names: data.mutationLogNames ?? [],
 		initial: data.mutationLog ?? []
 	};
-}
+};
