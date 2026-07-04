@@ -80,4 +80,9 @@ Route folders mirror the planning workflow. Key domain terms:
 
 ## Tests
 
-Playwright is configured but `tests/test.js` is the unmodified SvelteKit scaffold (it asserts "Welcome to SvelteKit" and does not reflect this app). There is effectively no real test coverage yet — don't rely on the suite passing as a signal.
+Two layers:
+
+- **Unit tests (vitest)** — pure logic extracted into `src/lib/**/*.test.{js,ts}` (40 tests). Run with `pnpm test`. `vite.config.js` scopes vitest's `include` to `src/**` so it never picks up the Playwright specs.
+- **E2E smoke tests (Playwright)** — `tests/smoke.test.js` visits every parameter-free route and asserts it renders (HTTP < 400 + the layout `<nav>` attaches), catching broken `load()`s and render crashes broadly. Run with `pnpm test:e2e`. **Needs the backend running** (`PLEXAMS_SERVER`, test semester `Test26SS`) — so it is **not** part of the CI gate (`quality.yml`), which has no backend. The DevContainer ships Chromium under `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`; `@playwright/test` is pinned to match that browser build. `/dev/shm` is only 64 MB in the container, so the config passes `--disable-dev-shm-usage`, caps workers, and allows 1 retry to avoid renderer crashes.
+
+Parameterized routes (`[ancode]`, `[code]`, `[mtknr]`, `[day]`) are not yet smoke-tested (they need real IDs).
