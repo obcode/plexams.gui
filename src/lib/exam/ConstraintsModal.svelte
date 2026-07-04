@@ -1,6 +1,5 @@
 <script>
 	// Constraints-Editor als Popup. Ersetzt die alte Seite /exam/constraints/<ancode>.
-	import { createEventDispatcher } from 'svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	/**
@@ -9,12 +8,12 @@
 	 * @property {{number:number, date:string}[]} [days]
 	 * @property {string[]} [rooms]
 	 * @property {any[]} [allExams]
+	 * @property {(constraints: any) => void} [onsaved]
+	 * @property {() => void} [onclose]
 	 */
 
 	/** @type {Props} */
-	let { exam, days = [], rooms = [], allExams = [] } = $props();
-
-	const dispatch = createEventDispatcher();
+	let { exam, days = [], rooms = [], allExams = [], onsaved, onclose } = $props();
 
 	const c = exam.constraints ?? {};
 	const rc = c.roomConstraints ?? {};
@@ -150,7 +149,7 @@
 				return;
 			}
 			// lokal aufbereitetes Constraint-Objekt zurückgeben (kein Reload)
-			dispatch('saved', {
+			onsaved?.({
 				ancode: exam.ancode,
 				notPlannedByMe: form.notPlannedByMe,
 				notPlannedByMeInFK,
@@ -378,7 +377,7 @@
 		{/if}
 
 		<div class="modal-action">
-			<button class="btn btn-ghost btn-sm" disabled={saving} onclick={() => dispatch('close')}>
+			<button class="btn btn-ghost btn-sm" disabled={saving} onclick={() => onclose?.()}>
 				Abbrechen
 			</button>
 			<WriteButton class="btn btn-primary btn-sm" disabled={saving} onclick={save}>
@@ -386,5 +385,5 @@
 			</WriteButton>
 		</div>
 	</div>
-	<button class="modal-backdrop" aria-label="schließen" onclick={() => dispatch('close')}></button>
+	<button class="modal-backdrop" aria-label="schließen" onclick={() => onclose?.()}></button>
 </div>

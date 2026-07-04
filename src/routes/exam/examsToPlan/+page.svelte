@@ -389,9 +389,8 @@
 	let editExam = $state(null);
 	/** @param {any} e */
 	const openEdit = (e) => (editExam = e);
-	/** @param {CustomEvent<any>} ev */
-	function onSaved(ev) {
-		const nc = ev.detail;
+	/** @param {any} nc das gespeicherte Constraint-Objekt */
+	function onSaved(nc) {
 		const it = byAncode.get(nc.ancode);
 		// sameSlot ist symmetrisch: setzt/entfernt man den Bezug an einer Prüfung,
 		// ändert das Backend auch die Partner. Diese hier lokal mitziehen, sonst
@@ -747,7 +746,7 @@
 		days={data.days}
 		rooms={data.rooms}
 		allExams={items}
-		on:saved={onSaved}
-		on:close={() => (editExam = null)}
+		onsaved={onSaved}
+		onclose={() => (editExam = null)}
 	/>
 {/if}
