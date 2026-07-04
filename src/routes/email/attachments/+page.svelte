@@ -88,7 +88,7 @@
 			description="Pro Aufsicht ein Kalender-PNG (key = Aufsichts-ID). Die Kalender werden aus den gerenderten Karten erzeugt — das geht nur auf „Aufsichten mit Anforderungen“."
 			unitPlural="Kalender"
 			expectedKeys={data.expectedInvigilators}
-			on:change={(e) => (invigAttachments = e.detail)}
+			onchange={(a) => (invigAttachments = a)}
 		>
 			{#snippet actions()}
 				<a
@@ -164,7 +164,7 @@
 			acceptSingle={true}
 			singleAccept=".pdf"
 			expectedKeys={data.expectedExamers}
-			on:change={(e) => (coverAttachments = e.detail)}
+			onchange={(a) => (coverAttachments = a)}
 		/>
 
 		<!-- Versand der Deckblätter -->

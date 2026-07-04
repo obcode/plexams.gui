@@ -1,5 +1,5 @@
 <script>
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import {
 		listAttachments,
@@ -23,6 +23,7 @@
 	 * @property {string} [singleAccept] - accept-Attribut des Einzeldatei-Inputs, z. B. '.pdf'
 	 * @property {{ key: string | number, label: string }[]} [expectedKeys] - optional: erwartete keys für Abgleich, [{ key, label }]
 	 * @property {import('svelte').Snippet} [actions]
+	 * @property {(attachments: import('$lib/email/attachments').Attachment[]) => void} [onchange] - meldet den Anhang-Stand nach oben
 	 */
 
 	/** @type {Props} */
@@ -35,7 +36,8 @@
 		acceptSingle = false,
 		singleAccept = '',
 		expectedKeys = [],
-		actions
+		actions,
+		onchange
 	} = $props();
 
 	/** @type {import('$lib/email/attachments').Attachment[]} */
@@ -70,14 +72,13 @@
 	let singleInput = $state();
 
 	// meldet den aktuellen Anhang-Stand nach oben (nach Laden/Upload/Leeren)
-	const dispatch = createEventDispatcher();
 
 	async function load() {
 		loading = true;
 		loadError = null;
 		try {
 			attachments = await listAttachments(kind);
-			dispatch('change', attachments);
+			onchange?.(attachments);
 		} catch (e) {
 			loadError = e instanceof Error ? e.message : String(e);
 		} finally {
