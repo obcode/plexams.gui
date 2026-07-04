@@ -517,9 +517,9 @@
 									<RoomRequestToggles
 										req={r}
 										busy={busyKeys.has(key(r))}
-										on:approve={() => toggle('approve', r)}
-										on:active={() => toggle('active', r)}
-										on:edittime={() => openEdit(r)}
+										onapprove={() => toggle('approve', r)}
+										onactive={() => toggle('active', r)}
+										onedittime={() => openEdit(r)}
 									/>
 								</td>
 							</tr>
@@ -552,9 +552,9 @@
 												<RoomRequestToggles
 													req={r}
 													busy={busyKeys.has(key(r))}
-													on:approve={() => toggle('approve', r)}
-													on:active={() => toggle('active', r)}
-													on:edittime={() => openEdit(r)}
+													onapprove={() => toggle('approve', r)}
+													onactive={() => toggle('active', r)}
+													onedittime={() => openEdit(r)}
 												/>
 											</td>
 										</tr>
@@ -588,9 +588,9 @@
 												<RoomRequestToggles
 													req={r}
 													busy={busyKeys.has(key(r))}
-													on:approve={() => toggle('approve', r)}
-													on:active={() => toggle('active', r)}
-													on:edittime={() => openEdit(r)}
+													onapprove={() => toggle('approve', r)}
+													onactive={() => toggle('active', r)}
+													onedittime={() => openEdit(r)}
 												/>
 											</td>
 										</tr>

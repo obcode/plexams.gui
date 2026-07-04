@@ -1,16 +1,15 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
-
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} req
 	 * @property {boolean} [busy]
+	 * @property {() => void} [onapprove]
+	 * @property {() => void} [onactive]
+	 * @property {() => void} [onedittime]
 	 */
 
 	/** @type {Props} */
-	let { req, busy = false } = $props();
-
-	const dispatch = createEventDispatcher();
+	let { req, busy = false, onapprove, onactive, onedittime } = $props();
 </script>
 
 <div class="flex items-center gap-3">
@@ -20,7 +19,7 @@
 			class="toggle toggle-sm toggle-success"
 			checked={req.approved}
 			disabled={busy}
-			onchange={() => dispatch('approve')}
+			onchange={() => onapprove?.()}
 		/>
 		<span
 			class="whitespace-nowrap text-xs {req.approved ? 'text-success' : 'text-base-content/50'}"
@@ -37,7 +36,7 @@
 			class="toggle toggle-sm"
 			checked={req.active}
 			disabled={busy}
-			onchange={() => dispatch('active')}
+			onchange={() => onactive?.()}
 		/>
 		<span class="whitespace-nowrap text-xs {req.active ? '' : 'text-error'}"
 			>{req.active ? 'aktiv' : 'inaktiv'}</span
@@ -47,7 +46,7 @@
 		class="btn btn-ghost btn-xs"
 		disabled={busy}
 		title="Zeit bearbeiten / verlängern"
-		onclick={() => dispatch('edittime')}
+		onclick={() => onedittime?.()}
 	>
 		✎ Zeit
 	</button>
