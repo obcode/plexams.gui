@@ -14,9 +14,11 @@ RUN pnpm run build
 # --- Prod-Deps: schlankes node_modules nur mit Runtime-Abhängigkeiten ---
 # Eigener Stage statt `prune`, damit das Ergebnis reproduzierbar aus dem
 # Lockfile kommt (esbuild/@tailwindcss/oxide sind devDeps und fehlen hier).
+# --ignore-scripts: das `prepare`-Skript (husky) ist devDep-only und hier nicht
+# vorhanden; die Runtime-Deps brauchen keine Build-Skripte.
 FROM base AS prod-deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # --- Runtime ---
 FROM node:24-alpine

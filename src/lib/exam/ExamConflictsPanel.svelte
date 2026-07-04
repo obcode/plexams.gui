@@ -106,7 +106,8 @@
 	/** @param {string} key */
 	function toggleExpand(key) {
 		const s = new Set(expanded);
-		s.has(key) ? s.delete(key) : s.add(key);
+		if (s.has(key)) s.delete(key);
+		else s.add(key);
 		expanded = s;
 	}
 	// Slot-Zeit (Berlin) je Prüfung, z. B. „Fr 24.07., 08:30".

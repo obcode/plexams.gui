@@ -147,12 +147,6 @@
 		}
 	}
 
-	let extraRooms = 0;
-	for (const pExam of exam.primussExams) {
-		if (pExam.ntas && pExam.ntas.length > 0) {
-		}
-	}
-
 	// function bgColorExam(isRepeaterExam) {
 	// 	if (exam.studentRegsCount == 0) {
 	// 		return ' bg-slate-100';

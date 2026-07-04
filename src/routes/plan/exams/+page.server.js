@@ -200,7 +200,7 @@ export async function load({ params }) {
 	// gesetztem Flag. Die mit echtem Slot erscheinen bereits über examsInSlot bzw.
 	// plannedExams im Raster/Zeit-View; hier brauchen wir v. a. die OHNE Slot
 	// (Slot 0/0 out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
-	let otherFkExams = [];
+	let otherFkExams;
 	try {
 		const od = await request(
 			env.PLEXAMS_SERVER,

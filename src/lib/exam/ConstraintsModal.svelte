@@ -28,7 +28,7 @@
 	};
 
 	// Tage in ein Wochenraster (Spalten Mo…Fr) gruppieren.
-	// @ts-ignore Date.UTC ist hier (Browser) erlaubt
+	// Date.UTC ist hier (Browser) erlaubt
 	/** @param {string} iso → 0=Mo … 4=Fr (null bei Wochenende) */
 	const col = (iso) => {
 		const [y, m, d] = dayPart(iso).split('-').map(Number);
@@ -86,7 +86,8 @@
 	/** @param {string} d */
 	function toggleDay(d) {
 		const s = new Set(form.excludeDays);
-		s.has(d) ? s.delete(d) : s.add(d);
+		if (s.has(d)) s.delete(d);
+		else s.add(d);
 		form.excludeDays = s;
 	}
 	/** @param {string} name */

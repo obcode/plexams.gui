@@ -38,6 +38,7 @@
 	// „~ alt → neu". Klassifiziert über den Rohtext (evtl. ANSI vorher entfernt).
 	/** @param {string} [text] */
 	function changeClass(text) {
+		// eslint-disable-next-line no-control-regex -- entfernt ANSI-SGR-Escapes (\x1b)
 		const t = (text ?? '').replace(/\[[0-9;]*m/g, '');
 		if (/^\s*\+\s/.test(t)) return 'text-green-400';
 		if (/^\s*-\s/.test(t)) return 'text-red-400';

@@ -8,7 +8,7 @@
 	export let data;
 
 	/** @type {any} */
-	let state = data.planningState;
+	let state;
 	$: state = data.planningState;
 
 	/** @type {Set<string>} */
