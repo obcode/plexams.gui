@@ -1,5 +1,4 @@
 <script>
-	
 	import { mkDateShort } from '$lib/jshelper/misc';
 	/**
 	 * @typedef {Object} Props

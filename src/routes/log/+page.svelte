@@ -81,14 +81,16 @@
 		logs = data.initial;
 	}
 
-	let hasFilter = $derived(!!(
-		name ||
-		typeFilter !== 'alle' ||
-		ancode ||
-		since ||
-		until ||
-		params.some((p) => p.key.trim() || p.value.trim())
-	));
+	let hasFilter = $derived(
+		!!(
+			name ||
+			typeFilter !== 'alle' ||
+			ancode ||
+			since ||
+			until ||
+			params.some((p) => p.key.trim() || p.value.trim())
+		)
+	);
 
 	// Klick-Filter aus der Tabelle
 	/** @param {number} a */

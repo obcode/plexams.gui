@@ -2,9 +2,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	
-
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} validator

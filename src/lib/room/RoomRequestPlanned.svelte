@@ -13,7 +13,8 @@
 					<span class="font-medium tabular-nums">{ex.ancode}</span>
 					{ex.module}
 					<span class="text-base-content/50">
-						· {ex.examer}{#if ex.time} · {ex.time}{/if} · {ex.duration}′{#if ex.regular}
+						· {ex.examer}{#if ex.time}
+							· {ex.time}{/if} · {ex.duration}′{#if ex.regular}
 							· {ex.regular} Plätze{/if}
 					</span>
 				</div>

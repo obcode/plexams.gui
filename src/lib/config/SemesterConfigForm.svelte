@@ -3,7 +3,7 @@
 
 	// Wiederverwendbares Formular für die Semester-Config (bearbeiten + neu anlegen).
 	// Initialwerte über `config` (null = leer). Das gebaute Input liefert getInput().
-	
+
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} [config]
@@ -110,10 +110,12 @@
 
 	let matrixDays = $derived(examDays(form.from, form.until));
 	// Zeilen aus den (editierbaren) Slot-Startzeiten; Slot-Nr = Position (1-basiert).
-	let matrixRows = $derived(form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() })));
-	let forbiddenSet = $derived(new Set(
-		form.forbiddenDays.filter(Boolean).map((/** @type {string} */ x) => x.slice(0, 10))
-	));
+	let matrixRows = $derived(
+		form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() }))
+	);
+	let forbiddenSet = $derived(
+		new Set(form.forbiddenDays.filter(Boolean).map((/** @type {string} */ x) => x.slice(0, 10)))
+	);
 
 	/** @param {number} day @param {number} slot @param {Set<string>} mucDai */
 	const cellChecked = (day, slot, mucDai) => mucDai.has(`${day}-${slot}`);
@@ -329,8 +331,7 @@
 							onchange={(e) =>
 								(form.forbiddenDays[i] = setDate(form.forbiddenDays[i], e.currentTarget.value))}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmForbidden(i)}
-							>✕</button
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmForbidden(i)}>✕</button
 						>
 					</div>
 				{/each}

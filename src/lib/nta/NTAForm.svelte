@@ -69,7 +69,9 @@
 	const emailError = $derived(
 		form.email && !emailRe.test(form.email) ? 'Ungültige E-Mail-Adresse.' : ''
 	);
-	const mtknrError = $derived(form.mtknr && !/^\d+$/.test(form.mtknr) ? 'Nur Ziffern erlaubt.' : '');
+	const mtknrError = $derived(
+		form.mtknr && !/^\d+$/.test(form.mtknr) ? 'Nur Ziffern erlaubt.' : ''
+	);
 	const formValid = $derived(form.name.trim() !== '' && /^\d+$/.test(form.mtknr) && !emailError);
 
 	async function submit() {
@@ -132,7 +134,8 @@
 
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">
-				Matrikelnummer {#if mode === 'edit'}<span class="text-base-content/40">(gesperrt)</span>{/if}
+				Matrikelnummer {#if mode === 'edit'}<span class="text-base-content/40">(gesperrt)</span
+					>{/if}
 			</span>
 			<input
 				type="text"
@@ -170,7 +173,14 @@
 		<span class="text-xs font-medium text-base-content/60">
 			Verlängerung ({form.deltaDurationPercent} %)
 		</span>
-		<input type="range" min="0" max="100" step="5" class="range range-sm" bind:value={form.deltaDurationPercent} />
+		<input
+			type="range"
+			min="0"
+			max="100"
+			step="5"
+			class="range range-sm"
+			bind:value={form.deltaDurationPercent}
+		/>
 	</label>
 
 	<div class="flex flex-wrap gap-6">
@@ -208,7 +218,11 @@
 		<button class="btn btn-ghost btn-sm" onclick={() => oncancel?.()} disabled={saving}>
 			Abbrechen
 		</button>
-		<WriteButton class="btn btn-primary btn-sm gap-2" onclick={submit} disabled={saving || !formValid}>
+		<WriteButton
+			class="btn btn-primary btn-sm gap-2"
+			onclick={submit}
+			disabled={saving || !formValid}
+		>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
 		</WriteButton>

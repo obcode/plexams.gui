@@ -10,12 +10,6 @@
 	import { diffMeta } from '$lib/exam/conflictDiff';
 	import { pairKey, isAutoConflict } from '$lib/exam/conflictLoop';
 
-	
-	
-	
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {any[]} [conflicts]
@@ -38,7 +32,6 @@
 		sourceLabel = ''
 	} = $props();
 
-
 	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
 
 	// Lokale, patchbare Kopie: die Konflikte können aus einem Lauf-Snapshot
@@ -58,8 +51,6 @@
 			working = working;
 		}
 	}
-
-
 
 	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
 	// die Folgetag-Zahl steht rein informativ im Qualitäts-Panel, diagnostics.nextDay).
@@ -178,9 +169,9 @@
 	});
 	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
 	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
-	let hasDiff =
-		$derived(resolvedConflicts.length > 0 ||
-		working.some((/** @type {any} */ c) => diffMeta(c.diffStatus)));
+	let hasDiff = $derived(
+		resolvedConflicts.length > 0 || working.some((/** @type {any} */ c) => diffMeta(c.diffStatus))
+	);
 	// infoOnly=true: beide Prüfungen extern (andere FK) → nichts änderbar, nur Info.
 	let ratable = $derived(working.filter((/** @type {any} */ c) => !c.infoOnly));
 	let infoConflicts = $derived(working.filter((/** @type {any} */ c) => c.infoOnly));
@@ -215,10 +206,18 @@
 	{#if hasDiff}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/60">
 			<span class="font-medium text-base-content/70">Diff zum vorigen Plan:</span>
-			<span class="flex items-center gap-1"><span class="badge badge-error badge-xs">neu</span> hinzugekommen</span>
-			<span class="flex items-center gap-1"><span class="badge badge-warning badge-xs">↑ schlimmer</span> mehr Betroffene</span>
-			<span class="flex items-center gap-1"><span class="badge badge-success badge-xs">↓ besser</span> weniger Betroffene</span>
-			<span class="flex items-center gap-1"><span class="badge badge-success badge-outline badge-xs">gelöst</span> nicht mehr im Plan</span>
+			<span class="flex items-center gap-1"
+				><span class="badge badge-error badge-xs">neu</span> hinzugekommen</span
+			>
+			<span class="flex items-center gap-1"
+				><span class="badge badge-warning badge-xs">↑ schlimmer</span> mehr Betroffene</span
+			>
+			<span class="flex items-center gap-1"
+				><span class="badge badge-success badge-xs">↓ besser</span> weniger Betroffene</span
+			>
+			<span class="flex items-center gap-1"
+				><span class="badge badge-success badge-outline badge-xs">gelöst</span> nicht mehr im Plan</span
+			>
 			<span>· ohne Markierung = unverändert</span>
 		</div>
 	{/if}
@@ -227,7 +226,9 @@
 		<details open class="collapse-arrow collapse border border-success/40 bg-success/5">
 			<summary class="collapse-title text-sm font-medium">
 				✅ Im letzten Lauf gelöst
-				<span class="badge badge-success badge-sm ml-1 tabular-nums">{resolvedConflicts.length}</span>
+				<span class="badge badge-success badge-sm ml-1 tabular-nums"
+					>{resolvedConflicts.length}</span
+				>
 			</summary>
 			<div class="collapse-content">
 				<div class="overflow-x-auto rounded-lg border border-base-200">
@@ -249,12 +250,16 @@
 										</span>
 									</td>
 									<td>
-										<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
+										<div class="font-mono text-xs tabular-nums text-base-content/60">
+											{c.ancode1}
+										</div>
 										<div class="font-medium">{c.module1}</div>
 										<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
 									</td>
 									<td>
-										<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
+										<div class="font-mono text-xs tabular-nums text-base-content/60">
+											{c.ancode2}
+										</div>
 										<div class="font-medium">{c.module2}</div>
 										<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
 									</td>
@@ -270,205 +275,227 @@
 
 	{#if ratable.length}
 		<p class="max-w-3xl text-xs text-base-content/50">
-			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong>pro
-			Studierendem</strong> zu akzeptieren (z. B. Wiederholer:innen) — das entfernt beim nächsten
-			„Generieren" nur deren Nähe-Strafe. „darf zeitgleich" erlaubt Parallelsektionen denselben Slot
-			(die harte Sperre und die Strafe entfallen) — das ist nur bei <strong>fehlerhafter Anmeldung</strong>
+			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong
+				>pro Studierendem</strong
+			>
+			zu akzeptieren (z. B. Wiederholer:innen) — das entfernt beim nächsten „Generieren" nur deren Nähe-Strafe.
+			„darf zeitgleich" erlaubt Parallelsektionen denselben Slot (die harte Sperre und die Strafe entfallen)
+			— das ist nur bei <strong>fehlerhafter Anmeldung</strong>
 			sinnvoll, wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf.
 		</p>
 		{#snippet conflictRow(/** @type {any} */ c)}
-						{@const key = pairKey(c.ancode1, c.ancode2)}
-						{@const diff = diffMeta(c.diffStatus)}
-						<tr class="hover {diff?.row ?? ''}">
-							<td>
-								<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
-									{PROX[c.proximity]?.label ?? c.proximity}
-								</span>
-								{#if diff}
-									<span class="badge badge-sm {diff.badge} mt-1 block w-fit">{diff.label}</span>
-								{/if}
-							</td>
-							<td>
-								{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot1)}</div>{/if}
-								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
-								<div class="font-medium">{c.module1}</div>
-								<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-								{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
-									<div class="mt-0.5 flex flex-wrap items-center gap-1">
-										{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location1}</span>{/if}
-										{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
-										{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
-									</div>
-								{/if}
-							</td>
-							<td>
-								{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot2)}</div>{/if}
-								<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
-								<div class="font-medium">{c.module2}</div>
-								<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-								{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
-									<div class="mt-0.5 flex flex-wrap items-center gap-1">
-										{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location2}</span>{/if}
-										{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
-										{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
-									</div>
-								{/if}
-							</td>
-							<td class="text-right tabular-nums">
-							<button
-								class="btn btn-ghost btn-xs gap-1"
-								onclick={() => toggleExpand(key)}
-								title="betroffene Studierende anzeigen"
+			{@const key = pairKey(c.ancode1, c.ancode2)}
+			{@const diff = diffMeta(c.diffStatus)}
+			<tr class="hover {diff?.row ?? ''}">
+				<td>
+					<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
+						{PROX[c.proximity]?.label ?? c.proximity}
+					</span>
+					{#if diff}
+						<span class="badge badge-sm {diff.badge} mt-1 block w-fit">{diff.label}</span>
+					{/if}
+				</td>
+				<td>
+					{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">
+							🕐 {fmtSlot(c.slot1)}
+						</div>{/if}
+					<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
+					<div class="font-medium">{c.module1}</div>
+					<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+					{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+						<div class="mt-0.5 flex flex-wrap items-center gap-1">
+							{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus"
+									>📍 {c.location1}</span
+								>{/if}
+							{#if c.isRepeaterExam1}<span
+									class="badge badge-outline badge-xs"
+									title="Wiederholungsprüfung">🔁 WH</span
+								>{/if}
+							{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+						</div>
+					{/if}
+				</td>
+				<td>
+					{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">
+							🕐 {fmtSlot(c.slot2)}
+						</div>{/if}
+					<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
+					<div class="font-medium">{c.module2}</div>
+					<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+					{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+						<div class="mt-0.5 flex flex-wrap items-center gap-1">
+							{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus"
+									>📍 {c.location2}</span
+								>{/if}
+							{#if c.isRepeaterExam2}<span
+									class="badge badge-outline badge-xs"
+									title="Wiederholungsprüfung">🔁 WH</span
+								>{/if}
+							{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
+						</div>
+					{/if}
+				</td>
+				<td class="text-right tabular-nums">
+					<button
+						class="btn btn-ghost btn-xs gap-1"
+						onclick={() => toggleExpand(key)}
+						title="betroffene Studierende anzeigen"
+					>
+						{c.studentCount}
+						<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
+					</button>
+				</td>
+				<td>
+					{#if c.canShareSlot}
+						<div class="flex items-center gap-1">
+							<span class="badge badge-success badge-sm">darf zeitgleich</span>
+							<WriteButton
+								class="btn btn-ghost btn-xs text-error"
+								disabled={busy === `s${key}`}
+								title="zurücknehmen"
+								on:click={() => removeShare(c.ancode1, c.ancode2)}
 							>
-								{c.studentCount}
-								<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
-							</button>
-						</td>
-							<td>
-								{#if c.canShareSlot}
-									<div class="flex items-center gap-1">
-										<span class="badge badge-success badge-sm">darf zeitgleich</span>
+								✕
+							</WriteButton>
+						</div>
+					{:else}
+						<WriteButton
+							class="btn btn-ghost btn-xs"
+							disabled={busy === `s${key}`}
+							title="nur bei fehlerhafter Anmeldung sinnvoll — wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf"
+							on:click={() => allowShare(c.ancode1, c.ancode2)}
+						>
+							＋ erlauben
+						</WriteButton>
+					{/if}
+				</td>
+			</tr>
+			{#if expanded.has(key)}
+				<tr class="bg-base-200/40">
+					<td colspan="5">
+						<div class="flex flex-col gap-1 py-1">
+							<span class="text-xs font-medium text-base-content/60">
+								Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
+								Studierenden heraus (zeitgleich bleibt hart verboten; nur „darf zeitgleich" hebt das
+								auf). Wiederholer:innen und Paare mit gleichem Slot sind automatisch akzeptiert.
+							</span>
+							{#each c.affectedStudents ?? [] as s}
+								<div
+									class="flex flex-wrap items-center gap-2 text-sm {s.accepted ? 'opacity-60' : ''}"
+								>
+									<span class="w-4 text-center text-success">{s.accepted ? '✓' : ''}</span>
+									<span class="font-mono text-xs tabular-nums text-base-content/50">
+										{s.mtknr}
+									</span>
+									<span>{s.name}</span>
+									<span
+										class="badge badge-ghost badge-xs tabular-nums"
+										title="Kohorte des Studierenden">{s.program}{s.group}</span
+									>
+									{#if s.autoAccepted}
+										<span
+											class="badge badge-info badge-xs"
+											title="automatisch akzeptiert — niemand schreibt beide Prüfungen"
+										>
+											automatisch akzeptiert ({c.canShareSlot ? 'gleicher Slot' : 'Wiederholung'})
+										</span>
+										{#if s.decision === 'VETO'}
+											<span class="badge badge-warning badge-xs">Veto — nicht akzeptiert</span>
+											<WriteButton
+												class="btn btn-ghost btn-xs"
+												disabled={busy === `a${key}-${s.mtknr}`}
+												on:click={() => clearDecision(c, s)}
+											>
+												Veto zurücknehmen
+											</WriteButton>
+										{:else}
+											<WriteButton
+												class="btn btn-ghost btn-xs text-error"
+												disabled={busy === `a${key}-${s.mtknr}`}
+												title="doch nicht akzeptieren — Nähe-Strafe für diese:n Studierende:n wieder aktivieren"
+												on:click={() => decide(c, s, 'VETO')}
+											>
+												Veto
+											</WriteButton>
+										{/if}
+									{:else if s.decision === 'ACCEPT'}
+										<span class="badge badge-success badge-xs">akzeptiert</span>
 										<WriteButton
 											class="btn btn-ghost btn-xs text-error"
-											disabled={busy === `s${key}`}
-											title="zurücknehmen"
-											on:click={() => removeShare(c.ancode1, c.ancode2)}
+											disabled={busy === `a${key}-${s.mtknr}`}
+											on:click={() => clearDecision(c, s)}
 										>
-											✕
+											zurücknehmen
 										</WriteButton>
-									</div>
-								{:else}
-									<WriteButton
-										class="btn btn-ghost btn-xs"
-										disabled={busy === `s${key}`}
-										title="nur bei fehlerhafter Anmeldung sinnvoll — wenn der/die Studierende ohnehin nicht beide Prüfungen schreiben darf"
-										on:click={() => allowShare(c.ancode1, c.ancode2)}
-									>
-										＋ erlauben
-									</WriteButton>
-								{/if}
-							</td>
-						</tr>
-						{#if expanded.has(key)}
-							<tr class="bg-base-200/40">
-								<td colspan="5">
-									<div class="flex flex-col gap-1 py-1">
-										<span class="text-xs font-medium text-base-content/60">
-											Betroffene Studierende — „akzeptieren" nimmt nur die Nähe-Strafe dieses:r
-											Studierenden heraus (zeitgleich bleibt hart verboten; nur „darf zeitgleich"
-											hebt das auf). Wiederholer:innen und Paare mit gleichem Slot sind automatisch
-							akzeptiert.
-										</span>
-										{#each c.affectedStudents ?? [] as s}
-											<div
-												class="flex flex-wrap items-center gap-2 text-sm {s.accepted
-													? 'opacity-60'
-													: ''}"
-											>
-												<span class="w-4 text-center text-success">{s.accepted ? '✓' : ''}</span>
-												<span class="font-mono text-xs tabular-nums text-base-content/50">
-													{s.mtknr}
-												</span>
-												<span>{s.name}</span>
-												<span
-													class="badge badge-ghost badge-xs tabular-nums"
-													title="Kohorte des Studierenden">{s.program}{s.group}</span
-												>
-												{#if s.autoAccepted}
-													<span
-														class="badge badge-info badge-xs"
-														title="automatisch akzeptiert — niemand schreibt beide Prüfungen"
-													>
-														automatisch akzeptiert ({c.canShareSlot
-															? 'gleicher Slot'
-															: 'Wiederholung'})
-													</span>
-													{#if s.decision === 'VETO'}
-														<span class="badge badge-warning badge-xs">Veto — nicht akzeptiert</span>
-														<WriteButton
-															class="btn btn-ghost btn-xs"
-															disabled={busy === `a${key}-${s.mtknr}`}
-															on:click={() => clearDecision(c, s)}
-														>
-															Veto zurücknehmen
-														</WriteButton>
-													{:else}
-														<WriteButton
-															class="btn btn-ghost btn-xs text-error"
-															disabled={busy === `a${key}-${s.mtknr}`}
-															title="doch nicht akzeptieren — Nähe-Strafe für diese:n Studierende:n wieder aktivieren"
-															on:click={() => decide(c, s, 'VETO')}
-														>
-															Veto
-														</WriteButton>
-													{/if}
-												{:else if s.decision === 'ACCEPT'}
-													<span class="badge badge-success badge-xs">akzeptiert</span>
-													<WriteButton
-														class="btn btn-ghost btn-xs text-error"
-														disabled={busy === `a${key}-${s.mtknr}`}
-														on:click={() => clearDecision(c, s)}
-													>
-														zurücknehmen
-													</WriteButton>
-												{:else}
-													<WriteButton
-														class="btn btn-outline btn-xs"
-														disabled={busy === `a${key}-${s.mtknr}`}
-														on:click={() => decide(c, s, 'ACCEPT')}
-													>
-														akzeptieren
-													</WriteButton>
-												{/if}
-											</div>
-										{:else}
-											<span class="text-sm text-base-content/50">— keine Studierenden gelistet</span>
-										{/each}
-									</div>
-								</td>
-							</tr>
-						{/if}
+									{:else}
+										<WriteButton
+											class="btn btn-outline btn-xs"
+											disabled={busy === `a${key}-${s.mtknr}`}
+											on:click={() => decide(c, s, 'ACCEPT')}
+										>
+											akzeptieren
+										</WriteButton>
+									{/if}
+								</div>
+							{:else}
+								<span class="text-sm text-base-content/50">— keine Studierenden gelistet</span>
+							{/each}
+						</div>
+					</td>
+				</tr>
+			{/if}
 		{/snippet}
 
 		{#if ratableNonAuto.length}
-		<details open class="collapse-arrow collapse border border-base-300 bg-base-100">
-			<summary class="collapse-title text-sm font-medium">
-				Zu prüfen (nicht automatisch akzeptiert)
-				<span class="badge badge-warning badge-sm ml-1 tabular-nums">{ratableNonAuto.length}</span>
-			</summary>
-			<div class="collapse-content">
-				<div class="overflow-x-auto rounded-lg border border-base-300">
-					<table class="table table-sm">
-						<thead><tr><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th><th>gleicher Slot</th></tr></thead>
-						<tbody>
-							{#each ratableNonAuto as c (pairKey(c.ancode1, c.ancode2))}
-								{@render conflictRow(c)}
-							{/each}
-						</tbody>
-					</table>
+			<details open class="collapse-arrow collapse border border-base-300 bg-base-100">
+				<summary class="collapse-title text-sm font-medium">
+					Zu prüfen (nicht automatisch akzeptiert)
+					<span class="badge badge-warning badge-sm ml-1 tabular-nums">{ratableNonAuto.length}</span
+					>
+				</summary>
+				<div class="collapse-content">
+					<div class="overflow-x-auto rounded-lg border border-base-300">
+						<table class="table table-sm">
+							<thead
+								><tr
+									><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th
+									><th>gleicher Slot</th></tr
+								></thead
+							>
+							<tbody>
+								{#each ratableNonAuto as c (pairKey(c.ancode1, c.ancode2))}
+									{@render conflictRow(c)}
+								{/each}
+							</tbody>
+						</table>
+					</div>
 				</div>
-			</div>
-		</details>
+			</details>
 		{/if}
 		{#if ratableAuto.length}
-		<details class="collapse-arrow collapse border border-base-300 bg-base-100">
-			<summary class="collapse-title text-sm font-medium">
-				Automatisch akzeptiert (Wiederholung / gleicher Slot)
-				<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{ratableAuto.length}</span>
-			</summary>
-			<div class="collapse-content">
-				<div class="overflow-x-auto rounded-lg border border-base-300">
-					<table class="table table-sm">
-						<thead><tr><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th><th>gleicher Slot</th></tr></thead>
-						<tbody>
-							{#each ratableAuto as c (pairKey(c.ancode1, c.ancode2))}
-								{@render conflictRow(c)}
-							{/each}
-						</tbody>
-					</table>
+			<details class="collapse-arrow collapse border border-base-300 bg-base-100">
+				<summary class="collapse-title text-sm font-medium">
+					Automatisch akzeptiert (Wiederholung / gleicher Slot)
+					<span class="badge badge-ghost badge-sm ml-1 tabular-nums">{ratableAuto.length}</span>
+				</summary>
+				<div class="collapse-content">
+					<div class="overflow-x-auto rounded-lg border border-base-300">
+						<table class="table table-sm">
+							<thead
+								><tr
+									><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th
+									><th>gleicher Slot</th></tr
+								></thead
+							>
+							<tbody>
+								{#each ratableAuto as c (pairKey(c.ancode1, c.ancode2))}
+									{@render conflictRow(c)}
+								{/each}
+							</tbody>
+						</table>
+					</div>
 				</div>
-			</div>
-		</details>
+			</details>
 		{/if}
 	{/if}
 
@@ -489,83 +516,110 @@
 					an die zuständigen Planer:innen folgt später.)
 				</p>
 				<div class="overflow-x-auto rounded-lg border border-base-200">
-				<table class="table table-sm">
-					<thead>
-						<tr>
-							<th>Nähe</th>
-							<th>Prüfung 1</th>
-							<th>Prüfung 2</th>
-							<th class="text-right">Stud.</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each infoConflicts as c (pairKey(c.ancode1, c.ancode2))}
-							{@const key = `i${pairKey(c.ancode1, c.ancode2)}`}
-							<tr class="hover">
-								<td>
-									<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
-										{PROX[c.proximity]?.label ?? c.proximity}
-									</span>
-								</td>
-								<td>
-									{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot1)}</div>{/if}
-									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode1}</div>
-									<div class="font-medium">{c.module1}</div>
-									<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
-									{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
-										<div class="mt-0.5 flex flex-wrap items-center gap-1">
-											{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location1}</span>{/if}
-											{#if c.isRepeaterExam1}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
-											{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
-										</div>
-									{/if}
-								</td>
-								<td>
-									{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">🕐 {fmtSlot(c.slot2)}</div>{/if}
-									<div class="font-mono text-xs tabular-nums text-base-content/60">{c.ancode2}</div>
-									<div class="font-medium">{c.module2}</div>
-									<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
-									{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
-										<div class="mt-0.5 flex flex-wrap items-center gap-1">
-											{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">📍 {c.location2}</span>{/if}
-											{#if c.isRepeaterExam2}<span class="badge badge-outline badge-xs" title="Wiederholungsprüfung">🔁 WH</span>{/if}
-											{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
-										</div>
-									{/if}
-								</td>
-								<td class="text-right tabular-nums">
-									<button
-										class="btn btn-ghost btn-xs gap-1"
-										onclick={() => toggleExpand(key)}
-										title="betroffene Studierende anzeigen"
-									>
-										{c.studentCount}
-										<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
-									</button>
-								</td>
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>Nähe</th>
+								<th>Prüfung 1</th>
+								<th>Prüfung 2</th>
+								<th class="text-right">Stud.</th>
 							</tr>
-							{#if expanded.has(key)}
-								<tr class="bg-base-200/40">
-									<td colspan="4">
-										<div class="flex flex-wrap gap-x-4 gap-y-1 py-1 text-sm">
-											{#each c.affectedStudents ?? [] as s}
-												<span>
-													<span class="font-mono text-xs tabular-nums text-base-content/50">{s.mtknr}</span>
-													{s.name}
-													<span class="badge badge-ghost badge-xs tabular-nums" title="Kohorte des Studierenden">{s.program}{s.group}</span>
-												</span>
-											{:else}
-												<span class="text-base-content/50">— keine Studierenden gelistet</span>
-											{/each}
+						</thead>
+						<tbody>
+							{#each infoConflicts as c (pairKey(c.ancode1, c.ancode2))}
+								{@const key = `i${pairKey(c.ancode1, c.ancode2)}`}
+								<tr class="hover">
+									<td>
+										<span class="badge badge-sm {PROX[c.proximity]?.cls ?? 'badge-ghost'}">
+											{PROX[c.proximity]?.label ?? c.proximity}
+										</span>
+									</td>
+									<td>
+										{#if fmtSlot(c.slot1)}<div class="font-semibold tabular-nums">
+												🕐 {fmtSlot(c.slot1)}
+											</div>{/if}
+										<div class="font-mono text-xs tabular-nums text-base-content/60">
+											{c.ancode1}
 										</div>
+										<div class="font-medium">{c.module1}</div>
+										<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
+										{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
+											<div class="mt-0.5 flex flex-wrap items-center gap-1">
+												{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus"
+														>📍 {c.location1}</span
+													>{/if}
+												{#if c.isRepeaterExam1}<span
+														class="badge badge-outline badge-xs"
+														title="Wiederholungsprüfung">🔁 WH</span
+													>{/if}
+												{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs"
+														>{g}</span
+													>{/each}
+											</div>
+										{/if}
+									</td>
+									<td>
+										{#if fmtSlot(c.slot2)}<div class="font-semibold tabular-nums">
+												🕐 {fmtSlot(c.slot2)}
+											</div>{/if}
+										<div class="font-mono text-xs tabular-nums text-base-content/60">
+											{c.ancode2}
+										</div>
+										<div class="font-medium">{c.module2}</div>
+										<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
+										{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
+											<div class="mt-0.5 flex flex-wrap items-center gap-1">
+												{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus"
+														>📍 {c.location2}</span
+													>{/if}
+												{#if c.isRepeaterExam2}<span
+														class="badge badge-outline badge-xs"
+														title="Wiederholungsprüfung">🔁 WH</span
+													>{/if}
+												{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs"
+														>{g}</span
+													>{/each}
+											</div>
+										{/if}
+									</td>
+									<td class="text-right tabular-nums">
+										<button
+											class="btn btn-ghost btn-xs gap-1"
+											onclick={() => toggleExpand(key)}
+											title="betroffene Studierende anzeigen"
+										>
+											{c.studentCount}
+											<span class="text-base-content/40">{expanded.has(key) ? '▲' : '▼'}</span>
+										</button>
 									</td>
 								</tr>
-							{/if}
-						{/each}
-					</tbody>
-				</table>
+								{#if expanded.has(key)}
+									<tr class="bg-base-200/40">
+										<td colspan="4">
+											<div class="flex flex-wrap gap-x-4 gap-y-1 py-1 text-sm">
+												{#each c.affectedStudents ?? [] as s}
+													<span>
+														<span class="font-mono text-xs tabular-nums text-base-content/50"
+															>{s.mtknr}</span
+														>
+														{s.name}
+														<span
+															class="badge badge-ghost badge-xs tabular-nums"
+															title="Kohorte des Studierenden">{s.program}{s.group}</span
+														>
+													</span>
+												{:else}
+													<span class="text-base-content/50">— keine Studierenden gelistet</span>
+												{/each}
+											</div>
+										</td>
+									</tr>
+								{/if}
+							{/each}
+						</tbody>
+					</table>
+				</div>
 			</div>
-		</div>
 		</details>
 	{/if}
 
@@ -587,12 +641,16 @@
 								{@const key = pairKey(s.ancode1, s.ancode2)}
 								<tr class="hover">
 									<td>
-										<span class="font-mono text-xs tabular-nums text-base-content/60">{s.ancode1}</span>
+										<span class="font-mono text-xs tabular-nums text-base-content/60"
+											>{s.ancode1}</span
+										>
 										{s.module1}
 										<span class="text-xs text-base-content/50">· {s.mainExamer1}</span>
 									</td>
 									<td>
-										<span class="font-mono text-xs tabular-nums text-base-content/60">{s.ancode2}</span>
+										<span class="font-mono text-xs tabular-nums text-base-content/60"
+											>{s.ancode2}</span
+										>
 										{s.module2}
 										<span class="text-xs text-base-content/50">· {s.mainExamer2}</span>
 									</td>

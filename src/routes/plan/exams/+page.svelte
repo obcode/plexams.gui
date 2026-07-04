@@ -200,100 +200,108 @@
 	// Datums-/Kalender-Mathematik lebt in $lib/date/calendar (unit-getestet).
 
 	// Tage nach ISO-Woche gruppieren; Spalten Mo–Fr (+Sa/So falls genutzt).
-	let weeks = $derived((() => {
-		/** @type {Map<string, any>} */
-		const map = new Map();
-		/** @type {Set<number>} */
-		const usedWd = new Set();
-		for (const d of data.semesterConfig?.days ?? []) {
-			const dt = dateObj(d.date);
-			if (!dt) continue;
-			const wd = isoWeekday(dt);
-			usedWd.add(wd);
-			const mon = mondayOf(dt);
-			const key = mon.toISOString().slice(0, 10);
-			if (!map.has(key)) map.set(key, { monday: mon, weekNum: isoWeekNum(dt), byWd: new Map() });
-			map.get(key).byWd.set(wd, d);
-		}
-		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((w) => usedWd.has(w)));
-		const weekList = [...map.values()].sort(
-			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
-		);
-		return { weekList, cols };
-	})());
+	let weeks = $derived(
+		(() => {
+			/** @type {Map<string, any>} */
+			const map = new Map();
+			/** @type {Set<number>} */
+			const usedWd = new Set();
+			for (const d of data.semesterConfig?.days ?? []) {
+				const dt = dateObj(d.date);
+				if (!dt) continue;
+				const wd = isoWeekday(dt);
+				usedWd.add(wd);
+				const mon = mondayOf(dt);
+				const key = mon.toISOString().slice(0, 10);
+				if (!map.has(key)) map.set(key, { monday: mon, weekNum: isoWeekNum(dt), byWd: new Map() });
+				map.get(key).byWd.set(wd, d);
+			}
+			const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((w) => usedWd.has(w)));
+			const weekList = [...map.values()].sort(
+				(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+			);
+			return { weekList, cols };
+		})()
+	);
 
 	// ---- Zeitbasierte Kalenderansicht (Blöcke nach echter Start-Zeit + Dauer) ----
 	const PX_PER_MIN = 1.1;
 
 	// Filter der geplanten Prüfungen (Logik in $lib/exam/examFilter, unit-getestet).
 	// Die Toggle-Variablen stehen hier in der $:-Anweisung, damit sie getrackt werden.
-	let plannedFiltered = $derived(filterPlanned(data.plannedExams, {
-		onlyMine: onlyPlannedByMe,
-		program: showExam,
-		examerID: showExamerID,
-		ancode: showAncode,
-		onlyOnline: showOnlyOnline,
-		onlyExahm: showOnlyExahm
-	}));
+	let plannedFiltered = $derived(
+		filterPlanned(data.plannedExams, {
+			onlyMine: onlyPlannedByMe,
+			program: showExam,
+			examerID: showExamerID,
+			ancode: showAncode,
+			onlyOnline: showOnlyOnline,
+			onlyExahm: showOnlyExahm
+		})
+	);
 
-	let timeCal = $derived((() => {
-		const items = [];
-		for (const e of plannedFiltered) {
-			// Nur echte Slots (1-basiert): externe Out-of-Period-Prüfungen (Slot 0/0)
-			// liefern zwar ihre externalTime als starttime, gehören aber mangels Slot
-			// nicht in den Plan.
-			if (!e.planEntry?.slotNumber) continue;
-			const iso = e.planEntry?.starttime;
-			const dt = dateObj(iso);
-			const startMin = minutesOfDay(iso);
-			if (!dt || startMin == null) continue;
-			const dur = e.maxDuration || e.zpaExam?.duration || 60;
-			items.push({ e, dt, startMin, endMin: startMin + dur, dur });
-		}
-		if (!items.length) return { weekList: [], cols: [], min: 480, max: 600, hours: [] };
-		const min = Math.floor(Math.min(...items.map((x) => x.startMin)) / 60) * 60;
-		const max = Math.ceil(Math.max(...items.map((x) => x.endMin)) / 60) * 60;
-		/** @type {Map<string, any>} */
-		const weeks = new Map();
-		/** @type {Set<number>} */
-		const usedWd = new Set();
-		for (const x of items) {
-			const wd = isoWeekday(x.dt);
-			usedWd.add(wd);
-			const mon = mondayOf(x.dt);
-			const key = mon.toISOString().slice(0, 10);
-			if (!weeks.has(key)) weeks.set(key, { monday: mon, weekNum: isoWeekNum(x.dt), byWd: new Map() });
-			const w = weeks.get(key);
-			if (!w.byWd.has(wd)) w.byWd.set(wd, []);
-			w.byWd.get(wd).push(x);
-		}
-		// Überlappende Prüfungen eines Tages in Spalten aufteilen (greedy).
-		for (const w of weeks.values()) {
-			for (const [wd, arr] of w.byWd) {
-				arr.sort(
-					(/** @type {any} */ a, /** @type {any} */ b) => a.startMin - b.startMin || a.endMin - b.endMin
-				);
-				/** @type {number[]} */
-				const colEnds = [];
-				for (const x of arr) {
-					let c = colEnds.findIndex((end) => end <= x.startMin);
-					if (c === -1) {
-						c = colEnds.length;
-						colEnds.push(x.endMin);
-					} else colEnds[c] = x.endMin;
-					x.col = c;
-				}
-				w.byWd.set(wd, { items: arr, ncols: colEnds.length || 1 });
+	let timeCal = $derived(
+		(() => {
+			const items = [];
+			for (const e of plannedFiltered) {
+				// Nur echte Slots (1-basiert): externe Out-of-Period-Prüfungen (Slot 0/0)
+				// liefern zwar ihre externalTime als starttime, gehören aber mangels Slot
+				// nicht in den Plan.
+				if (!e.planEntry?.slotNumber) continue;
+				const iso = e.planEntry?.starttime;
+				const dt = dateObj(iso);
+				const startMin = minutesOfDay(iso);
+				if (!dt || startMin == null) continue;
+				const dur = e.maxDuration || e.zpaExam?.duration || 60;
+				items.push({ e, dt, startMin, endMin: startMin + dur, dur });
 			}
-		}
-		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
-		const weekList = [...weeks.values()].sort(
-			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
-		);
-		const hours = [];
-		for (let h = min; h <= max; h += 60) hours.push(h);
-		return { weekList, cols, min, max, hours };
-	})());
+			if (!items.length) return { weekList: [], cols: [], min: 480, max: 600, hours: [] };
+			const min = Math.floor(Math.min(...items.map((x) => x.startMin)) / 60) * 60;
+			const max = Math.ceil(Math.max(...items.map((x) => x.endMin)) / 60) * 60;
+			/** @type {Map<string, any>} */
+			const weeks = new Map();
+			/** @type {Set<number>} */
+			const usedWd = new Set();
+			for (const x of items) {
+				const wd = isoWeekday(x.dt);
+				usedWd.add(wd);
+				const mon = mondayOf(x.dt);
+				const key = mon.toISOString().slice(0, 10);
+				if (!weeks.has(key))
+					weeks.set(key, { monday: mon, weekNum: isoWeekNum(x.dt), byWd: new Map() });
+				const w = weeks.get(key);
+				if (!w.byWd.has(wd)) w.byWd.set(wd, []);
+				w.byWd.get(wd).push(x);
+			}
+			// Überlappende Prüfungen eines Tages in Spalten aufteilen (greedy).
+			for (const w of weeks.values()) {
+				for (const [wd, arr] of w.byWd) {
+					arr.sort(
+						(/** @type {any} */ a, /** @type {any} */ b) =>
+							a.startMin - b.startMin || a.endMin - b.endMin
+					);
+					/** @type {number[]} */
+					const colEnds = [];
+					for (const x of arr) {
+						let c = colEnds.findIndex((end) => end <= x.startMin);
+						if (c === -1) {
+							c = colEnds.length;
+							colEnds.push(x.endMin);
+						} else colEnds[c] = x.endMin;
+						x.col = c;
+					}
+					w.byWd.set(wd, { items: arr, ncols: colEnds.length || 1 });
+				}
+			}
+			const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
+			const weekList = [...weeks.values()].sort(
+				(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+			);
+			const hours = [];
+			for (let h = min; h <= max; h += 60) hours.push(h);
+			return { weekList, cols, min, max, hours };
+		})()
+	);
 
 	/** @param {any} x → Zustands-Akzent für einen Zeit-Block */
 	const blockColor = (x) => {
@@ -317,7 +325,11 @@
 	// „FK10: 456" — FK-Präfix + Primuss-Ancode, wie in den Slot-Kästchen.
 	/** @param {any} e */
 	const otherFkAncode = (e) =>
-		displayAncode(otherFk(e), e.zpaExam?.primussAncodes?.[0]?.ancode, e.zpaExam?.ancode ?? e.ancode);
+		displayAncode(
+			otherFk(e),
+			e.zpaExam?.primussAncodes?.[0]?.ancode,
+			e.zpaExam?.ancode ?? e.ancode
+		);
 
 	/** @param {string|null|undefined} iso → „Mo 06.07. 11:00" (Berlin) */
 	const fmtDateTime = (iso) => {
@@ -338,11 +350,13 @@
 	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, nur
 	// externalTime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
 	// im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
-	let otherFkNoSlot = $derived((data.otherFkExams ?? [])
-		.filter(
-			(/** @type {any} */ e) => !(e.planEntry?.dayNumber > 0 && e.planEntry?.slotNumber > 0)
-		)
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode));
+	let otherFkNoSlot = $derived(
+		(data.otherFkExams ?? [])
+			.filter(
+				(/** @type {any} */ e) => !(e.planEntry?.dayNumber > 0 && e.planEntry?.slotNumber > 0)
+			)
+			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode)
+	);
 
 	function forbiddenSlot(/** @type {any} */ day, /** @type {any} */ time) {
 		const key = `${day},${time}`;
@@ -426,7 +440,10 @@
 				<option value="all">Alle Gruppen</option>
 				{#each allProgramsInPlan as program}
 					{@const count = unplannedExams(program)}
-					<option value={program}>{program}{#if count > 0} ({count} offen){/if}</option>
+					<option value={program}
+						>{program}{#if count > 0}
+							({count} offen){/if}</option
+					>
 				{/each}
 			</select>
 			<select class="select select-bordered select-sm" bind:value={showExamerID}>
@@ -446,10 +463,11 @@
 		<!-- Slot-Zelle: in beiden Ansichten identisch (eigenes Fetching + Events) -->
 		{#snippet slotCell(/** @type {any} */ day, /** @type {any} */ time)}
 			<div
-				class="h-full rounded {statusColor(slotsStatus[`${day.number},${time.number}`])} {globalForbiddenSlot(
-					day.number,
-					time.number
-				) ?? ''} {mucdaiSlotToShow[`${day.number},${time.number}`] ?? ''}"
+				class="h-full rounded {statusColor(
+					slotsStatus[`${day.number},${time.number}`]
+				)} {globalForbiddenSlot(day.number, time.number) ?? ''} {mucdaiSlotToShow[
+					`${day.number},${time.number}`
+				] ?? ''}"
 			>
 				<Slot
 					{day}
@@ -526,56 +544,90 @@
 					</div>
 				{/each}
 			</div>
+		{:else if !timeCal.weekList.length}
+			<div class="text-sm text-base-content/50">Keine geplanten Prüfungen mit Zeit.</div>
 		{:else}
-			{#if !timeCal.weekList.length}
-				<div class="text-sm text-base-content/50">Keine geplanten Prüfungen mit Zeit.</div>
-			{:else}
-				<div class="flex flex-col gap-6">
-					{#each timeCal.weekList as w}
-						<div class="flex flex-col gap-1">
-							<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
-							<div class="overflow-x-auto">
-								<div class="flex gap-2" style="min-width:max-content">
-									<div class="relative w-12 shrink-0" style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px">
-										{#each timeCal.hours as h}
-											<div class="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-base-content/50" style="top:{(h - timeCal.min) * PX_PER_MIN}px">{hhmm(h)}</div>
-										{/each}
-									</div>
-									{#each timeCal.cols as wd}
-										{@const dd = w.byWd.get(wd)}
-										<div class="flex-1" style="min-width:11rem">
-											<div class="mb-1 text-center text-xs font-medium text-base-content/60">{WD2[wd]}{#if dd} · {ddmm(dd.items[0].dt)}{/if}</div>
-											<div class="relative rounded border border-base-200 bg-base-100" style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px">
-												{#each timeCal.hours as h}
-													<div class="absolute inset-x-0 border-t border-base-200/70" style="top:{(h - timeCal.min) * PX_PER_MIN}px"></div>
-												{/each}
-												{#if dd}
-													{#each dd.items as x}
-														<div
-															class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(x)}"
-															style="top:{(x.startMin - timeCal.min) * PX_PER_MIN}px; height:{x.dur * PX_PER_MIN}px; left:calc({(x.col / dd.ncols) * 100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
-															title="{fmtAncode(x.e.zpaExam)} · {x.e.zpaExam.module} ({x.e.zpaExam.mainExamer}) · {hhmm(x.startMin)}–{hhmm(x.endMin)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
-														>
-															<div class="flex items-center gap-1 text-[11px] font-semibold leading-tight">
-																{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span>{/if}
-																{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert">🏗️</span>{/if}
-																{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
-																<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
-															</div>
-															<div class="truncate text-[10px] leading-tight">{x.e.zpaExam.module}</div>
-															<div class="text-[10px] leading-tight tabular-nums text-base-content/60">{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}</div>
-														</div>
-													{/each}
-												{/if}
-											</div>
+			<div class="flex flex-col gap-6">
+				{#each timeCal.weekList as w}
+					<div class="flex flex-col gap-1">
+						<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
+						<div class="overflow-x-auto">
+							<div class="flex gap-2" style="min-width:max-content">
+								<div
+									class="relative w-12 shrink-0"
+									style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
+								>
+									{#each timeCal.hours as h}
+										<div
+											class="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-base-content/50"
+											style="top:{(h - timeCal.min) * PX_PER_MIN}px"
+										>
+											{hhmm(h)}
 										</div>
 									{/each}
 								</div>
+								{#each timeCal.cols as wd}
+									{@const dd = w.byWd.get(wd)}
+									<div class="flex-1" style="min-width:11rem">
+										<div class="mb-1 text-center text-xs font-medium text-base-content/60">
+											{WD2[wd]}{#if dd}
+												· {ddmm(dd.items[0].dt)}{/if}
+										</div>
+										<div
+											class="relative rounded border border-base-200 bg-base-100"
+											style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
+										>
+											{#each timeCal.hours as h}
+												<div
+													class="absolute inset-x-0 border-t border-base-200/70"
+													style="top:{(h - timeCal.min) * PX_PER_MIN}px"
+												></div>
+											{/each}
+											{#if dd}
+												{#each dd.items as x}
+													<div
+														class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(
+															x
+														)}"
+														style="top:{(x.startMin - timeCal.min) * PX_PER_MIN}px; height:{x.dur *
+															PX_PER_MIN}px; left:calc({(x.col / dd.ncols) *
+															100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
+														title="{fmtAncode(x.e.zpaExam)} · {x.e.zpaExam.module} ({x.e.zpaExam
+															.mainExamer}) · {hhmm(x.startMin)}–{hhmm(
+															x.endMin
+														)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
+													>
+														<div
+															class="flex items-center gap-1 text-[11px] font-semibold leading-tight"
+														>
+															{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
+																>{/if}
+															{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
+																	>🏗️</span
+																>{/if}
+															{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span
+																>{/if}
+															<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
+														</div>
+														<div class="truncate text-[10px] leading-tight">
+															{x.e.zpaExam.module}
+														</div>
+														<div
+															class="text-[10px] leading-tight tabular-nums text-base-content/60"
+														>
+															{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}
+														</div>
+													</div>
+												{/each}
+											{/if}
+										</div>
+									</div>
+								{/each}
 							</div>
 						</div>
-					{/each}
-				</div>
-			{/if}
+					</div>
+				{/each}
+			</div>
 		{/if}
 
 		<ExamsWithoutSlot
@@ -607,7 +659,8 @@
 				<p class="text-sm text-base-content/60">
 					Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald sie
 					eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster. Zeiten
-					setzt du unter <a href="/plan/external" class="link link-primary">Prüfungen anderer FKs</a>.
+					setzt du unter <a href="/plan/external" class="link link-primary">Prüfungen anderer FKs</a
+					>.
 				</p>
 				<div class="flex flex-wrap gap-2">
 					{#each otherFkNoSlot as e (e.ancode)}
@@ -620,7 +673,9 @@
 								<span class="font-mono">{otherFkAncode(e)}</span>
 							</div>
 							<div class="truncate">{e.zpaExam?.module}</div>
-							<div class="text-base-content/50">{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}</div>
+							<div class="text-base-content/50">
+								{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}
+							</div>
 							{#if t}
 								<div class="tabular-nums text-base-content/70">
 									{t} Uhr <span class="text-base-content/40">(außerhalb Zeitraum)</span>

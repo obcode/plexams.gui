@@ -12,19 +12,24 @@
 	let fkFilter = $state('');
 
 	// alle vorkommenden FKs (für den Filter), sortiert
-	let fks = $derived([...new Set((data.items ?? []).map((/** @type {any} */ e) => e.fk || '—'))].sort());
+	let fks = $derived(
+		[...new Set((data.items ?? []).map((/** @type {any} */ e) => e.fk || '—'))].sort()
+	);
 
 	// gefilterte + zu Zeilen aufbereitete Items, nach FK gruppiert
 	// (Logik in $lib/exam/otherFkGroups, unit-getestet).
 	let groups = $derived(buildGroups(data.items ?? [], { onlyMissing, source, fk: fkFilter }));
 
 	// Gesamtzahlen für die Kopfzeile
-	let total = $derived((data.items ?? []).filter(
-		(/** @type {any} */ e) => source === 'all' || e.source === source
-	).length);
-	let missing = $derived((data.items ?? []).filter(
-		(/** @type {any} */ e) => (source === 'all' || e.source === source) && !hasTime(e)
-	).length);
+	let total = $derived(
+		(data.items ?? []).filter((/** @type {any} */ e) => source === 'all' || e.source === source)
+			.length
+	);
+	let missing = $derived(
+		(data.items ?? []).filter(
+			(/** @type {any} */ e) => (source === 'all' || e.source === source) && !hasTime(e)
+		).length
+	);
 
 	const onSaved = () => invalidateAll();
 </script>
@@ -37,10 +42,10 @@
 		</span>
 	</div>
 	<p class="max-w-3xl text-sm text-base-content/60">
-		Termine für Prüfungen, die <strong>eine andere Fakultät</strong> plant: ZPA-Prüfungen mit dem
-		Constraint „nicht von mir geplant" (FK aus dem Constraint-Feld) sowie von anderen FKs geplante
-		MUC.DAI-Prüfungen. Nach FK gruppiert. Datum &amp; Zeit direkt in der Zeile setzen — Prüfungen
-		außerhalb des Prüfungszeitraums behalten nur die Zeit (keinen Slot).
+		Termine für Prüfungen, die <strong>eine andere Fakultät</strong> plant: ZPA-Prüfungen mit dem Constraint
+		„nicht von mir geplant" (FK aus dem Constraint-Feld) sowie von anderen FKs geplante MUC.DAI-Prüfungen.
+		Nach FK gruppiert. Datum &amp; Zeit direkt in der Zeile setzen — Prüfungen außerhalb des Prüfungszeitraums
+		behalten nur die Zeit (keinen Slot).
 	</p>
 
 	{#if data.loadError}
@@ -53,13 +58,25 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<!-- Quelle -->
 		<div role="tablist" class="tabs tabs-boxed">
-			<button role="tab" class="tab {source === 'all' ? 'tab-active' : ''}" onclick={() => (source = 'all')}>
+			<button
+				role="tab"
+				class="tab {source === 'all' ? 'tab-active' : ''}"
+				onclick={() => (source = 'all')}
+			>
 				alle Quellen
 			</button>
-			<button role="tab" class="tab {source === 'zpa' ? 'tab-active' : ''}" onclick={() => (source = 'zpa')}>
+			<button
+				role="tab"
+				class="tab {source === 'zpa' ? 'tab-active' : ''}"
+				onclick={() => (source = 'zpa')}
+			>
 				ZPA (nicht von mir)
 			</button>
-			<button role="tab" class="tab {source === 'mucdai' ? 'tab-active' : ''}" onclick={() => (source = 'mucdai')}>
+			<button
+				role="tab"
+				class="tab {source === 'mucdai' ? 'tab-active' : ''}"
+				onclick={() => (source = 'mucdai')}
+			>
 				MUC.DAI
 			</button>
 		</div>
@@ -83,7 +100,9 @@
 
 	{#if !groups.length}
 		<div class="text-sm text-base-content/50">
-			{onlyMissing ? 'Alle passenden Prüfungen haben einen Termin.' : 'Keine Prüfungen anderer FKs.'}
+			{onlyMissing
+				? 'Alle passenden Prüfungen haben einen Termin.'
+				: 'Keine Prüfungen anderer FKs.'}
 		</div>
 	{:else}
 		{#each groups as group}

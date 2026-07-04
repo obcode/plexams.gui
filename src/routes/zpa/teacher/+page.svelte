@@ -48,19 +48,21 @@
 			: { isInvig: false, submitted: false };
 
 	let term = $derived(searchTerm.trim().toLowerCase());
-	let rows = $derived(teachers.filter((/** @type {any} */ t) => {
-		if (term) {
-			const hit =
-				t.fullname.toLowerCase().includes(term) ||
-				(t.shortname ?? '').toLowerCase().includes(term) ||
-				String(t.id).includes(term);
-			if (!hit) return false;
-		}
-		const s = invigStatus(t);
-		if (onlyMissingReq) return s.isInvig && !s.submitted;
-		if (onlyInvigilators) return s.isInvig;
-		return true;
-	}));
+	let rows = $derived(
+		teachers.filter((/** @type {any} */ t) => {
+			if (term) {
+				const hit =
+					t.fullname.toLowerCase().includes(term) ||
+					(t.shortname ?? '').toLowerCase().includes(term) ||
+					String(t.id).includes(term);
+				if (!hit) return false;
+			}
+			const s = invigStatus(t);
+			if (onlyMissingReq) return s.isInvig && !s.submitted;
+			if (onlyInvigilators) return s.isInvig;
+			return true;
+		})
+	);
 
 	// Chronologischer Schlüssel für „YYYY SS"/„YYYY WS" (SS vor WS); null = unbekannt.
 	/** @param {string | null | undefined} s */

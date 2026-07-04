@@ -8,12 +8,10 @@
 	// Ersetzt die früheren Einzelversände „Constraints/Wünsche" + „Vorbereitete
 	// Prüfungen". Wiederholbar (Versand an Teilmengen / erneut möglich).
 
-	
-
 	/** @param {any[]} exams → „425 Statistik …, 486 Datenbanksysteme" */
 	const examList = (exams) =>
 		(exams ?? []).map((/** @type {any} */ e) => `${e.ancode} ${e.module}`).join(', ');
-	
+
 	/**
 	 * @typedef {Object} Props
 	 * @property {Array<{ teacher: { id: number, shortname: string, fullname: string, email: string, fk: string, isLBA: boolean }, category: string, exams: { ancode: number, module: string }[] }>} [recipients]
@@ -38,11 +36,13 @@
 	});
 
 	let q = $state('');
-	let filtered = $derived(recipients.filter((r) => {
-		if (!q.trim()) return true;
-		const t = q.trim().toLowerCase();
-		return `${r.teacher?.shortname ?? ''} ${r.teacher?.email ?? ''}`.toLowerCase().includes(t);
-	}));
+	let filtered = $derived(
+		recipients.filter((r) => {
+			if (!q.trim()) return true;
+			const t = q.trim().toLowerCase();
+			return `${r.teacher?.shortname ?? ''} ${r.teacher?.email ?? ''}`.toLowerCase().includes(t);
+		})
+	);
 
 	/** @param {number} id */
 	function toggle(id) {
@@ -61,8 +61,8 @@
 	<div class="min-w-0">
 		<div class="font-medium">Prüfungsplanungs-Info an Prüfende</div>
 		<div class="text-xs text-base-content/50">
-			Info zur Prüfungsplanung (Constraints/Wünsche &amp; vorbereitete Prüfungen) an die ausgewählten
-			Prüfenden. Empfänger ohne E-Mail werden serverseitig übersprungen.
+			Info zur Prüfungsplanung (Constraints/Wünsche &amp; vorbereitete Prüfungen) an die
+			ausgewählten Prüfenden. Empfänger ohne E-Mail werden serverseitig übersprungen.
 		</div>
 	</div>
 
@@ -90,7 +90,9 @@
 			{@const noMail = !r.teacher?.email}
 			{@const hasExams = (r.exams?.length ?? 0) > 0}
 			<label
-				class="flex items-start gap-2 px-2 py-1 text-sm {noMail ? 'opacity-50 ' : 'cursor-pointer '}{hasExams
+				class="flex items-start gap-2 px-2 py-1 text-sm {noMail
+					? 'opacity-50 '
+					: 'cursor-pointer '}{hasExams
 					? 'bg-success/10 hover:bg-success/20'
 					: 'bg-warning/10 hover:bg-warning/20'}"
 			>
@@ -105,7 +107,8 @@
 					<div class="flex flex-wrap items-center gap-x-2">
 						<span class="truncate font-medium">{r.teacher.shortname}</span>
 						{#if r.teacher.fk && r.teacher.fk !== 'FK07'}
-							<span class="badge badge-neutral badge-xs" title="andere Fakultät">{r.teacher.fk}</span
+							<span class="badge badge-neutral badge-xs" title="andere Fakultät"
+								>{r.teacher.fk}</span
 							>
 						{/if}
 						{#if r.teacher.isLBA}

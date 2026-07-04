@@ -2,14 +2,6 @@
 	import { classifyRoom } from '$lib/room/roomCategories';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} plannedExam
@@ -45,27 +37,34 @@
 	let ntas = plannedExam.ntas;
 
 	// enthält diese Prüfung den ausgewählten Raum?
-	let matchesRoom =
-		$derived(showRooms === 'all' ||
-		(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms));
+	let matchesRoom = $derived(
+		showRooms === 'all' ||
+			(plannedExam.plannedRooms || []).some((/** @type {any} */ r) => r.room.name === showRooms)
+	);
 	let passNta = $derived(!showOnlyExamsWithNTAs || (ntas && ntas.length > 0));
 	// „ohne Raum": nicht zugeordnete Studierende (autoritativ aus unplacedExams)
 	// oder gar keine geplanten Räume.
-	let hasNoRoom =
-		$derived(unplacedAncodes.has(exam.ancode) ||
-		!plannedExam.plannedRooms ||
-		plannedExam.plannedRooms.length === 0);
+	let hasNoRoom = $derived(
+		unplacedAncodes.has(exam.ancode) ||
+			!plannedExam.plannedRooms ||
+			plannedExam.plannedRooms.length === 0
+	);
 	let passNoRoom = $derived(!showOnlyWithoutRoom || hasNoRoom);
 	// sichtbar: bei Raumauswahl ohne Treffer nur, wenn „andere gedimmt" aktiv
-	let visible = $derived(passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers));
+	let visible = $derived(
+		passNta && passNoRoom && (showRooms === 'all' || matchesRoom || dimOthers)
+	);
 	// hat die Prüfung mindestens einen nicht fixierten (echten) Raum?
-	let hasNotPrePlanned = $derived((plannedExam.plannedRooms || []).some(
-		(/** @type {any} */ r) => !r.prePlanned && r.room.name !== 'No Room'
-	));
+	let hasNotPrePlanned = $derived(
+		(plannedExam.plannedRooms || []).some(
+			(/** @type {any} */ r) => !r.prePlanned && r.room.name !== 'No Room'
+		)
+	);
 	// ganze Karte dimmen: bei Raumauswahl ohne Treffer, oder im „nur nicht
 	// fixierte"-Modus, wenn die Karte keinen nicht fixierten Raum hat
-	let dimmed =
-		$derived((showRooms !== 'all' && !matchesRoom) || (highlightNotPrePlanned && !hasNotPrePlanned));
+	let dimmed = $derived(
+		(showRooms !== 'all' && !matchesRoom) || (highlightNotPrePlanned && !hasNotPrePlanned)
+	);
 
 	let hasNtas = $derived(ntas && ntas.length > 0);
 
@@ -199,14 +198,16 @@
 	// Prüfung belegt sind (usedBy) oder bereits (z. B. als NTA-Raum) für diese
 	// Prüfung vorgeplant sind — Mitnutzung ist gewollt. Verfügbarkeit zeigt sich
 	// an freeSeats; Constraint-Eignung bleibt als Hinweis (mismatchReason).
-	let pickerCandidates = $derived((slotRooms || [])
-		.filter((/** @type {any} */ r) => r.roomName !== 'No Room')
-		.map((/** @type {any} */ r) => ({
-			...r,
-			dimReason: mismatchReason(r),
-			full: r.freeSeats <= 0
-		}))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.roomName.localeCompare(b.roomName)));
+	let pickerCandidates = $derived(
+		(slotRooms || [])
+			.filter((/** @type {any} */ r) => r.roomName !== 'No Room')
+			.map((/** @type {any} */ r) => ({
+				...r,
+				dimReason: mismatchReason(r),
+				full: r.freeSeats <= 0
+			}))
+			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.roomName.localeCompare(b.roomName))
+	);
 
 	/** @param {any} c */
 	async function addRoom(c) {

@@ -93,16 +93,20 @@
 		return true; // alle
 	};
 
-	let baseRows = $derived(searching
-		? allRows.filter((/** @type {any} */ e) =>
-				`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
-			)
-		: rows);
+	let baseRows = $derived(
+		searching
+			? allRows.filter((/** @type {any} */ e) =>
+					`${e.ancode} ${e.module ?? ''} ${e.mainExamer ?? ''}`.toLowerCase().includes(ql)
+				)
+			: rows
+	);
 	// view/onlyUnconnected wörtlich referenzieren, damit Svelte die Abhängigkeit
 	// erkennt und bei Auswahländerung neu filtert.
-	let displayedRows = $derived(baseRows
-		.filter((/** @type {any} */ e) => viewMatch(e, view))
-		.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected));
+	let displayedRows = $derived(
+		baseRows
+			.filter((/** @type {any} */ e) => viewMatch(e, view))
+			.filter((/** @type {any} */ e) => !onlyUnconnected || !e.connected)
+	);
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
 	let openFK07 = $derived(allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length);
 
@@ -116,11 +120,13 @@
 	/** @param {string} prog */
 	const catOf = (prog) => data.catByProgram?.[prog] ?? 'misc';
 
-	let groups = $derived(CAT_ORDER.map((key) => ({
-		key,
-		label: CAT_LABEL[key],
-		items: data.primussExams.filter((/** @type {any} */ p) => catOf(p.program) === key)
-	})).filter((g) => g.items.length > 0));
+	let groups = $derived(
+		CAT_ORDER.map((key) => ({
+			key,
+			label: CAT_LABEL[key],
+			items: data.primussExams.filter((/** @type {any} */ p) => catOf(p.program) === key)
+		})).filter((g) => g.items.length > 0)
+	);
 
 	// --- Inline mit einer ZPA-Prüfung verbinden (addPrimussAncode) ---
 	// Reuse der bestehenden Mutation von /exam/connected: eine Primuss-Anmeldung
@@ -143,8 +149,9 @@
 		connectExam = null;
 		connectError = '';
 	}
-	let connectPreview =
-		$derived(connectTarget !== '' ? (data.zpaByAncode?.[Number(connectTarget)] ?? null) : null);
+	let connectPreview = $derived(
+		connectTarget !== '' ? (data.zpaByAncode?.[Number(connectTarget)] ?? null) : null
+	);
 
 	async function doConnect() {
 		if (connectBusy || !connectExam || connectTarget === '') return;
@@ -472,7 +479,8 @@
 							{/if}
 						</td>
 						<td>{exam.examType}</td>
-						{#if searching}<td><span class="badge badge-ghost badge-sm">{exam.program}</span></td>{/if}
+						{#if searching}<td><span class="badge badge-ghost badge-sm">{exam.program}</span></td
+							>{/if}
 						<td class="text-right tabular-nums">
 							{exam.studentRegsCount}
 						</td>

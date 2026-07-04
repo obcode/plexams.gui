@@ -164,7 +164,12 @@
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">SEB-Plätze</span>
-				<input type="number" min="0" class="input input-bordered input-sm" bind:value={form.sebSeats} />
+				<input
+					type="number"
+					min="0"
+					class="input input-bordered input-sm"
+					bind:value={form.sebSeats}
+				/>
 			</label>
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">HMEB-Plätze</span>
@@ -186,7 +191,11 @@
 		<button class="btn btn-ghost btn-sm" onclick={() => oncancel?.()} disabled={saving}>
 			Abbrechen
 		</button>
-		<WriteButton class="btn btn-primary btn-sm gap-2" onclick={submit} disabled={saving || !formValid}>
+		<WriteButton
+			class="btn btn-primary btn-sm gap-2"
+			onclick={submit}
+			disabled={saving || !formValid}
+		>
 			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
 			{mode === 'edit' ? 'Speichern' : 'Anlegen'}
 		</WriteButton>

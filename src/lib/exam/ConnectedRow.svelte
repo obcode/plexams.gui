@@ -23,9 +23,7 @@
 	const errs = $derived(warningsOf(exam, 'error'));
 	const warns = $derived(warningsOf(exam, 'warning'));
 	const infos = $derived(warningsOf(exam, 'info'));
-	const connectedProgs = $derived(
-		new Set((exam.primussExams ?? []).map((p: any) => p.program))
-	);
+	const connectedProgs = $derived(new Set((exam.primussExams ?? []).map((p: any) => p.program)));
 
 	let editing = $state(false);
 	let busy = $state(false);
@@ -228,7 +226,11 @@
 				>
 					<span>{w.message}</span>
 					{#if w.program && w.ancode != null && !connectedProgs.has(w.program)}
-						<WriteButton class="btn btn-xs" disabled={busy} onclick={() => add(w.program, w.ancode)}>
+						<WriteButton
+							class="btn btn-xs"
+							disabled={busy}
+							onclick={() => add(w.program, w.ancode)}
+						>
 							＋ {w.program}/{w.ancode} hinzufügen
 						</WriteButton>
 					{/if}

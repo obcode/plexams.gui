@@ -64,7 +64,8 @@
 						<div class="rounded border border-base-300 bg-base-100 px-3 py-1.5 text-sm">
 							<span class="font-medium">{exam.ancode}. {exam.module}</span>
 							<span class="text-base-content/50">
-								· {exam.mainExamer}{#if exam.examTypeFull} · {exam.examTypeFull}{/if}
+								· {exam.mainExamer}{#if exam.examTypeFull}
+									· {exam.examTypeFull}{/if}
 							</span>
 						</div>
 					{/each}

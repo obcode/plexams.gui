@@ -60,17 +60,19 @@
 	/** @type {'name' | 'seats'} */
 	let sortCol = $state('name');
 
-	let rooms = $derived([...data.rooms]
-		.filter((/** @type {any} */ r) => {
-			if (activeFilter === 'active' && r.deactivated) return false;
-			if (activeFilter === 'inactive' && !r.deactivated) return false;
-			if (requestFilter !== 'all' && r.requestWith !== requestFilter) return false;
-			for (const k of activeFlags) if (!r[k]) return false;
-			return true;
-		})
-		.sort((/** @type {any} */ a, /** @type {any} */ b) =>
-			sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
-		));
+	let rooms = $derived(
+		[...data.rooms]
+			.filter((/** @type {any} */ r) => {
+				if (activeFilter === 'active' && r.deactivated) return false;
+				if (activeFilter === 'inactive' && !r.deactivated) return false;
+				if (requestFilter !== 'all' && r.requestWith !== requestFilter) return false;
+				for (const k of activeFlags) if (!r[k]) return false;
+				return true;
+			})
+			.sort((/** @type {any} */ a, /** @type {any} */ b) =>
+				sortCol === 'seats' ? b.seats - a.seats : a.name.localeCompare(b.name)
+			)
+	);
 
 	/** @type {string | null} */
 	let toggleError = $state(null);
@@ -171,7 +173,9 @@
 						Name {sortCol === 'name' ? '▲' : ''}
 					</th>
 					<th
-						class="cursor-pointer select-none text-right {sortCol === 'seats' ? 'text-primary' : ''}"
+						class="cursor-pointer select-none text-right {sortCol === 'seats'
+							? 'text-primary'
+							: ''}"
 						onclick={() => (sortCol = 'seats')}
 					>
 						Plätze {sortCol === 'seats' ? '▼' : ''}
@@ -225,7 +229,9 @@
 							</label>
 						</td>
 						<td>
-							<button class="btn btn-ghost btn-xs" onclick={() => openEdit(room)}>✎ Bearbeiten</button>
+							<button class="btn btn-ghost btn-xs" onclick={() => openEdit(room)}
+								>✎ Bearbeiten</button
+							>
 						</td>
 					</tr>
 				{/each}

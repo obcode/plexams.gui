@@ -9,16 +9,6 @@
 	// werden. Streamt die LogLines der zugehörigen Subscription wie ein Terminal
 	// (ANSI im text möglich; PROGRESS-Zeilen werden in-place aktualisiert).
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} emailKey - Subscription-Feldname, z. B. 'sendEmailDraft'
@@ -57,8 +47,9 @@ versenden ist; optionaler Hinweistext dazu
 	// versendet / Server meldet „already sent"). Dann nur noch Probelauf.
 	let sentOverride = $state(false);
 	let condKey = $derived(conditionKey || EMAIL_CONDITION[emailKey]);
-	let alreadySent =
-		$derived(!repeatable && (sentOverride || (condKey ? conditionsDone[condKey] === true : false)));
+	let alreadySent = $derived(
+		!repeatable && (sentOverride || (condKey ? conditionsDone[condKey] === true : false))
+	);
 
 	// --- Laufzeit-Status ---
 	let running = $state(false);

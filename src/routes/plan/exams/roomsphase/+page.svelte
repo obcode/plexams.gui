@@ -325,7 +325,9 @@
 		style="background:#1e1e2e; color:#d4d4d4"
 	>
 		{#if !lines.length && !current && !running}
-			<div style="color:#6c7086">Bereit. Parameter wählen und „Probelauf" oder „Planen" starten.</div>
+			<div style="color:#6c7086">
+				Bereit. Parameter wählen und „Probelauf" oder „Planen" starten.
+			</div>
 		{/if}
 		{#each lines as line}
 			<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
@@ -411,8 +413,9 @@
 			{#if fixBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
 		</div>
 		<span class="text-xs text-base-content/50">
-			Nach zufriedenstellender Phase A fixieren — die fixierten Prüfungen überleben Phase B (Terminplan
-			generieren). „Fixierung aufheben" lässt das manuelle Sperren (Locked) unangetastet.
+			Nach zufriedenstellender Phase A fixieren — die fixierten Prüfungen überleben Phase B
+			(Terminplan generieren). „Fixierung aufheben" lässt das manuelle Sperren (Locked)
+			unangetastet.
 		</span>
 		{#if fixInfo}
 			<div class="alert alert-success py-2 text-sm"><span>{fixInfo}</span></div>

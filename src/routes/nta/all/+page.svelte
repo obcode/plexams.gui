@@ -12,27 +12,31 @@
 	/** 'all' | 'active' | 'inactive' */
 	let activeFilter = $state('all');
 
-	let filteredNTAs = $derived(data.ntas.filter((/** @type {any} */ nta) => {
-		if (searchTerm && !nta.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-		if (roomAlone && !nta.needsRoomAlone) return false;
-		if (currentSemester && nta.lastSemester != data.semester) return false;
-		if (activeFilter === 'active' && nta.deactivated) return false;
-		if (activeFilter === 'inactive' && !nta.deactivated) return false;
-		return true;
-	}));
+	let filteredNTAs = $derived(
+		data.ntas.filter((/** @type {any} */ nta) => {
+			if (searchTerm && !nta.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+			if (roomAlone && !nta.needsRoomAlone) return false;
+			if (currentSemester && nta.lastSemester != data.semester) return false;
+			if (activeFilter === 'active' && nta.deactivated) return false;
+			if (activeFilter === 'inactive' && !nta.deactivated) return false;
+			return true;
+		})
+	);
 
 	// Die mtknr ist der Schlüssel und muss eindeutig sein. Doppelte mtknr als
 	// klare Fehlermeldung anzeigen (statt die Seite per each-Key abstürzen zu
 	// lassen) — muss serverseitig bereinigt werden.
-	let duplicateMtknr = $derived((() => {
-		const seen = new Set();
-		const dup = new Set();
-		for (const nta of data.ntas) {
-			if (seen.has(nta.mtknr)) dup.add(nta.mtknr);
-			else seen.add(nta.mtknr);
-		}
-		return [...dup];
-	})());
+	let duplicateMtknr = $derived(
+		(() => {
+			const seen = new Set();
+			const dup = new Set();
+			for (const nta of data.ntas) {
+				if (seen.has(nta.mtknr)) dup.add(nta.mtknr);
+				else seen.add(nta.mtknr);
+			}
+			return [...dup];
+		})()
+	);
 
 	// Modal zum Anlegen/Bearbeiten
 	let showModal = $state(false);

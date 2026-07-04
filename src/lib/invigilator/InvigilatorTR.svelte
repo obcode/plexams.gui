@@ -11,13 +11,7 @@
 	 */
 
 	/** @type {Props} */
-	let {
-		semesterConfig,
-		index,
-		invigilator,
-		showInvigilations = true,
-		base100 = 0
-	} = $props();
+	let { semesterConfig, index, invigilator, showInvigilations = true, base100 = 0 } = $props();
 
 	/** @param {any} invigilator */
 	function nameBg(invigilator) {
@@ -32,9 +26,7 @@
 
 	const contribution = invigilator.requirements ? invigilator.requirements.allContributions : 0;
 
-	const openMinutes = $derived(
-		invigilator.todos.totalMinutes - invigilator.todos.doingMinutes
-	);
+	const openMinutes = $derived(invigilator.todos.totalMinutes - invigilator.todos.doingMinutes);
 
 	function openColor() {
 		if (openMinutes <= 0) {

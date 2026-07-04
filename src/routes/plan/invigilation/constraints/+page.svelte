@@ -27,32 +27,38 @@
 		data.days.find((/** @type {any} */ d) => datePart(d.date) === dp)?.date ?? '';
 
 	let existingIds = $derived(new Set(data.constraints.map((/** @type {any} */ c) => c.teacherID)));
-	let permByTeacher = $derived(new Map(data.permanent.map((/** @type {any} */ p) => [p.teacherID, p])));
+	let permByTeacher = $derived(
+		new Map(data.permanent.map((/** @type {any} */ p) => [p.teacherID, p]))
+	);
 	// per-Semester-Dropdown: Kandidaten ohne Semester-Eintrag und nicht permanent
-	let addableTeachers = $derived(data.candidates.filter(
-		(/** @type {any} */ t) => !existingIds.has(t.id) && !permByTeacher.has(t.id)
-	));
+	let addableTeachers = $derived(
+		data.candidates.filter(
+			(/** @type {any} */ t) => !existingIds.has(t.id) && !permByTeacher.has(t.id)
+		)
+	);
 	let firstDayPart = $derived(data.days.length ? datePart(data.days[0].date) : '');
 
 	// alle Aufsichten anzeigen (auch ohne Constraints) — Zeilen entsprechend ableiten
 	let showAll = $state(false);
-	let constraintByTeacher = $derived(new Map(
-		data.constraints.map((/** @type {any} */ c) => [c.teacherID, c])
-	));
-	let rows = $derived(showAll
-		? data.candidates.map(
-				(/** @type {any} */ t) =>
-					constraintByTeacher.get(t.id) ?? {
-						teacherID: t.id,
-						shortname: t.shortname,
-						fullname: t.fullname,
-						isNotInvigilator: false,
-						excludedDates: [],
-						timeWindows: [],
-						_empty: true
-					}
-			)
-		: data.constraints);
+	let constraintByTeacher = $derived(
+		new Map(data.constraints.map((/** @type {any} */ c) => [c.teacherID, c]))
+	);
+	let rows = $derived(
+		showAll
+			? data.candidates.map(
+					(/** @type {any} */ t) =>
+						constraintByTeacher.get(t.id) ?? {
+							teacherID: t.id,
+							shortname: t.shortname,
+							fullname: t.fullname,
+							isNotInvigilator: false,
+							excludedDates: [],
+							timeWindows: [],
+							_empty: true
+						}
+				)
+			: data.constraints
+	);
 
 	// ---- Editor-Zustand ----
 	/** @type {number | null} */
@@ -399,8 +405,7 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
-					>Abbrechen</button
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert…' : 'Speichern'}

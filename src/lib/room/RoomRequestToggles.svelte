@@ -1,7 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} req
@@ -15,10 +14,7 @@
 </script>
 
 <div class="flex items-center gap-3">
-	<label
-		class="label w-28 cursor-pointer justify-start gap-2 px-0"
-		title="genehmigt"
-	>
+	<label class="label w-28 cursor-pointer justify-start gap-2 px-0" title="genehmigt">
 		<input
 			type="checkbox"
 			class="toggle toggle-sm toggle-success"
@@ -26,7 +22,9 @@
 			disabled={busy}
 			onchange={() => dispatch('approve')}
 		/>
-		<span class="whitespace-nowrap text-xs {req.approved ? 'text-success' : 'text-base-content/50'}">
+		<span
+			class="whitespace-nowrap text-xs {req.approved ? 'text-success' : 'text-base-content/50'}"
+		>
 			{req.approved ? 'genehmigt' : 'offen'}
 		</span>
 	</label>

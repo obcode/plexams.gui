@@ -82,8 +82,9 @@
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
-	let logicalSem =
-		$derived(currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : '');
+	let logicalSem = $derived(
+		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : ''
+	);
 	async function getSemester() {
 		const response = await fetch('/api/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
@@ -343,14 +344,17 @@
 			checkStaleStates();
 		}
 	});
-	let activeHref = $derived(menus
-		.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
-		.reduce(
-			(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
-			''
-		));
-	let activeMenu =
-		$derived(menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? '');
+	let activeHref = $derived(
+		menus
+			.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
+			.reduce(
+				(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
+				''
+			)
+	);
+	let activeMenu = $derived(
+		menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? ''
+	);
 
 	const themes = [
 		'light',
@@ -787,8 +791,7 @@
 				</button>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" onclick={() => (wsOpen = false)}
-		></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (wsOpen = false)}></button>
 	</div>
 {/if}
 

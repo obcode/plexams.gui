@@ -10,7 +10,6 @@
 	// teilen sich ein Terminal. Exklusive Aktionen werden serverseitig
 	// blockiert (ERROR + DONE) — das zeigen wir als Hinweis.
 
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {{ field: string, label: string, primary?: boolean, disabled?: boolean }[]} [actions]

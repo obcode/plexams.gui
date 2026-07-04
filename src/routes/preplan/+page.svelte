@@ -100,7 +100,6 @@
 		return d;
 	};
 
-
 	/** @type {Record<string, number>} */
 	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
 	/** @param {any} slot → „schlimmster" Raum-Status der Arten (für die Slot-Färbung) */
@@ -313,7 +312,6 @@
 		}
 	}
 
-
 	// ZPA-Ancode-Zuordnung
 	/** @type {any} */
 	let suggestFor = $state(null);
@@ -460,7 +458,6 @@
 	}
 	const closeConstraints = () => (conEditing = null);
 
-
 	/** @param {number} id */
 	function toggleSameSlot(id) {
 		conForm.sameSlot = conForm.sameSlot.includes(id)
@@ -569,7 +566,6 @@
 	let validating = $state(false);
 	let generating = $state(false);
 
-
 	async function validate() {
 		if (validating || generating) return;
 		validating = true;
@@ -623,117 +619,143 @@
 			generating = false;
 		}
 	}
-	let calendar = $derived((() => {
-		const planned = (data.calendarSlots ?? []).filter(
-			(/** @type {any} */ s) => s.dayNumber != null && s.starttime
-		);
-		/** @type {Map<string, any>} */
-		const weeks = new Map();
-		/** @type {Set<number>} */
-		const usedWd = new Set();
-		for (const s of planned) {
-			const dt = dateObj(s.starttime);
-			if (!dt) continue;
-			const wd = isoWeekday(dt);
-			usedWd.add(wd);
-			const mon = mondayOf(dt);
-			const key = mon.toISOString().slice(0, 10);
-			if (!weeks.has(key))
-				weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
-			const w = weeks.get(key);
-			if (!w.byDay.has(wd)) w.byDay.set(wd, []);
-			const slotExams = (data.exams ?? []).filter(
-				(/** @type {any} */ e) =>
-					e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
+	let calendar = $derived(
+		(() => {
+			const planned = (data.calendarSlots ?? []).filter(
+				(/** @type {any} */ s) => s.dayNumber != null && s.starttime
 			);
-			w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
-		}
-		for (const w of weeks.values())
-			for (const arr of w.byDay.values())
-				arr.sort(
-					(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
+			/** @type {Map<string, any>} */
+			const weeks = new Map();
+			/** @type {Set<number>} */
+			const usedWd = new Set();
+			for (const s of planned) {
+				const dt = dateObj(s.starttime);
+				if (!dt) continue;
+				const wd = isoWeekday(dt);
+				usedWd.add(wd);
+				const mon = mondayOf(dt);
+				const key = mon.toISOString().slice(0, 10);
+				if (!weeks.has(key))
+					weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
+				const w = weeks.get(key);
+				if (!w.byDay.has(wd)) w.byDay.set(wd, []);
+				const slotExams = (data.exams ?? []).filter(
+					(/** @type {any} */ e) =>
+						e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
 				);
-		const weekList = [...weeks.values()].sort(
-			(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
-		);
-		const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
-		return { weekList, cols };
-	})());
-	let unplanned = $derived((data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null));
+				w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
+			}
+			for (const w of weeks.values())
+				for (const arr of w.byDay.values())
+					arr.sort(
+						(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
+					);
+			const weekList = [...weeks.values()].sort(
+				(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
+			);
+			const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
+			return { weekList, cols };
+		})()
+	);
+	let unplanned = $derived(
+		(data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null)
+	);
 	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
-	let catRank = $derived(new Map(
-		(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [
-			sp.shortname,
-			CAT_ORDER.indexOf(sp.category ?? 'misc')
-		])
-	));
-	let programCounts = $derived((() => {
-		/** @type {Map<string, number>} */
-		const m = new Map();
-		for (const e of data.exams) for (const p of e.programs ?? []) m.set(p, (m.get(p) ?? 0) + 1);
-		return [...m.entries()].sort((a, b) => {
-			const ra = catRank.get(a[0]) ?? 99;
-			const rb = catRank.get(b[0]) ?? 99;
-			return ra - rb || a[0].localeCompare(b[0]);
-		});
-	})());
-	let filteredExams = $derived(selectedPrograms.length
-		? data.exams.filter((/** @type {any} */ e) =>
-				(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
-			)
-		: data.exams);
+	let catRank = $derived(
+		new Map(
+			(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [
+				sp.shortname,
+				CAT_ORDER.indexOf(sp.category ?? 'misc')
+			])
+		)
+	);
+	let programCounts = $derived(
+		(() => {
+			/** @type {Map<string, number>} */
+			const m = new Map();
+			for (const e of data.exams) for (const p of e.programs ?? []) m.set(p, (m.get(p) ?? 0) + 1);
+			return [...m.entries()].sort((a, b) => {
+				const ra = catRank.get(a[0]) ?? 99;
+				const rb = catRank.get(b[0]) ?? 99;
+				return ra - rb || a[0].localeCompare(b[0]);
+			});
+		})()
+	);
+	let filteredExams = $derived(
+		selectedPrograms.length
+			? data.exams.filter((/** @type {any} */ e) =>
+					(e.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p))
+				)
+			: data.exams
+	);
 	// teachers.shortname ist bereits „Nachname, Vorname" → direkt als Label nutzen.
-	let teacherOptions = $derived((data.teachers ?? [])
-		.map((/** @type {any} */ t) => ({ id: t.id, label: t.shortname }))
-		.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label)));
-	let teacherById = $derived(new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname])));
-	let examerFiltered = $derived(examerQuery.trim()
-		? teacherOptions.filter((/** @type {any} */ o) =>
-				o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
-			)
-		: teacherOptions);
-	let selectedExamerLabel = $derived(editing
-		? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ??
-			'')
-		: '');
-	let programGroups = $derived((() => {
-		/** @type {Map<string, any[]>} */
-		const byCat = new Map();
-		for (const sp of data.studyPrograms ?? []) {
-			const c = sp.category ?? 'misc';
-			if (!byCat.has(c)) byCat.set(c, []);
-			byCat.get(c)?.push(sp);
-		}
-		const cats = [
-			...CAT_ORDER.filter((c) => byCat.has(c)),
-			...[...byCat.keys()].filter((c) => !CAT_ORDER.includes(c))
-		];
-		return cats.map((c) => ({
-			label: CAT_LABEL[c] ?? c,
-			items: (byCat.get(c) ?? []).sort((a, b) => a.shortname.localeCompare(b.shortname))
-		}));
-	})());
+	let teacherOptions = $derived(
+		(data.teachers ?? [])
+			.map((/** @type {any} */ t) => ({ id: t.id, label: t.shortname }))
+			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.label.localeCompare(b.label))
+	);
+	let teacherById = $derived(
+		new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname]))
+	);
+	let examerFiltered = $derived(
+		examerQuery.trim()
+			? teacherOptions.filter((/** @type {any} */ o) =>
+					o.label.toLowerCase().includes(examerQuery.trim().toLowerCase())
+				)
+			: teacherOptions
+	);
+	let selectedExamerLabel = $derived(
+		editing
+			? (teacherOptions.find((/** @type {any} */ o) => o.id === Number(editing.examerID))?.label ??
+					'')
+			: ''
+	);
+	let programGroups = $derived(
+		(() => {
+			/** @type {Map<string, any[]>} */
+			const byCat = new Map();
+			for (const sp of data.studyPrograms ?? []) {
+				const c = sp.category ?? 'misc';
+				if (!byCat.has(c)) byCat.set(c, []);
+				byCat.get(c)?.push(sp);
+			}
+			const cats = [
+				...CAT_ORDER.filter((c) => byCat.has(c)),
+				...[...byCat.keys()].filter((c) => !CAT_ORDER.includes(c))
+			];
+			return cats.map((c) => ({
+				label: CAT_LABEL[c] ?? c,
+				items: (byCat.get(c) ?? []).sort((a, b) => a.shortname.localeCompare(b.shortname))
+			}));
+		})()
+	);
 	// sameSlot-Gruppen: unvollständige (noch nicht alle Mitglieder verbunden) → Hinweis.
-	let incompleteGroups = $derived((data.sameSlotGroups ?? []).filter((/** @type {any} */ g) => !g.complete));
+	let incompleteGroups = $derived(
+		(data.sameSlotGroups ?? []).filter((/** @type {any} */ g) => !g.complete)
+	);
 	// sameSlot-Gruppe der aktuell zu verknüpfenden Pre-Prüfung (für Partner-Status).
-	let suggestGroup = $derived(suggestFor
-		? (data.sameSlotGroups ?? []).find((/** @type {any} */ g) =>
-				g.members.some((/** @type {any} */ m) => m.id === suggestFor.id)
-			)
-		: null);
+	let suggestGroup = $derived(
+		suggestFor
+			? (data.sameSlotGroups ?? []).find((/** @type {any} */ g) =>
+					g.members.some((/** @type {any} */ m) => m.id === suggestFor.id)
+				)
+			: null
+	);
 	// ---- Constraints-Editor (pro Preplan-Prüfung) ----
 	let examById = $derived(new Map(data.exams.map((/** @type {any} */ e) => [e.id, e])));
 	// Konfliktpartner-Kandidaten: nur andere Prüfungen mit gemeinsamem Studiengang
 	// (ohne gemeinsamen Studiengang kann es keinen Slot-Konflikt geben).
-	let notSameCandidates = $derived(conEditing
-		? data.exams.filter(
-				(/** @type {any} */ x) =>
-					x.id !== conEditing.id &&
-					(conEditing.programs ?? []).some((/** @type {string} */ p) =>
-						(x.programs ?? []).includes(p)
-					)
-			)
-		: []);
+	let notSameCandidates = $derived(
+		conEditing
+			? data.exams.filter(
+					(/** @type {any} */ x) =>
+						x.id !== conEditing.id &&
+						(conEditing.programs ?? []).some((/** @type {string} */ p) =>
+							(x.programs ?? []).includes(p)
+						)
+				)
+			: []
+	);
 	let unassignedSet = $derived(new Set(validation?.unassignedIDs ?? []));
 </script>
 
@@ -773,8 +795,8 @@
 			</span>
 			<span class="text-xs opacity-80">
 				Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
-				<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren →
-				erneut validieren, bis alles ok.
+				<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren → erneut
+				validieren, bis alles ok.
 			</span>
 			<span class="text-xs opacity-80">
 				Constraints (Raum-Einschränkung, gleicher Slot …) werden beim Verknüpfen mit der ZPA-Prüfung
@@ -844,7 +866,8 @@
 								{m.examKind}
 							</span>
 							<span class={m.connected ? '' : 'text-base-content/60'}>{m.module}</span>
-							{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">{m.ancode}</span
+							{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums"
+									>{m.ancode}</span
 								>{/if}
 						</span>
 					{/each}
@@ -909,7 +932,9 @@
 									)}
 									{#if en.exams.length}
 										<div
-											class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(worstLevel(en.slot))}"
+											class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
+												worstLevel(en.slot)
+											)}"
 										>
 											<div class="font-medium tabular-nums">{en.time} Uhr</div>
 											{#each en.exams as ex}
@@ -920,17 +945,27 @@
 															: 'opacity-25 grayscale'
 														: ''}"
 												>
-													<span class="badge badge-xs {ex.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+													<span
+														class="badge badge-xs {ex.examKind === 'SEB'
+															? 'badge-error'
+															: 'badge-info'}"
+													>
 														{ex.examKind}
 													</span>
 													{#if ex.isFixed}<span title="fixiert">🔒</span>{/if}
-													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}">{ex.module}</span>
+													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}"
+														>{ex.module}</span
+													>
 													<span class="truncate text-base-content/50">{examerDisplay(ex)}</span>
-													<span class="tabular-nums text-base-content/40">{ex.expectedStudents}</span>
+													<span class="tabular-nums text-base-content/40"
+														>{ex.expectedStudents}</span
+													>
 													{#if ex.programs?.length}
 														<span class="truncate text-base-content/40">
 															{#each ex.programs as p, i}{i ? ', ' : ''}<span
-																	class={selectedPrograms.includes(p) ? 'font-semibold text-primary' : ''}>{p}</span
+																	class={selectedPrograms.includes(p)
+																		? 'font-semibold text-primary'
+																		: ''}>{p}</span
 																>{/each}
 														</span>
 													{/if}
@@ -944,10 +979,10 @@
 														<span>{STATUS_DOT[st.level]}</span>
 														<span class="font-medium">{k.label}</span>
 														<span
-														class="tabular-nums text-base-content/60"
-														title="genutzt / gebucht"
-														>{k.need.seatsNeeded}/{k.need.seatsBooked} Pl.</span
-													>
+															class="tabular-nums text-base-content/60"
+															title="genutzt / gebucht"
+															>{k.need.seatsNeeded}/{k.need.seatsBooked} Pl.</span
+														>
 														{#if st.level === 'yellow' && k.need.roomsToBook.length}
 															<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
 														{:else if st.level === 'red'}
@@ -957,15 +992,21 @@
 													{#if restricted.length}
 														<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
 													{:else if k.need.rooms.length && k.need.seatsBooked === 0}
-														<div class="text-base-content/40">Vorschlag: {k.need.rooms.join(', ')}</div>
+														<div class="text-base-content/40">
+															Vorschlag: {k.need.rooms.join(', ')}
+														</div>
 													{/if}
 												{/if}
 											{/each}
 											{#if usedBooked.length}
-												<div class="mt-1 text-base-content/50">🔌 genutzt: {usedBooked.join(', ')}</div>
+												<div class="mt-1 text-base-content/50">
+													🔌 genutzt: {usedBooked.join(', ')}
+												</div>
 											{/if}
 											{#each en.slot.conflicts as c}
-												<div class="mt-0.5 text-warning">⚠ {c.program}: {c.modules.join(', ')}</div>
+												<div class="mt-0.5 text-warning">
+													⚠ {c.program}: {c.modules.join(', ')}
+												</div>
 											{/each}
 										</div>
 									{/if}
@@ -973,7 +1014,9 @@
 										<div
 											class="rounded border border-dashed border-base-300 bg-base-100 px-1.5 py-1 text-xs text-base-content/50"
 										>
-											<span class="tabular-nums">{en.time}</span> · 🔓 frei: {en.slot.freeRooms.join(', ')}
+											<span class="tabular-nums">{en.time}</span> · 🔓 frei: {en.slot.freeRooms.join(
+												', '
+											)}
 										</div>
 									{/if}
 								{:else}
@@ -1138,8 +1181,7 @@
 								<button class="btn btn-ghost btn-xs" onclick={() => openConstraints(e)}>
 									Constraints
 								</button>
-								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(e)}>Bearbeiten</button
-								>
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(e)}>Bearbeiten</button>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(e)}
 									>Löschen</WriteButton
 								>
@@ -1286,8 +1328,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
-					>Abbrechen</button
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
@@ -1327,10 +1368,13 @@
 									{m.examKind}
 								</span>
 								<span>{m.module}</span>
-								{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">{m.ancode}</span
+								{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums"
+										>{m.ancode}</span
 									>{/if}
 								<span class="text-xs {m.connected ? 'text-success' : 'text-base-content/40'}">
-									{m.connected ? 'Constraint aktiv' : 'wird automatisch übernommen, sobald verbunden'}
+									{m.connected
+										? 'Constraint aktiv'
+										: 'wird automatisch übernommen, sobald verbunden'}
 								</span>
 							</div>
 						{/each}

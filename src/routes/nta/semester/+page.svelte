@@ -7,27 +7,31 @@
 	// Studierenden-Sicht: Filter
 	let showRoomAlone = $state(false);
 	let showHardware = $state(false);
-	let filteredNtas = $derived((data.ntasWithRegs ?? []).filter((/** @type {any} */ s) => {
-		if (showRoomAlone && !s.nta.needsRoomAlone) return false;
-		if (showHardware && !s.nta.needsHardware) return false;
-		return true;
-	}));
+	let filteredNtas = $derived(
+		(data.ntasWithRegs ?? []).filter((/** @type {any} */ s) => {
+			if (showRoomAlone && !s.nta.needsRoomAlone) return false;
+			if (showHardware && !s.nta.needsHardware) return false;
+			return true;
+		})
+	);
 
 	// Prüfungs-Sicht: Suche
 	let searchAncode = $state('');
 	let searchModule = $state('');
 	let searchTeacher = $state('');
-	let filteredExams = $derived((data.examsWithNtas ?? []).filter((/** @type {any} */ exam) => {
-		if (searchAncode && !exam.ancode.toString().startsWith(searchAncode)) return false;
-		if (searchModule && !exam.zpaExam.module.toLowerCase().includes(searchModule.toLowerCase()))
-			return false;
-		if (
-			searchTeacher &&
-			!exam.zpaExam.mainExamer.toLowerCase().includes(searchTeacher.toLowerCase())
-		)
-			return false;
-		return true;
-	}));
+	let filteredExams = $derived(
+		(data.examsWithNtas ?? []).filter((/** @type {any} */ exam) => {
+			if (searchAncode && !exam.ancode.toString().startsWith(searchAncode)) return false;
+			if (searchModule && !exam.zpaExam.module.toLowerCase().includes(searchModule.toLowerCase()))
+				return false;
+			if (
+				searchTeacher &&
+				!exam.zpaExam.mainExamer.toLowerCase().includes(searchTeacher.toLowerCase())
+			)
+				return false;
+			return true;
+		})
+	);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -35,7 +39,11 @@
 		<h1 class="text-2xl font-semibold">NTA im Semester</h1>
 		<!-- Umschalter; jede Sicht lädt nur ihre eigenen (teils teuren) Daten -->
 		<div role="tablist" class="tabs tabs-boxed">
-			<a role="tab" href="?view=students" class="tab {data.view === 'students' ? 'tab-active' : ''}">
+			<a
+				role="tab"
+				href="?view=students"
+				class="tab {data.view === 'students' ? 'tab-active' : ''}"
+			>
 				nach Studierenden
 			</a>
 			<a role="tab" href="?view=exams" class="tab {data.view === 'exams' ? 'tab-active' : ''}">
@@ -133,7 +141,9 @@
 							<td>{exam.zpaExam.module}</td>
 							<td>
 								{exam.mainExamer.shortname}
-								{#if exam.mainExamer.isLBA}<div class="badge badge-secondary badge-sm">LBA</div>{/if}
+								{#if exam.mainExamer.isLBA}<div class="badge badge-secondary badge-sm">
+										LBA
+									</div>{/if}
 								{#if exam.mainExamer.fk != 'FK07'}<div class="badge badge-secondary badge-sm">
 										{exam.mainExamer.fk}
 									</div>{/if}

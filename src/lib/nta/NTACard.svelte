@@ -5,7 +5,7 @@
 
 	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
 	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).
-	
+
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} nta
@@ -22,12 +22,12 @@
 	let longComp = $derived(comp.length > 70);
 	let compShort = $derived(longComp ? comp.slice(0, 70).trimEnd() + '…' : comp);
 
-	let plannedExams = $derived(nta.exams.filter(
-		(/** @type {any} */ e) => !(e.constraints && e.constraints.notPlannedByMe)
-	));
-	let otherExams = $derived(nta.exams.filter(
-		(/** @type {any} */ e) => e.constraints && e.constraints.notPlannedByMe
-	));
+	let plannedExams = $derived(
+		nta.exams.filter((/** @type {any} */ e) => !(e.constraints && e.constraints.notPlannedByMe))
+	);
+	let otherExams = $derived(
+		nta.exams.filter((/** @type {any} */ e) => e.constraints && e.constraints.notPlannedByMe)
+	);
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -154,7 +154,8 @@
 			<EmailSender
 				emailKey="sendEmailNewNTA"
 				title="„Neuer NTA“ an Prüfende"
-				description="Info an die betroffenen Prüfenden über den neuen NTA-Bescheid von {nta.nta.name}."
+				description="Info an die betroffenen Prüfenden über den neuen NTA-Bescheid von {nta.nta
+					.name}."
 				extraArgs={{ mtknr: { type: 'String!', value: nta.nta.mtknr } }}
 			/>
 			{#if nta.nta.needsRoomAlone}

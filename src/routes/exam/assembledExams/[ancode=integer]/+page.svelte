@@ -2,12 +2,14 @@
 	let { data } = $props();
 
 	let exam = $derived(data.assembledExam);
-	let studentCount = $derived(exam
-		? exam.primussExams.reduce(
-				(/** @type {number} */ sum, /** @type {any} */ pe) => sum + pe.studentRegs.length,
-				0
-			)
-		: 0);
+	let studentCount = $derived(
+		exam
+			? exam.primussExams.reduce(
+					(/** @type {number} */ sum, /** @type {any} */ pe) => sum + pe.studentRegs.length,
+					0
+				)
+			: 0
+	);
 	let c = $derived(exam?.constraints);
 
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];

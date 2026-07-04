@@ -38,40 +38,50 @@
 	let view = $state('room');
 	let pendingOnly = $state(false);
 
-	let filtered = $derived(data.roomRequests.filter((/** @type {any} */ r) => !pendingOnly || !r.approved));
-	let approvedCount = $derived(data.roomRequests.filter((/** @type {any} */ r) => r.approved).length);
+	let filtered = $derived(
+		data.roomRequests.filter((/** @type {any} */ r) => !pendingOnly || !r.approved)
+	);
+	let approvedCount = $derived(
+		data.roomRequests.filter((/** @type {any} */ r) => r.approved).length
+	);
 	let pendingCount = $derived(data.roomRequests.length - approvedCount);
 
-	let byRoom = $derived([...new Set(filtered.map((/** @type {any} */ r) => r.room))].sort().map((room) => ({
-		room,
-		reqs: filtered
-			.filter((/** @type {any} */ r) => r.room === room)
-			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.from.localeCompare(b.from))
-	})));
-	let bySlot = $derived((() => {
-		/** @type {Map<string, any>} */
-		const m = new Map();
-		for (const r of filtered) {
-			const k = `${r.day}-${r.slot}`;
-			if (!m.has(k)) m.set(k, { day: r.day, slot: r.slot, reqs: [] });
-			m.get(k).reqs.push(r);
-		}
-		return [...m.values()].sort((a, b) => a.day - b.day || a.slot - b.slot);
-	})());
-	let timeline = $derived([...filtered].sort((/** @type {any} */ a, /** @type {any} */ b) =>
-		a.from.localeCompare(b.from)
-	));
+	let byRoom = $derived(
+		[...new Set(filtered.map((/** @type {any} */ r) => r.room))].sort().map((room) => ({
+			room,
+			reqs: filtered
+				.filter((/** @type {any} */ r) => r.room === room)
+				.sort((/** @type {any} */ a, /** @type {any} */ b) => a.from.localeCompare(b.from))
+		}))
+	);
+	let bySlot = $derived(
+		(() => {
+			/** @type {Map<string, any>} */
+			const m = new Map();
+			for (const r of filtered) {
+				const k = `${r.day}-${r.slot}`;
+				if (!m.has(k)) m.set(k, { day: r.day, slot: r.slot, reqs: [] });
+				m.get(k).reqs.push(r);
+			}
+			return [...m.values()].sort((a, b) => a.day - b.day || a.slot - b.slot);
+		})()
+	);
+	let timeline = $derived(
+		[...filtered].sort((/** @type {any} */ a, /** @type {any} */ b) => a.from.localeCompare(b.from))
+	);
 
 	// Tag → Datum/Offset aus semesterConfig.days (für „Anfrage hinzufügen")
-	let dayInfo = $derived((() => {
-		/** @type {Record<number, { date: string, offset: string }>} */
-		const m = {};
-		for (const d of data.days) {
-			const mm = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2})?(.*)$/.exec(d.date);
-			if (mm) m[d.number] = { date: mm[1], offset: mm[2] || '+02:00' };
-		}
-		return m;
-	})());
+	let dayInfo = $derived(
+		(() => {
+			/** @type {Record<number, { date: string, offset: string }>} */
+			const m = {};
+			for (const d of data.days) {
+				const mm = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2})?(.*)$/.exec(d.date);
+				if (mm) m[d.number] = { date: mm[1], offset: mm[2] || '+02:00' };
+			}
+			return m;
+		})()
+	);
 
 	/** @param {string} hhmm Minuten seit Mitternacht */
 	const toMin = (hhmm) => {
@@ -180,11 +190,9 @@
 	}
 	// abgeleiteter Slot (Add-Modus) bzw. fixer Slot (Edit)
 	let derivedSlot = $derived(modalMode === 'add' ? slotForTime(mFromTime) : Number(mSlot));
-	let modalValid = $derived(!!(
-		mFromTime &&
-		mUntilTime &&
-		(modalMode === 'edit' ? true : mRoom && mDay && derivedSlot)
-	));
+	let modalValid = $derived(
+		!!(mFromTime && mUntilTime && (modalMode === 'edit' ? true : mRoom && mDay && derivedSlot))
+	);
 
 	async function saveModal() {
 		if (!modalValid) return;
@@ -314,7 +322,9 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Raum-Anfragen (Gebäudemanagement)</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.roomRequests.length}</span>
-		<span class="text-sm text-base-content/60">{approvedCount} genehmigt · {pendingCount} offen</span>
+		<span class="text-sm text-base-content/60"
+			>{approvedCount} genehmigt · {pendingCount} offen</span
+		>
 		<div class="flex-1"></div>
 		<div role="tablist" class="tabs tabs-boxed">
 			{#each SECTIONS as s}
@@ -343,7 +353,11 @@
 			{#if preview}
 				<span class="text-sm text-base-content/60">{preview.length} Raum-Slots</span>
 				<div class="flex-1"></div>
-				<WriteButton class="btn btn-primary btn-sm" disabled={applying} on:click={() => applyPreview(false)}>
+				<WriteButton
+					class="btn btn-primary btn-sm"
+					disabled={applying}
+					on:click={() => applyPreview(false)}
+				>
 					{#if applying}<span class="loading loading-spinner loading-xs"></span>{/if}
 					Übernehmen
 				</WriteButton>
@@ -392,7 +406,9 @@
 									</td>
 									<td class="font-medium">{p.room}</td>
 									<td class="whitespace-nowrap">{fmtDate(p.from)}</td>
-									<td class="whitespace-nowrap tabular-nums">{fmtTime(p.from)}–{fmtTime(p.until)}</td>
+									<td class="whitespace-nowrap tabular-nums"
+										>{fmtTime(p.from)}–{fmtTime(p.until)}</td
+									>
 									<td
 										class="text-right tabular-nums {p.students > p.seats
 											? 'font-semibold text-error'
@@ -406,7 +422,9 @@
 											{p.exam.zpaExam.module}
 											<span class="text-base-content/50">· {p.exam.zpaExam.mainExamer}</span>
 											{#if p.exam.ntas && p.exam.ntas.length}
-												<span class="badge badge-warning badge-sm ml-1">{p.exam.ntas.length} NTA</span>
+												<span class="badge badge-warning badge-sm ml-1"
+													>{p.exam.ntas.length} NTA</span
+												>
 											{/if}
 										{/if}
 									</td>
@@ -443,7 +461,9 @@
 
 		<!-- ===================== Bestehende Anfragen ===================== -->
 	{:else if section === 'manage'}
-		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div
+			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
+		>
 			<div role="tablist" class="tabs tabs-boxed">
 				{#each VIEWS as v}
 					<button
@@ -521,9 +541,12 @@
 									{#each group.reqs as r (key(r))}
 										<tr class={r.active ? '' : 'opacity-50'}>
 											<td class="whitespace-nowrap">{fmtDate(r.from)}</td>
-											<td class="whitespace-nowrap tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td
+											<td class="whitespace-nowrap tabular-nums"
+												>{fmtTime(r.from)}–{fmtTime(r.until)}</td
 											>
-											<td class="whitespace-nowrap text-base-content/60">Tag {r.day} · Slot {r.slot}</td>
+											<td class="whitespace-nowrap text-base-content/60"
+												>Tag {r.day} · Slot {r.slot}</td
+											>
 											<td><RoomRequestPlanned planned={r.planned} /></td>
 											<td>
 												<RoomRequestToggles
@@ -557,7 +580,8 @@
 									{#each group.reqs as r (key(r))}
 										<tr class={r.active ? '' : 'opacity-50'}>
 											<td class="whitespace-nowrap font-medium">{r.room}</td>
-											<td class="whitespace-nowrap tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td
+											<td class="whitespace-nowrap tabular-nums"
+												>{fmtTime(r.from)}–{fmtTime(r.until)}</td
 											>
 											<td><RoomRequestPlanned planned={r.planned} /></td>
 											<td>
@@ -648,7 +672,11 @@
 				{/if}
 
 				<div class="flex justify-end gap-2">
-					<button class="btn btn-ghost btn-sm" onclick={() => (modalOpen = false)} disabled={mSaving}>
+					<button
+						class="btn btn-ghost btn-sm"
+						onclick={() => (modalOpen = false)}
+						disabled={mSaving}
+					>
 						Abbrechen
 					</button>
 					<WriteButton

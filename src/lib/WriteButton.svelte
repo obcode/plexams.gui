@@ -24,12 +24,6 @@
 	$: tip = readOnly ? 'Semester ist geschützt (nur lesen)' : title;
 </script>
 
-<button
-	class={cls}
-	disabled={isDisabled}
-	title={tip || undefined}
-	on:click
-	{...$$restProps}
->
+<button class={cls} disabled={isDisabled} title={tip || undefined} on:click {...$$restProps}>
 	<slot />
 </button>

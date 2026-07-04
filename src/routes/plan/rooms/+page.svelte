@@ -54,12 +54,16 @@
 	}
 
 	// Tag → Datum, Slot → Startzeit (für die „ohne Raum"-Warnung).
-	let dayDateById = $derived(Object.fromEntries(
-		(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => [d.number, d.date])
-	));
-	let slotStartById = $derived(Object.fromEntries(
-		(data.semesterConfig?.starttimes ?? []).map((/** @type {any} */ s) => [s.number, s.start])
-	));
+	let dayDateById = $derived(
+		Object.fromEntries(
+			(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => [d.number, d.date])
+		)
+	);
+	let slotStartById = $derived(
+		Object.fromEntries(
+			(data.semesterConfig?.starttimes ?? []).map((/** @type {any} */ s) => [s.number, s.start])
+		)
+	);
 
 	/** @type {'exams' | 'rooms'} */
 	let view = $state('exams');
@@ -110,21 +114,24 @@
 			?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 	}
 
-	let baseRooms = $derived(data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room'));
-	let gridRooms =
-		$derived(showRooms === 'all'
-			? baseRooms
-			: baseRooms.filter((/** @type {string} */ r) => r === showRooms));
+	let baseRooms = $derived(
+		data.plannedRoomNames.filter((/** @type {string} */ r) => r !== 'No Room')
+	);
+	let gridRooms = $derived(
+		showRooms === 'all' ? baseRooms : baseRooms.filter((/** @type {string} */ r) => r === showRooms)
+	);
 
 	// Gesperrte Räume pro Slot (lokal gehalten, da Blocks erst nach erneuter
 	// Zuordnung in planned_rooms wirken).
 	/** @type {Map<string, string>} */
-	let blockedMap = $state(new Map(
-		data.blockedRooms.map((/** @type {any} */ b) => [
-			`${b.day}-${b.slot}-${b.room}`,
-			b.reason ?? ''
-		])
-	));
+	let blockedMap = $state(
+		new Map(
+			data.blockedRooms.map((/** @type {any} */ b) => [
+				`${b.day}-${b.slot}-${b.room}`,
+				b.reason ?? ''
+			])
+		)
+	);
 	/** @type {Set<string>} */
 	let blockBusy = new Set();
 	/** @type {string | null} */
@@ -250,8 +257,8 @@
 			{#if data.roomsBlocked}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						🔒 Raumzuordnung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das
-						Häkchen „Raumplan veröffentlicht" auf der Startseite kurz lösen.
+						🔒 Raumzuordnung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das Häkchen
+						„Raumplan veröffentlicht" auf der Startseite kurz lösen.
 					</span>
 				</div>
 			{/if}
@@ -381,10 +388,9 @@
 						{/each}
 					</div>
 					<div>
-						📌 = in die Vorplanung fixiert (überlebt die Neuzuordnung) — auf das Pin-Symbol am
-						Raum klicken zum Fixieren bzw. Lösen. „➕ Raum vorplanen" ordnet einer Prüfung von Hand
-						einen Raum zu (auch vor jeder Zuordnung); der Raum landet direkt fixiert in der
-						Vorplanung.
+						📌 = in die Vorplanung fixiert (überlebt die Neuzuordnung) — auf das Pin-Symbol am Raum
+						klicken zum Fixieren bzw. Lösen. „➕ Raum vorplanen" ordnet einer Prüfung von Hand einen
+						Raum zu (auch vor jeder Zuordnung); der Raum landet direkt fixiert in der Vorplanung.
 					</div>
 				</div>
 				<div class="flex flex-col gap-2">

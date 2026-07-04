@@ -1,5 +1,4 @@
 <script>
-
 	import { goto } from '$app/navigation';
 	import { mkStarttime } from '$lib/jshelper/misc.js';
 	let { exams } = $props();
@@ -10,33 +9,37 @@
 	let searchTermGroups = $state('');
 
 	// Filter kombinieren (UND): jedes gesetzte Feld grenzt weiter ein.
-	let filteredExams = $derived(exams.filter((/** @type {any} */ exam) => {
-		if (searchTermAncode && !exam.ancode.toString().startsWith(searchTermAncode.trim())) {
-			return false;
-		}
-		if (
-			searchTermModule &&
-			!exam.zpaExam.module.toLowerCase().includes(searchTermModule.trim().toLowerCase())
-		) {
-			return false;
-		}
-		if (
-			searchTermTeachers &&
-			!exam.zpaExam.mainExamer.toLowerCase().includes(searchTermTeachers.trim().toLowerCase())
-		) {
-			return false;
-		}
-		if (searchTermGroups) {
-			const needle = searchTermGroups.trim().toLowerCase();
-			const hit = exam.primussExams.some((/** @type {any} */ pe) =>
-				pe.exam.program.toLowerCase().startsWith(needle)
-			);
-			if (!hit) return false;
-		}
-		return true;
-	}));
+	let filteredExams = $derived(
+		exams.filter((/** @type {any} */ exam) => {
+			if (searchTermAncode && !exam.ancode.toString().startsWith(searchTermAncode.trim())) {
+				return false;
+			}
+			if (
+				searchTermModule &&
+				!exam.zpaExam.module.toLowerCase().includes(searchTermModule.trim().toLowerCase())
+			) {
+				return false;
+			}
+			if (
+				searchTermTeachers &&
+				!exam.zpaExam.mainExamer.toLowerCase().includes(searchTermTeachers.trim().toLowerCase())
+			) {
+				return false;
+			}
+			if (searchTermGroups) {
+				const needle = searchTermGroups.trim().toLowerCase();
+				const hit = exam.primussExams.some((/** @type {any} */ pe) =>
+					pe.exam.program.toLowerCase().startsWith(needle)
+				);
+				if (!hit) return false;
+			}
+			return true;
+		})
+	);
 
-	let hasFilter = $derived(!!(searchTermAncode || searchTermModule || searchTermTeachers || searchTermGroups));
+	let hasFilter = $derived(
+		!!(searchTermAncode || searchTermModule || searchTermTeachers || searchTermGroups)
+	);
 
 	function clearFilters() {
 		searchTermAncode = '';

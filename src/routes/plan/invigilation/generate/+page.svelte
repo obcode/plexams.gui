@@ -177,10 +177,11 @@
 	/** @param {number} n */
 	const fmt = (n) => (n ?? 0).toLocaleString('de-DE');
 
-	let progressPct =
-		$derived(current && current.progress && current.progress.total
+	let progressPct = $derived(
+		current && current.progress && current.progress.total
 			? Math.min(100, Math.round((current.progress.iteration / current.progress.total) * 100))
-			: 0);
+			: 0
+	);
 
 	// --- Globale Optimierer-Parameter (generationConfig) ---
 	const NUM_FIELDS = [
@@ -307,7 +308,9 @@
 	<details class="collapse collapse-arrow border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Erweiterte Parameter
-			<span class="font-normal text-base-content/50">· global · Simulated Annealing &amp; Gewichte</span>
+			<span class="font-normal text-base-content/50"
+				>· global · Simulated Annealing &amp; Gewichte</span
+			>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			{#if cfgError}
@@ -325,7 +328,9 @@
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<div class="text-xs font-semibold text-base-content/60">Verfahren (Simulated Annealing)</div>
+				<div class="text-xs font-semibold text-base-content/60">
+					Verfahren (Simulated Annealing)
+				</div>
 				<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
 					{#each NUM_FIELDS as f}
 						<label class="flex flex-col gap-1">

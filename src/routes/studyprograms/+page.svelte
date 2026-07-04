@@ -11,22 +11,26 @@
 	});
 	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
 
-	let byCat = $derived((() => {
-		/** @type {Map<string, any[]>} */
-		const m = new Map();
-		for (const p of data.programs) {
-			const k = p.category || 'misc';
-			if (!m.has(k)) m.set(k, []);
-			m.get(k)?.push(p);
-		}
-		const keys = [...m.keys()].sort((a, b) => {
-			const ia = CAT_ORDER.indexOf(a);
-			const ib = CAT_ORDER.indexOf(b);
-			return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
-		});
-		return keys.map((k) => ({ key: k, label: CAT_LABEL[k] ?? k, items: m.get(k) ?? [] }));
-	})());
-	let missingName = $derived(data.programs.filter((/** @type {any} */ p) => !(p.name ?? '').trim()).length);
+	let byCat = $derived(
+		(() => {
+			/** @type {Map<string, any[]>} */
+			const m = new Map();
+			for (const p of data.programs) {
+				const k = p.category || 'misc';
+				if (!m.has(k)) m.set(k, []);
+				m.get(k)?.push(p);
+			}
+			const keys = [...m.keys()].sort((a, b) => {
+				const ia = CAT_ORDER.indexOf(a);
+				const ib = CAT_ORDER.indexOf(b);
+				return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+			});
+			return keys.map((k) => ({ key: k, label: CAT_LABEL[k] ?? k, items: m.get(k) ?? [] }));
+		})()
+	);
+	let missingName = $derived(
+		data.programs.filter((/** @type {any} */ p) => !(p.name ?? '').trim()).length
+	);
 
 	let listError = $state('');
 	let seedMsg = $state('');
@@ -353,8 +357,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
-					>Abbrechen</button
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}

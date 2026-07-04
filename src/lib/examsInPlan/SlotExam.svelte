@@ -271,16 +271,20 @@
 
 		{#if !details && inSlot}
 			<!-- kompakt: Ancode + Icons + Anmeldezahl; Details im Tooltip -->
-			<Tooltip content="{exam.zpaExam.module} ({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}">
+			<Tooltip
+				content="{exam.zpaExam.module} ({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}"
+			>
 				<div class="flex items-center gap-1 whitespace-nowrap">
 					{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
-					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">🔒</span
+					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
+							>🔒</span
 						>{/if}
 					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
 							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
 						>{/if}
 					<span class="font-mono font-semibold">{ancodeToShow}</span>
-					<span class="text-xs tabular-nums text-base-content/50">&sum;{exam.studentRegsCount}</span>
+					<span class="text-xs tabular-nums text-base-content/50">&sum;{exam.studentRegsCount}</span
+					>
 				</div>
 			</Tooltip>
 		{:else}
@@ -291,7 +295,8 @@
 			{/if}
 			<div class="flex items-start gap-2">
 				<div class="flex shrink-0 gap-0.5">
-					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">🔒</span
+					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
+							>🔒</span
 						>{/if}
 					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
 							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
@@ -326,7 +331,9 @@
 			<div class="mt-1 flex flex-wrap items-center gap-1">
 				{#each exam.primussExams as primussExam}
 					{#if primussExam.exam.ancode != exam.ancode}
-						<span class="badge badge-ghost badge-sm">{primussExam.exam.program}/{primussExam.exam.ancode}</span>
+						<span class="badge badge-ghost badge-sm"
+							>{primussExam.exam.program}/{primussExam.exam.ancode}</span
+						>
 					{/if}
 				{/each}
 			</div>

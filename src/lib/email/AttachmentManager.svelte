@@ -12,14 +12,6 @@
 	// (kind). Zeigt Anzahl + Liste, erlaubt ZIP-Upload und Leeren und gleicht
 	// optional gegen erwartete keys ab (z. B. fehlende Lehrer-IDs).
 
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} kind - 'cover-page' | 'invigilation-image'
@@ -279,7 +271,9 @@
 
 	<!-- Einzeldatei nachreichen -->
 	{#if acceptSingle}
-		<div class="flex flex-wrap items-end gap-3 rounded-lg border border-base-300 bg-base-200/40 p-3">
+		<div
+			class="flex flex-wrap items-end gap-3 rounded-lg border border-base-300 bg-base-200/40 p-3"
+		>
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Einzelne Datei nachreichen</span>
 				<select class="select select-bordered select-sm w-72" bind:value={singleKey}>

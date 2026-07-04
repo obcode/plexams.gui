@@ -26,22 +26,26 @@
 		!examMin || !examMax || (b.dateKey && b.dateKey >= examMin && b.dateKey <= examMax);
 
 	let mineCount = $derived(bookings.filter((/** @type {any} */ b) => b.mine).length);
-	let roomsInBookings = $derived([
-		...new Set(bookings.map((/** @type {any} */ b) => b.room).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
+	let roomsInBookings = $derived(
+		[...new Set(bookings.map((/** @type {any} */ b) => b.room).filter(Boolean))].sort(
+			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
+		)
+	);
 
-	let filtered = $derived(bookings.filter((/** @type {any} */ b) => {
-		if (onlyMine && !b.mine) return false;
-		if (onlyExamPeriod && !inExamPeriod(b)) return false;
-		if (roomFilter !== 'all' && b.room !== roomFilter) return false;
-		if (q.trim()) {
-			const t = q.trim().toLowerCase();
-			const hay =
-				`${b.personalizationName ?? ''} ${b.description ?? ''} ${b.room ?? ''} ${b.number ?? ''}`.toLowerCase();
-			if (!hay.includes(t)) return false;
-		}
-		return true;
-	}));
+	let filtered = $derived(
+		bookings.filter((/** @type {any} */ b) => {
+			if (onlyMine && !b.mine) return false;
+			if (onlyExamPeriod && !inExamPeriod(b)) return false;
+			if (roomFilter !== 'all' && b.room !== roomFilter) return false;
+			if (q.trim()) {
+				const t = q.trim().toLowerCase();
+				const hay =
+					`${b.personalizationName ?? ''} ${b.description ?? ''} ${b.room ?? ''} ${b.number ?? ''}`.toLowerCase();
+				if (!hay.includes(t)) return false;
+			}
+			return true;
+		})
+	);
 
 	// --- Raum-Farben (kategoriale Palette für die Kalenderansicht) ---
 	const PALETTE = [
@@ -58,15 +62,19 @@
 		'#2dd4bf',
 		'#facc15'
 	];
-	let roomColors = $derived(Object.fromEntries(
-		roomsInBookings.map((/** @type {string} */ r, /** @type {number} */ i) => [
-			r,
-			PALETTE[i % PALETTE.length]
-		])
-	));
-	let legendRooms = $derived([
-		...new Set(filtered.map((/** @type {any} */ b) => b.room).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
+	let roomColors = $derived(
+		Object.fromEntries(
+			roomsInBookings.map((/** @type {string} */ r, /** @type {number} */ i) => [
+				r,
+				PALETTE[i % PALETTE.length]
+			])
+		)
+	);
+	let legendRooms = $derived(
+		[...new Set(filtered.map((/** @type {any} */ b) => b.room).filter(Boolean))].sort(
+			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
+		)
+	);
 
 	// --- Kalender aufbauen ---
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
@@ -82,96 +90,111 @@
 		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
 	// Spalten = Prüfungstage; ohne Prüfungszeitraum-Filter auch Tage außerhalb.
-	let calendarDates = $derived((() => {
-		const set = new Set(examDays.map((/** @type {any} */ d) => d.date));
-		if (!onlyExamPeriod || set.size === 0) {
-			for (const b of filtered) if (b.dateKey) set.add(b.dateKey);
-		}
-		return [...set].sort();
-	})());
+	let calendarDates = $derived(
+		(() => {
+			const set = new Set(examDays.map((/** @type {any} */ d) => d.date));
+			if (!onlyExamPeriod || set.size === 0) {
+				for (const b of filtered) if (b.dateKey) set.add(b.dateKey);
+			}
+			return [...set].sort();
+		})()
+	);
 
-	let calBookings = $derived(filtered.filter(
-		(/** @type {any} */ b) =>
-			b.startMin != null &&
-			b.endMin != null &&
-			b.room &&
-			b.dateKey &&
-			calendarDates.includes(b.dateKey)
-	));
+	let calBookings = $derived(
+		filtered.filter(
+			(/** @type {any} */ b) =>
+				b.startMin != null &&
+				b.endMin != null &&
+				b.room &&
+				b.dateKey &&
+				calendarDates.includes(b.dateKey)
+		)
+	);
 	/** @param {string | null} room */
 	const colorOf = (room) => (room && roomColors[room]) || '#94a3b8';
 
 	const PX_PER_MIN = 0.7;
-	let timeRange = $derived((() => {
-		let lo = Infinity;
-		let hi = -Infinity;
-		for (const b of calBookings) {
-			if (b.startMin == null || b.endMin == null) continue;
-			lo = Math.min(lo, b.startMin);
-			hi = Math.max(hi, b.endMin);
-		}
-		if (!Number.isFinite(lo)) {
-			lo = 8 * 60;
-			hi = 18 * 60;
-		}
-		lo = Math.floor(lo / 60) * 60;
-		hi = Math.ceil(hi / 60) * 60;
-		if (hi - lo < 120) hi = lo + 120;
-		return { lo, hi };
-	})());
+	let timeRange = $derived(
+		(() => {
+			let lo = Infinity;
+			let hi = -Infinity;
+			for (const b of calBookings) {
+				if (b.startMin == null || b.endMin == null) continue;
+				lo = Math.min(lo, b.startMin);
+				hi = Math.max(hi, b.endMin);
+			}
+			if (!Number.isFinite(lo)) {
+				lo = 8 * 60;
+				hi = 18 * 60;
+			}
+			lo = Math.floor(lo / 60) * 60;
+			hi = Math.ceil(hi / 60) * 60;
+			if (hi - lo < 120) hi = lo + 120;
+			return { lo, hi };
+		})()
+	);
 	let totalHeight = $derived((timeRange.hi - timeRange.lo) * PX_PER_MIN);
-	let hourMarks = $derived((() => {
-		const out = [];
-		for (let h = Math.ceil(timeRange.lo / 60); h <= Math.floor(timeRange.hi / 60); h += 1)
-			out.push(h);
-		return out;
-	})());
+	let hourMarks = $derived(
+		(() => {
+			const out = [];
+			for (let h = Math.ceil(timeRange.lo / 60); h <= Math.floor(timeRange.hi / 60); h += 1)
+				out.push(h);
+			return out;
+		})()
+	);
 
 	// Pro Tag überlappungsfrei in „Spuren" (lanes) packen.
-	let calendar = $derived(calendarDates.map((date) => {
-		const dayBookings = calBookings
-			.filter((/** @type {any} */ b) => b.dateKey === date)
-			.sort(
-				(/** @type {any} */ a, /** @type {any} */ b) => a.startMin - b.startMin || a.endMin - b.endMin
-			);
-		/** @type {number[]} */
-		const laneEnds = [];
-		const placed = dayBookings.map((/** @type {any} */ b) => {
-			let lane = laneEnds.findIndex((end) => end <= b.startMin);
-			if (lane === -1) {
-				lane = laneEnds.length;
-				laneEnds.push(b.endMin);
-			} else {
-				laneEnds[lane] = b.endMin;
-			}
-			return { ...b, lane };
-		});
-		return {
-			date,
-			label: dayLabel(date),
-			dayNumber: examDays.find((/** @type {any} */ d) => d.date === date)?.dayNumber,
-			bookings: placed,
-			lanes: Math.max(1, laneEnds.length)
-		};
-	}));
+	let calendar = $derived(
+		calendarDates.map((date) => {
+			const dayBookings = calBookings
+				.filter((/** @type {any} */ b) => b.dateKey === date)
+				.sort(
+					(/** @type {any} */ a, /** @type {any} */ b) =>
+						a.startMin - b.startMin || a.endMin - b.endMin
+				);
+			/** @type {number[]} */
+			const laneEnds = [];
+			const placed = dayBookings.map((/** @type {any} */ b) => {
+				let lane = laneEnds.findIndex((end) => end <= b.startMin);
+				if (lane === -1) {
+					lane = laneEnds.length;
+					laneEnds.push(b.endMin);
+				} else {
+					laneEnds[lane] = b.endMin;
+				}
+				return { ...b, lane };
+			});
+			return {
+				date,
+				label: dayLabel(date),
+				dayNumber: examDays.find((/** @type {any} */ d) => d.date === date)?.dayNumber,
+				bookings: placed,
+				lanes: Math.max(1, laneEnds.length)
+			};
+		})
+	);
 
 	// --- Slot-Matrix: Filter ---
 	let hideEmpty = $state(true);
 	/** @type {number[]} */
 	let selectedDays = $state([]);
-	let availableDays = $derived([...new Set(slots.map((/** @type {any} */ s) => Number(s.day)))].sort(
-		(/** @type {number} */ a, /** @type {number} */ b) => a - b
-	));
+	let availableDays = $derived(
+		[...new Set(slots.map((/** @type {any} */ s) => Number(s.day)))].sort(
+			(/** @type {number} */ a, /** @type {number} */ b) => a - b
+		)
+	);
 	/** @param {number} d */
 	const toggleDay = (d) =>
 		(selectedDays = selectedDays.includes(d)
 			? selectedDays.filter((x) => x !== d)
 			: [...selectedDays, d]);
-	let filteredSlots = $derived(slots.filter((/** @type {any} */ s) => {
-		if (selectedDays.length && !selectedDays.includes(Number(s.day))) return false;
-		if (hideEmpty) return Number(s.coveredRooms || 0) > 0;
-		return true;
-	}));
+	let filteredSlots = $derived(
+		slots.filter((/** @type {any} */ s) => {
+			if (selectedDays.length && !selectedDays.includes(Number(s.day))) return false;
+			if (hideEmpty) return Number(s.coveredRooms || 0) > 0;
+			return true;
+		})
+	);
 
 	// --- Namen pflegen (personalizationNames → wirkt auf mine) ---
 	/** @type {string[]} */
@@ -179,7 +202,9 @@
 	let newName = $state('');
 	let savingNames = $state(false);
 	let namesError = $state('');
-	let namesDirty = $derived(JSON.stringify(names) !== JSON.stringify(data.personalizationNames || []));
+	let namesDirty = $derived(
+		JSON.stringify(names) !== JSON.stringify(data.personalizationNames || [])
+	);
 
 	function addName() {
 		const n = newName.trim();
@@ -283,7 +308,8 @@
 					onkeydown={(e) => e.key === 'Enter' && addName()}
 					placeholder="Name hinzufügen (z. B. Vorname Nachname)"
 				/>
-				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} onclick={addName}>＋</button>
+				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} onclick={addName}>＋</button
+				>
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={savingNames || !namesDirty}
@@ -304,14 +330,18 @@
 		{#each annyRooms as r}
 			<span class="badge badge-outline badge-sm font-mono">{r}</span>
 		{:else}
-			<span class="text-base-content/40">— keine (auf der Räume-Seite via „Anforderung: Anny")</span>
+			<span class="text-base-content/40">— keine (auf der Räume-Seite via „Anforderung: Anny")</span
+			>
 		{/each}
 		<a href="/rooms" class="link link-hover text-xs text-base-content/50">pflegen →</a>
 	</div>
 
 	<!-- Ansicht umschalten -->
 	<div class="tabs tabs-boxed w-fit">
-		<button class="tab {view === 'calendar' ? 'tab-active' : ''}" onclick={() => (view = 'calendar')}>
+		<button
+			class="tab {view === 'calendar' ? 'tab-active' : ''}"
+			onclick={() => (view = 'calendar')}
+		>
 			📅 Kalender
 		</button>
 		<button class="tab {view === 'list' ? 'tab-active' : ''}" onclick={() => (view = 'list')}>
@@ -324,13 +354,19 @@
 
 	{#if view !== 'matrix'}
 		<!-- Gemeinsame Filter für Kalender + Liste -->
-		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div
+			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
+		>
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
 				<input type="checkbox" class="toggle toggle-secondary toggle-sm" bind:checked={onlyMine} />
 				<span>nur meine</span>
 			</label>
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
-				<input type="checkbox" class="toggle toggle-primary toggle-sm" bind:checked={onlyExamPeriod} />
+				<input
+					type="checkbox"
+					class="toggle toggle-primary toggle-sm"
+					bind:checked={onlyExamPeriod}
+				/>
 				<span>nur Prüfungszeitraum</span>
 			</label>
 			<select class="select select-bordered select-sm" bind:value={roomFilter}>
@@ -356,10 +392,7 @@
 			<div class="flex flex-wrap items-center gap-x-3 gap-y-1">
 				{#each legendRooms as r}
 					<span class="flex items-center gap-1 text-xs">
-						<span
-							class="inline-block h-3 w-3 rounded-sm"
-							style="background:{roomColors[r]}"
-						></span>
+						<span class="inline-block h-3 w-3 rounded-sm" style="background:{roomColors[r]}"></span>
 						<span class="font-mono">{r}</span>
 					</span>
 				{/each}
@@ -393,7 +426,8 @@
 							<div class="min-w-[130px] flex-1">
 								<div class="h-6 text-center text-xs font-medium tabular-nums">
 									{day.label}
-									{#if day.dayNumber}<span class="text-base-content/40">· T{day.dayNumber}</span>{/if}
+									{#if day.dayNumber}<span class="text-base-content/40">· T{day.dayNumber}</span
+										>{/if}
 								</div>
 								<div
 									class="relative rounded border-l border-base-200 bg-base-200/20"
@@ -412,9 +446,9 @@
 												(b.endMin - b.startMin) * PX_PER_MIN,
 												16
 											)}px; left:calc({(b.lane / day.lanes) * 100}% + 1px); width:calc({100 /
-												day.lanes}% - 2px); background:{colorOf(b.room)}; color:#1e1e2e; outline:{b.mine
-												? '2px solid currentColor'
-												: 'none'}"
+												day.lanes}% - 2px); background:{colorOf(
+												b.room
+											)}; color:#1e1e2e; outline:{b.mine ? '2px solid currentColor' : 'none'}"
 											title={`${b.room} · ${fmtTime(b.startDate)}–${fmtTime(b.endDate)}${
 												b.personalizationName ? ' · ' + b.personalizationName : ''
 											}${b.description ? ' · ' + b.description : ''}`}
@@ -476,7 +510,8 @@
 								<td class="max-w-[28rem] truncate" title={b.description}>{b.description || '—'}</td>
 								<td>
 									<span class="badge badge-ghost badge-sm">{b.status}</span>
-									{#if b.isBlocker}<span class="badge badge-warning badge-sm ml-1">Blocker</span>{/if}
+									{#if b.isBlocker}<span class="badge badge-warning badge-sm ml-1">Blocker</span
+										>{/if}
 								</td>
 							</tr>
 						{/each}
@@ -486,7 +521,9 @@
 		</div>
 	{:else}
 		<!-- Slot-Matrix: T-Raum-Abdeckung je Prüfungsslot -->
-		<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
+		<div
+			class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3"
+		>
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
 				<input type="checkbox" class="toggle toggle-primary toggle-sm" bind:checked={hideEmpty} />
 				<span>nur Slots mit T-Raum-Abdeckung</span>
@@ -523,7 +560,10 @@
 				<tbody>
 					{#if filteredSlots.length === 0}
 						<tr>
-							<td colspan={roomOrder.length + 1} class="py-8 text-center text-sm text-base-content/50">
+							<td
+								colspan={roomOrder.length + 1}
+								class="py-8 text-center text-sm text-base-content/50"
+							>
 								Keine passenden Slots gefunden
 							</td>
 						</tr>
@@ -531,7 +571,10 @@
 						{#each filteredSlots as slot}
 							<tr class="hover">
 								<td class="bg-base-100 sticky left-0 z-10 min-w-[170px] align-top">
-									<div class="font-medium tabular-nums">{fmtDate(slot.date)} {slot.start || ''}</div>
+									<div class="font-medium tabular-nums">
+										{fmtDate(slot.date)}
+										{slot.start || ''}
+									</div>
 									<div class="text-xs text-base-content/50">Tag/Slot {slot.day}/{slot.slot}</div>
 									<div class="mt-1">
 										<span

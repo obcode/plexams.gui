@@ -4,7 +4,9 @@
 
 	let { data } = $props();
 
-	let teacherName = $derived(new Map(data.teachers.map((/** @type {any} */ t) => [t.id, t.fullname])));
+	let teacherName = $derived(
+		new Map(data.teachers.map((/** @type {any} */ t) => [t.id, t.fullname]))
+	);
 
 	let listError = $state('');
 	/** @type {any} */
@@ -191,8 +193,7 @@
 								</div>
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}
-									>Bearbeiten</button
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}>Bearbeiten</button
 								>
 								<WriteButton class="btn btn-ghost btn-xs text-error" on:click={() => del(ex)}
 									>Löschen</WriteButton
@@ -288,8 +289,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}
-					>Abbrechen</button
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
 				>
 				<WriteButton class="btn btn-primary btn-sm" on:click={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}

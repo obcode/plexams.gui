@@ -3,10 +3,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
-	
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} exam
@@ -16,12 +12,7 @@
 	 */
 
 	/** @type {Props} */
-	let {
-		exam,
-		days = [],
-		rooms = [],
-		allExams = []
-	} = $props();
+	let { exam, days = [], rooms = [], allExams = [] } = $props();
 
 	const dispatch = createEventDispatcher();
 

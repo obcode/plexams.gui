@@ -33,7 +33,9 @@
 
 	// Slot-Infos für den „vorgeplant"-Tooltip
 	let dateByDay = $derived(new Map(data.days.map((/** @type {any} */ d) => [d.number, d.date])));
-	let startBySlot = $derived(new Map(data.starttimes.map((/** @type {any} */ s) => [s.number, s.start])));
+	let startBySlot = $derived(
+		new Map(data.starttimes.map((/** @type {any} */ s) => [s.number, s.start]))
+	);
 	/** @param {string} iso → „13.07." */
 	const ddmm = (iso) => {
 		const [, m, d] = (iso ?? '').slice(0, 10).split('-');
@@ -54,9 +56,11 @@
 		return 'schon (vor)geplant (Vorplanung, noch ohne Slot)';
 	}
 
-	let examTypes = $derived([
-		...new Set(items.map((/** @type {any} */ e) => e.examTypeFull).filter(Boolean))
-	].sort((/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)));
+	let examTypes = $derived(
+		[...new Set(items.map((/** @type {any} */ e) => e.examTypeFull).filter(Boolean))].sort(
+			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
+		)
+	);
 	let examType = $state('');
 
 	/** @type {Set<number>} */
@@ -238,26 +242,30 @@
 		}
 	}
 
-	let filtered = $derived(items.filter((/** @type {any} */ e) => {
-		if (filterStatus && e.status !== filterStatus) return false;
-		if (durZero && !isDurZero(e)) return false;
-		if (nonFK07 && !isNonFK07(e)) return false;
-		if (cFilter !== 'alle' && !passesConstraint(e)) return false;
-		if (examType && e.examTypeFull !== examType) return false;
-		if (q.trim()) {
-			const n = q.trim().toLowerCase();
-			const hay =
-				`${e.ancode} ${e.module} ${e.mainExamer} ${e.examTypeFull} ` + (e.groups ?? []).join(' ');
-			if (!hay.toLowerCase().includes(n)) return false;
-		}
-		return true;
-	}));
+	let filtered = $derived(
+		items.filter((/** @type {any} */ e) => {
+			if (filterStatus && e.status !== filterStatus) return false;
+			if (durZero && !isDurZero(e)) return false;
+			if (nonFK07 && !isNonFK07(e)) return false;
+			if (cFilter !== 'alle' && !passesConstraint(e)) return false;
+			if (examType && e.examTypeFull !== examType) return false;
+			if (q.trim()) {
+				const n = q.trim().toLowerCase();
+				const hay =
+					`${e.ancode} ${e.module} ${e.mainExamer} ${e.examTypeFull} ` + (e.groups ?? []).join(' ');
+				if (!hay.toLowerCase().includes(n)) return false;
+			}
+			return true;
+		})
+	);
 
 	// „nicht von mir geplant"-Prüfungen ans Ende schieben (bleiben in „zu planen").
-	let displayed = $derived([...filtered].sort(
-		(/** @type {any} */ a, /** @type {any} */ b) =>
-			Number(!!a.constraints?.notPlannedByMe) - Number(!!b.constraints?.notPlannedByMe)
-	));
+	let displayed = $derived(
+		[...filtered].sort(
+			(/** @type {any} */ a, /** @type {any} */ b) =>
+				Number(!!a.constraints?.notPlannedByMe) - Number(!!b.constraints?.notPlannedByMe)
+		)
+	);
 
 	/** Toggle „nicht von mir geplant" — schließt andere Constraints aus. @param {any} e */
 	async function toggleNotMe(e) {

@@ -52,7 +52,7 @@
 					<a href="/exam/examGroups/{conflict.examGroupCode}">
 						<button class="btn btn-xs p-1 mx-1">
 							{conflict.examGroupCode}
-							<div class="badge  badge-secondary  badge-xs">{conflict.count}</div>
+							<div class="badge badge-secondary badge-xs">{conflict.count}</div>
 						</button>
 					</a>
 				{/each}

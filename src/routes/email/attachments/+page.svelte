@@ -57,15 +57,15 @@
 	let uploadedExamerKeys = $derived(new Set(coverAttachments.map((a) => String(a.key))));
 	let hasCovers = $derived(uploadedExamerKeys.size > 0);
 	// nur Prüfende, für die ein Deckblatt vorliegt
-	let availableExamers = $derived(data.expectedExamers.filter((/** @type {any} */ e) =>
-		uploadedExamerKeys.has(String(e.key))
-	));
+	let availableExamers = $derived(
+		data.expectedExamers.filter((/** @type {any} */ e) => uploadedExamerKeys.has(String(e.key)))
+	);
 
 	// Auswahl für den Einzelversand eines Deckblatts.
 	let selectedExamerId = $state('');
-	let selectedExamer = $derived(availableExamers.find(
-		(/** @type {any} */ e) => String(e.key) === String(selectedExamerId)
-	));
+	let selectedExamer = $derived(
+		availableExamers.find((/** @type {any} */ e) => String(e.key) === String(selectedExamerId))
+	);
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
@@ -91,15 +91,14 @@
 			on:change={(e) => (invigAttachments = e.detail)}
 		>
 			{#snippet actions()}
-						<a
-					
+				<a
 					href="/plan/invigilation/planning"
 					class="btn btn-primary btn-sm gap-2"
 					title="Wechselt auf „Aufsichten mit Anforderungen“ — dort nochmal „Kalender auf Server hochladen“ klicken"
 				>
 					⬆ Kalender auf Server hochladen
 				</a>
-					{/snippet}
+			{/snippet}
 		</AttachmentManager>
 		<p class="text-xs text-base-content/50">
 			Hinweis: Dieser Button wechselt auf die Seite „Aufsichten mit Anforderungen“. Dort musst du

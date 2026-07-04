@@ -128,7 +128,11 @@
 			{/if}
 			<input type="date" class="input input-bordered input-xs w-36" bind:value={date} />
 			<input type="time" class="input input-bordered input-xs w-24" bind:value={time} />
-			<WriteButton class="btn btn-primary btn-xs" disabled={saving || !date || !time} onclick={save}>
+			<WriteButton
+				class="btn btn-primary btn-xs"
+				disabled={saving || !date || !time}
+				onclick={save}
+			>
 				{saving ? '…' : hasTime ? 'ändern' : 'setzen'}
 			</WriteButton>
 			{#if outsidePeriod}

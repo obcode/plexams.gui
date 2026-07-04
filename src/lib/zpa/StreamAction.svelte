@@ -5,9 +5,6 @@
 
 	const dispatch = createEventDispatcher();
 
-	
-	
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} field - Subscription-Feldname

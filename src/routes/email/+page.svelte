@@ -9,7 +9,6 @@
 
 	let { data } = $props();
 
-
 	// Gestreamte Load-Daten: Seite rendert sofort, diese füllen sich nach.
 	/** @type {Record<string, boolean>} */
 	let conditionsDone = $state({});
@@ -42,7 +41,9 @@
 		data.allRequirementsPresent.then((/** @type {boolean} */ v) => (allRequirementsPresent = v));
 	});
 	run(() => {
-		data.examPlanningMailRecipients.then((/** @type {any[]} */ v) => (examPlanningMailRecipients = v));
+		data.examPlanningMailRecipients.then(
+			(/** @type {any[]} */ v) => (examPlanningMailRecipients = v)
+		);
 	});
 </script>
 

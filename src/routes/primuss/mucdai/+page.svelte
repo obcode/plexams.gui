@@ -4,53 +4,57 @@
 
 	let { data } = $props();
 
-	let programs = $derived([...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
-		(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
-	));
+	let programs = $derived(
+		[...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
+			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
+		)
+	);
 
 	// gleiche Prüfung (gleicher ZPA-Ancode; sonst primussAncode) über mehrere
 	// Studiengänge zu einer Zeile gruppieren
-	let groups = $derived((() => {
-		/** @type {Map<string, any>} */
-		const m = new Map();
-		for (const e of data.mucdaiExams) {
-			const key = e.ancode != null ? `a${e.ancode}` : `p${e.primussAncode}`;
-			let g = m.get(key);
-			if (!g) {
-				g = {
-					ancode: e.ancode,
-					primussAncode: e.primussAncode,
-					module: e.module,
-					mainExamer: e.mainExamer,
-					examType: e.examType,
-					duration: e.duration,
-					isRepeaterExam: e.isRepeaterExam,
-					plannedBy: e.plannedBy,
-					planEntry: e.planEntry,
-					linkStatus: e.linkStatus,
-					/** @type {string[]} */
-					programs: [],
-					/** @type {Set<number>} */
-					primussAncodes: new Set(),
-					/** @type {{ program: string, primussAncode: number }[]} */
-					members: []
-				};
-				m.set(key, g);
+	let groups = $derived(
+		(() => {
+			/** @type {Map<string, any>} */
+			const m = new Map();
+			for (const e of data.mucdaiExams) {
+				const key = e.ancode != null ? `a${e.ancode}` : `p${e.primussAncode}`;
+				let g = m.get(key);
+				if (!g) {
+					g = {
+						ancode: e.ancode,
+						primussAncode: e.primussAncode,
+						module: e.module,
+						mainExamer: e.mainExamer,
+						examType: e.examType,
+						duration: e.duration,
+						isRepeaterExam: e.isRepeaterExam,
+						plannedBy: e.plannedBy,
+						planEntry: e.planEntry,
+						linkStatus: e.linkStatus,
+						/** @type {string[]} */
+						programs: [],
+						/** @type {Set<number>} */
+						primussAncodes: new Set(),
+						/** @type {{ program: string, primussAncode: number }[]} */
+						members: []
+					};
+					m.set(key, g);
+				}
+				g.programs.push(e.program);
+				g.primussAncodes.add(e.primussAncode);
+				g.members.push({ program: e.program, primussAncode: e.primussAncode });
 			}
-			g.programs.push(e.program);
-			g.primussAncodes.add(e.primussAncode);
-			g.members.push({ program: e.program, primussAncode: e.primussAncode });
-		}
-		return [...m.values()].map((g) => ({
-			...g,
-			programs: g.programs.sort((/** @type {string} */ a, /** @type {string} */ b) =>
-				a.localeCompare(b)
-			),
-			primussList: [...g.primussAncodes].sort(
-				(/** @type {number} */ a, /** @type {number} */ b) => a - b
-			)
-		}));
-	})());
+			return [...m.values()].map((g) => ({
+				...g,
+				programs: g.programs.sort((/** @type {string} */ a, /** @type {string} */ b) =>
+					a.localeCompare(b)
+				),
+				primussList: [...g.primussAncodes].sort(
+					(/** @type {number} */ a, /** @type {number} */ b) => a - b
+				)
+			}));
+		})()
+	);
 
 	/** @type {string} */
 	let program = $state('');
@@ -72,20 +76,22 @@
 		return Number.isNaN(t) ? Infinity : t;
 	}
 
-	let filtered = $derived(groups
-		.filter((g) => !program || g.programs.includes(program))
-		.filter((g) => !fk07Only || g.plannedBy === 'FK07')
-		.filter(
-			(g) =>
-				!ql ||
-				`${g.ancode ?? ''} ${g.primussList.join(' ')} ${g.module} ${g.mainExamer}`
-					.toLowerCase()
-					.includes(ql)
-		)
-		.sort((a, b) => {
-			if (sortBy === 'time') return timeMs(a) - timeMs(b) || a.primussList[0] - b.primussList[0];
-			return a.primussList[0] - b.primussList[0];
-		}));
+	let filtered = $derived(
+		groups
+			.filter((g) => !program || g.programs.includes(program))
+			.filter((g) => !fk07Only || g.plannedBy === 'FK07')
+			.filter(
+				(g) =>
+					!ql ||
+					`${g.ancode ?? ''} ${g.primussList.join(' ')} ${g.module} ${g.mainExamer}`
+						.toLowerCase()
+						.includes(ql)
+			)
+			.sort((a, b) => {
+				if (sortBy === 'time') return timeMs(a) - timeMs(b) || a.primussList[0] - b.primussList[0];
+				return a.primussList[0] - b.primussList[0];
+			})
+	);
 
 	// --- Zeit-Helfer (Berlin) ---
 	/** @param {string} iso → „13.07. 08:30" */
@@ -254,7 +260,11 @@
 				const res = await fetch('/api/setMucDaiZpaLink', {
 					method: 'POST',
 					headers: jsonHeaders,
-					body: JSON.stringify({ program: mem.program, primussAncode: mem.primussAncode, zpaAncode })
+					body: JSON.stringify({
+						program: mem.program,
+						primussAncode: mem.primussAncode,
+						zpaAncode
+					})
 				});
 				const d = await res.json().catch(() => ({}));
 				if (!res.ok || d?.error) {
@@ -317,7 +327,8 @@
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium">MUC.DAI-Prüfungen konnten nicht geladen werden (Backend-Fehler).</span
+			<span class="font-medium"
+				>MUC.DAI-Prüfungen konnten nicht geladen werden (Backend-Fehler).</span
 			>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
@@ -414,7 +425,10 @@
 							</td>
 							<td>
 								{#if STATUS[g.linkStatus]}
-									<span class="badge badge-sm {STATUS[g.linkStatus].cls}" title={STATUS[g.linkStatus].title}>
+									<span
+										class="badge badge-sm {STATUS[g.linkStatus].cls}"
+										title={STATUS[g.linkStatus].title}
+									>
 										{STATUS[g.linkStatus].label}
 									</span>
 								{:else}
@@ -480,8 +494,7 @@
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">Import: {importResult.examsImported} Prüfungen</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" onclick={() => (importResult = null)}
-					>schließen</button
+				<button class="btn btn-ghost btn-xs" onclick={() => (importResult = null)}>schließen</button
 				>
 			</div>
 			<div class="text-sm">
@@ -519,11 +532,7 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{timeError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button
-					class="btn btn-ghost btn-sm"
-					onclick={() => (timeFor = null)}
-					disabled={timeSaving}
-				>
+				<button class="btn btn-ghost btn-sm" onclick={() => (timeFor = null)} disabled={timeSaving}>
 					Abbrechen
 				</button>
 				<WriteButton class="btn btn-primary btn-sm" on:click={saveTime} disabled={timeSaving}>
@@ -531,8 +540,7 @@
 				</WriteButton>
 			</div>
 		</div>
-		<button class="modal-backdrop" aria-label="schließen" onclick={() => (timeFor = null)}
-		></button>
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (timeFor = null)}></button>
 	</div>
 {/if}
 
@@ -609,7 +617,9 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeLink} disabled={linking}>Schließen</button>
+				<button class="btn btn-ghost btn-sm" onclick={closeLink} disabled={linking}
+					>Schließen</button
+				>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" onclick={closeLink}></button>

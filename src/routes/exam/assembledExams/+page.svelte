@@ -9,11 +9,12 @@
 	// Vorbedingungen: ZPA & Primuss importiert UND die manuellen Haken
 	// „ZPA- & Primuss-Prüfungen verknüpft" und „Constraints eingepflegt" gesetzt.
 	// Connected Exams werden live berechnet — kein separater Schritt.
-	let canGenerate =
-		$derived(!!data.conditions?.zpaImported &&
-		!!data.conditions?.primussImported &&
-		!!data.conditions?.zpaPrimussConnected &&
-		!!data.conditions?.constraintsEntered);
+	let canGenerate = $derived(
+		!!data.conditions?.zpaImported &&
+			!!data.conditions?.primussImported &&
+			!!data.conditions?.zpaPrimussConnected &&
+			!!data.conditions?.constraintsEntered
+	);
 	let stale = $derived($assembledExamsState.dirty || $studentRegsState.dirty);
 
 	/** @type {{ changes: any[]; studentCount: number } | null} */
@@ -85,7 +86,8 @@
 				<div class="flex items-center gap-2 text-sm font-medium">
 					Generiert: {prepResult.changes.length} Änderung(en) · {prepResult.studentCount} StudentRegs
 					<div class="flex-1"></div>
-					<button class="btn btn-ghost btn-xs" onclick={() => (prepResult = null)}>schließen</button>
+					<button class="btn btn-ghost btn-xs" onclick={() => (prepResult = null)}>schließen</button
+					>
 				</div>
 				{#if prepResult.changes.length}
 					<ul class="mt-1 flex max-h-72 flex-col gap-1 overflow-y-auto text-sm">

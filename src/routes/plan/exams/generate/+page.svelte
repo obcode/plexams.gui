@@ -495,7 +495,12 @@
 		</div>
 		<label class="flex max-w-xs flex-col gap-1">
 			<span class="flex cursor-pointer items-center gap-2 text-xs font-medium text-base-content/60">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={keepAssigned} disabled={running} />
+				<input
+					type="checkbox"
+					class="toggle toggle-sm"
+					bind:checked={keepAssigned}
+					disabled={running}
+				/>
 				bestehenden Plan verbessern (Warm-Start)
 			</span>
 			<span class="text-xs text-base-content/50">
@@ -588,8 +593,9 @@
 				{resetBusy ? 'Setzt zurück…' : 'Generierten Terminplan zurücksetzen'}
 			</WriteButton>
 			<span class="text-xs text-base-content/50">
-				Entfernt die generierten Termine. Manuell gesperrte, externe und fixierte EXaHM/SEB-Prüfungen
-				bleiben — für einen vollständigen Reset vorher auf der Phase-A-Seite „Fixierung aufheben".
+				Entfernt die generierten Termine. Manuell gesperrte, externe und fixierte
+				EXaHM/SEB-Prüfungen bleiben — für einen vollständigen Reset vorher auf der Phase-A-Seite
+				„Fixierung aufheben".
 			</span>
 		</div>
 		{#if resetInfo}
@@ -613,7 +619,9 @@
 		style="background:#1e1e2e; color:#d4d4d4"
 	>
 		{#if !lines.length && !current && !running}
-			<div style="color:#6c7086">Bereit. Parameter wählen und „Probelauf" oder „Generieren" starten.</div>
+			<div style="color:#6c7086">
+				Bereit. Parameter wählen und „Probelauf" oder „Generieren" starten.
+			</div>
 		{/if}
 		{#each lines as line}
 			<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
@@ -657,7 +665,9 @@
 			<!-- harte Verletzungen (sollten 0 sein) -->
 			{#if r.hardViolations > 0}
 				<div class="alert alert-error py-2 text-sm">
-					<span><strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.</span>
+					<span
+						><strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.</span
+					>
 				</div>
 			{:else}
 				<div class="alert alert-success py-2 text-sm">
@@ -684,12 +694,16 @@
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs text-base-content/60">direkt nacheinander (adjacent)</div>
 						<div class="text-lg font-semibold tabular-nums">{fmt(d.adjacent)}</div>
-						<div class="text-xs text-base-content/50">{fmt(d.studentsWithAdjacent)} Studierende betroffen</div>
+						<div class="text-xs text-base-content/50">
+							{fmt(d.studentsWithAdjacent)} Studierende betroffen
+						</div>
 					</div>
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs text-base-content/60">selber Tag (sameDay)</div>
 						<div class="text-lg font-semibold tabular-nums">{fmt(d.sameDay)}</div>
-						<div class="text-xs text-base-content/50">{fmt(d.studentsWithSameDay)} Studierende betroffen</div>
+						<div class="text-xs text-base-content/50">
+							{fmt(d.studentsWithSameDay)} Studierende betroffen
+						</div>
 					</div>
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs text-base-content/60">Folgetag (nextDay)</div>
@@ -800,7 +814,9 @@
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			Angewandte Constraints
-			<span class="font-normal text-base-content/50">· {(data.constraints ?? []).length} · read-only</span>
+			<span class="font-normal text-base-content/50"
+				>· {(data.constraints ?? []).length} · read-only</span
+			>
 		</summary>
 		<div class="collapse-content">
 			<div class="overflow-x-auto rounded-lg border border-base-200">
