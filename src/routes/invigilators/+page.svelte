@@ -22,7 +22,7 @@
 		busy = true;
 		error = '';
 		try {
-			const res = await fetch('/api/setPermanentNonInvigilator', {
+			const res = await fetch('/api/invigilator/setPermanentNonInvigilator', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ teacherID: id, name, reason: r })
@@ -47,7 +47,7 @@
 		if (!confirm(`Permanente Nicht-Aufsicht für ${p.name} aufheben?`)) return;
 		error = '';
 		try {
-			const res = await fetch('/api/removePermanentNonInvigilator', {
+			const res = await fetch('/api/invigilator/removePermanentNonInvigilator', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ teacherID: p.teacherID })

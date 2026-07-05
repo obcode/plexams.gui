@@ -76,7 +76,7 @@
 
 	/** @param {any} input */
 	async function upsert(input) {
-		const res = await fetch('/api/upsertStudyProgram', {
+		const res = await fetch('/api/studyprogram/upsertStudyProgram', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ input })
@@ -145,7 +145,7 @@
 		if (!confirm(`Studiengang ${p.shortname} löschen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/deleteStudyProgram', {
+			const res = await fetch('/api/studyprogram/deleteStudyProgram', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ shortname: p.shortname })
@@ -167,7 +167,7 @@
 		seedMsg = '';
 		listError = '';
 		try {
-			const res = await fetch('/api/seedStudyProgramsFromConfig', { method: 'POST' });
+			const res = await fetch('/api/studyprogram/seedStudyProgramsFromConfig', { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				listError = d?.error || `Fehler (HTTP ${res.status})`;

@@ -119,7 +119,7 @@
 		const mtknr = room.ntaMtknr;
 		room.prePlanned = true;
 		plannedExam = plannedExam; // Reaktivität anstoßen
-		await fetch('/api/prePlanRoom', {
+		await fetch('/api/room/prePlanRoom', {
 			method: 'POST',
 			body: JSON.stringify({ ancode, roomName, reserve, mtknr }),
 			headers: { 'content-type': 'application/json' }
@@ -133,7 +133,7 @@
 		const mtknr = room.ntaMtknr;
 		room.prePlanned = false;
 		plannedExam = plannedExam;
-		await fetch('/api/removePrePlannedRoom', {
+		await fetch('/api/room/removePrePlannedRoom', {
 			method: 'POST',
 			body: JSON.stringify({ ancode, roomName, mtknr }),
 			headers: { 'content-type': 'application/json' }
@@ -272,7 +272,7 @@
 		const roomName = c.roomName;
 		showPicker = false;
 		try {
-			const res = await fetch('/api/prePlanRoom', {
+			const res = await fetch('/api/room/prePlanRoom', {
 				method: 'POST',
 				body: JSON.stringify({ ancode: exam.ancode, roomName, reserve, mtknr, seats }),
 				headers: { 'content-type': 'application/json' }

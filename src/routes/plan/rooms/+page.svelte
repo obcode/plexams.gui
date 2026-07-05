@@ -34,7 +34,7 @@
 		resetBusy = true;
 		blockError = null;
 		try {
-			const res = await fetch('/api/resetRoomsForExams', { method: 'POST' });
+			const res = await fetch('/api/room/resetRoomsForExams', { method: 'POST' });
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
 				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;
@@ -154,7 +154,7 @@
 		blockBusy = new Set(blockBusy).add(key);
 		blockError = null;
 		try {
-			const url = isBlocked ? '/api/unblockRoomForSlot' : '/api/blockRoomForSlot';
+			const url = isBlocked ? '/api/room/unblockRoomForSlot' : '/api/room/blockRoomForSlot';
 			const body = isBlocked ? { room, day, slot } : { room, day, slot, reason };
 			const res = await fetch(url, {
 				method: 'POST',
@@ -200,7 +200,7 @@
 		blockError = null;
 		try {
 			const slots = allSlots.map((/** @type {number} */ s) => ({ day, slot: s }));
-			const url = allBlocked ? '/api/unblockRoomForSlots' : '/api/blockRoomForSlots';
+			const url = allBlocked ? '/api/room/unblockRoomForSlots' : '/api/room/blockRoomForSlots';
 			const body = allBlocked ? { room, slots } : { room, slots, reason };
 			const res = await fetch(url, {
 				method: 'POST',

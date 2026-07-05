@@ -63,7 +63,7 @@
 	async function onToggle(nta) {
 		toggleError = null;
 		try {
-			const res = await fetch('/api/setNTAActive', {
+			const res = await fetch('/api/nta/setNTAActive', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				// aktiv umschalten: neuer active-Wert = aktueller deactivated-Wert

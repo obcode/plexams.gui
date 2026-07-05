@@ -158,7 +158,7 @@
 		connectBusy = true;
 		connectError = '';
 		try {
-			const res = await fetch('/api/addPrimussAncode', {
+			const res = await fetch('/api/primuss/addPrimussAncode', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({

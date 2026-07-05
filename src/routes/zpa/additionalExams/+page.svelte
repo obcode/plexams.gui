@@ -90,7 +90,7 @@
 						isHandicap: !!r.isHandicap
 					}))
 			};
-			const res = await fetch('/api/upsertAdditionalExam', {
+			const res = await fetch('/api/exam/upsertAdditionalExam', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input })
@@ -102,7 +102,7 @@
 			}
 			// Ancode geändert → alten Eintrag löschen
 			if (!isNew && origAncode && origAncode !== ancode) {
-				await fetch('/api/deleteAdditionalExam', {
+				await fetch('/api/exam/deleteAdditionalExam', {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({ ancode: origAncode })
@@ -122,7 +122,7 @@
 		if (!confirm(`Zusätzliche Prüfung ${ex.ancode} löschen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/deleteAdditionalExam', {
+			const res = await fetch('/api/exam/deleteAdditionalExam', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: ex.ancode })

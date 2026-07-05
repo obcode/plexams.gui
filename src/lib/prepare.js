@@ -15,7 +15,7 @@ export async function regeneratePreparation() {
 	if (!browser) return { changes: [], studentCount: 0, error: null };
 	preparing.set(true);
 	try {
-		const res = await fetch('/api/generatePreparation', { method: 'POST' });
+		const res = await fetch('/api/exam/generatePreparation', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
 			return { changes: [], studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };

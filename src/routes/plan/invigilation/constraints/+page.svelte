@@ -155,7 +155,7 @@
 		};
 		saving = true;
 		try {
-			const res = await fetch('/api/setInvigilatorConstraints', {
+			const res = await fetch('/api/invigilator/setInvigilatorConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input })
@@ -179,7 +179,7 @@
 		if (!confirm(`Aufsichts-Constraints für ${c.shortname} löschen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/deleteInvigilatorConstraints', {
+			const res = await fetch('/api/invigilator/deleteInvigilatorConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ teacherID: c.teacherID })

@@ -316,7 +316,7 @@
 		resetBusy = true;
 		actionError = '';
 		try {
-			const res = await fetch('/api/resetInvigilations', { method: 'POST' });
+			const res = await fetch('/api/invigilator/resetInvigilations', { method: 'POST' });
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
 				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;

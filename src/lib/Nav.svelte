@@ -84,7 +84,7 @@
 		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : ''
 	);
 	async function getSemester() {
-		const response = await fetch('/api/semesters', { method: 'GET' });
+		const response = await fetch('/api/semester/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
 		if (d?.current) {
 			currentSem = d.current;
@@ -101,7 +101,7 @@
 		semesterError = '';
 		semesterErrorTitle = 'Schutz ändern fehlgeschlagen';
 		try {
-			const res = await fetch('/api/setSemesterReadOnly', {
+			const res = await fetch('/api/semester/setSemesterReadOnly', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ readOnly: value })
@@ -142,7 +142,7 @@
 		semesterError = '';
 		semesterErrorTitle = 'Semesterwechsel fehlgeschlagen';
 		try {
-			const res = await fetch('/api/setSemester', {
+			const res = await fetch('/api/semester/setSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ name, semester: override || null })
@@ -179,7 +179,7 @@
 		semesterError = '';
 		semesterErrorTitle = 'Workspace anlegen fehlgeschlagen';
 		try {
-			const res = await fetch('/api/createWorkspace', {
+			const res = await fetch('/api/semester/createWorkspace', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ database: wsName.trim(), fromSemester: wsFromSemester })
@@ -304,8 +304,8 @@
 				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
 				{ href: '/students', label: '🎓 Studierende' },
 				{ section: 'Weitere' },
-				{ href: '/plan/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
-				{ href: '/plan/annyBookings', label: '📅 Anny-Buchungen' },
+				{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
+				{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 				{ href: '/nta/semester', label: '♿ NTA' },
 				{ href: '/log', label: '🧾 Mutations-Log' },
 				{ section: 'Konfiguration' },

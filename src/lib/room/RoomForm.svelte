@@ -90,7 +90,7 @@
 
 		saving = true;
 		errorMsg = null;
-		const url = mode === 'edit' ? '/api/updateRoom' : '/api/addRoom';
+		const url = mode === 'edit' ? '/api/room/updateRoom' : '/api/room/addRoom';
 		let data;
 		try {
 			const res = await fetch(url, {

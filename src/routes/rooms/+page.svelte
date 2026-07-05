@@ -80,7 +80,7 @@
 	async function toggleRoom(room) {
 		toggleError = null;
 		try {
-			const res = await fetch('/api/setRoomActive', {
+			const res = await fetch('/api/room/setRoomActive', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ name: room.name, active: !!room.deactivated })

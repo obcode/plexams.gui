@@ -1,4 +1,4 @@
-// Gruppierung/Filterung der „Prüfungen anderer FKs" (Seite /plan/external):
+// Gruppierung/Filterung der „Prüfungen anderer FKs" (Seite /exam/external):
 // vereint MUC.DAI-Externe und ZPA-notPlannedByMe, nach FK gruppiert. Reine
 // Funktionen, aus der .svelte extrahiert und unit-getestet.
 

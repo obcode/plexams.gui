@@ -49,7 +49,7 @@
 				filename: (editing.filename ?? '').trim() || null,
 				ancodes: parseAncodes(editing.ancodes ?? '')
 			};
-			const res = await fetch('/api/upsertSpecialInterest', {
+			const res = await fetch('/api/email/upsertSpecialInterest', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input })
@@ -61,7 +61,7 @@
 			}
 			// Umbenennen: alten Eintrag entfernen
 			if (!isNew && origName && origName !== name) {
-				await fetch('/api/deleteSpecialInterest', {
+				await fetch('/api/email/deleteSpecialInterest', {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({ name: origName })
@@ -81,7 +81,7 @@
 		if (!confirm(`Special Interest „${si.name}" löschen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/deleteSpecialInterest', {
+			const res = await fetch('/api/email/deleteSpecialInterest', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ name: si.name })

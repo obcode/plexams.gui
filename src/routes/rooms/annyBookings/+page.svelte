@@ -219,7 +219,7 @@
 		savingNames = true;
 		namesError = '';
 		try {
-			const res = await fetch('/api/setAnnyPersonalizationNames', {
+			const res = await fetch('/api/room/setAnnyPersonalizationNames', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ names })

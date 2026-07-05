@@ -138,7 +138,7 @@
 				};
 
 		try {
-			const res = await fetch('/api/addConstraints', {
+			const res = await fetch('/api/exam/addConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: exam.ancode, constraints })

@@ -22,11 +22,11 @@
 		const origFetch = window.fetch.bind(window);
 		// Endpoints, die selbst nichts invalidieren (keine Re-Prüfung nötig)
 		const skip = [
-			'/api/assembledExamsState',
-			'/api/generateAssembledExams',
-			'/api/studentRegsState',
-			'/api/generateStudentRegs',
-			'/api/mutationLog'
+			'/api/exam/assembledExamsState',
+			'/api/exam/generateAssembledExams',
+			'/api/primuss/studentRegsState',
+			'/api/primuss/generateStudentRegs',
+			'/api/log/mutationLog'
 		];
 		window.fetch = async (/** @type {any} */ input, /** @type {any} */ init) => {
 			const res = await origFetch(input, init);

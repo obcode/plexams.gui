@@ -44,7 +44,7 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await fetch('/api/mutationLog', {
+			const res = await fetch('/api/log/mutationLog', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({

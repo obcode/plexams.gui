@@ -3,7 +3,8 @@
 - [Email sending architecture](email-sending-architecture.md) — where the e-mail-sending UI lives (EmailSender component, /email page) and how to reuse/add a sender
 - [NTA consolidation](nta-consolidation-plan.md) — NTA area is now 2 pages (Stammdaten /nta/all with add/edit/toggle, Semester /nta/semester); shared NTAForm + /api proxies
 - [UI design language](ui-design-language.md) — progressively modernize every touched page to one consistent daisyUI/theme-token look; no hard-coded colors
-- [External exam dates](external-exam-dates.md) — /plan/external sets dates for MUC.DAI (other-FK) and ZPA notPlannedByMe exams via setExternalExamTime; FK badges
+- [External exam dates](external-exam-dates.md) — /exam/external sets dates for MUC.DAI (other-FK) and ZPA notPlannedByMe exams via setExternalExamTime; FK badges
 - [Exam schedule generation](exam-schedule-generation.md) — /plan/exams/generate runs generateExamSchedule (LogLine sub, examReport, EXAMS gate); read-only examScheduleConstraints
+- [Source structure](source-structure.md) — NavBar (workflow) vs src/ (domain); docs/ROUTES.md maps Nav→route→lib→api; api endpoints grouped by domain, new ones never flat
 - [Refactor roadmap](refactor-roadmap.md) — ongoing architecture refactor: what's done + open blocks (TS, runes, e2e); conventions (semilinear, extract-to-lib-and-test)
 - [Svelte runes migration](svelte-runes-migration.md) — plan to move legacy Svelte syntax → runes (within Svelte 5), combined with the TS migration

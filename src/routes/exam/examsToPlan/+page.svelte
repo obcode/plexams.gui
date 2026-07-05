@@ -138,7 +138,7 @@
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
-			const res = await fetch('/api/setExamDuration', {
+			const res = await fetch('/api/exam/setExamDuration', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: e.ancode, duration: v })
@@ -164,7 +164,7 @@
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
-			const res = await fetch('/api/removeExamDuration', {
+			const res = await fetch('/api/exam/removeExamDuration', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: e.ancode })
@@ -289,7 +289,7 @@
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
-			const res = await fetch('/api/addConstraints', {
+			const res = await fetch('/api/exam/addConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
@@ -328,7 +328,7 @@
 		busy = new Set(busy).add(e.ancode);
 		actionError = '';
 		try {
-			const res = await fetch('/api/addConstraints', {
+			const res = await fetch('/api/exam/addConstraints', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: e.ancode, constraints: next })

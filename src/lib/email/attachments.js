@@ -79,7 +79,7 @@ export async function postUpload(url, fd) {
  * @returns {Promise<Attachment[]>}
  */
 export async function listAttachments(kind) {
-	const res = await fetch(`/api/emailAttachments?kind=${encodeURIComponent(kind)}`);
+	const res = await fetch(`/api/email/emailAttachments?kind=${encodeURIComponent(kind)}`);
 	if (!res.ok) throw new Error(`Konnte Anhänge nicht laden (HTTP ${res.status})`);
 	const data = await res.json();
 	return data.emailAttachments ?? [];
@@ -91,7 +91,7 @@ export async function listAttachments(kind) {
  * @returns {Promise<void>}
  */
 export async function clearAttachments(kind) {
-	const res = await fetch('/api/clearEmailAttachments', {
+	const res = await fetch('/api/email/clearEmailAttachments', {
 		method: 'POST',
 		headers: { 'content-type': 'application/json' },
 		body: JSON.stringify({ kind })

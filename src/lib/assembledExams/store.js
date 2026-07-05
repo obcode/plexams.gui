@@ -21,7 +21,7 @@ export async function checkAssembledExams() {
 	if (!browser || inflight) return;
 	inflight = true;
 	try {
-		const res = await fetch('/api/assembledExamsState');
+		const res = await fetch('/api/exam/assembledExamsState');
 		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
 		if (d?.assembledExamsState) assembledExamsState.set(d.assembledExamsState);
@@ -41,7 +41,7 @@ export async function regenerateAssembledExams() {
 	if (!browser) return { changes: [], error: null };
 	regeneratingAssembled.set(true);
 	try {
-		const res = await fetch('/api/generateAssembledExams', { method: 'POST' });
+		const res = await fetch('/api/exam/generateAssembledExams', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
 			return { changes: [], error: d?.error || `Fehler (HTTP ${res.status})` };

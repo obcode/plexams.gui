@@ -26,7 +26,7 @@
 		warnings = [];
 		createdName = '';
 		try {
-			const res = await fetch('/api/createSemester', {
+			const res = await fetch('/api/semester/createSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ semester: name.trim(), input: formComp?.getInput() })

@@ -44,7 +44,7 @@
 
 	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
 	async function getPrograms() {
-		const response = await fetch('/api/allProgramsInPlan', {
+		const response = await fetch('/api/exam/allProgramsInPlan', {
 			method: 'GET'
 		});
 
@@ -52,7 +52,7 @@
 	}
 	let allAncodes = $state(/** @type {any[]} */ ([]));
 	async function getAncodes() {
-		const response = await fetch('/api/ancodesInPlan', {
+		const response = await fetch('/api/exam/ancodesInPlan', {
 			method: 'GET'
 		});
 
@@ -60,7 +60,7 @@
 	}
 	let allExamer = $state(/** @type {any[]} */ ([]));
 	async function getExamer() {
-		const response = await fetch('/api/examerInPlan', {
+		const response = await fetch('/api/exam/examerInPlan', {
 			method: 'GET'
 		});
 
@@ -146,7 +146,7 @@
 	}
 
 	async function fetchAllowedSlots(/** @type {any} */ ancode) {
-		const response = await fetch('/api/allowedSlots', {
+		const response = await fetch('/api/slot/allowedSlots', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
 			headers: {
@@ -158,7 +158,7 @@
 	}
 
 	async function fetchAwkwardSlots(/** @type {any} */ ancode) {
-		const response = await fetch('/api/awkwardSlots', {
+		const response = await fetch('/api/slot/awkwardSlots', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
 			headers: {
@@ -170,7 +170,7 @@
 	}
 
 	async function fetchconflictingAncodes(/** @type {any} */ ancode) {
-		const response = await fetch('/api/conflictingAncodes', {
+		const response = await fetch('/api/exam/conflictingAncodes', {
 			method: 'POST',
 			body: JSON.stringify({ ancode }),
 			headers: {
@@ -651,7 +651,7 @@
 				<p class="text-sm text-base-content/60">
 					Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald sie
 					eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster. Zeiten
-					setzt du unter <a href="/plan/external" class="link link-primary">Prüfungen anderer FKs</a
+					setzt du unter <a href="/exam/external" class="link link-primary">Prüfungen anderer FKs</a
 					>.
 				</p>
 				<div class="flex flex-wrap gap-2">

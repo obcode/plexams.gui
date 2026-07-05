@@ -218,7 +218,7 @@
 		saving = true;
 		editError = '';
 		try {
-			const url = isNew ? '/api/addPreplanExam' : '/api/updatePreplanExam';
+			const url = isNew ? '/api/preplan/addPreplanExam' : '/api/preplan/updatePreplanExam';
 			const body = isNew ? { input } : { id: editing.id, input };
 			const res = await fetch(url, {
 				method: 'POST',
@@ -244,7 +244,7 @@
 		if (!confirm(`Vorplanung „${e.module}" (${e.examKind}) löschen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/deletePreplanExam', {
+			const res = await fetch('/api/preplan/deletePreplanExam', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ id: e.id })
@@ -267,7 +267,7 @@
 		listError = '';
 		const [d, s] = value ? value.split('-').map(Number) : [null, null];
 		try {
-			const res = await fetch('/api/setPreplanExamSlot', {
+			const res = await fetch('/api/preplan/setPreplanExamSlot', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ id: e.id, dayNumber: d, slotNumber: s })
@@ -293,7 +293,7 @@
 		busy = new Set(busy).add(e.id);
 		listError = '';
 		try {
-			const res = await fetch('/api/setPreplanExamFixed', {
+			const res = await fetch('/api/preplan/setPreplanExamFixed', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ id: e.id, fixed })
@@ -332,7 +332,7 @@
 		manualAncode = '';
 		suggestLoading = true;
 		try {
-			const res = await fetch('/api/preplanExamAncodeSuggestions', {
+			const res = await fetch('/api/preplan/preplanExamAncodeSuggestions', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: e.id })
@@ -362,7 +362,7 @@
 		connecting = true;
 		suggestError = '';
 		try {
-			const res = await fetch('/api/connectPreplanExamToAncode', {
+			const res = await fetch('/api/preplan/connectPreplanExamToAncode', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: suggestFor.id, ancode: a })
@@ -386,7 +386,7 @@
 		if (!confirm(`Ancode ${e.ancode} von „${e.module}“ lösen?`)) return;
 		listError = '';
 		try {
-			const res = await fetch('/api/disconnectPreplanExam', {
+			const res = await fetch('/api/preplan/disconnectPreplanExam', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: e.id })
@@ -472,7 +472,7 @@
 		conNotSame = want ? [...conNotSame, otherID] : conNotSame.filter((x) => x !== otherID);
 		conError = '';
 		try {
-			const res = await fetch('/api/setPreplanExamNotSameSlot', {
+			const res = await fetch('/api/preplan/setPreplanExamNotSameSlot', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: conEditing.id, otherID, conflict: want })
@@ -508,7 +508,7 @@
 		conCanShare = want ? [...conCanShare, otherID] : conCanShare.filter((x) => x !== otherID);
 		conError = '';
 		try {
-			const res = await fetch('/api/setPreplanExamCanShareSlot', {
+			const res = await fetch('/api/preplan/setPreplanExamCanShareSlot', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: conEditing.id, otherID, canShare: want })
@@ -540,7 +540,7 @@
 				.filter(Boolean)
 		};
 		try {
-			const res = await fetch('/api/setPreplanExamConstraints', {
+			const res = await fetch('/api/preplan/setPreplanExamConstraints', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ id: conEditing.id, constraints })
@@ -571,7 +571,7 @@
 		validating = true;
 		listError = '';
 		try {
-			const res = await fetch('/api/validatePreplanAssignment', {
+			const res = await fetch('/api/preplan/validatePreplanAssignment', {
 				method: 'POST',
 				headers: jsonHeaders
 			});
@@ -600,7 +600,7 @@
 		generating = true;
 		listError = '';
 		try {
-			const res = await fetch('/api/generatePreplanAssignment', {
+			const res = await fetch('/api/preplan/generatePreplanAssignment', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ keepAssigned: false })

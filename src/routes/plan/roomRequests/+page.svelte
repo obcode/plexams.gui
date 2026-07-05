@@ -119,7 +119,8 @@
 		busyKeys = new Set(busyKeys).add(k);
 		errorMsg = null;
 		try {
-			const url = kind === 'approve' ? '/api/setRoomRequestApproved' : '/api/setRoomRequestActive';
+			const url =
+				kind === 'approve' ? '/api/room/setRoomRequestApproved' : '/api/room/setRoomRequestActive';
 			const body =
 				kind === 'approve'
 					? { room: req.room, day: req.day, slot: req.slot, approved: !req.approved }
@@ -214,7 +215,8 @@
 			from = `${info.date}T${mFromTime}:00${info.offset}`;
 			until = `${info.date}T${mUntilTime}:00${info.offset}`;
 		}
-		const url = modalMode === 'edit' ? '/api/updateRoomRequestTime' : '/api/addRoomRequest';
+		const url =
+			modalMode === 'edit' ? '/api/room/updateRoomRequestTime' : '/api/room/addRoomRequest';
 		try {
 			const res = await fetch(url, {
 				method: 'POST',
@@ -254,7 +256,7 @@
 		previewError = null;
 		applyMsg = null;
 		try {
-			const res = await fetch('/api/roomRequestsPreview');
+			const res = await fetch('/api/room/roomRequestsPreview');
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
 				previewError = result?.error ?? `Fehler (HTTP ${res.status})`;
@@ -283,7 +285,7 @@
 		applyError = null;
 		applyMsg = null;
 		try {
-			const res = await fetch('/api/applyRoomRequestsPreview', {
+			const res = await fetch('/api/room/applyRoomRequestsPreview', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ force })

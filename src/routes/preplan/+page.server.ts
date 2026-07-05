@@ -150,7 +150,7 @@ export const load: PageServerLoad = async () => {
 	);
 
 	// --- Anny-Buchungen je Slot (für „gebucht/ungenutzt" im Kalender) ---
-	// gleiche Berlin-Zeit-Logik wie /plan/annyBookings.
+	// gleiche Berlin-Zeit-Logik wie /rooms/annyBookings.
 	const SLOT_DURATION_MINUTES = 120;
 	const dateFmt = new Intl.DateTimeFormat('sv-SE', {
 		timeZone: 'Europe/Berlin',

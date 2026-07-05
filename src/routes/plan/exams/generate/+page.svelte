@@ -98,7 +98,7 @@
 			}
 		};
 		try {
-			const res = await fetch('/api/setSemesterConfigInput', {
+			const res = await fetch('/api/semester/setSemesterConfigInput', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input })
@@ -390,7 +390,7 @@
 		resetInfo = '';
 		resetError = '';
 		try {
-			const res = await fetch('/api/resetExamSchedule', { method: 'POST' });
+			const res = await fetch('/api/slot/resetExamSchedule', { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				resetError = d?.error || `Fehler (HTTP ${res.status})`;

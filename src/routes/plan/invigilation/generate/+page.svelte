@@ -221,7 +221,7 @@
 		const input = {};
 		for (const f of ALL_PARAMS) input[f.key] = Number(cfgForm[f.key]) || 0;
 		try {
-			const res = await fetch('/api/setGenerationConfig', {
+			const res = await fetch('/api/semester/setGenerationConfig', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input })

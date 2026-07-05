@@ -81,7 +81,7 @@
 		}
 		saving = true;
 		errorMsg = null;
-		const url = mode === 'edit' ? '/api/updateNTA' : '/api/addNTA';
+		const url = mode === 'edit' ? '/api/nta/updateNTA' : '/api/nta/addNTA';
 		const input = {
 			...form,
 			deltaDurationPercent: Number(form.deltaDurationPercent),

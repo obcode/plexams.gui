@@ -14,7 +14,7 @@
 	async function loadWaivers() {
 		loadErr = '';
 		try {
-			const res = await fetch('/api/ntaRoomAloneWaivers');
+			const res = await fetch('/api/nta/ntaRoomAloneWaivers');
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
 			waivers = d.ntaRoomAloneWaivers ?? [];
@@ -28,7 +28,7 @@
 	// Die Karte stößt nach Erfolg selbst den Re-Run an (Fehler → Warnung).
 	/** @param {string} mtknr @param {number} ancode @param {string} reason */
 	async function acceptWaiver(mtknr, ancode, reason) {
-		const res = await fetch('/api/addNtaRoomAloneWaiver', {
+		const res = await fetch('/api/nta/addNtaRoomAloneWaiver', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ mtknr, ancode, reason })
@@ -45,7 +45,7 @@
 		removeBusy = key;
 		loadErr = '';
 		try {
-			const res = await fetch('/api/removeNtaRoomAloneWaiver', {
+			const res = await fetch('/api/nta/removeNtaRoomAloneWaiver', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ mtknr: w.mtknr, ancode: w.ancode })

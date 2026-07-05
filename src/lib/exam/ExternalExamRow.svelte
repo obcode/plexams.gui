@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Eine Prüfungszeile mit Inline-Termineingabe (Datum + Zeit, kein Popup).
-	// Setzt die externe Zeit über /api/setExternalExamTime(ancode) und meldet
+	// Setzt die externe Zeit über /api/exam/setExternalExamTime(ancode) und meldet
 	// Erfolg per onsaved-Callback nach oben (dort invalidateAll).
 	import WriteButton from '$lib/WriteButton.svelte';
 
@@ -70,7 +70,7 @@
 		saving = true;
 		error = '';
 		try {
-			const res = await fetch('/api/setExternalExamTime', {
+			const res = await fetch('/api/exam/setExternalExamTime', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: exam.ancode, date: toServerDate(date), time })

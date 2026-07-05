@@ -139,7 +139,7 @@
 		importResult = null;
 		try {
 			const csv = await file.text();
-			const res = await fetch('/api/importMucDaiExams', {
+			const res = await fetch('/api/exam/importMucDaiExams', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ csv })
@@ -189,7 +189,7 @@
 		timeSaving = true;
 		timeError = '';
 		try {
-			const res = await fetch('/api/setExternalExamTime', {
+			const res = await fetch('/api/exam/setExternalExamTime', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: timeFor.ancode, date: toServerDate(tDate), time: tTime })
@@ -233,7 +233,7 @@
 		candLoading = true;
 		try {
 			const m = g.members[0];
-			const res = await fetch('/api/mucDaiZpaCandidates', {
+			const res = await fetch('/api/exam/mucDaiZpaCandidates', {
 				method: 'POST',
 				headers: jsonHeaders,
 				body: JSON.stringify({ program: m.program, primussAncode: m.primussAncode })
@@ -257,7 +257,7 @@
 		linkError = '';
 		try {
 			for (const mem of linkFor.members) {
-				const res = await fetch('/api/setMucDaiZpaLink', {
+				const res = await fetch('/api/exam/setMucDaiZpaLink', {
 					method: 'POST',
 					headers: jsonHeaders,
 					body: JSON.stringify({
@@ -287,7 +287,7 @@
 		linkError = '';
 		try {
 			for (const mem of linkFor.members) {
-				const res = await fetch('/api/removeMucDaiLink', {
+				const res = await fetch('/api/exam/removeMucDaiLink', {
 					method: 'POST',
 					headers: jsonHeaders,
 					body: JSON.stringify({ program: mem.program, primussAncode: mem.primussAncode })

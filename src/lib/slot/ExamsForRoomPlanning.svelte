@@ -31,7 +31,7 @@
 	let examsInSlot = $state<any[]>([]);
 
 	async function fetchExamsInSlot() {
-		const response = await fetch('/api/examsInSlot', {
+		const response = await fetch('/api/slot/examsInSlot', {
 			method: 'POST',
 			body: JSON.stringify({ day, time }),
 			headers: {

@@ -46,7 +46,7 @@ There are **two GraphQL access patterns**, both using the `graphql-request` libr
 
 1. **SSR loads** — `src/routes/**/+page.server.js` export a `load()` that calls `request(env.PLEXAMS_SERVER, gql\`...\`)` and returns data to the page. Use this for initial page render.
 
-2. **Client-side proxy endpoints** — `src/routes/api/**/+server.js` expose `GET`/`POST` handlers that forward a query or mutation to the backend (`import { env } from '$env/dynamic/private'`). Svelte components `fetch('/api/...')` these for interactivity (e.g. assigning an exam to a slot, planning a room). **Mutations go through these `/api` endpoints**, never directly from the browser. When adding interactivity, add an `/api/<name>/+server.js` that wraps the GraphQL call and `fetch` it from the component.
+2. **Client-side proxy endpoints** — `src/routes/api/**/+server.js` expose `GET`/`POST` handlers that forward a query or mutation to the backend (`import { env } from '$env/dynamic/private'`). Svelte components `fetch('/api/...')` these for interactivity (e.g. assigning an exam to a slot, planning a room). **Mutations go through these `/api` endpoints**, never directly from the browser. Endpoints are **grouped into domain subfolders** that mirror `src/lib/` (`api/exam/`, `api/room/`, `api/nta/`, `api/slot/`, `api/semester/`, …) — see [docs/ROUTES.md](docs/ROUTES.md) for the full catalog. When adding interactivity, add `api/<domain>/<name>/+server.js` (never flat under `api/`) and `fetch('/api/<domain>/<name>')` from the component.
 
 GraphQL queries are written inline as `gql\`...\``template strings in each`+page.server.js`/`+server.js`— there are no shared`.graphql` document files. The same large exam selection set is duplicated across many files; when changing a query's fields, search for the other copies.
 
@@ -69,6 +69,8 @@ Route folders mirror the planning workflow. Key domain terms:
 - **Constraints** — per-exam scheduling rules (fixed day/time, excluded days, same-slot, online, room requirements).
 
 `src/lib/` is grouped by these domains (`exam/`, `slot/`, `nta/`, `invigilator/`, `examsInPlan/`, `zpa/`). `Nav.svelte` is the authoritative index of available pages and the workflow order.
+
+**The NavBar groups by workflow phase; route/lib/api folders group by domain** — these two axes differ on purpose. [docs/ROUTES.md](docs/ROUTES.md) is the index that maps each NavBar entry → page route → `lib` domain → `api` domain, plus the `api/` domain-folder catalog. Consult it to jump from a menu item to its source.
 
 ## Conventions
 

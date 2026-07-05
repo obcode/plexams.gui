@@ -26,7 +26,7 @@
 		busy = new Set(busy).add(cond.key);
 		errorMsg = null;
 		try {
-			const res = await fetch('/api/setPlanningCondition', {
+			const res = await fetch('/api/semester/setPlanningCondition', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ key: cond.key, done: !cond.done })

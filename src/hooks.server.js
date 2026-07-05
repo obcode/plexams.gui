@@ -13,26 +13,26 @@ import { json } from '@sveltejs/kit';
 const READ_POST_PATHS = new Set([
 	// Ausnahmen: dürfen den Schutz selbst ändern, das Semester wechseln bzw. eine
 	// neue Workspace-DB anlegen — auch wenn die aktuelle DB read-only ist.
-	'/api/setSemester',
-	'/api/setSemesterReadOnly',
-	'/api/createWorkspace',
+	'/api/semester/setSemester',
+	'/api/semester/setSemesterReadOnly',
+	'/api/semester/createWorkspace',
 	// reine Lese-Abfragen:
-	'/api/conflictingAncodes',
+	'/api/exam/conflictingAncodes',
 	'/api/plan/roomsWithFreeSeatsForSlot',
-	'/api/awkwardSlots',
+	'/api/slot/awkwardSlots',
 	'/api/plan/roomNamesInSlot',
-	'/api/allowedSlots',
-	'/api/validatePreplanAssignment',
-	'/api/students',
+	'/api/slot/allowedSlots',
+	'/api/preplan/validatePreplanAssignment',
+	'/api/primuss/students',
 	'/api/plan/slotWithNTAs',
-	'/api/preExamsInSlot',
-	'/api/examsInSlot',
+	'/api/slot/preExamsInSlot',
+	'/api/slot/examsInSlot',
 	'/api/plan/roomsForSlot',
 	'/api/plan/roomsWithInvigilationsForSlot',
 	'/api/plan/invigilatorsForDay',
 	'/api/plan/plannedRoomForStudent',
 	'/api/plan/examsInSlot',
-	'/api/preplanExamAncodeSuggestions'
+	'/api/preplan/preplanExamAncodeSuggestions'
 ]);
 
 /** @type {{ value: boolean; expires: number }} */

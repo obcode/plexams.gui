@@ -17,7 +17,7 @@ export async function checkStudentRegs() {
 	if (!browser || inflight) return;
 	inflight = true;
 	try {
-		const res = await fetch('/api/studentRegsState');
+		const res = await fetch('/api/primuss/studentRegsState');
 		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
 		if (d?.studentRegsState) studentRegsState.set(d.studentRegsState);
@@ -37,7 +37,7 @@ export async function regenerateStudentRegs() {
 	if (!browser) return { studentCount: 0, error: null };
 	regeneratingStudents.set(true);
 	try {
-		const res = await fetch('/api/generateStudentRegs', { method: 'POST' });
+		const res = await fetch('/api/primuss/generateStudentRegs', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
 			return { studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };

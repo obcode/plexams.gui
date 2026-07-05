@@ -18,7 +18,7 @@
 		// reine Ziffern → Matrikelnummer, sonst Namens-Regex
 		const body = /^\d+$/.test(term) ? { mtknr: term } : { regex: term };
 		try {
-			const res = await fetch('/api/students', {
+			const res = await fetch('/api/primuss/students', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify(body)

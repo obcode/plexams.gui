@@ -27,7 +27,7 @@
 		planerError = '';
 		planerSavedAt = '';
 		try {
-			const res = await fetch('/api/setPlaner', {
+			const res = await fetch('/api/semester/setPlaner', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ name: planerName.trim(), email: planerEmail.trim() })
@@ -52,7 +52,7 @@
 		warnings = [];
 		savedAt = '';
 		try {
-			const res = await fetch('/api/setSemesterConfigInput', {
+			const res = await fetch('/api/semester/setSemesterConfigInput', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ input: formComp?.getInput() })
