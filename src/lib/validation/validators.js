@@ -5,7 +5,12 @@
 
 /**
  * @typedef {{ name: string, type: string, value: any }} ArgSpec
- * @typedef {{ key: string, title: string, description: string, argSpec?: ArgSpec[] }} ValidatorDef
+ * @typedef {{ endpoint: string, field: string }} QuerySpec
+ *   Nicht-streamender Validator: statt einer LogLine-Subscription wird eine
+ *   GraphQL-Query über den /api-Proxy `endpoint` (POST) abgefragt und das Feld
+ *   `field` der Antwort (eine graduierte `{ ok, findings, messages }`-Struktur)
+ *   in einen ValidationReport übersetzt.
+ * @typedef {{ key: string, title: string, description: string, argSpec?: ArgSpec[], query?: QuerySpec }} ValidatorDef
  */
 
 /** @type {ValidatorDef[]} */
@@ -72,14 +77,6 @@ export const roomValidators = [
 		key: 'validateRoomsBlocked',
 		title: 'Blockierte Räume',
 		description: 'gesperrter Raum noch verplant → neu generieren'
-	},
-	{
-		// Prüft die manuellen Raum-Vorbelegungen (rooms_pre_planned, echte
-		// Prüfungen) — gehört zur Raumplanung (Phase 2), NICHT zur EXaHM/SEB-
-		// Vorplanung (die prüft der Solver via validatePreplanAssignment).
-		key: 'validatePrePlannedExahmRooms',
-		title: 'Vorbelegte Räume',
-		description: 'manuelle EXaHM-Raum-Vorbelegungen gültig'
 	}
 ];
 
@@ -101,14 +98,30 @@ export const schedulingValidators = [
 	}
 ];
 
-// Grundlegende, phasenübergreifende Konsistenzprüfungen (Daten/DB), die nicht zu
-// einer der Planungsphasen (Termine/Räume/Aufsichten) gehören.
+// SEB/EXaHM-Vorplanung (Phase -1, ganz am Anfang, vor der Raumplanung). Prüft
+// nur die Vorplanungs-Prüfungen (preplan_exams), ohne ZPA-Exams. Kein Streaming:
+// die Query validatePreplanAssignment liefert direkt graduierte findings.
 /** @type {ValidatorDef[]} */
-export const basicsValidators = [
+export const preplanValidators = [
+	{
+		key: 'validatePreplanAssignment',
+		title: 'Zuordnung',
+		description: 'SEB/EXaHM-Vorplanung: Preplan-Prüfungen in Slots/Räume',
+		query: {
+			endpoint: '/api/preplan/validatePreplanAssignment',
+			field: 'validatePreplanAssignment'
+		}
+	}
+];
+
+// Primuss-Anmeldungen: Studierende mit Anmeldungen in mehreren Studiengängen
+// (rein informativ). Eigener Validierungspunkt.
+/** @type {ValidatorDef[]} */
+export const primussValidators = [
 	{
 		key: 'validateStudentRegs',
-		title: 'Anmeldungen (Primuss)',
-		description: 'importierte Anmeldungen konsistent'
+		title: 'Anmeldungen',
+		description: 'Studierende mit Regs in mehreren Programmen (Info)'
 	}
 ];
 
@@ -147,8 +160,9 @@ export const dbValidators = [
 // und den Status-Indikator in der Nav. Weitere Gruppen hier ergänzen.
 /** @type {ValidatorGroup[]} */
 export const validationGroups = [
-	{ id: 'basics', title: 'Grundlagen', validators: basicsValidators },
 	{ id: 'db', title: 'Datenbank-Integrität', validators: dbValidators },
+	{ id: 'preplan', title: 'SEB/EXaHM-Vorplanung', validators: preplanValidators },
+	{ id: 'primuss', title: 'Primuss', validators: primussValidators },
 	{ id: 'scheduling', title: 'Terminplanung', validators: schedulingValidators },
 	{ id: 'rooms', title: 'Räume', validators: roomValidators },
 	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }

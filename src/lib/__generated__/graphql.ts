@@ -2909,7 +2909,6 @@ export type Subscription = {
   validateInvigilationsTimeDistance: LogLine;
   validateInvigilatorRequirements: LogLine;
   validateInvigilatorSlots: LogLine;
-  validatePrePlannedExahmRooms: LogLine;
   validateRoomsBlocked: LogLine;
   validateRoomsEnoughSeats: LogLine;
   validateRoomsNeedRequest: LogLine;

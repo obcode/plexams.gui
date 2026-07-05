@@ -73,6 +73,68 @@
 		if (!wsClient) wsClient = await getWsClient();
 	}
 
+	// Graduierte Query-Antwort (PreplanValidation o. ä. mit { ok, findings,
+	// messages }) → ValidationReport-Form, wie sie die Karte/Ampel erwartet.
+	// ok = keine Errors (Warnings/Infos lassen es NICHT fehlschlagen). findings
+	// fällt auf flache messages (als INFO) zurück, falls das Backend keine
+	// graduierten liefert.
+	/** @param {any} raw */
+	function toValidationReport(raw) {
+		const src = raw?.findings?.length
+			? raw.findings
+			: (raw?.messages ?? []).map((/** @type {string} */ m) => ({ level: 'INFO', message: m }));
+		const findings = src.map((/** @type {any} */ f) => ({ level: f.level, message: f.message }));
+		const errorCount = findings.filter((/** @type {any} */ f) => f.level === 'ERROR').length;
+		const warningCount = findings.filter((/** @type {any} */ f) => f.level === 'WARNING').length;
+		const infoCount = findings.filter((/** @type {any} */ f) => f.level === 'INFO').length;
+		return {
+			name: '',
+			ok: errorCount === 0,
+			errorCount,
+			warningCount,
+			infoCount,
+			findings,
+			skipped: false
+		};
+	}
+
+	// Nicht-streamender Validator: Query über den /api-Proxy abfragen (POST) und
+	// das Ergebnis in einen ValidationReport übersetzen — kein WS/LogLine.
+	/**
+	 * @param {number} i
+	 * @param {import('$lib/validation/validators').QuerySpec} query
+	 */
+	async function runQueryValidator(i, query) {
+		started = true;
+		const v = runs[i];
+		if (subs[i]) {
+			subs[i]?.();
+			subs[i] = null;
+		}
+		v.status = 'running';
+		v.lines = [];
+		v.current = null;
+		v.report = null;
+		v.errorMsg = null;
+		try {
+			const res = await fetch(query.endpoint, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' }
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok || data?.error) {
+				v.errorMsg = data?.error || `Fehler (HTTP ${res.status})`;
+				v.status = 'error';
+				return;
+			}
+			v.report = toValidationReport(data[query.field]);
+			v.status = 'done';
+		} catch (e) {
+			v.errorMsg = e instanceof Error ? e.message : String(e);
+			v.status = 'error';
+		}
+	}
+
 	// baut Subscription-Query + Variablen aus dem (optionalen) argSpec eines
 	// Validators; per-Aufruf-Overrides haben Vorrang vor argOverrides, dann
 	// vor den argSpec-Defaultwerten.
@@ -110,6 +172,12 @@
 	 * @param {Record<string, any>} [callVars]
 	 */
 	async function runValidator(i, callVars) {
+		const def = validators[i];
+		if (def.query) {
+			await runQueryValidator(i, def.query);
+			return;
+		}
+
 		try {
 			await ensureClient();
 		} catch (e) {

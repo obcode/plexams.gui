@@ -157,6 +157,35 @@ function runGroupCheck(client, group) {
 	});
 
 	for (const v of group.validators) {
+		const finish = () => {
+			remaining = Math.max(0, remaining - 1);
+			flush();
+		};
+
+		// Nicht-streamender Validator: Query über den /api-Proxy (POST) statt WS.
+		if (v.query) {
+			const q = v.query;
+			fetch(q.endpoint, { method: 'POST', headers: { 'content-type': 'application/json' } })
+				.then((r) => (r.ok ? r.json() : null))
+				.then((data) => {
+					const raw = data && data[q.field];
+					if (!raw) return;
+					/** @type {any[]} */
+					const findings = raw.findings?.length
+						? raw.findings
+						: (raw.messages ?? []).map(() => ({ level: 'INFO' }));
+					const errorCount = findings.filter((f) => f.level === 'ERROR').length;
+					reports[v.key] = {
+						ok: errorCount === 0,
+						errorCount,
+						warningCount: findings.filter((f) => f.level === 'WARNING').length
+					};
+				})
+				.catch(() => {})
+				.finally(finish);
+			continue;
+		}
+
 		const spec = v.argSpec ?? [];
 		const decl = spec.length ? `(${spec.map((a) => `$${a.name}: ${a.type}`).join(', ')})` : '';
 		const callArgs = spec.length ? `(${spec.map((a) => `${a.name}: $${a.name}`).join(', ')})` : '';
@@ -164,10 +193,6 @@ function runGroupCheck(client, group) {
 		const variables = {};
 		for (const a of spec) variables[a.name] = a.value;
 		const query = `subscription ${decl} { ${v.key}${callArgs} { level validation { ok errorCount warningCount skipped } } }`;
-		const finish = () => {
-			remaining = Math.max(0, remaining - 1);
-			flush();
-		};
 		client.subscribe(
 			{ query, variables },
 			{
