@@ -68,7 +68,7 @@ Route folders mirror the planning workflow. Key domain terms:
 - **Invigilation / Aufsicht** — assigning supervisors to exam rooms per day/slot.
 - **Constraints** — per-exam scheduling rules (fixed day/time, excluded days, same-slot, online, room requirements).
 
-`src/lib/` is grouped by these domains (`exam/`, `slot/`, `nta/`, `invigilator/`, `examGroups/`, `examsInPlan/`, `zpa/`). `Nav.svelte` is the authoritative index of available pages and the workflow order.
+`src/lib/` is grouped by these domains (`exam/`, `slot/`, `nta/`, `invigilator/`, `examsInPlan/`, `zpa/`). `Nav.svelte` is the authoritative index of available pages and the workflow order.
 
 ## Conventions
 

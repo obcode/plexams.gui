@@ -20,10 +20,10 @@
 {#if show}
 	<div class="card lg:card-side {bg()} shadow-xl m-3 border border-black rounded-lg">
 		<div class="card-body">
-			<a href="/exam/examGroups/{exam.ancode}">
+			<div>
 				<div>{exam.ancode}. {exam.zpaExam.mainExamer}</div>
 				<div>{exam.zpaExam.module}</div>
-			</a>
+			</div>
 			{#if ntas && ntas.length > 0}
 				<div>
 					<ul>

@@ -41,27 +41,9 @@
 		let data = await response.json();
 		exams = data.examsInSlot;
 		countIt();
-		// calculateConflicts();
 	}
 
 	let exahm = exahmrooms;
-
-	let conflicts = 0;
-
-	// function calculateConflicts(groupCode, examGroups) {
-	// 	conflicts = 0;
-	// 	if (examGroups) {
-	// 		for (const group of examGroups) {
-	// 			for (const conflict of group.examGroupInfo.conflicts) {
-	// 				if (conflict.examGroupCode == groupCode) {
-	// 					conflicts += conflict.count;
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// $: calculateConflicts(selectedExam, exams);
 
 	let count = $state(0);
 
@@ -102,14 +84,6 @@
 		<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
 	{/if}
 	{#if exams.length > 0}
-		{#if conflicts > 0}
-			<div class="alert shadow-lg p-1 w-full">
-				<div>
-					<span class="text-xl">⚠️</span>
-					<span>{conflicts} Konflikte</span>
-				</div>
-			</div>
-		{/if}
 		<div class="flex justify-end">
 			{#if count > 0}
 				<div class="badge {badgeColor(count)} gap-2 m-1 rounded-lg border-black">{count}</div>
