@@ -15,7 +15,7 @@
 	 * @property {boolean} [collapsible] - Karten ein-/ausklappbar machen (Header bleibt sichtbar)
 	 * @property {boolean} [collapsed] - initial eingeklappt (nur relevant bei collapsible)
 	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - an die ValidatorCard durchgereicht: „eigener Raum"-Verzicht akzeptieren
-	 * @property {(stats: { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }) => void} [onstats] - Kennzahlen nach oben melden (für die Gesamtseite)
+	 * @property {(stats: { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean, skipped: boolean }) => void} [onstats] - Kennzahlen nach oben melden (für die Gesamtseite)
 	 */
 
 	/** @type {Props} */
@@ -85,7 +85,7 @@
 		const fields = `level
 			text
 			validation {
-				name ok errorCount warningCount infoCount
+				name ok errorCount warningCount infoCount skipped skipReason
 				findings { level message ancode relatedAncodes room day slot invigilatorID studentMtknr }
 			}`;
 		if (!spec.length) {
@@ -205,6 +205,10 @@
 	let totalInfos = $derived(runs.reduce((s, v) => s + (v.report?.infoCount ?? 0), 0));
 	let allDone = $derived(runs.every((v) => v.status === 'done' || v.status === 'error'));
 	let allOk = $derived(allDone && runs.every((v) => v.report && v.report.ok));
+	// Alle Validatoren übersprungen → Gruppe neutral statt grünem „✓ OK" (nur für
+	// die Badge-Anzeige; `stats.ok` bleibt bei allOk, damit die Ampel unverändert
+	// „kein Problem" meldet — übersprungen ist laut Backend ok=true).
+	let allSkipped = $derived(allDone && runs.length > 0 && runs.every((v) => v.report?.skipped));
 
 	// Kennzahlen nach oben melden (für die Gesamtseite) und in den globalen Store.
 	let stats = $derived({
@@ -212,7 +216,8 @@
 		warnings: totalWarnings,
 		running: anyRunning,
 		done: allDone,
-		ok: allOk
+		ok: allOk,
+		skipped: allSkipped
 	});
 	// Nur auf Wertänderungen von `stats` reagieren. Die Callbacks werden per
 	// untrack aufgerufen, damit weder eine bei jedem Parent-Render neu erzeugte
@@ -247,6 +252,8 @@
 					<span class="badge badge-info gap-2">
 						<span class="loading loading-spinner loading-xs"></span> läuft
 					</span>
+				{:else if allSkipped}
+					<span class="badge badge-ghost text-base-content/60">übersprungen</span>
 				{:else if allOk}
 					<span class="badge badge-success">✓ OK</span>
 				{:else if allDone}

@@ -29,6 +29,7 @@
 		if (level === 'ok') return 'bg-success';
 		if (level === 'warning') return 'bg-warning';
 		if (level === 'error') return 'bg-error';
+		if (level === 'skipped') return 'bg-base-content/40'; // übersprungen → grau
 		return 'bg-base-content/30';
 	}
 
@@ -36,6 +37,7 @@
 		if (level === 'ok') return 'border-success/40';
 		if (level === 'warning') return 'border-warning/40';
 		if (level === 'error') return 'border-error/40';
+		if (level === 'skipped') return 'border-base-content/30'; // übersprungen → grau
 		return 'border-base-300';
 	}
 
@@ -61,7 +63,12 @@
 		}
 	) {
 		const base = s.ts ? `zuletzt geprüft ${ago(s.ts)}` : 'noch nicht geprüft';
-		const counts = s.level === 'unknown' ? '' : ` — ${s.errors} Fehler, ${s.warnings} Warnungen`;
+		const counts =
+			s.level === 'unknown'
+				? ''
+				: s.level === 'skipped'
+					? ' — übersprungen'
+					: ` — ${s.errors} Fehler, ${s.warnings} Warnungen`;
 		const part = s.partial && s.ts ? ' (unvollständig)' : '';
 		return `${name}: ${base}${counts}${part} · klicken zum Prüfen`;
 	}

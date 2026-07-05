@@ -9,7 +9,7 @@ import { getWsClient } from '$lib/validation/wsClient';
 // damit der Nav-Indikator einen Reload übersteht (mit Stale-Anzeige).
 
 /**
- * @typedef {{ errors: number, warnings: number, running: boolean, done: boolean, ok: boolean, ts: number | null }} GroupStatus
+ * @typedef {{ errors: number, warnings: number, running: boolean, done: boolean, ok: boolean, skipped?: boolean, ts: number | null }} GroupStatus
  */
 
 const KEY = 'plexams.validationStatus';
@@ -44,7 +44,7 @@ if (browser) {
  * Status einer Gruppe setzen. Zeitstempel wird nur beim Abschluss (done)
  * aktualisiert, damit "zuletzt geprüft" stimmt.
  * @param {string} id
- * @param {{ errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }} stats
+ * @param {{ errors: number, warnings: number, running: boolean, done: boolean, ok: boolean, skipped?: boolean }} stats
  */
 export function setGroupStats(id, stats) {
 	validationStore.update((s) => {
@@ -66,11 +66,14 @@ function summarize(raw, expected) {
 	const errors = doneEntries.reduce((a, e) => a + (e.errors ?? 0), 0);
 	const warnings = doneEntries.reduce((a, e) => a + (e.warnings ?? 0), 0);
 
-	/** @type {'unknown' | 'ok' | 'warning' | 'error'} */
+	/** @type {'unknown' | 'ok' | 'warning' | 'error' | 'skipped'} */
 	let level = 'unknown';
 	if (doneEntries.length > 0) {
 		if (errors > 0) level = 'error';
 		else if (warnings > 0) level = 'warning';
+		// nur „übersprungen", wenn alle fertigen Gruppen komplett übersprungen wurden
+		// (sonst überwiegt ein echtes ✓ der nicht-übersprungenen Gruppe).
+		else if (doneEntries.every((e) => e.skipped)) level = 'skipped';
 		else level = 'ok';
 	}
 
@@ -128,7 +131,7 @@ export async function runZpaCheck() {
  * @param {import('$lib/validation/validators').ValidatorGroup} group
  */
 function runGroupCheck(client, group) {
-	/** @type {Record<string, { ok: boolean, errorCount: number, warningCount: number }>} */
+	/** @type {Record<string, { ok: boolean, errorCount: number, warningCount: number, skipped?: boolean }>} */
 	const reports = {};
 	let remaining = group.validators.length;
 
@@ -139,11 +142,19 @@ function runGroupCheck(client, group) {
 			warnings: vals.reduce((a, r) => a + (r.warningCount ?? 0), 0),
 			running: remaining > 0,
 			done: remaining === 0,
-			ok: remaining === 0 && vals.length > 0 && vals.every((r) => r.ok)
+			ok: remaining === 0 && vals.length > 0 && vals.every((r) => r.ok),
+			skipped: remaining === 0 && vals.length > 0 && vals.every((r) => r.skipped)
 		});
 	};
 
-	setGroupStats(group.id, { errors: 0, warnings: 0, running: true, done: false, ok: false });
+	setGroupStats(group.id, {
+		errors: 0,
+		warnings: 0,
+		running: true,
+		done: false,
+		ok: false,
+		skipped: false
+	});
 
 	for (const v of group.validators) {
 		const spec = v.argSpec ?? [];
@@ -152,7 +163,7 @@ function runGroupCheck(client, group) {
 		/** @type {Record<string, any>} */
 		const variables = {};
 		for (const a of spec) variables[a.name] = a.value;
-		const query = `subscription ${decl} { ${v.key}${callArgs} { level validation { ok errorCount warningCount } } }`;
+		const query = `subscription ${decl} { ${v.key}${callArgs} { level validation { ok errorCount warningCount skipped } } }`;
 		const finish = () => {
 			remaining = Math.max(0, remaining - 1);
 			flush();

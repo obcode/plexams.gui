@@ -3186,6 +3186,14 @@ export type ValidationReport = {
   infoCount: Scalars['Int']['output'];
   name: Scalars['String']['output'];
   ok: Scalars['Boolean']['output'];
+  /** Human-readable reason why the validator was skipped (German), if skipped. */
+  skipReason?: Maybe<Scalars['String']['output']>;
+  /**
+   * True when the validator did not actually run (e.g. a precondition was not met).
+   * When skipped, ok=true / errorCount=0 / findings=[] and must not be shown as a
+   * passing check.
+   */
+  skipped: Scalars['Boolean']['output'];
   warningCount: Scalars['Int']['output'];
 };
 

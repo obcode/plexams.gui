@@ -87,9 +87,11 @@
 
 <div
 	class="flex flex-col gap-3 rounded-lg border bg-base-100 p-4 {validator.report
-		? validator.report.ok
-			? 'border-success/40'
-			: 'border-error/40'
+		? validator.report.skipped
+			? 'border-base-300'
+			: validator.report.ok
+				? 'border-success/40'
+				: 'border-error/40'
 		: validator.status === 'error'
 			? 'border-error/40'
 			: 'border-base-300'}"
@@ -109,6 +111,8 @@
 				</span>
 			{:else if validator.status === 'error'}
 				<span class="badge badge-error">Fehler</span>
+			{:else if validator.report?.skipped}
+				<span class="badge badge-ghost text-base-content/60">übersprungen</span>
 			{:else if validator.report}
 				{#if validator.report.ok}
 					<span class="badge badge-success">✓ OK</span>
@@ -229,6 +233,10 @@
 					</div>
 				</div>
 			{/each}
+		</div>
+	{:else if validator.report && validator.report.skipped}
+		<div class="text-sm text-base-content/60">
+			übersprungen{#if validator.report.skipReason}: {validator.report.skipReason}{/if}
 		</div>
 	{:else if validator.report && validator.report.ok}
 		<div class="text-sm text-success">Keine Beanstandungen.</div>
