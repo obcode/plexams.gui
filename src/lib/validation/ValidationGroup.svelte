@@ -1,5 +1,5 @@
 <script>
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 	import { setGroupStats } from '$lib/validation/store';
@@ -214,11 +214,18 @@
 		done: allDone,
 		ok: allOk
 	});
+	// Nur auf Wertänderungen von `stats` reagieren. Die Callbacks werden per
+	// untrack aufgerufen, damit weder eine bei jedem Parent-Render neu erzeugte
+	// `onstats`-Closure noch der Store-Schreibzugriff den Effect erneut auslöst —
+	// sonst entsteht mit der Gesamtseite /validate eine Endlosschleife
+	// (effect_update_depth_exceeded → Seite friert ein).
 	$effect(() => {
-		onstats?.(stats);
+		const s = stats;
+		untrack(() => onstats?.(s));
 	});
 	$effect(() => {
-		if (storeId && started) setGroupStats(storeId, stats);
+		const s = stats;
+		if (storeId && started) untrack(() => setGroupStats(storeId, s));
 	});
 </script>
 
