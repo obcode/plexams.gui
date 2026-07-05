@@ -67,7 +67,11 @@
 		allExamer = await response.json();
 	}
 
-	let slotsStatus = $state(/** @type {any} */ (new Map()));
+	// Reaktiver Status je Slot (Schlüssel „day,time"). Bewusst ein einfaches Objekt,
+	// KEINE Map: $state proxyt nur Objekte/Arrays tief — Map-Mutationen wären nicht
+	// reaktiv, und die grün/gelb/rot-Färbung würde erst nach einem Neuaufbau des
+	// Rasters (View-Wechsel) erscheinen.
+	let slotsStatus = $state(/** @type {Record<string, any>} */ ({}));
 
 	function initSlotsStatus(/** @type {any} */ status) {
 		for (let day of data.semesterConfig?.days ?? []) {
