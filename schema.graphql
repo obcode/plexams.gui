@@ -1861,6 +1861,19 @@ type PreplanValidation {
 	Human-readable findings (German).
 	"""
 	messages: [String!]!
+
+	"""
+	Structured findings, each classified by level (German messages).
+	"""
+	findings: [PreplanFinding!]!
+}
+
+"""
+PreplanFinding is a single structured finding of the pre-plan validation.
+"""
+type PreplanFinding {
+	level: ValidationLevel!
+	message: String!
 }
 
 type PrimussExam {

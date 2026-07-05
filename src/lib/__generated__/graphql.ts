@@ -1903,6 +1903,13 @@ export type PreplanExamInput = {
   programs: Array<Scalars['String']['input']>;
 };
 
+/** PreplanFinding is a single structured finding of the pre-plan validation. */
+export type PreplanFinding = {
+  __typename?: 'PreplanFinding';
+  level: ValidationLevel;
+  message: Scalars['String']['output'];
+};
+
 export type PreplanKindNeed = {
   __typename?: 'PreplanKindNeed';
   examCount: Scalars['Int']['output'];
@@ -1963,6 +1970,8 @@ export type PreplanSlotNeed = {
 export type PreplanValidation = {
   __typename?: 'PreplanValidation';
   assignedCount: Scalars['Int']['output'];
+  /** Structured findings, each classified by level (German messages). */
+  findings: Array<PreplanFinding>;
   /** Human-readable findings (German). */
   messages: Array<Scalars['String']['output']>;
   /** True when there are no findings (everything assigned, within capacity, no overlaps). */

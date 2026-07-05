@@ -560,11 +560,44 @@
 	}
 
 	// Zuordnung generieren & validieren
-	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[]}|null} */
+	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[], findings?:{level:string, message:string}[]}|null} */
 	let validation = $state(/** @type {any} */ (null));
 	let validationKind = $state('');
 	let validating = $state(false);
 	let generating = $state(false);
+
+	// Strukturierte Findings nach Level rendern (Fallback: flache messages als INFO).
+	/** @param {string} level */
+	const findingIcon = (level) => (level === 'ERROR' ? '⛔' : level === 'WARNING' ? '⚠️' : '•');
+	/** @param {string} level → Rahmen/Hintergrund je Level (Fehler rot, Warnung gelb, Info grau) */
+	const findingClass = (level) =>
+		level === 'ERROR'
+			? 'border-error/40 bg-error/5'
+			: level === 'WARNING'
+				? 'border-warning/40 bg-warning/5'
+				: 'border-base-300 bg-base-200/40 text-base-content/60';
+	// Findings der aktuellen Prüfung (Fallback: messages → INFO, solange das Backend
+	// beide Felder liefert).
+	let findings = $derived(
+		validation?.findings?.length
+			? validation.findings
+			: (validation?.messages ?? []).map((/** @type {string} */ m) => ({
+					level: 'INFO',
+					message: m
+				}))
+	);
+	// „keine Fehler" = keine ERROR-Findings (Warnungen führen NICHT zum Fehlschlag).
+	// Ohne strukturierte Findings fällt die Bewertung auf das flache ok zurück.
+	let validationHasError = $derived(
+		validation
+			? validation.findings?.length
+				? findings.some((/** @type {any} */ f) => f.level === 'ERROR')
+				: !validation.ok
+			: false
+	);
+	let validationWarnings = $derived(
+		findings.filter((/** @type {any} */ f) => f.level === 'WARNING').length
+	);
 
 	async function validate() {
 		if (validating || generating) return;
@@ -816,10 +849,24 @@
 				? `Zuordnung generiert: ${validation.assignedCount} Prüfung(en) platziert`
 				: `Validierung: ${validation.assignedCount} zugeordnet`}
 		<div
-			class="alert {validation.ok ? 'alert-success' : 'alert-warning'} flex-col items-start py-3"
+			class="flex flex-col items-start gap-2 rounded-lg border p-3 {validationHasError
+				? 'border-error/40 bg-error/5'
+				: validationWarnings
+					? 'border-warning/40 bg-warning/5'
+					: 'border-success/40 bg-success/5'}"
 		>
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">{head}</span>
+				{#if validationHasError}
+					<span class="badge badge-error badge-sm">Fehler</span>
+				{:else}
+					<span class="badge badge-success badge-sm">keine Fehler</span>
+				{/if}
+				{#if validationWarnings}
+					<span class="badge badge-warning badge-sm tabular-nums">
+						{validationWarnings} Warnung{validationWarnings === 1 ? '' : 'en'}
+					</span>
+				{/if}
 				{#if validation.unassignedIDs.length}
 					<span class="badge badge-warning badge-sm">
 						{validation.unassignedIDs.length} ohne Slot
@@ -830,14 +877,17 @@
 				<div class="flex-1"></div>
 				<button class="btn btn-ghost btn-xs" onclick={() => (validation = null)}>schließen</button>
 			</div>
-			{#if validation.messages.length}
-				<ul class="mt-1 list-inside list-disc text-sm">
-					{#each validation.messages as m}
-						<li>{m}</li>
+			{#if findings.length}
+				<ul class="flex w-full flex-col gap-1 text-sm">
+					{#each findings as f}
+						<li class="flex items-start gap-2 rounded border px-2 py-1 {findingClass(f.level)}">
+							<span class="mt-0.5">{findingIcon(f.level)}</span>
+							<span class="min-w-0 break-words">{f.message}</span>
+						</li>
 					{/each}
 				</ul>
 			{:else if validation.unassignedIDs.length}
-				<div class="mt-1 text-sm">
+				<div class="text-sm">
 					Manche Prüfungen ohne Slot (kleine SEB ggf. gewollt; Engpässe siehe Hinweise).
 				</div>
 			{/if}

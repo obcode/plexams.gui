@@ -10,6 +10,10 @@ export const POST: RequestHandler = async () => {
 				assignedCount
 				unassignedIDs
 				messages
+				findings {
+					level
+					message
+				}
 			}
 		}
 	`;
