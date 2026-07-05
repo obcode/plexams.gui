@@ -309,7 +309,8 @@
 		if (x.e.planEntry?.locked) return 'border-l-base-content/40';
 		// Wiederholung: Farbe wie in der Slotansicht (border-l-warning + bg-warning/10)
 		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning bg-warning/10';
-		return 'border-l-primary';
+		// Normalfall: gleiche Farbe wie in der Slotansicht (border-l-success/60)
+		return 'border-l-success/60';
 	};
 	// FK-Formatierung zentral in $lib/exam/fk (unit-getestet).
 	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
@@ -415,24 +416,60 @@
 			<label class="flex cursor-pointer items-center gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={onlyPlannedByMe} /> nur eigene
 			</label>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={onlyConflicts} /> nur Konflikte
+			<label
+				class="flex items-center gap-2 {view === 'zeit'
+					? 'cursor-not-allowed opacity-40'
+					: 'cursor-pointer'}"
+				title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
+			>
+				<input
+					type="checkbox"
+					class="toggle toggle-sm"
+					bind:checked={onlyConflicts}
+					disabled={view === 'zeit'}
+				/> nur Konflikte
 			</label>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={details} /> Details
+			<label
+				class="flex items-center gap-2 {view === 'zeit'
+					? 'cursor-not-allowed opacity-40'
+					: 'cursor-pointer'}"
+				title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
+			>
+				<input
+					type="checkbox"
+					class="toggle toggle-sm"
+					bind:checked={details}
+					disabled={view === 'zeit'}
+				/> Details
 			</label>
 			<label class="flex cursor-pointer items-center gap-2">
 				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyExahm} /> EXaHM/SEB
 			</label>
-			<label class="flex cursor-pointer items-center gap-2">
-				<input type="checkbox" class="toggle toggle-sm" bind:checked={showOnlyEXaHMRooms} /> EXaHM-Räume
+			<label
+				class="flex items-center gap-2 {view === 'zeit'
+					? 'cursor-not-allowed opacity-40'
+					: 'cursor-pointer'}"
+				title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
+			>
+				<input
+					type="checkbox"
+					class="toggle toggle-sm"
+					bind:checked={showOnlyEXaHMRooms}
+					disabled={view === 'zeit'}
+				/> EXaHM-Räume
 			</label>
-			<label class="flex cursor-pointer items-center gap-2">
+			<label
+				class="flex items-center gap-2 {view === 'zeit'
+					? 'cursor-not-allowed opacity-40'
+					: 'cursor-pointer'}"
+				title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
+			>
 				<input
 					type="checkbox"
 					class="toggle toggle-sm"
 					bind:checked={showMucdaiSlots}
 					onchange={handleMucdaiSlots}
+					disabled={view === 'zeit'}
 				/> MUC.DAI-Slots
 			</label>
 			<div class="flex-1"></div>
