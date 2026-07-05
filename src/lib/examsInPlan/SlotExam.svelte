@@ -156,16 +156,19 @@
 				content="{exam.zpaExam.module} ({exam.zpaExam.mainExamer}) &sum; {exam.studentRegsCount}"
 			>
 				<div class="flex items-center gap-1 whitespace-nowrap">
-					{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
-					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
-							>🔒</span
-						>{/if}
-					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
-							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
-						>{/if}
 					<span class="font-mono font-semibold">{ancodeToShow}</span>
 					<span class="text-xs tabular-nums text-base-content/50">&sum;{exam.studentRegsCount}</span
 					>
+					<!-- Status-Icons rechts, damit die Ancodes links bündig ausgerichtet sind -->
+					<span class="ml-auto flex items-center gap-0.5">
+						{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
+								>🔒</span
+							>{/if}
+						{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
+								title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
+							>{/if}
+						{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
+					</span>
 				</div>
 			</Tooltip>
 		{:else}
@@ -175,15 +178,6 @@
 				</div>
 			{/if}
 			<div class="flex items-start gap-2">
-				<div class="flex shrink-0 gap-0.5">
-					{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
-							>🔒</span
-						>{/if}
-					{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
-							title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
-						>{/if}
-					{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
-				</div>
 				<div class="min-w-0 grow">
 					<div class="font-medium">
 						<span class="font-mono">{ancodeToShow}</span> · {exam.zpaExam.module}
@@ -191,6 +185,18 @@
 					<div class="text-xs text-base-content/60">{exam.zpaExam.mainExamer}</div>
 				</div>
 				<div class="flex shrink-0 flex-col items-end gap-1">
+					<!-- Status-Icons rechts, damit Ancode + Modul links bündig stehen -->
+					{#if exam.planEntry?.locked || exam.planEntry?.phaseFixed || exam.zpaExam.isRepeaterExam}
+						<div class="flex items-center gap-0.5">
+							{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
+									>🔒</span
+								>{/if}
+							{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
+									title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
+								>{/if}
+							{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
+						</div>
+					{/if}
 					{#if exam.primussExams.length > 0}
 						<span class="badge badge-outline badge-sm tabular-nums" title="Anmeldungen">
 							&sum; {exam.studentRegsCount}

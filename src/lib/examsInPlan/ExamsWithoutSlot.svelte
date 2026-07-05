@@ -33,16 +33,15 @@
 </script>
 
 {#if examsPlannedByMe.length > 0}
-	<div class="text-center m-2">
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="text-4xl text-center mt-8 uppercase"
-			onclick={() => (showExamsPlannedByMe = !showExamsPlannedByMe)}
-		>
-			{examsPlannedByMe.length} Prüfungen noch einzuplanen
-		</div>
-	</div>
+	<button
+		type="button"
+		class="mx-1 mt-6 mb-2 flex items-center gap-2 text-left"
+		onclick={() => (showExamsPlannedByMe = !showExamsPlannedByMe)}
+	>
+		<span class="text-base-content/50">{showExamsPlannedByMe ? '▾' : '▸'}</span>
+		<h2 class="text-xl font-semibold">Noch einzuplanen</h2>
+		<span class="badge badge-warning badge-sm tabular-nums">{examsPlannedByMe.length}</span>
+	</button>
 	{#if showExamsPlannedByMe}
 		<div class="flex flex-wrap gap-4">
 			{#each examsPlannedByMe as exam}
@@ -70,16 +69,13 @@
 		</div>
 	{/if}
 {:else}
-	<div class="text-center m-2">
-		<div class="text-4xl text-center mt-8 uppercase">💪 Alles geplant</div>
-	</div>
+	<h2 class="mx-1 mt-6 mb-2 text-xl font-semibold">💪 Alles geplant</h2>
 {/if}
 
 {#if !onlyPlannedByMe && examsNotPlannedByMe.length > 0}
-	<div class="text-center m-2">
-		<div class="text-4xl text-center mt-8 uppercase">
-			{examsNotPlannedByMe.length} Prüfungen nicht durch mich einzuplanen
-		</div>
+	<div class="mx-1 mt-6 mb-2 flex items-center gap-2">
+		<h2 class="text-xl font-semibold">Nicht durch mich einzuplanen</h2>
+		<span class="badge badge-ghost badge-sm tabular-nums">{examsNotPlannedByMe.length}</span>
 	</div>
 
 	<div class="flex flex-wrap gap-4">

@@ -307,7 +307,8 @@
 		if (x.e.constraints?.notPlannedByMe) return 'border-l-base-content/30 border-dashed opacity-70';
 		if (x.e.planEntry?.phaseFixed) return 'border-l-info';
 		if (x.e.planEntry?.locked) return 'border-l-base-content/40';
-		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning';
+		// Wiederholung: Farbe wie in der Slotansicht (border-l-warning + bg-warning/10)
+		if (x.e.zpaExam?.isRepeaterExam) return 'border-l-warning bg-warning/10';
 		return 'border-l-primary';
 	};
 	// FK-Formatierung zentral in $lib/exam/fk (unit-getestet).
@@ -597,14 +598,17 @@
 														<div
 															class="flex items-center gap-1 text-[11px] font-semibold leading-tight"
 														>
-															{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
-																>{/if}
-															{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
-																	>🏗️</span
-																>{/if}
-															{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span
-																>{/if}
 															<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
+															<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
+															<span class="ml-auto flex items-center gap-0.5">
+																{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
+																	>{/if}
+																{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
+																		>🏗️</span
+																	>{/if}
+																{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span
+																	>{/if}
+															</span>
 														</div>
 														<div class="truncate text-[10px] leading-tight">
 															{x.e.zpaExam.module}
@@ -665,8 +669,9 @@
 							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-base-content/30 bg-base-200 p-2 text-xs opacity-90"
 						>
 							<div class="flex items-center gap-1 font-semibold">
-								{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
 								<span class="font-mono">{otherFkAncode(e)}</span>
+								{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span
+									>{/if}
 							</div>
 							<div class="truncate">{e.zpaExam?.module}</div>
 							<div class="text-base-content/50">
