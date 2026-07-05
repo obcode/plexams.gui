@@ -41,6 +41,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 |                       | Einteilung                      | `plan/invigilation/generate/`    | `invigilator/`, `validation/` | `api/invigilator/`, `api/semester/` |
 |                       | Validierung                     | `plan/invigilation/validate/`    | `validation/`                 | —                                   |
 | **E-Mails**           | E-Mails versenden               | `email/`                         | `email/`                      | `api/email/`                        |
+|                       | E-Mail-Vorlagen                 | `email/templates/`               | `email/`                      | `api/email/`                        |
 |                       | Anhänge (Deckblätter, Bilder)   | `email/attachments/`             | `email/`                      | `api/email/`                        |
 |                       | Special Interests               | `email/specialInterests/`        | `email/`                      | `api/email/`                        |
 | **Semesterdaten**     | ZPA-Import & Veröffentlichung   | `zpa/publish/`                   | `zpa/`                        | `api/zpaexams/`                     |
@@ -82,7 +83,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                |
 | `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                  |
 | `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                 |
-| `api/email/`        |         4 | Anhänge (Liste/Löschen), Special Interests                                                                                 |
+| `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                              |
 | `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                              |
 | `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                             |
 | `api/log/`          |         1 | Mutations-Log                                                                                                              |

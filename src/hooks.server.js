@@ -17,6 +17,7 @@ const READ_POST_PATHS = new Set([
 	'/api/semester/setSemesterReadOnly',
 	'/api/semester/createWorkspace',
 	// reine Lese-Abfragen:
+	'/api/email/renderEmailTemplatePreview',
 	'/api/exam/conflictingAncodes',
 	'/api/plan/roomsWithFreeSeatsForSlot',
 	'/api/slot/awkwardSlots',
