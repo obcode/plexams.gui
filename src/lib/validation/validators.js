@@ -72,6 +72,14 @@ export const roomValidators = [
 		key: 'validateRoomsBlocked',
 		title: 'Blockierte Räume',
 		description: 'gesperrter Raum noch verplant → neu generieren'
+	},
+	{
+		// Prüft die manuellen Raum-Vorbelegungen (rooms_pre_planned, echte
+		// Prüfungen) — gehört zur Raumplanung (Phase 2), NICHT zur EXaHM/SEB-
+		// Vorplanung (die prüft der Solver via validatePreplanAssignment).
+		key: 'validatePrePlannedExahmRooms',
+		title: 'Vorbelegte Räume',
+		description: 'manuelle EXaHM-Raum-Vorbelegungen gültig'
 	}
 ];
 
@@ -101,11 +109,6 @@ export const basicsValidators = [
 		key: 'validateStudentRegs',
 		title: 'Anmeldungen (Primuss)',
 		description: 'importierte Anmeldungen konsistent'
-	},
-	{
-		key: 'validatePrePlannedExahmRooms',
-		title: 'EXaHM Vorplanung Räume',
-		description: 'vorgeplante EXaHM-Räume gültig'
 	}
 ];
 
