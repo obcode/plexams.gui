@@ -9,3 +9,4 @@
 - [Source structure](source-structure.md) — NavBar (workflow) vs src/ (domain); docs/ROUTES.md maps Nav→route→lib→api; api endpoints grouped by domain, new ones never flat
 - [Refactor roadmap](refactor-roadmap.md) — ongoing architecture refactor: what's done + open blocks (TS, runes, e2e); conventions (semilinear, extract-to-lib-and-test)
 - [Svelte runes migration](svelte-runes-migration.md) — plan to move legacy Svelte syntax → runes (within Svelte 5), combined with the TS migration
+- [Always commit and push](always-commit-push.md) — user wants every finished, verified change committed+pushed to main immediately, without asking
