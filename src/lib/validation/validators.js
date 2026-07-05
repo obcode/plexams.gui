@@ -103,14 +103,40 @@ export const basicsValidators = [
 		description: 'importierte Anmeldungen konsistent'
 	},
 	{
-		key: 'validateDB',
-		title: 'Datenbank-Konsistenz',
-		description: 'interne DB-Konsistenz'
-	},
-	{
 		key: 'validatePrePlannedExahmRooms',
 		title: 'EXaHM Vorplanung Räume',
 		description: 'vorgeplante EXaHM-Räume gültig'
+	}
+];
+
+// Interne DB-Konsistenz, aufgeteilt in fünf Teilprüfungen (ersetzt die frühere
+// einzelne validateDB-Subscription).
+/** @type {ValidatorDef[]} */
+export const dbValidators = [
+	{
+		key: 'validateDBPlanEntries',
+		title: 'Planeinträge',
+		description: 'Planeinträge konsistent'
+	},
+	{
+		key: 'validateDBConstraints',
+		title: 'Constraints',
+		description: 'Constraints konsistent'
+	},
+	{
+		key: 'validateDBRooms',
+		title: 'Räume',
+		description: 'Raumdaten konsistent'
+	},
+	{
+		key: 'validateDBNtas',
+		title: 'NTAs',
+		description: 'Nachteilsausgleiche konsistent'
+	},
+	{
+		key: 'validateDBReferences',
+		title: 'Referenzen',
+		description: 'Verweise zwischen Datensätzen konsistent'
 	}
 ];
 
@@ -119,6 +145,7 @@ export const basicsValidators = [
 /** @type {ValidatorGroup[]} */
 export const validationGroups = [
 	{ id: 'basics', title: 'Grundlagen', validators: basicsValidators },
+	{ id: 'db', title: 'Datenbank-Integrität', validators: dbValidators },
 	{ id: 'scheduling', title: 'Terminplanung', validators: schedulingValidators },
 	{ id: 'rooms', title: 'Räume', validators: roomValidators },
 	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }

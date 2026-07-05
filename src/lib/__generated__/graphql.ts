@@ -3,161 +3,157 @@ export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
-	[_ in K]?: never;
-};
-export type Incremental<T> =
-	| T
-	| { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-	ID: { input: string; output: string };
-	String: { input: string; output: string };
-	Boolean: { input: boolean; output: boolean };
-	Int: { input: number; output: number };
-	Float: { input: number; output: number };
-	Time: { input: any; output: any };
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
+  Time: { input: any; output: any; }
 };
 
 export type AdditionalExam = {
-	__typename?: 'AdditionalExam';
-	ancode: Scalars['Int']['output'];
-	/** date in dd.mm.yyyy. */
-	date: Scalars['String']['output'];
-	rooms: Array<AdditionalExamRoom>;
-	/** time in HH:MM. */
-	time: Scalars['String']['output'];
+  __typename?: 'AdditionalExam';
+  ancode: Scalars['Int']['output'];
+  /** date in dd.mm.yyyy. */
+  date: Scalars['String']['output'];
+  rooms: Array<AdditionalExamRoom>;
+  /** time in HH:MM. */
+  time: Scalars['String']['output'];
 };
 
 export type AdditionalExamInput = {
-	ancode: Scalars['Int']['input'];
-	date: Scalars['String']['input'];
-	rooms: Array<AdditionalExamRoomInput>;
-	time: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  date: Scalars['String']['input'];
+  rooms: Array<AdditionalExamRoomInput>;
+  time: Scalars['String']['input'];
 };
 
 export type AdditionalExamRoom = {
-	__typename?: 'AdditionalExamRoom';
-	duration: Scalars['Int']['output'];
-	invigilatorID: Scalars['Int']['output'];
-	isHandicap: Scalars['Boolean']['output'];
-	isReserve: Scalars['Boolean']['output'];
-	roomName: Scalars['String']['output'];
-	studentCount: Scalars['Int']['output'];
+  __typename?: 'AdditionalExamRoom';
+  duration: Scalars['Int']['output'];
+  invigilatorID: Scalars['Int']['output'];
+  isHandicap: Scalars['Boolean']['output'];
+  isReserve: Scalars['Boolean']['output'];
+  roomName: Scalars['String']['output'];
+  studentCount: Scalars['Int']['output'];
 };
 
 export type AdditionalExamRoomInput = {
-	duration: Scalars['Int']['input'];
-	invigilatorID: Scalars['Int']['input'];
-	isHandicap: Scalars['Boolean']['input'];
-	isReserve: Scalars['Boolean']['input'];
-	roomName: Scalars['String']['input'];
-	studentCount: Scalars['Int']['input'];
+  duration: Scalars['Int']['input'];
+  invigilatorID: Scalars['Int']['input'];
+  isHandicap: Scalars['Boolean']['input'];
+  isReserve: Scalars['Boolean']['input'];
+  roomName: Scalars['String']['input'];
+  studentCount: Scalars['Int']['input'];
 };
 
 export type AnCode = {
-	__typename?: 'AnCode';
-	ancode: Scalars['Int']['output'];
+  __typename?: 'AnCode';
+  ancode: Scalars['Int']['output'];
 };
 
 export type AnnyBooking = {
-	__typename?: 'AnnyBooking';
-	blockerEndDate: Scalars['Time']['output'];
-	blockerStartDate: Scalars['Time']['output'];
-	bookingGroupIdentifier?: Maybe<Scalars['String']['output']>;
-	canEdit: Scalars['Boolean']['output'];
-	cancelableUntil?: Maybe<Scalars['Time']['output']>;
-	canceledAt?: Maybe<Scalars['Time']['output']>;
-	chargedDuration: Scalars['Int']['output'];
-	createdAt: Scalars['Time']['output'];
-	description: Scalars['String']['output'];
-	endDate: Scalars['Time']['output'];
-	hasCustomDescription: Scalars['Boolean']['output'];
-	isBlocker: Scalars['Boolean']['output'];
-	isEditable: Scalars['Boolean']['output'];
-	manuallyCreated: Scalars['Boolean']['output'];
-	/** true when the booking's personalization name is one of ours (annyConfig.personalizationNames). */
-	mine: Scalars['Boolean']['output'];
-	note: Scalars['String']['output'];
-	number: Scalars['String']['output'];
-	personalizationName: Scalars['String']['output'];
-	room?: Maybe<Scalars['String']['output']>;
-	self: Scalars['String']['output'];
-	startDate: Scalars['Time']['output'];
-	status: Scalars['String']['output'];
-	updatedAt: Scalars['Time']['output'];
+  __typename?: 'AnnyBooking';
+  blockerEndDate: Scalars['Time']['output'];
+  blockerStartDate: Scalars['Time']['output'];
+  bookingGroupIdentifier?: Maybe<Scalars['String']['output']>;
+  canEdit: Scalars['Boolean']['output'];
+  cancelableUntil?: Maybe<Scalars['Time']['output']>;
+  canceledAt?: Maybe<Scalars['Time']['output']>;
+  chargedDuration: Scalars['Int']['output'];
+  createdAt: Scalars['Time']['output'];
+  description: Scalars['String']['output'];
+  endDate: Scalars['Time']['output'];
+  hasCustomDescription: Scalars['Boolean']['output'];
+  isBlocker: Scalars['Boolean']['output'];
+  isEditable: Scalars['Boolean']['output'];
+  manuallyCreated: Scalars['Boolean']['output'];
+  /** true when the booking's personalization name is one of ours (annyConfig.personalizationNames). */
+  mine: Scalars['Boolean']['output'];
+  note: Scalars['String']['output'];
+  number: Scalars['String']['output'];
+  personalizationName: Scalars['String']['output'];
+  room?: Maybe<Scalars['String']['output']>;
+  self: Scalars['String']['output'];
+  startDate: Scalars['Time']['output'];
+  status: Scalars['String']['output'];
+  updatedAt: Scalars['Time']['output'];
 };
 
 export type AnnyConfig = {
-	__typename?: 'AnnyConfig';
-	/** names whose bookings are flagged as ours (mine=true). */
-	personalizationNames: Array<Scalars['String']['output']>;
+  __typename?: 'AnnyConfig';
+  /** names whose bookings are flagged as ours (mine=true). */
+  personalizationNames: Array<Scalars['String']['output']>;
 };
 
 export type ArgFilterInput = {
-	key: Scalars['String']['input'];
-	value: Scalars['String']['input'];
+  key: Scalars['String']['input'];
+  value: Scalars['String']['input'];
 };
 
 export type AssembledExam = {
-	__typename?: 'AssembledExam';
-	ancode: Scalars['Int']['output'];
-	conflicts: Array<ZpaConflict>;
-	constraints?: Maybe<Constraints>;
-	mainExamer: Teacher;
-	maxDuration: Scalars['Int']['output'];
-	ntas: Array<Nta>;
-	primussExams: Array<EnhancedPrimussExam>;
-	studentRegsCount: Scalars['Int']['output'];
-	zpaExam: ZpaExam;
+  __typename?: 'AssembledExam';
+  ancode: Scalars['Int']['output'];
+  conflicts: Array<ZpaConflict>;
+  constraints?: Maybe<Constraints>;
+  mainExamer: Teacher;
+  maxDuration: Scalars['Int']['output'];
+  ntas: Array<Nta>;
+  primussExams: Array<EnhancedPrimussExam>;
+  studentRegsCount: Scalars['Int']['output'];
+  zpaExam: ZpaExam;
 };
 
 export type AssembledExamsChange = {
-	__typename?: 'AssembledExamsChange';
-	ancode: Scalars['Int']['output'];
-	/** human-readable change descriptions, e.g. 'Anmeldungen 42 → 43'. */
-	details: Array<Scalars['String']['output']>;
-	/** added | removed | changed */
-	kind: Scalars['String']['output'];
-	module: Scalars['String']['output'];
+  __typename?: 'AssembledExamsChange';
+  ancode: Scalars['Int']['output'];
+  /** human-readable change descriptions, e.g. 'Anmeldungen 42 → 43'. */
+  details: Array<Scalars['String']['output']>;
+  /** added | removed | changed */
+  kind: Scalars['String']['output'];
+  module: Scalars['String']['output'];
 };
 
 export type AssembledExamsState = {
-	__typename?: 'AssembledExamsState';
-	/** when they were last marked stale or (re)generated. */
-	changedAt?: Maybe<Scalars['Time']['output']>;
-	/** true when the assembled exams are stale relative to their inputs. */
-	dirty: Scalars['Boolean']['output'];
-	/** the operation that last marked them stale (mutation/subscription name). */
-	reason?: Maybe<Scalars['String']['output']>;
+  __typename?: 'AssembledExamsState';
+  /** when they were last marked stale or (re)generated. */
+  changedAt?: Maybe<Scalars['Time']['output']>;
+  /** true when the assembled exams are stale relative to their inputs. */
+  dirty: Scalars['Boolean']['output'];
+  /** the operation that last marked them stale (mutation/subscription name). */
+  reason?: Maybe<Scalars['String']['output']>;
 };
 
 /** BalanceReport: are all invigilators within ±tolerance of their target minutes. */
 export type BalanceReport = {
-	__typename?: 'BalanceReport';
-	invigilators: Scalars['Int']['output'];
-	maxOver: Scalars['Int']['output'];
-	maxUnder: Scalars['Int']['output'];
-	over: Scalars['Int']['output'];
-	satisfied: Scalars['Boolean']['output'];
-	toleranceMin: Scalars['Int']['output'];
-	under: Scalars['Int']['output'];
-	withinTolerance: Scalars['Int']['output'];
+  __typename?: 'BalanceReport';
+  invigilators: Scalars['Int']['output'];
+  maxOver: Scalars['Int']['output'];
+  maxUnder: Scalars['Int']['output'];
+  over: Scalars['Int']['output'];
+  satisfied: Scalars['Boolean']['output'];
+  toleranceMin: Scalars['Int']['output'];
+  under: Scalars['Int']['output'];
+  withinTolerance: Scalars['Int']['output'];
 };
 
 /** A room blocked for one slot (not usable for planning there). */
 export type BlockedRoom = {
-	__typename?: 'BlockedRoom';
-	day: Scalars['Int']['output'];
-	reason?: Maybe<Scalars['String']['output']>;
-	room: Scalars['String']['output'];
-	slot: Scalars['Int']['output'];
+  __typename?: 'BlockedRoom';
+  day: Scalars['Int']['output'];
+  reason?: Maybe<Scalars['String']['output']>;
+  room: Scalars['String']['output'];
+  slot: Scalars['Int']['output'];
 };
 
 export type Conflict = {
-	__typename?: 'Conflict';
-	ancode: Scalars['Int']['output'];
-	numberOfStuds: Scalars['Int']['output'];
+  __typename?: 'Conflict';
+  ancode: Scalars['Int']['output'];
+  numberOfStuds: Scalars['Int']['output'];
 };
 
 /**
@@ -166,137 +162,137 @@ export type Conflict = {
  * (overriding an automatic repeat down-weighting).
  */
 export enum ConflictDecision {
-	Accept = 'ACCEPT',
-	Veto = 'VETO'
+  Accept = 'ACCEPT',
+  Veto = 'VETO'
 }
 
 export type ConflictPerProgram = {
-	__typename?: 'ConflictPerProgram';
-	conflicts: Array<Conflict>;
-	program: Scalars['String']['output'];
+  __typename?: 'ConflictPerProgram';
+  conflicts: Array<Conflict>;
+  program: Scalars['String']['output'];
 };
 
 export type ConflictStudent = {
-	__typename?: 'ConflictStudent';
-	/** effective: penalty dropped for this student (explicit ACCEPT, or autoAccepted and not vetoed). */
-	accepted: Scalars['Boolean']['output'];
-	/**
-	 * true if this is (heuristically) a repeat for this student (repeater exam or
-	 * the student's semester is above the exam's) — auto down-weighted and accepted by default.
-	 */
-	autoAccepted: Scalars['Boolean']['output'];
-	/** explicit decision for this student, if any (overrides the automatic handling). */
-	decision?: Maybe<ConflictDecision>;
-	/** the student's cohort/group, e.g. "IF4B". */
-	group: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	/** the student's study program, e.g. "IF". */
-	program: Scalars['String']['output'];
+  __typename?: 'ConflictStudent';
+  /** effective: penalty dropped for this student (explicit ACCEPT, or autoAccepted and not vetoed). */
+  accepted: Scalars['Boolean']['output'];
+  /**
+   * true if this is (heuristically) a repeat for this student (repeater exam or
+   * the student's semester is above the exam's) — auto down-weighted and accepted by default.
+   */
+  autoAccepted: Scalars['Boolean']['output'];
+  /** explicit decision for this student, if any (overrides the automatic handling). */
+  decision?: Maybe<ConflictDecision>;
+  /** the student's cohort/group, e.g. "IF4B". */
+  group: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  /** the student's study program, e.g. "IF". */
+  program: Scalars['String']['output'];
 };
 
 export type Conflicts = {
-	__typename?: 'Conflicts';
-	ancode: Scalars['Int']['output'];
-	conflicts: Array<Conflict>;
-	mainExamer: Scalars['String']['output'];
-	module: Scalars['String']['output'];
+  __typename?: 'Conflicts';
+  ancode: Scalars['Int']['output'];
+  conflicts: Array<Conflict>;
+  mainExamer: Scalars['String']['output'];
+  module: Scalars['String']['output'];
 };
 
 export type ConflictsPerProgramAncode = {
-	__typename?: 'ConflictsPerProgramAncode';
-	ancode: Scalars['Int']['output'];
-	conflicts?: Maybe<Conflicts>;
-	program: Scalars['String']['output'];
+  __typename?: 'ConflictsPerProgramAncode';
+  ancode: Scalars['Int']['output'];
+  conflicts?: Maybe<Conflicts>;
+  program: Scalars['String']['output'];
 };
 
 export type ConnectedExam = {
-	__typename?: 'ConnectedExam';
-	otherPrimussExams: Array<PrimussExam>;
-	primussExams: Array<PrimussExam>;
-	/** Findings from connecting ZPA and Primuss data, graded by level. */
-	warnings: Array<ConnectedExamWarning>;
-	zpaExam: ZpaExam;
+  __typename?: 'ConnectedExam';
+  otherPrimussExams: Array<PrimussExam>;
+  primussExams: Array<PrimussExam>;
+  /** Findings from connecting ZPA and Primuss data, graded by level. */
+  warnings: Array<ConnectedExamWarning>;
+  zpaExam: ZpaExam;
 };
 
 /** A finding from connecting a ZPA exam to its Primuss registrations. */
 export type ConnectedExamWarning = {
-	__typename?: 'ConnectedExamWarning';
-	/** The Primuss ancode this finding refers to, if any. */
-	ancode?: Maybe<Scalars['Int']['output']>;
-	/** The examer of the referenced Primuss exam, if known. */
-	examer?: Maybe<Scalars['String']['output']>;
-	/** info | warning | error */
-	level: Scalars['String']['output'];
-	message: Scalars['String']['output'];
-	/** The module/exam name of the referenced Primuss exam, if known. */
-	module?: Maybe<Scalars['String']['output']>;
-	/** The Primuss program this finding refers to (for an add/fix/remove action), if any. */
-	program?: Maybe<Scalars['String']['output']>;
+  __typename?: 'ConnectedExamWarning';
+  /** The Primuss ancode this finding refers to, if any. */
+  ancode?: Maybe<Scalars['Int']['output']>;
+  /** The examer of the referenced Primuss exam, if known. */
+  examer?: Maybe<Scalars['String']['output']>;
+  /** info | warning | error */
+  level: Scalars['String']['output'];
+  message: Scalars['String']['output'];
+  /** The module/exam name of the referenced Primuss exam, if known. */
+  module?: Maybe<Scalars['String']['output']>;
+  /** The Primuss program this finding refers to (for an add/fix/remove action), if any. */
+  program?: Maybe<Scalars['String']['output']>;
 };
 
 export type ConstraintCost = {
-	__typename?: 'ConstraintCost';
-	cost: Scalars['Float']['output'];
-	name: Scalars['String']['output'];
+  __typename?: 'ConstraintCost';
+  cost: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type Constraints = {
-	__typename?: 'Constraints';
-	ancode: Scalars['Int']['output'];
-	/** do not upload this exam to the ZPA when publishing the plan. */
-	doNotPublish: Scalars['Boolean']['output'];
-	excludeDays?: Maybe<Array<Scalars['Time']['output']>>;
-	fixedDay?: Maybe<Scalars['Time']['output']>;
-	fixedTime?: Maybe<Scalars['Time']['output']>;
-	/**
-	 * fixed exam location/campus, e.g. "Campus Pasing"; empty = default campus
-	 * (Lothstraße). Used for a minimum travel gap between exams at different campuses.
-	 */
-	location?: Maybe<Scalars['String']['output']>;
-	notPlannedByMe: Scalars['Boolean']['output'];
-	/** the faculty that plans this exam when notPlannedByMe (e.g. "FK10" for Pasing ZPA exams). */
-	notPlannedByMeInFK?: Maybe<Scalars['String']['output']>;
-	online: Scalars['Boolean']['output'];
-	possibleDays?: Maybe<Array<Scalars['Time']['output']>>;
-	roomConstraints?: Maybe<RoomConstraints>;
-	sameSlot?: Maybe<Array<Scalars['Int']['output']>>;
+  __typename?: 'Constraints';
+  ancode: Scalars['Int']['output'];
+  /** do not upload this exam to the ZPA when publishing the plan. */
+  doNotPublish: Scalars['Boolean']['output'];
+  excludeDays?: Maybe<Array<Scalars['Time']['output']>>;
+  fixedDay?: Maybe<Scalars['Time']['output']>;
+  fixedTime?: Maybe<Scalars['Time']['output']>;
+  /**
+   * fixed exam location/campus, e.g. "Campus Pasing"; empty = default campus
+   * (Lothstraße). Used for a minimum travel gap between exams at different campuses.
+   */
+  location?: Maybe<Scalars['String']['output']>;
+  notPlannedByMe: Scalars['Boolean']['output'];
+  /** the faculty that plans this exam when notPlannedByMe (e.g. "FK10" for Pasing ZPA exams). */
+  notPlannedByMeInFK?: Maybe<Scalars['String']['output']>;
+  online: Scalars['Boolean']['output'];
+  possibleDays?: Maybe<Array<Scalars['Time']['output']>>;
+  roomConstraints?: Maybe<RoomConstraints>;
+  sameSlot?: Maybe<Array<Scalars['Int']['output']>>;
 };
 
 export type ConstraintsInput = {
-	additionalSeats?: InputMaybe<Scalars['Int']['input']>;
-	allowedRooms?: InputMaybe<Array<Scalars['String']['input']>>;
-	comments?: InputMaybe<Scalars['String']['input']>;
-	doNotPublish?: InputMaybe<Scalars['Boolean']['input']>;
-	exahm?: InputMaybe<Scalars['Boolean']['input']>;
-	excludeDays?: InputMaybe<Array<Scalars['Time']['input']>>;
-	fixedDay?: InputMaybe<Scalars['Time']['input']>;
-	fixedTime?: InputMaybe<Scalars['Time']['input']>;
-	kdpJiraURL?: InputMaybe<Scalars['String']['input']>;
-	lab?: InputMaybe<Scalars['Boolean']['input']>;
-	location?: InputMaybe<Scalars['String']['input']>;
-	maxStudents?: InputMaybe<Scalars['Int']['input']>;
-	notPlannedByMe?: InputMaybe<Scalars['Boolean']['input']>;
-	/** the faculty that plans this exam when notPlannedByMe (e.g. "FK10"). */
-	notPlannedByMeInFK?: InputMaybe<Scalars['String']['input']>;
-	online?: InputMaybe<Scalars['Boolean']['input']>;
-	placesWithSocket?: InputMaybe<Scalars['Boolean']['input']>;
-	possibleDays?: InputMaybe<Array<Scalars['Time']['input']>>;
-	sameSlot?: InputMaybe<Array<Scalars['Int']['input']>>;
-	seb?: InputMaybe<Scalars['Boolean']['input']>;
+  additionalSeats?: InputMaybe<Scalars['Int']['input']>;
+  allowedRooms?: InputMaybe<Array<Scalars['String']['input']>>;
+  comments?: InputMaybe<Scalars['String']['input']>;
+  doNotPublish?: InputMaybe<Scalars['Boolean']['input']>;
+  exahm?: InputMaybe<Scalars['Boolean']['input']>;
+  excludeDays?: InputMaybe<Array<Scalars['Time']['input']>>;
+  fixedDay?: InputMaybe<Scalars['Time']['input']>;
+  fixedTime?: InputMaybe<Scalars['Time']['input']>;
+  kdpJiraURL?: InputMaybe<Scalars['String']['input']>;
+  lab?: InputMaybe<Scalars['Boolean']['input']>;
+  location?: InputMaybe<Scalars['String']['input']>;
+  maxStudents?: InputMaybe<Scalars['Int']['input']>;
+  notPlannedByMe?: InputMaybe<Scalars['Boolean']['input']>;
+  /** the faculty that plans this exam when notPlannedByMe (e.g. "FK10"). */
+  notPlannedByMeInFK?: InputMaybe<Scalars['String']['input']>;
+  online?: InputMaybe<Scalars['Boolean']['input']>;
+  placesWithSocket?: InputMaybe<Scalars['Boolean']['input']>;
+  possibleDays?: InputMaybe<Array<Scalars['Time']['input']>>;
+  sameSlot?: InputMaybe<Array<Scalars['Int']['input']>>;
+  seb?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 /** CoverageReport: how many positions are filled. */
 export type CoverageReport = {
-	__typename?: 'CoverageReport';
-	positions: Scalars['Int']['output'];
-	unfilled: Scalars['Int']['output'];
+  __typename?: 'CoverageReport';
+  positions: Scalars['Int']['output'];
+  unfilled: Scalars['Int']['output'];
 };
 
 export type DistributionBucket = {
-	__typename?: 'DistributionBucket';
-	count: Scalars['Int']['output'];
-	invigilators: Scalars['Int']['output'];
+  __typename?: 'DistributionBucket';
+  count: Scalars['Int']['output'];
+  invigilators: Scalars['Int']['output'];
 };
 
 /**
@@ -306,102 +302,102 @@ export type DistributionBucket = {
  * via the REST endpoints /upload/email-attachment and /upload/email-attachments-zip.
  */
 export type EmailAttachmentInfo = {
-	__typename?: 'EmailAttachmentInfo';
-	contentType: Scalars['String']['output'];
-	filename: Scalars['String']['output'];
-	key: Scalars['String']['output'];
-	kind: Scalars['String']['output'];
-	size: Scalars['Int']['output'];
-	uploadedAt: Scalars['Time']['output'];
+  __typename?: 'EmailAttachmentInfo';
+  contentType: Scalars['String']['output'];
+  filename: Scalars['String']['output'];
+  key: Scalars['String']['output'];
+  kind: Scalars['String']['output'];
+  size: Scalars['Int']['output'];
+  uploadedAt: Scalars['Time']['output'];
 };
 
 export type Emails = {
-	__typename?: 'Emails';
-	additionalExamer: Array<Scalars['String']['output']>;
-	fs: Scalars['String']['output'];
-	/** Recipient for the EXaHM/SEB room overview (KDP). */
-	kdp: Scalars['String']['output'];
-	/** Recipient for the overview of LBAs' repeat exams (Lehrbeauftragten-Beauftragte:r). */
-	lbaba: Scalars['String']['output'];
-	lbas: Scalars['String']['output'];
-	lbasLastSemester: Scalars['String']['output'];
-	profs: Scalars['String']['output'];
-	/** Recipient for building-management room requests (Gebäudemanagement). */
-	roomManagement: Scalars['String']['output'];
-	sekr: Scalars['String']['output'];
+  __typename?: 'Emails';
+  additionalExamer: Array<Scalars['String']['output']>;
+  fs: Scalars['String']['output'];
+  /** Recipient for the EXaHM/SEB room overview (KDP). */
+  kdp: Scalars['String']['output'];
+  /** Recipient for the overview of LBAs' repeat exams (Lehrbeauftragten-Beauftragte:r). */
+  lbaba: Scalars['String']['output'];
+  lbas: Scalars['String']['output'];
+  lbasLastSemester: Scalars['String']['output'];
+  profs: Scalars['String']['output'];
+  /** Recipient for building-management room requests (Gebäudemanagement). */
+  roomManagement: Scalars['String']['output'];
+  sekr: Scalars['String']['output'];
 };
 
 export type EmailsInput = {
-	additionalExamer: Array<Scalars['String']['input']>;
-	fs: Scalars['String']['input'];
-	kdp: Scalars['String']['input'];
-	lbaba: Scalars['String']['input'];
-	lbas: Scalars['String']['input'];
-	lbasLastSemester: Scalars['String']['input'];
-	profs: Scalars['String']['input'];
-	roomManagement: Scalars['String']['input'];
-	sekr: Scalars['String']['input'];
+  additionalExamer: Array<Scalars['String']['input']>;
+  fs: Scalars['String']['input'];
+  kdp: Scalars['String']['input'];
+  lbaba: Scalars['String']['input'];
+  lbas: Scalars['String']['input'];
+  lbasLastSemester: Scalars['String']['input'];
+  profs: Scalars['String']['input'];
+  roomManagement: Scalars['String']['input'];
+  sekr: Scalars['String']['input'];
 };
 
 export type EnhancedPrimussExam = {
-	__typename?: 'EnhancedPrimussExam';
-	conflicts: Array<Conflict>;
-	exam: PrimussExam;
-	ntas: Array<Nta>;
-	studentRegs: Array<EnhancedStudentReg>;
+  __typename?: 'EnhancedPrimussExam';
+  conflicts: Array<Conflict>;
+  exam: PrimussExam;
+  ntas: Array<Nta>;
+  studentRegs: Array<EnhancedStudentReg>;
 };
 
 export type EnhancedStudentReg = {
-	__typename?: 'EnhancedStudentReg';
-	ancode: Scalars['Int']['output'];
-	group: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	presence: Scalars['String']['output'];
-	program: Scalars['String']['output'];
-	zpaStudent?: Maybe<ZpaStudent>;
+  __typename?: 'EnhancedStudentReg';
+  ancode: Scalars['Int']['output'];
+  group: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  presence: Scalars['String']['output'];
+  program: Scalars['String']['output'];
+  zpaStudent?: Maybe<ZpaStudent>;
 };
 
 export type ExamDay = {
-	__typename?: 'ExamDay';
-	date: Scalars['Time']['output'];
-	number: Scalars['Int']['output'];
+  __typename?: 'ExamDay';
+  date: Scalars['Time']['output'];
+  number: Scalars['Int']['output'];
 };
 
 export type ExamDurationOverride = {
-	__typename?: 'ExamDurationOverride';
-	ancode: Scalars['Int']['output'];
-	duration: Scalars['Int']['output'];
+  __typename?: 'ExamDurationOverride';
+  ancode: Scalars['Int']['output'];
+  duration: Scalars['Int']['output'];
 };
 
 /** ExamPair is a pair of exams with display info (for canShareSlot lists/suggestions). */
 export type ExamPair = {
-	__typename?: 'ExamPair';
-	ancode1: Scalars['Int']['output'];
-	ancode2: Scalars['Int']['output'];
-	mainExamer1: Scalars['String']['output'];
-	mainExamer2: Scalars['String']['output'];
-	module1: Scalars['String']['output'];
-	module2: Scalars['String']['output'];
+  __typename?: 'ExamPair';
+  ancode1: Scalars['Int']['output'];
+  ancode2: Scalars['Int']['output'];
+  mainExamer1: Scalars['String']['output'];
+  mainExamer2: Scalars['String']['output'];
+  module1: Scalars['String']['output'];
+  module2: Scalars['String']['output'];
 };
 
 /** One exam I plan for an examer, for the planning info email (no slot/date). */
 export type ExamPlanningMailExam = {
-	__typename?: 'ExamPlanningMailExam';
-	ancode: Scalars['Int']['output'];
-	constraints?: Maybe<Constraints>;
-	/** Human-readable exam type (ZPA full name). */
-	examType: Scalars['String']['output'];
-	module: Scalars['String']['output'];
+  __typename?: 'ExamPlanningMailExam';
+  ancode: Scalars['Int']['output'];
+  constraints?: Maybe<Constraints>;
+  /** Human-readable exam type (ZPA full name). */
+  examType: Scalars['String']['output'];
+  module: Scalars['String']['output'];
 };
 
 export type ExamPlanningMailRecipient = {
-	__typename?: 'ExamPlanningMailRecipient';
-	/** withExams = I plan at least one of their exams; fk07NoExams = FK07 examer I plan nothing for. */
-	category: Scalars['String']['output'];
-	/** The exams I plan for this examer (empty for fk07NoExams). */
-	exams: Array<ExamPlanningMailExam>;
-	teacher: Teacher;
+  __typename?: 'ExamPlanningMailRecipient';
+  /** withExams = I plan at least one of their exams; fk07NoExams = FK07 examer I plan nothing for. */
+  category: Scalars['String']['output'];
+  /** The exams I plan for this examer (empty for fk07NoExams). */
+  exams: Array<ExamPlanningMailExam>;
+  teacher: Teacher;
 };
 
 /**
@@ -411,86 +407,86 @@ export type ExamPlanningMailRecipient = {
  * affectedStudents.
  */
 export type ExamScheduleConflict = {
-	__typename?: 'ExamScheduleConflict';
-	/** the affected students (registered in both); acceptance is set per student here. */
-	affectedStudents: Array<ConflictStudent>;
-	ancode1: Scalars['Int']['output'];
-	ancode2: Scalars['Int']['output'];
-	/** true if the pair is declared can-share-slot. */
-	canShareSlot: Scalars['Boolean']['output'];
-	/**
-	 * status relative to the currently saved plan, only set in a generation report: "new"
-	 * (not in the saved plan), "worse"/"better" (proximity changed), "unchanged", or
-	 * "resolved" (was in the saved plan, gone now). Empty outside a diff context.
-	 */
-	diffStatus: Scalars['String']['output'];
-	/** the study groups exam 1 is offered for (e.g. ["IF2A"]). */
-	groups1: Array<Scalars['String']['output']>;
-	groups2: Array<Scalars['String']['output']>;
-	/** true if BOTH exams are external (planned by another faculty): information only. */
-	infoOnly: Scalars['Boolean']['output'];
-	/** true if exam 1 is a repeater exam. */
-	isRepeaterExam1: Scalars['Boolean']['output'];
-	isRepeaterExam2: Scalars['Boolean']['output'];
-	/** exam 1's campus/location (empty = default campus Lothstraße). */
-	location1: Scalars['String']['output'];
-	location2: Scalars['String']['output'];
-	mainExamer1: Scalars['String']['output'];
-	mainExamer2: Scalars['String']['output'];
-	module1: Scalars['String']['output'];
-	module2: Scalars['String']['output'];
-	/** worst proximity across affected students: SAME_SLOT | ADJACENT | SAME_DAY. */
-	proximity: Scalars['String']['output'];
-	/** the planned slot of exam 1. */
-	slot1: Slot;
-	slot2: Slot;
-	/** number of students registered in both, in the plan. */
-	studentCount: Scalars['Int']['output'];
+  __typename?: 'ExamScheduleConflict';
+  /** the affected students (registered in both); acceptance is set per student here. */
+  affectedStudents: Array<ConflictStudent>;
+  ancode1: Scalars['Int']['output'];
+  ancode2: Scalars['Int']['output'];
+  /** true if the pair is declared can-share-slot. */
+  canShareSlot: Scalars['Boolean']['output'];
+  /**
+   * status relative to the currently saved plan, only set in a generation report: "new"
+   * (not in the saved plan), "worse"/"better" (proximity changed), "unchanged", or
+   * "resolved" (was in the saved plan, gone now). Empty outside a diff context.
+   */
+  diffStatus: Scalars['String']['output'];
+  /** the study groups exam 1 is offered for (e.g. ["IF2A"]). */
+  groups1: Array<Scalars['String']['output']>;
+  groups2: Array<Scalars['String']['output']>;
+  /** true if BOTH exams are external (planned by another faculty): information only. */
+  infoOnly: Scalars['Boolean']['output'];
+  /** true if exam 1 is a repeater exam. */
+  isRepeaterExam1: Scalars['Boolean']['output'];
+  isRepeaterExam2: Scalars['Boolean']['output'];
+  /** exam 1's campus/location (empty = default campus Lothstraße). */
+  location1: Scalars['String']['output'];
+  location2: Scalars['String']['output'];
+  mainExamer1: Scalars['String']['output'];
+  mainExamer2: Scalars['String']['output'];
+  module1: Scalars['String']['output'];
+  module2: Scalars['String']['output'];
+  /** worst proximity across affected students: SAME_SLOT | ADJACENT | SAME_DAY. */
+  proximity: Scalars['String']['output'];
+  /** the planned slot of exam 1. */
+  slot1: Slot;
+  slot2: Slot;
+  /** number of students registered in both, in the plan. */
+  studentCount: Scalars['Int']['output'];
 };
 
 /** Quality report of a generated (or current) exam schedule. */
 export type ExamScheduleDiagnostics = {
-	__typename?: 'ExamScheduleDiagnostics';
-	adjacent: Scalars['Int']['output'];
-	further: Scalars['Int']['output'];
-	maxExamsPerSlot: Scalars['Int']['output'];
-	maxSlotSeats: Scalars['Int']['output'];
-	nextDay: Scalars['Int']['output'];
-	pairs: Scalars['Int']['output'];
-	sameDay: Scalars['Int']['output'];
-	sameSlot: Scalars['Int']['output'];
-	slotsOverThreshold: Scalars['Int']['output'];
-	slotsUsed: Scalars['Int']['output'];
-	students: Scalars['Int']['output'];
-	studentsWithAdjacent: Scalars['Int']['output'];
-	studentsWithSameDay: Scalars['Int']['output'];
-	within3: Scalars['Int']['output'];
-	worstStudentPenalty: Scalars['Float']['output'];
+  __typename?: 'ExamScheduleDiagnostics';
+  adjacent: Scalars['Int']['output'];
+  further: Scalars['Int']['output'];
+  maxExamsPerSlot: Scalars['Int']['output'];
+  maxSlotSeats: Scalars['Int']['output'];
+  nextDay: Scalars['Int']['output'];
+  pairs: Scalars['Int']['output'];
+  sameDay: Scalars['Int']['output'];
+  sameSlot: Scalars['Int']['output'];
+  slotsOverThreshold: Scalars['Int']['output'];
+  slotsUsed: Scalars['Int']['output'];
+  students: Scalars['Int']['output'];
+  studentsWithAdjacent: Scalars['Int']['output'];
+  studentsWithSameDay: Scalars['Int']['output'];
+  within3: Scalars['Int']['output'];
+  worstStudentPenalty: Scalars['Float']['output'];
 };
 
 export type ExamScheduleReport = {
-	__typename?: 'ExamScheduleReport';
-	/**
-	 * conflicts of the generated schedule (to review/rate, also on a dry run). Each
-	 * carries a diffStatus relative to the saved plan (new/worse/better/unchanged).
-	 */
-	conflicts: Array<ExamScheduleConflict>;
-	cost: Scalars['Float']['output'];
-	costByConstraint: Array<ConstraintCost>;
-	diagnostics: ExamScheduleDiagnostics;
-	fixed: Scalars['Int']['output'];
-	hardViolations: Array<Scalars['String']['output']>;
-	iterations: Scalars['Int']['output'];
-	placed: Scalars['Int']['output'];
-	/** conflicts that were in the saved plan but are gone in the generated one (diffStatus "resolved"). */
-	resolvedConflicts: Array<ExamScheduleConflict>;
-	/** the seed used — pass it back to reproduce this exact plan. */
-	seed: Scalars['Int']['output'];
-	stoppedEarly: Scalars['Boolean']['output'];
-	units: Scalars['Int']['output'];
-	unplaced: Scalars['Int']['output'];
-	unplacedAncodes: Array<Scalars['Int']['output']>;
-	written: Scalars['Boolean']['output'];
+  __typename?: 'ExamScheduleReport';
+  /**
+   * conflicts of the generated schedule (to review/rate, also on a dry run). Each
+   * carries a diffStatus relative to the saved plan (new/worse/better/unchanged).
+   */
+  conflicts: Array<ExamScheduleConflict>;
+  cost: Scalars['Float']['output'];
+  costByConstraint: Array<ConstraintCost>;
+  diagnostics: ExamScheduleDiagnostics;
+  fixed: Scalars['Int']['output'];
+  hardViolations: Array<Scalars['String']['output']>;
+  iterations: Scalars['Int']['output'];
+  placed: Scalars['Int']['output'];
+  /** conflicts that were in the saved plan but are gone in the generated one (diffStatus "resolved"). */
+  resolvedConflicts: Array<ExamScheduleConflict>;
+  /** the seed used — pass it back to reproduce this exact plan. */
+  seed: Scalars['Int']['output'];
+  stoppedEarly: Scalars['Boolean']['output'];
+  units: Scalars['Int']['output'];
+  unplaced: Scalars['Int']['output'];
+  unplacedAncodes: Array<Scalars['Int']['output']>;
+  written: Scalars['Boolean']['output'];
 };
 
 /**
@@ -499,29 +495,29 @@ export type ExamScheduleReport = {
  * exam, i.e. the longest exam in the slot including NTA extensions).
  */
 export type ExamTime = {
-	__typename?: 'ExamTime';
-	from: Scalars['Time']['output'];
-	until: Scalars['Time']['output'];
+  __typename?: 'ExamTime';
+  from: Scalars['Time']['output'];
+  until: Scalars['Time']['output'];
 };
 
 export type ExamWithRegsAndRooms = {
-	__typename?: 'ExamWithRegsAndRooms';
-	exam: PlannedExam;
-	normalRegsMtknr: Array<Scalars['String']['output']>;
-	ntasInAloneRooms: Array<Nta>;
-	ntasInNormalRooms: Array<Nta>;
-	rooms: Array<PlannedRoom>;
+  __typename?: 'ExamWithRegsAndRooms';
+  exam: PlannedExam;
+  normalRegsMtknr: Array<Scalars['String']['output']>;
+  ntasInAloneRooms: Array<Nta>;
+  ntasInNormalRooms: Array<Nta>;
+  rooms: Array<PlannedRoom>;
 };
 
 export type ExamerInPlan = {
-	__typename?: 'ExamerInPlan';
-	mainExamer: Scalars['String']['output'];
-	mainExamerID: Scalars['Int']['output'];
+  __typename?: 'ExamerInPlan';
+  mainExamer: Scalars['String']['output'];
+  mainExamerID: Scalars['Int']['output'];
 };
 
 export type Fk07Program = {
-	__typename?: 'FK07Program';
-	name: Scalars['String']['output'];
+  __typename?: 'FK07Program';
+  name: Scalars['String']['output'];
 };
 
 /**
@@ -529,96 +525,96 @@ export type Fk07Program = {
  * buckets reads as "count:invigilators", e.g. count 1 / invigilators 48.
  */
 export type FairnessDistribution = {
-	__typename?: 'FairnessDistribution';
-	buckets: Array<DistributionBucket>;
-	kind: Scalars['String']['output'];
-	max: Scalars['Int']['output'];
-	total: Scalars['Int']['output'];
+  __typename?: 'FairnessDistribution';
+  buckets: Array<DistributionBucket>;
+  kind: Scalars['String']['output'];
+  max: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
 };
 
 export type GenerateAssembledExamsResult = {
-	__typename?: 'GenerateAssembledExamsResult';
-	/** what changed vs the previously cached assembled exams (empty = nothing changed). */
-	changes: Array<AssembledExamsChange>;
-	/** the new state (dirty=false). */
-	state: AssembledExamsState;
+  __typename?: 'GenerateAssembledExamsResult';
+  /** what changed vs the previously cached assembled exams (empty = nothing changed). */
+  changes: Array<AssembledExamsChange>;
+  /** the new state (dirty=false). */
+  state: AssembledExamsState;
 };
 
 export type GeneratePreparationResult = {
-	__typename?: 'GeneratePreparationResult';
-	assembledExams: GenerateAssembledExamsResult;
-	studentRegs: GenerateStudentRegsResult;
+  __typename?: 'GeneratePreparationResult';
+  assembledExams: GenerateAssembledExamsResult;
+  studentRegs: GenerateStudentRegsResult;
 };
 
 export type GenerateStudentRegsResult = {
-	__typename?: 'GenerateStudentRegsResult';
-	state: StudentRegsState;
-	/** number of students with planned registrations after the (re)generation. */
-	studentCount: Scalars['Int']['output'];
+  __typename?: 'GenerateStudentRegsResult';
+  state: StudentRegsState;
+  /** number of students with planned registrations after the (re)generation. */
+  studentCount: Scalars['Int']['output'];
 };
 
 export type GenerationConfig = {
-	__typename?: 'GenerationConfig';
-	endTemp: Scalars['Float']['output'];
-	iterations: Scalars['Int']['output'];
-	maxSpanHours: Scalars['Float']['output'];
-	startTemp: Scalars['Float']['output'];
-	/** minutes buffer between two uses of a room / between invigilations. */
-	timelagMin: Scalars['Int']['output'];
-	/** allowed deviation (minutes) from an invigilator's target workload. */
-	toleranceMin: Scalars['Int']['output'];
-	weightBeyondTolerance: Scalars['Float']['output'];
-	weightCoverage: Scalars['Float']['output'];
-	weightDaySpan: Scalars['Float']['output'];
-	weightDistribution: Scalars['Float']['output'];
-	weightMaxDays: Scalars['Float']['output'];
-	weightMinuteBalance: Scalars['Float']['output'];
-	weightOverTargetFactor: Scalars['Float']['output'];
-	weightPreferExamDays: Scalars['Float']['output'];
+  __typename?: 'GenerationConfig';
+  endTemp: Scalars['Float']['output'];
+  iterations: Scalars['Int']['output'];
+  maxSpanHours: Scalars['Float']['output'];
+  startTemp: Scalars['Float']['output'];
+  /** minutes buffer between two uses of a room / between invigilations. */
+  timelagMin: Scalars['Int']['output'];
+  /** allowed deviation (minutes) from an invigilator's target workload. */
+  toleranceMin: Scalars['Int']['output'];
+  weightBeyondTolerance: Scalars['Float']['output'];
+  weightCoverage: Scalars['Float']['output'];
+  weightDaySpan: Scalars['Float']['output'];
+  weightDistribution: Scalars['Float']['output'];
+  weightMaxDays: Scalars['Float']['output'];
+  weightMinuteBalance: Scalars['Float']['output'];
+  weightOverTargetFactor: Scalars['Float']['output'];
+  weightPreferExamDays: Scalars['Float']['output'];
 };
 
 export type GenerationConfigInput = {
-	endTemp: Scalars['Float']['input'];
-	iterations: Scalars['Int']['input'];
-	maxSpanHours: Scalars['Float']['input'];
-	startTemp: Scalars['Float']['input'];
-	timelagMin: Scalars['Int']['input'];
-	toleranceMin: Scalars['Int']['input'];
-	weightBeyondTolerance: Scalars['Float']['input'];
-	weightCoverage: Scalars['Float']['input'];
-	weightDaySpan: Scalars['Float']['input'];
-	weightDistribution: Scalars['Float']['input'];
-	weightMaxDays: Scalars['Float']['input'];
-	weightMinuteBalance: Scalars['Float']['input'];
-	weightOverTargetFactor: Scalars['Float']['input'];
-	weightPreferExamDays: Scalars['Float']['input'];
+  endTemp: Scalars['Float']['input'];
+  iterations: Scalars['Int']['input'];
+  maxSpanHours: Scalars['Float']['input'];
+  startTemp: Scalars['Float']['input'];
+  timelagMin: Scalars['Int']['input'];
+  toleranceMin: Scalars['Int']['input'];
+  weightBeyondTolerance: Scalars['Float']['input'];
+  weightCoverage: Scalars['Float']['input'];
+  weightDaySpan: Scalars['Float']['input'];
+  weightDistribution: Scalars['Float']['input'];
+  weightMaxDays: Scalars['Float']['input'];
+  weightMinuteBalance: Scalars['Float']['input'];
+  weightOverTargetFactor: Scalars['Float']['input'];
+  weightPreferExamDays: Scalars['Float']['input'];
 };
 
 export type ImportMucDaiResult = {
-	__typename?: 'ImportMucDaiResult';
-	/** new non-ZPA exams created (non-FK07, not existing yet). */
-	examsCreated: Scalars['Int']['output'];
-	/** non-FK07 exams that already existed (kept with their ancode). */
-	examsExisting: Scalars['Int']['output'];
-	/** total exam rows imported into the mucdai_<program> collections. */
-	examsImported: Scalars['Int']['output'];
-	/** assembled exams of the imported programs removed because they are no longer in the CSV (or flipped to FK07). */
-	examsRemoved: Scalars['Int']['output'];
-	/** FK07 exams skipped (they exist as ZPA exams, only linked). */
-	examsSkippedFK07: Scalars['Int']['output'];
-	/** programs (Studiengruppen) found in the CSV. */
-	programs: Array<Scalars['String']['output']>;
+  __typename?: 'ImportMucDaiResult';
+  /** new non-ZPA exams created (non-FK07, not existing yet). */
+  examsCreated: Scalars['Int']['output'];
+  /** non-FK07 exams that already existed (kept with their ancode). */
+  examsExisting: Scalars['Int']['output'];
+  /** total exam rows imported into the mucdai_<program> collections. */
+  examsImported: Scalars['Int']['output'];
+  /** assembled exams of the imported programs removed because they are no longer in the CSV (or flipped to FK07). */
+  examsRemoved: Scalars['Int']['output'];
+  /** FK07 exams skipped (they exist as ZPA exams, only linked). */
+  examsSkippedFK07: Scalars['Int']['output'];
+  /** programs (Studiengruppen) found in the CSV. */
+  programs: Array<Scalars['String']['output']>;
 };
 
 export type Invigilation = {
-	__typename?: 'Invigilation';
-	duration: Scalars['Int']['output'];
-	invigilatorID: Scalars['Int']['output'];
-	isReserve: Scalars['Boolean']['output'];
-	isSelfInvigilation: Scalars['Boolean']['output'];
-	prePlanned: Scalars['Boolean']['output'];
-	roomName?: Maybe<Scalars['String']['output']>;
-	slot: Slot;
+  __typename?: 'Invigilation';
+  duration: Scalars['Int']['output'];
+  invigilatorID: Scalars['Int']['output'];
+  isReserve: Scalars['Boolean']['output'];
+  isSelfInvigilation: Scalars['Boolean']['output'];
+  prePlanned: Scalars['Boolean']['output'];
+  roomName?: Maybe<Scalars['String']['output']>;
+  slot: Slot;
 };
 
 /**
@@ -628,25 +624,25 @@ export type Invigilation = {
  * written to the database).
  */
 export type InvigilationReport = {
-	__typename?: 'InvigilationReport';
-	balance: BalanceReport;
-	coverage: CoverageReport;
-	fairness: Array<FairnessDistribution>;
-	iterations: Scalars['Int']['output'];
-	iterationsRun: Scalars['Int']['output'];
-	minutes: MinutesReport;
-	outliers: Array<InvigilatorOutlier>;
-	seed: Scalars['Int']['output'];
-	softCost: SoftCostReport;
-	stoppedEarly: Scalars['Boolean']['output'];
+  __typename?: 'InvigilationReport';
+  balance: BalanceReport;
+  coverage: CoverageReport;
+  fairness: Array<FairnessDistribution>;
+  iterations: Scalars['Int']['output'];
+  iterationsRun: Scalars['Int']['output'];
+  minutes: MinutesReport;
+  outliers: Array<InvigilatorOutlier>;
+  seed: Scalars['Int']['output'];
+  softCost: SoftCostReport;
+  stoppedEarly: Scalars['Boolean']['output'];
 };
 
 export type InvigilationSlot = {
-	__typename?: 'InvigilationSlot';
-	reserve?: Maybe<Teacher>;
-	/** true if the reserve invigilation in this slot is pre-planned (fixed). */
-	reservePrePlanned: Scalars['Boolean']['output'];
-	roomsWithInvigilators: Array<RoomWithInvigilator>;
+  __typename?: 'InvigilationSlot';
+  reserve?: Maybe<Teacher>;
+  /** true if the reserve invigilation in this slot is pre-planned (fixed). */
+  reservePrePlanned: Scalars['Boolean']['output'];
+  roomsWithInvigilators: Array<RoomWithInvigilator>;
 };
 
 /**
@@ -657,36 +653,36 @@ export type InvigilationSlot = {
  * NTA-extended) duration.
  */
 export type InvigilationTimeWindow = {
-	__typename?: 'InvigilationTimeWindow';
-	date: Scalars['Time']['output'];
-	from?: Maybe<Scalars['Time']['output']>;
-	until?: Maybe<Scalars['Time']['output']>;
+  __typename?: 'InvigilationTimeWindow';
+  date: Scalars['Time']['output'];
+  from?: Maybe<Scalars['Time']['output']>;
+  until?: Maybe<Scalars['Time']['output']>;
 };
 
 /** date is the calendar day; from/until are clock times on that day (at least one of from/until must be set). */
 export type InvigilationTimeWindowInput = {
-	date: Scalars['Time']['input'];
-	from?: InputMaybe<Scalars['Time']['input']>;
-	until?: InputMaybe<Scalars['Time']['input']>;
+  date: Scalars['Time']['input'];
+  from?: InputMaybe<Scalars['Time']['input']>;
+  until?: InputMaybe<Scalars['Time']['input']>;
 };
 
 export type InvigilationTodos = {
-	__typename?: 'InvigilationTodos';
-	invigilatorCount: Scalars['Int']['output'];
-	invigilators: Array<Invigilator>;
-	sumExamRooms: Scalars['Int']['output'];
-	sumOtherContributions: Scalars['Int']['output'];
-	sumOtherContributionsOvertimeCutted: Scalars['Int']['output'];
-	sumReserve: Scalars['Int']['output'];
-	todoPerInvigilator: Scalars['Int']['output'];
-	todoPerInvigilatorOvertimeCutted: Scalars['Int']['output'];
+  __typename?: 'InvigilationTodos';
+  invigilatorCount: Scalars['Int']['output'];
+  invigilators: Array<Invigilator>;
+  sumExamRooms: Scalars['Int']['output'];
+  sumOtherContributions: Scalars['Int']['output'];
+  sumOtherContributionsOvertimeCutted: Scalars['Int']['output'];
+  sumReserve: Scalars['Int']['output'];
+  todoPerInvigilator: Scalars['Int']['output'];
+  todoPerInvigilatorOvertimeCutted: Scalars['Int']['output'];
 };
 
 export type Invigilator = {
-	__typename?: 'Invigilator';
-	requirements?: Maybe<InvigilatorRequirements>;
-	teacher: Teacher;
-	todos?: Maybe<InvigilatorTodos>;
+  __typename?: 'Invigilator';
+  requirements?: Maybe<InvigilatorRequirements>;
+  teacher: Teacher;
+  todos?: Maybe<InvigilatorTodos>;
 };
 
 /**
@@ -697,67 +693,67 @@ export type Invigilator = {
  * excludedDates add whole blocked days, and timeWindows block parts of a day.
  */
 export type InvigilatorConstraints = {
-	__typename?: 'InvigilatorConstraints';
-	excludedDates: Array<Scalars['Time']['output']>;
-	isNotInvigilator: Scalars['Boolean']['output'];
-	teacherID: Scalars['Int']['output'];
-	timeWindows: Array<InvigilationTimeWindow>;
+  __typename?: 'InvigilatorConstraints';
+  excludedDates: Array<Scalars['Time']['output']>;
+  isNotInvigilator: Scalars['Boolean']['output'];
+  teacherID: Scalars['Int']['output'];
+  timeWindows: Array<InvigilationTimeWindow>;
 };
 
 export type InvigilatorConstraintsInput = {
-	excludedDates: Array<Scalars['Time']['input']>;
-	isNotInvigilator: Scalars['Boolean']['input'];
-	teacherID: Scalars['Int']['input'];
-	timeWindows: Array<InvigilationTimeWindowInput>;
+  excludedDates: Array<Scalars['Time']['input']>;
+  isNotInvigilator: Scalars['Boolean']['input'];
+  teacherID: Scalars['Int']['input'];
+  timeWindows: Array<InvigilationTimeWindowInput>;
 };
 
 /** InvigilatorOutlier: a person whose assigned minutes are furthest from target. */
 export type InvigilatorOutlier = {
-	__typename?: 'InvigilatorOutlier';
-	doing: Scalars['Int']['output'];
-	invigilatorID: Scalars['Int']['output'];
-	open: Scalars['Int']['output'];
-	percent: Scalars['Float']['output'];
-	target: Scalars['Int']['output'];
+  __typename?: 'InvigilatorOutlier';
+  doing: Scalars['Int']['output'];
+  invigilatorID: Scalars['Int']['output'];
+  open: Scalars['Int']['output'];
+  percent: Scalars['Float']['output'];
+  target: Scalars['Int']['output'];
 };
 
 export type InvigilatorRequirements = {
-	__typename?: 'InvigilatorRequirements';
-	allContributions: Scalars['Int']['output'];
-	examDays: Array<Scalars['Int']['output']>;
-	examTimes: Array<ExamTime>;
-	excludedDates: Array<Scalars['Time']['output']>;
-	excludedDays: Array<Scalars['Int']['output']>;
-	factor: Scalars['Float']['output'];
-	freeSemester: Scalars['Float']['output'];
-	/**
-	 * fromZpa is false if the invigilator has not yet entered their requirements in
-	 * the ZPA. In that case default requirements (full time, no contributions) are
-	 * used and the invigilator still has to provide their real requirements.
-	 */
-	fromZpa: Scalars['Boolean']['output'];
-	liveCodingContribution: Scalars['Int']['output'];
-	masterContribution: Scalars['Int']['output'];
-	oralExamsContribution: Scalars['Int']['output'];
-	overtimeLastSemester: Scalars['Float']['output'];
-	overtimeThisSemester: Scalars['Float']['output'];
-	partTime: Scalars['Float']['output'];
-	timeWindows: Array<InvigilationTimeWindow>;
+  __typename?: 'InvigilatorRequirements';
+  allContributions: Scalars['Int']['output'];
+  examDays: Array<Scalars['Int']['output']>;
+  examTimes: Array<ExamTime>;
+  excludedDates: Array<Scalars['Time']['output']>;
+  excludedDays: Array<Scalars['Int']['output']>;
+  factor: Scalars['Float']['output'];
+  freeSemester: Scalars['Float']['output'];
+  /**
+   * fromZpa is false if the invigilator has not yet entered their requirements in
+   * the ZPA. In that case default requirements (full time, no contributions) are
+   * used and the invigilator still has to provide their real requirements.
+   */
+  fromZpa: Scalars['Boolean']['output'];
+  liveCodingContribution: Scalars['Int']['output'];
+  masterContribution: Scalars['Int']['output'];
+  oralExamsContribution: Scalars['Int']['output'];
+  overtimeLastSemester: Scalars['Float']['output'];
+  overtimeThisSemester: Scalars['Float']['output'];
+  partTime: Scalars['Float']['output'];
+  timeWindows: Array<InvigilationTimeWindow>;
 };
 
 export type InvigilatorTodos = {
-	__typename?: 'InvigilatorTodos';
-	doingMinutes: Scalars['Int']['output'];
-	enough: Scalars['Boolean']['output'];
-	invigilationDays?: Maybe<Array<Scalars['Int']['output']>>;
-	invigilations?: Maybe<Array<Invigilation>>;
-	totalMinutes: Scalars['Int']['output'];
+  __typename?: 'InvigilatorTodos';
+  doingMinutes: Scalars['Int']['output'];
+  enough: Scalars['Boolean']['output'];
+  invigilationDays?: Maybe<Array<Scalars['Int']['output']>>;
+  invigilations?: Maybe<Array<Invigilation>>;
+  totalMinutes: Scalars['Int']['output'];
 };
 
 export type InvigilatorsForDay = {
-	__typename?: 'InvigilatorsForDay';
-	can: Array<Invigilator>;
-	want: Array<Invigilator>;
+  __typename?: 'InvigilatorsForDay';
+  can: Array<Invigilator>;
+  want: Array<Invigilator>;
 };
 
 /**
@@ -766,12 +762,12 @@ export type InvigilatorsForDay = {
  * DONE marks the final line of a stream.
  */
 export enum LogLevel {
-	Done = 'DONE',
-	Error = 'ERROR',
-	Info = 'INFO',
-	Progress = 'PROGRESS',
-	Result = 'RESULT',
-	Warn = 'WARN'
+  Done = 'DONE',
+  Error = 'ERROR',
+  Info = 'INFO',
+  Progress = 'PROGRESS',
+  Result = 'RESULT',
+  Warn = 'WARN'
 }
 
 /**
@@ -781,861 +777,942 @@ export enum LogLevel {
  * of an invigilation generation and carries the structured outcome.
  */
 export type LogLine = {
-	__typename?: 'LogLine';
-	examReport?: Maybe<ExamScheduleReport>;
-	level: LogLevel;
-	progress?: Maybe<OptimizerProgress>;
-	report?: Maybe<InvigilationReport>;
-	text: Scalars['String']['output'];
-	validation?: Maybe<ValidationReport>;
+  __typename?: 'LogLine';
+  examReport?: Maybe<ExamScheduleReport>;
+  level: LogLevel;
+  progress?: Maybe<OptimizerProgress>;
+  report?: Maybe<InvigilationReport>;
+  text: Scalars['String']['output'];
+  validation?: Maybe<ValidationReport>;
 };
 
 /** MinutesReport: distribution of assigned vs. target minutes around the tolerance band. */
 export type MinutesReport = {
-	__typename?: 'MinutesReport';
-	over: Scalars['Int']['output'];
-	toleranceMin: Scalars['Int']['output'];
-	under: Scalars['Int']['output'];
-	withinTolerance: Scalars['Int']['output'];
+  __typename?: 'MinutesReport';
+  over: Scalars['Int']['output'];
+  toleranceMin: Scalars['Int']['output'];
+  under: Scalars['Int']['output'];
+  withinTolerance: Scalars['Int']['output'];
 };
 
 export type MucDaiExam = {
-	__typename?: 'MucDaiExam';
-	/**
-	 * Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
-	 * auto-assigned ancode for exams planned by other faculties. null if not yet
-	 * created/linked.
-	 */
-	ancode?: Maybe<Scalars['Int']['output']>;
-	duration: Scalars['Int']['output'];
-	examType: Scalars['String']['output'];
-	isRepeaterExam: Scalars['Boolean']['output'];
-	/**
-	 * Link status to our data: "external" (auto-created external exam, linked), "zpa"
-	 * (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
-	 * manual linking).
-	 */
-	linkStatus: Scalars['String']['output'];
-	mainExamer: Scalars['String']['output'];
-	mainExamerID?: Maybe<Scalars['Int']['output']>;
-	module: Scalars['String']['output'];
-	/** The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time. */
-	planEntry?: Maybe<PlanEntry>;
-	/** the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12. */
-	plannedBy: Scalars['String']['output'];
-	primussAncode: Scalars['Int']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'MucDaiExam';
+  /**
+   * Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
+   * auto-assigned ancode for exams planned by other faculties. null if not yet
+   * created/linked.
+   */
+  ancode?: Maybe<Scalars['Int']['output']>;
+  duration: Scalars['Int']['output'];
+  examType: Scalars['String']['output'];
+  isRepeaterExam: Scalars['Boolean']['output'];
+  /**
+   * Link status to our data: "external" (auto-created external exam, linked), "zpa"
+   * (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
+   * manual linking).
+   */
+  linkStatus: Scalars['String']['output'];
+  mainExamer: Scalars['String']['output'];
+  mainExamerID?: Maybe<Scalars['Int']['output']>;
+  module: Scalars['String']['output'];
+  /** The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time. */
+  planEntry?: Maybe<PlanEntry>;
+  /** the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12. */
+  plannedBy: Scalars['String']['output'];
+  primussAncode: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type Mutation = {
-	__typename?: 'Mutation';
-	addConstraints: Constraints;
-	addExamToSlot: Scalars['Boolean']['output'];
-	addNTA: Nta;
-	/**
-	 * Accept that an NTA gives up the room-alone right for one exam (key:
-	 * mtknr/ancode), with a reason. Downgrades the rooms validation to a warning and
-	 * is added to the NTA email.
-	 */
-	addNtaRoomAloneWaiver: NtaRoomAloneWaiver;
-	addPreplanExam: PreplanExam;
-	/**
-	 * Add a Primuss ancode mapping to a ZPA exam.
-	 * Returns the (live computed) connected exam.
-	 */
-	addPrimussAncode: ConnectedExam;
-	/** Create a new room (key: name). Errors if a room with that name already exists. */
-	addRoom: Room;
-	/** Manually add a single room request (key: room/day/slot). Errors if one already exists. Starts active and not approved. */
-	addRoomRequest: RoomRequest;
-	addZpaExamToPlan: Scalars['Boolean']['output'];
-	/**
-	 * Generate room requests from the current plan and REPLACE all existing ones
-	 * (one-shot, no merge). Generated requests start active and not approved. Errors
-	 * if requests already exist unless force is true (force discards them, including
-	 * approved flags). Returns the number written.
-	 */
-	applyRoomRequestsPreview: Scalars['Int']['output'];
-	/** Block a room for a slot so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
-	blockRoomForSlot: BlockedRoom;
-	/** Block a room for several slots at once (e.g. a whole day or a time range). Returns the stored blocks. */
-	blockRoomForSlots: Array<BlockedRoom>;
-	clearEmailAttachments: Scalars['Int']['output'];
-	/**
-	 * Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
-	 * must not already be linked by another pre-exam.
-	 */
-	connectPreplanExamToAncode: PreplanExam;
-	/**
-	 * Create a new semester (in its own database) with the given config. The
-	 * semester must match YYYY-SS / YYYY-WS and must not already have a config.
-	 * Use setSemester to switch the running server to it afterwards.
-	 */
-	createSemester: SaveSemesterConfigResult;
-	/**
-	 * Create a new, independent database (workspace) for the logical semester of
-	 * `fromSemester` (e.g. "2026-SS"), copying that semester's config (dates/slots/
-	 * emails) so it matches. `database` is the new database name (e.g. "test-v2"); it
-	 * must not exist yet. The data stays empty — switch to it and import (e.g. from ZPA,
-	 * which uses the logical semester). Returns the new workspace.
-	 */
-	createWorkspace: Semester;
-	/** Delete an additional exam by ancode. Returns false if there was none. */
-	deleteAdditionalExam: Scalars['Boolean']['output'];
-	/** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
-	deleteInvigilatorConstraints: Scalars['Boolean']['output'];
-	deletePreplanExam: Scalars['Boolean']['output'];
-	/** Delete a special-interest group by name. Returns false if there was none. */
-	deleteSpecialInterest: Scalars['Boolean']['output'];
-	/** Delete a study program by its shortname. Returns false if there was none. */
-	deleteStudyProgram: Scalars['Boolean']['output'];
-	/** Remove the ZPA link from a pre-exam. */
-	disconnectPreplanExam: PreplanExam;
-	exahm: Scalars['Boolean']['output'];
-	excludeDays: Scalars['Boolean']['output'];
-	/**
-	 * fixExamRoomsPhase freezes the phase-A EXaHM/SEB placement (sets PhaseFixed, distinct
-	 * from the manual Locked). Returns the number of exams fixed. Phase B then treats them
-	 * as immovable obstacles.
-	 */
-	fixExamRoomsPhase: Scalars['Int']['output'];
-	/**
-	 * Renumber a Primuss exam (exam + student regs + conflicts) from fromAncode to
-	 * toAncode within a program. Returns the (live computed) connected exam.
-	 */
-	fixPrimussAncode: ConnectedExam;
-	/**
-	 * Regenerate the cached assembled exams from the current data and clear the stale
-	 * flag. Fast (~100ms); returns the new state plus the list of changes vs the
-	 * previously cached assembled exams.
-	 */
-	generateAssembledExams: GenerateAssembledExamsResult;
-	/**
-	 * Regenerate both the cached assembled exams and the per-student planned
-	 * registrations in one step. They share the same inputs (connected exams + Primuss
-	 * data) and are independent of each other, so they are always (re)generated together.
-	 * Clears both stale flags and reports both results.
-	 */
-	generatePreparation: GeneratePreparationResult;
-	/**
-	 * Generate a slot assignment for the pre-exams, distributing them only over the
-	 * MUC.DAI slots that already have Anny rooms booked (up to ~90% of each slot's
-	 * booked seats). Exams of the same study program never share a slot and are spread
-	 * across days; the most important exams (EXaHM, then large SEB) are placed first.
-	 * Uses a DSATUR constructive pass with a simulated-annealing repair for the hard
-	 * residue. Fixed pre-exams keep their slot; all non-fixed exams are re-planned
-	 * (with keepAssigned, currently-slotted non-fixed exams are kept too). The new
-	 * assignment is persisted; the result is its validation.
-	 */
-	generatePreplanAssignment: PreplanValidation;
-	/**
-	 * Regenerate the per-student planned registrations from the current data and clear
-	 * the stale flag. Returns the new state plus the number of students.
-	 */
-	generateStudentRegs: GenerateStudentRegsResult;
-	/**
-	 * Import MUC.DAI exams from a CSV (the file you get from MUC.DAI; columns Nr,
-	 * Modulname, Prüfungsform, Bewertung, Dauer, Erstpruefender, Zweitpruefender,
-	 * IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the mucdai_<program>
-	 * data and generates the non-ZPA exams for everything not planned by FK07 (FK07
-	 * exams already exist as ZPA exams and are only linked). The GUI sends the file
-	 * content as text.
-	 */
-	importMucDaiExams: ImportMucDaiResult;
-	lab: Scalars['Boolean']['output'];
-	/**
-	 * One-time migration: copy the invigilatorConstraints from the semester config
-	 * (viper) into the DB. Returns the number of records written.
-	 */
-	migrateInvigilatorConstraints: Scalars['Int']['output'];
-	/** One-time import of roomConstraints.<room>.reservations from the semester config into the DB. Returns the number imported. */
-	migrateRoomRequestsFromConfig: Scalars['Int']['output'];
-	/**
-	 * One-time backfill: derive requestWith for all rooms (ANNY for request-rooms
-	 * with a T name, MANAGEMENT for other request-rooms, NONE otherwise). Returns
-	 * the number of rooms updated.
-	 */
-	migrateRoomsRequestWith: Scalars['Int']['output'];
-	/** Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10"). */
-	notPlannedByMe: Scalars['Boolean']['output'];
-	online: Scalars['Boolean']['output'];
-	placesWithSockets: Scalars['Boolean']['output'];
-	possibleDays: Scalars['Boolean']['output'];
-	/** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) in a slot. */
-	prePlanInvigilation: Scalars['Boolean']['output'];
-	/**
-	 * prePlanInvigilationInSlot promotes the invigilation currently planned for a
-	 * room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
-	 * fixed assignment, so it survives a re-run of the automatic planning.
-	 */
-	prePlanInvigilationInSlot: Scalars['Boolean']['output'];
-	prePlanRoom: Scalars['Boolean']['output'];
-	/** Remove the duration override for an ancode. Returns false if there was none. */
-	removeExamDuration: Scalars['Boolean']['output'];
-	removeExamsCanShareSlot: Scalars['Boolean']['output'];
-	/** Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection. */
-	removeMucDaiLink: MucDaiExam;
-	/** Remove an NTA room-alone waiver (key: mtknr/ancode). */
-	removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
-	/** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
-	removePermanentNonInvigilator: Scalars['Boolean']['output'];
-	/** Remove a pre-planned invigilation (key: day/slot/roomName; roomName null = the reserve). */
-	removePrePlannedInvigilation: Scalars['Boolean']['output'];
-	/** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
-	removePrePlannedRoom: Scalars['Boolean']['output'];
-	/**
-	 * Remove a (manually added) Primuss ancode mapping of a program from a ZPA exam.
-	 * Returns the (live computed) connected exam.
-	 */
-	removePrimussAncode: ConnectedExam;
-	/** Remove the explicit decision (back to automatic handling). */
-	removeStudentConflictDecision: Scalars['Boolean']['output'];
-	/**
-	 * resetExamSchedule removes the generated exam schedule (phase B): all placements that
-	 * are not manually locked, not external / not-planned-by-me and not frozen by the
-	 * EXaHM/SEB room phase (phaseFixed). Returns the number of entries removed. A full reset
-	 * (incl. phase A) = unfixExamRoomsPhase then resetExamSchedule. Blocked while published.
-	 */
-	resetExamSchedule: Scalars['Int']['output'];
-	/**
-	 * Reset the assigned invigilations (invigilations_other) so only the
-	 * pre-planning remains; self-invigilations are refreshed on the next generation.
-	 * Blocked while the invigilation plan is published.
-	 */
-	resetInvigilations: Scalars['Boolean']['output'];
-	/**
-	 * Reset the assigned room plan (planned_rooms) so only the pre-planning remains;
-	 * re-assignment re-applies it. Blocked while the room plan is published.
-	 */
-	resetRoomsForExams: Scalars['Boolean']['output'];
-	rmConstraints: Scalars['Boolean']['output'];
-	rmZpaExamFromPlan: Scalars['Boolean']['output'];
-	sameSlot: Scalars['Boolean']['output'];
-	seb: Scalars['Boolean']['output'];
-	/**
-	 * Seed study programs from the configured lists (fk07programs, mucdaiprograms,
-	 * miscprograms) without overwriting existing ones. Returns the number created.
-	 */
-	seedStudyProgramsFromConfig: Scalars['Int']['output'];
-	/**
-	 * Set the personalization names that mark 'our' Anny bookings (mine=true). Does
-	 * not filter; all bookings are still fetched and shown.
-	 */
-	setAnnyPersonalizationNames: AnnyConfig;
-	/** Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0. */
-	setExamDuration: ExamDurationOverride;
-	/** Declare / undeclare that two exams may share a slot. */
-	setExamsCanShareSlot: Scalars['Boolean']['output'];
-	/**
-	 * Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
-	 * faculty). The matching slot is computed and stored as the plan entry's
-	 * externalTime. date: dd.mm.yyyy, time: HH:MM.
-	 */
-	setExternalExamTime: Scalars['Boolean']['output'];
-	/** Store the generation config (global). Returns the saved config. */
-	setGenerationConfig: GenerationConfig;
-	/** Create or replace the whole constraints record of one invigilator (key: teacherID). */
-	setInvigilatorConstraints: InvigilatorConstraints;
-	/**
-	 * Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
-	 * for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
-	 */
-	setMucDaiZpaLink: MucDaiExam;
-	/** Activate/deactivate an NTA (key: mtknr). A deactivated NTA is not applied to exams. */
-	setNTAActive: Nta;
-	/**
-	 * Add or update a permanent (cross-semester) non-invigilator (key: teacherID),
-	 * e.g. someone retired. name is the display name (pass the candidate's name; if
-	 * empty the backend tries to resolve it).
-	 */
-	setPermanentNonInvigilator: PermanentNonInvigilator;
-	/** Set the planner (name + email), stored in the global DB. */
-	setPlaner: Planer;
-	/** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
-	setPlanningCondition: PlanningState;
-	/**
-	 * Mark (canShare=true) or unmark (false) another pre-exam as "may run at the same time /
-	 * right after" this one despite a shared study program (no common students). The link is
-	 * kept symmetric and cancels the program-based spreading for that pair.
-	 */
-	setPreplanExamCanShareSlot: PreplanExam;
-	/**
-	 * Set the constraints of a pre-exam (room restrictions, same-slot, …). Reuses the
-	 * normal ConstraintsInput, but its `sameSlot` references other PRE-EXAM ids (not
-	 * ancodes) — they are kept symmetric. On connectPreplanExamToAncode these
-	 * constraints are carried over to the ZPA exam (sameSlot translated to ancodes).
-	 */
-	setPreplanExamConstraints: PreplanExam;
-	/**
-	 * Pin/unpin the pre-exam's current slot. A fixed pre-exam keeps its slot when the
-	 * automatic assignment is (re-)generated; all non-fixed exams are re-planned.
-	 */
-	setPreplanExamFixed: PreplanExam;
-	/**
-	 * Mark (conflict=true) or unmark (false) another pre-exam as "must not run at the same
-	 * time" as this one (same students). The link is kept symmetric. Soft: the automatic
-	 * assignment then spreads the two apart (different days, else max slot distance).
-	 */
-	setPreplanExamNotSameSlot: PreplanExam;
-	/**
-	 * Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
-	 * or neither). The slot must be a real slot of this semester.
-	 */
-	setPreplanExamSlot: PreplanExam;
-	/** Activate/deactivate a room (key: name). A deactivated room is not used for planning. */
-	setRoomActive: Room;
-	/** Activate/deactivate a room request; inactive requests are not used for room planning. */
-	setRoomRequestActive: RoomRequest;
-	/** Set the approved flag of a room request (key: room/day/slot). */
-	setRoomRequestApproved: RoomRequest;
-	/**
-	 * Switch the running server to another database (workspace) at runtime. `name` is
-	 * the database name from allSemesterNames (id), e.g. "2026-SS" or "test-v2". The
-	 * logical semester used against external systems (ZPA) is the database's own stored
-	 * semester — independent of the database name. `semester` is an optional override,
-	 * only needed for a database that has no stored semester yet (then it is
-	 * remembered). The target may be empty (config null until created/imported).
-	 * Refused while an operation is running. The GUI must refetch all data afterwards.
-	 */
-	setSemester: Semester;
-	/**
-	 * Replace the raw per-semester config. The derived semesterConfig (days, slots,
-	 * go-slots) is recomputed and stored. Returns warnings for changes that may
-	 * invalidate an existing plan (the change is still applied).
-	 */
-	setSemesterConfigInput: SaveSemesterConfigResult;
-	/**
-	 * Protect or unprotect the current database: when read-only, all data-changing
-	 * operations (mutations and imports/generation/uploads) are rejected, but the
-	 * semester can still be viewed and validated, and you can switch away. Useful to
-	 * guard the real semester while replaying in a clone.
-	 */
-	setSemesterReadOnly: Semester;
-	/**
-	 * Set an explicit decision for a student's conflict (ACCEPT drops the penalty;
-	 * VETO forces it to count despite an automatic repeat down-weighting).
-	 */
-	setStudentConflictDecision: Scalars['Boolean']['output'];
-	/** Remove a room block for a slot (key: room/day/slot). */
-	unblockRoomForSlot: Scalars['Boolean']['output'];
-	/** Remove the room blocks for several slots at once. Returns how many blocks were removed. */
-	unblockRoomForSlots: Scalars['Int']['output'];
-	/** unfixExamRoomsPhase clears the phase-A freeze on all exams (manual Locked stays). */
-	unfixExamRoomsPhase: Scalars['Boolean']['output'];
-	/** Update the editable fields of an existing NTA (key: mtknr). Errors if it does not exist. */
-	updateNTA: Nta;
-	updatePreplanExam: PreplanExam;
-	/** Update an existing room (key: name). Errors if it does not exist; keeps the active state. */
-	updateRoom: Room;
-	/**
-	 * Change the time range of an existing room request, e.g. extend it for an NTA
-	 * (key: room/day/slot). Errors if it does not exist.
-	 */
-	updateRoomRequestTime: RoomRequest;
-	/** Create or update an additional exam (key: ancode). */
-	upsertAdditionalExam: AdditionalExam;
-	/** Create or update a special-interest group (key: name). */
-	upsertSpecialInterest: SpecialInterest;
-	/** Create or update a study program (key: shortname/Kürzel). */
-	upsertStudyProgram: StudyProgram;
-	zpaExamsToPlan: Array<ZpaExam>;
+  __typename?: 'Mutation';
+  addConstraints: Constraints;
+  addExamToSlot: Scalars['Boolean']['output'];
+  addNTA: Nta;
+  /**
+   * Accept that an NTA gives up the room-alone right for one exam (key:
+   * mtknr/ancode), with a reason. Downgrades the rooms validation to a warning and
+   * is added to the NTA email.
+   */
+  addNtaRoomAloneWaiver: NtaRoomAloneWaiver;
+  addPreplanExam: PreplanExam;
+  /**
+   * Add a Primuss ancode mapping to a ZPA exam.
+   * Returns the (live computed) connected exam.
+   */
+  addPrimussAncode: ConnectedExam;
+  /** Create a new room (key: name). Errors if a room with that name already exists. */
+  addRoom: Room;
+  /** Manually add a single room request (key: room/day/slot). Errors if one already exists. Starts active and not approved. */
+  addRoomRequest: RoomRequest;
+  addZpaExamToPlan: Scalars['Boolean']['output'];
+  /**
+   * Generate room requests from the current plan and REPLACE all existing ones
+   * (one-shot, no merge). Generated requests start active and not approved. Errors
+   * if requests already exist unless force is true (force discards them, including
+   * approved flags). Returns the number written.
+   */
+  applyRoomRequestsPreview: Scalars['Int']['output'];
+  /** Block a room for a slot so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
+  blockRoomForSlot: BlockedRoom;
+  /** Block a room for several slots at once (e.g. a whole day or a time range). Returns the stored blocks. */
+  blockRoomForSlots: Array<BlockedRoom>;
+  clearEmailAttachments: Scalars['Int']['output'];
+  /**
+   * Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
+   * must not already be linked by another pre-exam.
+   */
+  connectPreplanExamToAncode: PreplanExam;
+  /**
+   * Create a new semester (in its own database) with the given config. The
+   * semester must match YYYY-SS / YYYY-WS and must not already have a config.
+   * Use setSemester to switch the running server to it afterwards.
+   */
+  createSemester: SaveSemesterConfigResult;
+  /**
+   * Create a new, independent database (workspace) for the logical semester of
+   * `fromSemester` (e.g. "2026-SS"), copying that semester's config (dates/slots/
+   * emails) so it matches. `database` is the new database name (e.g. "test-v2"); it
+   * must not exist yet. The data stays empty — switch to it and import (e.g. from ZPA,
+   * which uses the logical semester). Returns the new workspace.
+   */
+  createWorkspace: Semester;
+  /** Delete an additional exam by ancode. Returns false if there was none. */
+  deleteAdditionalExam: Scalars['Boolean']['output'];
+  /** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
+  deleteInvigilatorConstraints: Scalars['Boolean']['output'];
+  deletePreplanExam: Scalars['Boolean']['output'];
+  /** Delete a special-interest group by name. Returns false if there was none. */
+  deleteSpecialInterest: Scalars['Boolean']['output'];
+  /** Delete a study program by its shortname. Returns false if there was none. */
+  deleteStudyProgram: Scalars['Boolean']['output'];
+  /** Remove the ZPA link from a pre-exam. */
+  disconnectPreplanExam: PreplanExam;
+  exahm: Scalars['Boolean']['output'];
+  excludeDays: Scalars['Boolean']['output'];
+  /**
+   * fixExamRoomsPhase freezes the phase-A EXaHM/SEB placement (sets PhaseFixed, distinct
+   * from the manual Locked). Returns the number of exams fixed. Phase B then treats them
+   * as immovable obstacles.
+   */
+  fixExamRoomsPhase: Scalars['Int']['output'];
+  /**
+   * Renumber a Primuss exam (exam + student regs + conflicts) from fromAncode to
+   * toAncode within a program. Returns the (live computed) connected exam.
+   */
+  fixPrimussAncode: ConnectedExam;
+  /**
+   * Regenerate the cached assembled exams from the current data and clear the stale
+   * flag. Fast (~100ms); returns the new state plus the list of changes vs the
+   * previously cached assembled exams.
+   */
+  generateAssembledExams: GenerateAssembledExamsResult;
+  /**
+   * Regenerate both the cached assembled exams and the per-student planned
+   * registrations in one step. They share the same inputs (connected exams + Primuss
+   * data) and are independent of each other, so they are always (re)generated together.
+   * Clears both stale flags and reports both results.
+   */
+  generatePreparation: GeneratePreparationResult;
+  /**
+   * Generate a slot assignment for the pre-exams, distributing them only over the
+   * MUC.DAI slots that already have Anny rooms booked (up to ~90% of each slot's
+   * booked seats). Exams of the same study program never share a slot and are spread
+   * across days; the most important exams (EXaHM, then large SEB) are placed first.
+   * Uses a DSATUR constructive pass with a simulated-annealing repair for the hard
+   * residue. Fixed pre-exams keep their slot; all non-fixed exams are re-planned
+   * (with keepAssigned, currently-slotted non-fixed exams are kept too). The new
+   * assignment is persisted; the result is its validation.
+   */
+  generatePreplanAssignment: PreplanValidation;
+  /**
+   * Regenerate the per-student planned registrations from the current data and clear
+   * the stale flag. Returns the new state plus the number of students.
+   */
+  generateStudentRegs: GenerateStudentRegsResult;
+  /**
+   * Import MUC.DAI exams from a CSV (the file you get from MUC.DAI; columns Nr,
+   * Modulname, Prüfungsform, Bewertung, Dauer, Erstpruefender, Zweitpruefender,
+   * IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the mucdai_<program>
+   * data and generates the non-ZPA exams for everything not planned by FK07 (FK07
+   * exams already exist as ZPA exams and are only linked). The GUI sends the file
+   * content as text.
+   */
+  importMucDaiExams: ImportMucDaiResult;
+  lab: Scalars['Boolean']['output'];
+  /**
+   * One-time migration: copy the invigilatorConstraints from the semester config
+   * (viper) into the DB. Returns the number of records written.
+   */
+  migrateInvigilatorConstraints: Scalars['Int']['output'];
+  /** One-time import of roomConstraints.<room>.reservations from the semester config into the DB. Returns the number imported. */
+  migrateRoomRequestsFromConfig: Scalars['Int']['output'];
+  /**
+   * One-time backfill: derive requestWith for all rooms (ANNY for request-rooms
+   * with a T name, MANAGEMENT for other request-rooms, NONE otherwise). Returns
+   * the number of rooms updated.
+   */
+  migrateRoomsRequestWith: Scalars['Int']['output'];
+  /** Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10"). */
+  notPlannedByMe: Scalars['Boolean']['output'];
+  online: Scalars['Boolean']['output'];
+  placesWithSockets: Scalars['Boolean']['output'];
+  possibleDays: Scalars['Boolean']['output'];
+  /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) in a slot. */
+  prePlanInvigilation: Scalars['Boolean']['output'];
+  /**
+   * prePlanInvigilationInSlot promotes the invigilation currently planned for a
+   * room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
+   * fixed assignment, so it survives a re-run of the automatic planning.
+   */
+  prePlanInvigilationInSlot: Scalars['Boolean']['output'];
+  prePlanRoom: Scalars['Boolean']['output'];
+  /** Remove the duration override for an ancode. Returns false if there was none. */
+  removeExamDuration: Scalars['Boolean']['output'];
+  removeExamsCanShareSlot: Scalars['Boolean']['output'];
+  /** Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection. */
+  removeMucDaiLink: MucDaiExam;
+  /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
+  removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
+  /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
+  removePermanentNonInvigilator: Scalars['Boolean']['output'];
+  /** Remove a pre-planned invigilation (key: day/slot/roomName; roomName null = the reserve). */
+  removePrePlannedInvigilation: Scalars['Boolean']['output'];
+  /** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
+  removePrePlannedRoom: Scalars['Boolean']['output'];
+  /**
+   * Remove a (manually added) Primuss ancode mapping of a program from a ZPA exam.
+   * Returns the (live computed) connected exam.
+   */
+  removePrimussAncode: ConnectedExam;
+  /** Remove the explicit decision (back to automatic handling). */
+  removeStudentConflictDecision: Scalars['Boolean']['output'];
+  /**
+   * resetExamSchedule removes the generated exam schedule (phase B): all placements that
+   * are not manually locked, not external / not-planned-by-me and not frozen by the
+   * EXaHM/SEB room phase (phaseFixed). Returns the number of entries removed. A full reset
+   * (incl. phase A) = unfixExamRoomsPhase then resetExamSchedule. Blocked while published.
+   */
+  resetExamSchedule: Scalars['Int']['output'];
+  /**
+   * Reset the assigned invigilations (invigilations_other) so only the
+   * pre-planning remains; self-invigilations are refreshed on the next generation.
+   * Blocked while the invigilation plan is published.
+   */
+  resetInvigilations: Scalars['Boolean']['output'];
+  /**
+   * Reset the assigned room plan (planned_rooms) so only the pre-planning remains;
+   * re-assignment re-applies it. Blocked while the room plan is published.
+   */
+  resetRoomsForExams: Scalars['Boolean']['output'];
+  rmConstraints: Scalars['Boolean']['output'];
+  rmZpaExamFromPlan: Scalars['Boolean']['output'];
+  sameSlot: Scalars['Boolean']['output'];
+  seb: Scalars['Boolean']['output'];
+  /**
+   * Seed study programs from the configured lists (fk07programs, mucdaiprograms,
+   * miscprograms) without overwriting existing ones. Returns the number created.
+   */
+  seedStudyProgramsFromConfig: Scalars['Int']['output'];
+  /**
+   * Set the personalization names that mark 'our' Anny bookings (mine=true). Does
+   * not filter; all bookings are still fetched and shown.
+   */
+  setAnnyPersonalizationNames: AnnyConfig;
+  /** Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0. */
+  setExamDuration: ExamDurationOverride;
+  /** Declare / undeclare that two exams may share a slot. */
+  setExamsCanShareSlot: Scalars['Boolean']['output'];
+  /**
+   * Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
+   * faculty). The matching slot is computed and stored as the plan entry's
+   * externalTime. date: dd.mm.yyyy, time: HH:MM.
+   */
+  setExternalExamTime: Scalars['Boolean']['output'];
+  /** Store the generation config (global). Returns the saved config. */
+  setGenerationConfig: GenerationConfig;
+  /** Create or replace the whole constraints record of one invigilator (key: teacherID). */
+  setInvigilatorConstraints: InvigilatorConstraints;
+  /**
+   * Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
+   * for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
+   */
+  setMucDaiZpaLink: MucDaiExam;
+  /** Activate/deactivate an NTA (key: mtknr). A deactivated NTA is not applied to exams. */
+  setNTAActive: Nta;
+  /**
+   * Add or update a permanent (cross-semester) non-invigilator (key: teacherID),
+   * e.g. someone retired. name is the display name (pass the candidate's name; if
+   * empty the backend tries to resolve it).
+   */
+  setPermanentNonInvigilator: PermanentNonInvigilator;
+  /** Set the planner (name + email), stored in the global DB. */
+  setPlaner: Planer;
+  /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
+  setPlanningCondition: PlanningState;
+  /**
+   * Mark (canShare=true) or unmark (false) another pre-exam as "may run at the same time /
+   * right after" this one despite a shared study program (no common students). The link is
+   * kept symmetric and cancels the program-based spreading for that pair.
+   */
+  setPreplanExamCanShareSlot: PreplanExam;
+  /**
+   * Set the constraints of a pre-exam (room restrictions, same-slot, …). Reuses the
+   * normal ConstraintsInput, but its `sameSlot` references other PRE-EXAM ids (not
+   * ancodes) — they are kept symmetric. On connectPreplanExamToAncode these
+   * constraints are carried over to the ZPA exam (sameSlot translated to ancodes).
+   */
+  setPreplanExamConstraints: PreplanExam;
+  /**
+   * Pin/unpin the pre-exam's current slot. A fixed pre-exam keeps its slot when the
+   * automatic assignment is (re-)generated; all non-fixed exams are re-planned.
+   */
+  setPreplanExamFixed: PreplanExam;
+  /**
+   * Mark (conflict=true) or unmark (false) another pre-exam as "must not run at the same
+   * time" as this one (same students). The link is kept symmetric. Soft: the automatic
+   * assignment then spreads the two apart (different days, else max slot distance).
+   */
+  setPreplanExamNotSameSlot: PreplanExam;
+  /**
+   * Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
+   * or neither). The slot must be a real slot of this semester.
+   */
+  setPreplanExamSlot: PreplanExam;
+  /** Activate/deactivate a room (key: name). A deactivated room is not used for planning. */
+  setRoomActive: Room;
+  /** Activate/deactivate a room request; inactive requests are not used for room planning. */
+  setRoomRequestActive: RoomRequest;
+  /** Set the approved flag of a room request (key: room/day/slot). */
+  setRoomRequestApproved: RoomRequest;
+  /**
+   * Switch the running server to another database (workspace) at runtime. `name` is
+   * the database name from allSemesterNames (id), e.g. "2026-SS" or "test-v2". The
+   * logical semester used against external systems (ZPA) is the database's own stored
+   * semester — independent of the database name. `semester` is an optional override,
+   * only needed for a database that has no stored semester yet (then it is
+   * remembered). The target may be empty (config null until created/imported).
+   * Refused while an operation is running. The GUI must refetch all data afterwards.
+   */
+  setSemester: Semester;
+  /**
+   * Replace the raw per-semester config. The derived semesterConfig (days, slots,
+   * go-slots) is recomputed and stored. Returns warnings for changes that may
+   * invalidate an existing plan (the change is still applied).
+   */
+  setSemesterConfigInput: SaveSemesterConfigResult;
+  /**
+   * Protect or unprotect the current database: when read-only, all data-changing
+   * operations (mutations and imports/generation/uploads) are rejected, but the
+   * semester can still be viewed and validated, and you can switch away. Useful to
+   * guard the real semester while replaying in a clone.
+   */
+  setSemesterReadOnly: Semester;
+  /**
+   * Set an explicit decision for a student's conflict (ACCEPT drops the penalty;
+   * VETO forces it to count despite an automatic repeat down-weighting).
+   */
+  setStudentConflictDecision: Scalars['Boolean']['output'];
+  /** Remove a room block for a slot (key: room/day/slot). */
+  unblockRoomForSlot: Scalars['Boolean']['output'];
+  /** Remove the room blocks for several slots at once. Returns how many blocks were removed. */
+  unblockRoomForSlots: Scalars['Int']['output'];
+  /** unfixExamRoomsPhase clears the phase-A freeze on all exams (manual Locked stays). */
+  unfixExamRoomsPhase: Scalars['Boolean']['output'];
+  /** Update the editable fields of an existing NTA (key: mtknr). Errors if it does not exist. */
+  updateNTA: Nta;
+  updatePreplanExam: PreplanExam;
+  /** Update an existing room (key: name). Errors if it does not exist; keeps the active state. */
+  updateRoom: Room;
+  /**
+   * Change the time range of an existing room request, e.g. extend it for an NTA
+   * (key: room/day/slot). Errors if it does not exist.
+   */
+  updateRoomRequestTime: RoomRequest;
+  /** Create or update an additional exam (key: ancode). */
+  upsertAdditionalExam: AdditionalExam;
+  /** Create or update a special-interest group (key: name). */
+  upsertSpecialInterest: SpecialInterest;
+  /** Create or update a study program (key: shortname/Kürzel). */
+  upsertStudyProgram: StudyProgram;
+  zpaExamsToPlan: Array<ZpaExam>;
 };
+
 
 export type MutationAddConstraintsArgs = {
-	ancode: Scalars['Int']['input'];
-	constraints: ConstraintsInput;
+  ancode: Scalars['Int']['input'];
+  constraints: ConstraintsInput;
 };
+
 
 export type MutationAddExamToSlotArgs = {
-	ancode: Scalars['Int']['input'];
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type MutationAddNtaArgs = {
-	input: NtaInput;
+  input: NtaInput;
 };
+
 
 export type MutationAddNtaRoomAloneWaiverArgs = {
-	ancode: Scalars['Int']['input'];
-	mtknr: Scalars['String']['input'];
-	reason: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
 };
+
 
 export type MutationAddPreplanExamArgs = {
-	input: PreplanExamInput;
+  input: PreplanExamInput;
 };
+
 
 export type MutationAddPrimussAncodeArgs = {
-	primussAncode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
-	zpaAncode: Scalars['Int']['input'];
+  primussAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
+
 
 export type MutationAddRoomArgs = {
-	input: RoomInput;
+  input: RoomInput;
 };
+
 
 export type MutationAddRoomRequestArgs = {
-	day: Scalars['Int']['input'];
-	from: Scalars['Time']['input'];
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
-	until: Scalars['Time']['input'];
+  day: Scalars['Int']['input'];
+  from: Scalars['Time']['input'];
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
+  until: Scalars['Time']['input'];
 };
+
 
 export type MutationAddZpaExamToPlanArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationApplyRoomRequestsPreviewArgs = {
-	force: Scalars['Boolean']['input'];
+  force: Scalars['Boolean']['input'];
 };
+
 
 export type MutationBlockRoomForSlotArgs = {
-	day: Scalars['Int']['input'];
-	reason?: InputMaybe<Scalars['String']['input']>;
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationBlockRoomForSlotsArgs = {
-	reason?: InputMaybe<Scalars['String']['input']>;
-	room: Scalars['String']['input'];
-	slots: Array<SlotInput>;
+  reason?: InputMaybe<Scalars['String']['input']>;
+  room: Scalars['String']['input'];
+  slots: Array<SlotInput>;
 };
+
 
 export type MutationClearEmailAttachmentsArgs = {
-	kind: Scalars['String']['input'];
+  kind: Scalars['String']['input'];
 };
+
 
 export type MutationConnectPreplanExamToAncodeArgs = {
-	ancode: Scalars['Int']['input'];
-	id: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type MutationCreateSemesterArgs = {
-	input: SemesterConfigInputData;
-	semester: Scalars['String']['input'];
+  input: SemesterConfigInputData;
+  semester: Scalars['String']['input'];
 };
+
 
 export type MutationCreateWorkspaceArgs = {
-	database: Scalars['String']['input'];
-	fromSemester: Scalars['String']['input'];
+  database: Scalars['String']['input'];
+  fromSemester: Scalars['String']['input'];
 };
+
 
 export type MutationDeleteAdditionalExamArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationDeleteInvigilatorConstraintsArgs = {
-	teacherID: Scalars['Int']['input'];
+  teacherID: Scalars['Int']['input'];
 };
+
 
 export type MutationDeletePreplanExamArgs = {
-	id: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type MutationDeleteSpecialInterestArgs = {
-	name: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
+
 
 export type MutationDeleteStudyProgramArgs = {
-	shortname: Scalars['String']['input'];
+  shortname: Scalars['String']['input'];
 };
+
 
 export type MutationDisconnectPreplanExamArgs = {
-	id: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type MutationExahmArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationExcludeDaysArgs = {
-	ancode: Scalars['Int']['input'];
-	days: Array<Scalars['String']['input']>;
+  ancode: Scalars['Int']['input'];
+  days: Array<Scalars['String']['input']>;
 };
+
 
 export type MutationFixPrimussAncodeArgs = {
-	fromAncode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
-	toAncode: Scalars['Int']['input'];
-	zpaAncode: Scalars['Int']['input'];
+  fromAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  toAncode: Scalars['Int']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
+
 
 export type MutationGeneratePreplanAssignmentArgs = {
-	keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
+  keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
 
 export type MutationImportMucDaiExamsArgs = {
-	csv: Scalars['String']['input'];
+  csv: Scalars['String']['input'];
 };
+
 
 export type MutationLabArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationNotPlannedByMeArgs = {
-	ancode: Scalars['Int']['input'];
-	inFK?: InputMaybe<Scalars['String']['input']>;
+  ancode: Scalars['Int']['input'];
+  inFK?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 export type MutationOnlineArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationPlacesWithSocketsArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationPossibleDaysArgs = {
-	ancode: Scalars['Int']['input'];
-	days: Array<Scalars['String']['input']>;
+  ancode: Scalars['Int']['input'];
+  days: Array<Scalars['String']['input']>;
 };
+
 
 export type MutationPrePlanInvigilationArgs = {
-	day: Scalars['Int']['input'];
-	invigilatorID: Scalars['Int']['input'];
-	roomName?: InputMaybe<Scalars['String']['input']>;
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  invigilatorID: Scalars['Int']['input'];
+  roomName?: InputMaybe<Scalars['String']['input']>;
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationPrePlanInvigilationInSlotArgs = {
-	day: Scalars['Int']['input'];
-	roomName?: InputMaybe<Scalars['String']['input']>;
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  roomName?: InputMaybe<Scalars['String']['input']>;
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationPrePlanRoomArgs = {
-	ancode: Scalars['Int']['input'];
-	mtknr?: InputMaybe<Scalars['String']['input']>;
-	reserve: Scalars['Boolean']['input'];
-	roomName: Scalars['String']['input'];
-	seats?: InputMaybe<Scalars['Int']['input']>;
+  ancode: Scalars['Int']['input'];
+  mtknr?: InputMaybe<Scalars['String']['input']>;
+  reserve: Scalars['Boolean']['input'];
+  roomName: Scalars['String']['input'];
+  seats?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type MutationRemoveExamDurationArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationRemoveExamsCanShareSlotArgs = {
-	ancode1: Scalars['Int']['input'];
-	ancode2: Scalars['Int']['input'];
+  ancode1: Scalars['Int']['input'];
+  ancode2: Scalars['Int']['input'];
 };
+
 
 export type MutationRemoveMucDaiLinkArgs = {
-	primussAncode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
+  primussAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
 };
+
 
 export type MutationRemoveNtaRoomAloneWaiverArgs = {
-	ancode: Scalars['Int']['input'];
-	mtknr: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type MutationRemovePermanentNonInvigilatorArgs = {
-	teacherID: Scalars['Int']['input'];
+  teacherID: Scalars['Int']['input'];
 };
+
 
 export type MutationRemovePrePlannedInvigilationArgs = {
-	day: Scalars['Int']['input'];
-	roomName?: InputMaybe<Scalars['String']['input']>;
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  roomName?: InputMaybe<Scalars['String']['input']>;
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationRemovePrePlannedRoomArgs = {
-	ancode: Scalars['Int']['input'];
-	mtknr?: InputMaybe<Scalars['String']['input']>;
-	roomName: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  mtknr?: InputMaybe<Scalars['String']['input']>;
+  roomName: Scalars['String']['input'];
 };
+
 
 export type MutationRemovePrimussAncodeArgs = {
-	program: Scalars['String']['input'];
-	zpaAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
+
 
 export type MutationRemoveStudentConflictDecisionArgs = {
-	ancode1: Scalars['Int']['input'];
-	ancode2: Scalars['Int']['input'];
-	mtknr: Scalars['String']['input'];
+  ancode1: Scalars['Int']['input'];
+  ancode2: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type MutationRmConstraintsArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationRmZpaExamFromPlanArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationSameSlotArgs = {
-	ancode: Scalars['Int']['input'];
-	ancodes: Array<Scalars['Int']['input']>;
+  ancode: Scalars['Int']['input'];
+  ancodes: Array<Scalars['Int']['input']>;
 };
+
 
 export type MutationSebArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type MutationSetAnnyPersonalizationNamesArgs = {
-	names: Array<Scalars['String']['input']>;
+  names: Array<Scalars['String']['input']>;
 };
+
 
 export type MutationSetExamDurationArgs = {
-	ancode: Scalars['Int']['input'];
-	duration: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
+  duration: Scalars['Int']['input'];
 };
+
 
 export type MutationSetExamsCanShareSlotArgs = {
-	ancode1: Scalars['Int']['input'];
-	ancode2: Scalars['Int']['input'];
+  ancode1: Scalars['Int']['input'];
+  ancode2: Scalars['Int']['input'];
 };
+
 
 export type MutationSetExternalExamTimeArgs = {
-	ancode: Scalars['Int']['input'];
-	date: Scalars['String']['input'];
-	time: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  date: Scalars['String']['input'];
+  time: Scalars['String']['input'];
 };
+
 
 export type MutationSetGenerationConfigArgs = {
-	input: GenerationConfigInput;
+  input: GenerationConfigInput;
 };
+
 
 export type MutationSetInvigilatorConstraintsArgs = {
-	input: InvigilatorConstraintsInput;
+  input: InvigilatorConstraintsInput;
 };
+
 
 export type MutationSetMucDaiZpaLinkArgs = {
-	primussAncode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
-	zpaAncode: Scalars['Int']['input'];
+  primussAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
+  zpaAncode: Scalars['Int']['input'];
 };
+
 
 export type MutationSetNtaActiveArgs = {
-	active: Scalars['Boolean']['input'];
-	mtknr: Scalars['String']['input'];
+  active: Scalars['Boolean']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type MutationSetPermanentNonInvigilatorArgs = {
-	name: Scalars['String']['input'];
-	reason: Scalars['String']['input'];
-	teacherID: Scalars['Int']['input'];
+  name: Scalars['String']['input'];
+  reason: Scalars['String']['input'];
+  teacherID: Scalars['Int']['input'];
 };
+
 
 export type MutationSetPlanerArgs = {
-	email: Scalars['String']['input'];
-	name: Scalars['String']['input'];
+  email: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
+
 
 export type MutationSetPlanningConditionArgs = {
-	done: Scalars['Boolean']['input'];
-	key: Scalars['String']['input'];
+  done: Scalars['Boolean']['input'];
+  key: Scalars['String']['input'];
 };
+
 
 export type MutationSetPreplanExamCanShareSlotArgs = {
-	canShare: Scalars['Boolean']['input'];
-	id: Scalars['Int']['input'];
-	otherID: Scalars['Int']['input'];
+  canShare: Scalars['Boolean']['input'];
+  id: Scalars['Int']['input'];
+  otherID: Scalars['Int']['input'];
 };
+
 
 export type MutationSetPreplanExamConstraintsArgs = {
-	constraints: ConstraintsInput;
-	id: Scalars['Int']['input'];
+  constraints: ConstraintsInput;
+  id: Scalars['Int']['input'];
 };
+
 
 export type MutationSetPreplanExamFixedArgs = {
-	fixed: Scalars['Boolean']['input'];
-	id: Scalars['Int']['input'];
+  fixed: Scalars['Boolean']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type MutationSetPreplanExamNotSameSlotArgs = {
-	conflict: Scalars['Boolean']['input'];
-	id: Scalars['Int']['input'];
-	otherID: Scalars['Int']['input'];
+  conflict: Scalars['Boolean']['input'];
+  id: Scalars['Int']['input'];
+  otherID: Scalars['Int']['input'];
 };
+
 
 export type MutationSetPreplanExamSlotArgs = {
-	dayNumber?: InputMaybe<Scalars['Int']['input']>;
-	id: Scalars['Int']['input'];
-	slotNumber?: InputMaybe<Scalars['Int']['input']>;
+  dayNumber?: InputMaybe<Scalars['Int']['input']>;
+  id: Scalars['Int']['input'];
+  slotNumber?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type MutationSetRoomActiveArgs = {
-	active: Scalars['Boolean']['input'];
-	name: Scalars['String']['input'];
+  active: Scalars['Boolean']['input'];
+  name: Scalars['String']['input'];
 };
+
 
 export type MutationSetRoomRequestActiveArgs = {
-	active: Scalars['Boolean']['input'];
-	day: Scalars['Int']['input'];
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
+  active: Scalars['Boolean']['input'];
+  day: Scalars['Int']['input'];
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationSetRoomRequestApprovedArgs = {
-	approved: Scalars['Boolean']['input'];
-	day: Scalars['Int']['input'];
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
+  approved: Scalars['Boolean']['input'];
+  day: Scalars['Int']['input'];
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationSetSemesterArgs = {
-	name: Scalars['String']['input'];
-	semester?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  semester?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 export type MutationSetSemesterConfigInputArgs = {
-	input: SemesterConfigInputData;
+  input: SemesterConfigInputData;
 };
+
 
 export type MutationSetSemesterReadOnlyArgs = {
-	readOnly: Scalars['Boolean']['input'];
+  readOnly: Scalars['Boolean']['input'];
 };
+
 
 export type MutationSetStudentConflictDecisionArgs = {
-	ancode1: Scalars['Int']['input'];
-	ancode2: Scalars['Int']['input'];
-	decision: ConflictDecision;
-	mtknr: Scalars['String']['input'];
+  ancode1: Scalars['Int']['input'];
+  ancode2: Scalars['Int']['input'];
+  decision: ConflictDecision;
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type MutationUnblockRoomForSlotArgs = {
-	day: Scalars['Int']['input'];
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
 };
+
 
 export type MutationUnblockRoomForSlotsArgs = {
-	room: Scalars['String']['input'];
-	slots: Array<SlotInput>;
+  room: Scalars['String']['input'];
+  slots: Array<SlotInput>;
 };
+
 
 export type MutationUpdateNtaArgs = {
-	input: NtaInput;
+  input: NtaInput;
 };
+
 
 export type MutationUpdatePreplanExamArgs = {
-	id: Scalars['Int']['input'];
-	input: PreplanExamInput;
+  id: Scalars['Int']['input'];
+  input: PreplanExamInput;
 };
+
 
 export type MutationUpdateRoomArgs = {
-	input: RoomInput;
+  input: RoomInput;
 };
+
 
 export type MutationUpdateRoomRequestTimeArgs = {
-	day: Scalars['Int']['input'];
-	from: Scalars['Time']['input'];
-	room: Scalars['String']['input'];
-	slot: Scalars['Int']['input'];
-	until: Scalars['Time']['input'];
+  day: Scalars['Int']['input'];
+  from: Scalars['Time']['input'];
+  room: Scalars['String']['input'];
+  slot: Scalars['Int']['input'];
+  until: Scalars['Time']['input'];
 };
+
 
 export type MutationUpsertAdditionalExamArgs = {
-	input: AdditionalExamInput;
+  input: AdditionalExamInput;
 };
+
 
 export type MutationUpsertSpecialInterestArgs = {
-	input: SpecialInterestInput;
+  input: SpecialInterestInput;
 };
+
 
 export type MutationUpsertStudyProgramArgs = {
-	input: StudyProgramInput;
+  input: StudyProgramInput;
 };
 
+
 export type MutationZpaExamsToPlanArgs = {
-	input: Array<Scalars['Int']['input']>;
+  input: Array<Scalars['Int']['input']>;
 };
 
 export type MutationLogArg = {
-	__typename?: 'MutationLogArg';
-	key: Scalars['String']['output'];
-	value: Scalars['String']['output'];
+  __typename?: 'MutationLogArg';
+  key: Scalars['String']['output'];
+  value: Scalars['String']['output'];
 };
 
 export type MutationLogEntry = {
-	__typename?: 'MutationLogEntry';
-	/** Ancodes referenced by the arguments (ancode / zpaAncode / primussAncode / …). */
-	ancodes: Array<Scalars['Int']['output']>;
-	/** The call arguments, flattened to key/value pairs (nested input objects included). */
-	args: Array<MutationLogArg>;
-	durationMs: Scalars['Int']['output'];
-	/** Set when the operation returned an error (for subscriptions only the start error, if any). */
-	error?: Maybe<Scalars['String']['output']>;
-	/** GraphQL operation/field name, e.g. addPreplanExam. */
-	name: Scalars['String']['output'];
-	time: Scalars['Time']['output'];
-	/** mutation | subscription */
-	type: Scalars['String']['output'];
+  __typename?: 'MutationLogEntry';
+  /** Ancodes referenced by the arguments (ancode / zpaAncode / primussAncode / …). */
+  ancodes: Array<Scalars['Int']['output']>;
+  /** The call arguments, flattened to key/value pairs (nested input objects included). */
+  args: Array<MutationLogArg>;
+  durationMs: Scalars['Int']['output'];
+  /** Set when the operation returned an error (for subscriptions only the start error, if any). */
+  error?: Maybe<Scalars['String']['output']>;
+  /** GraphQL operation/field name, e.g. addPreplanExam. */
+  name: Scalars['String']['output'];
+  time: Scalars['Time']['output'];
+  /** mutation | subscription */
+  type: Scalars['String']['output'];
 };
 
 export type Nta = {
-	__typename?: 'NTA';
-	compensation: Scalars['String']['output'];
-	deactivated: Scalars['Boolean']['output'];
-	deltaDurationPercent: Scalars['Int']['output'];
-	email?: Maybe<Scalars['String']['output']>;
-	from: Scalars['String']['output'];
-	lastSemester?: Maybe<Scalars['String']['output']>;
-	mtknr: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	needsHardware: Scalars['Boolean']['output'];
-	needsRoomAlone: Scalars['Boolean']['output'];
-	program: Scalars['String']['output'];
-	until: Scalars['String']['output'];
+  __typename?: 'NTA';
+  compensation: Scalars['String']['output'];
+  deactivated: Scalars['Boolean']['output'];
+  deltaDurationPercent: Scalars['Int']['output'];
+  email?: Maybe<Scalars['String']['output']>;
+  from: Scalars['String']['output'];
+  lastSemester?: Maybe<Scalars['String']['output']>;
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  needsHardware: Scalars['Boolean']['output'];
+  needsRoomAlone: Scalars['Boolean']['output'];
+  program: Scalars['String']['output'];
+  until: Scalars['String']['output'];
 };
 
 export type NtaInput = {
-	compensation: Scalars['String']['input'];
-	deltaDurationPercent: Scalars['Int']['input'];
-	email?: InputMaybe<Scalars['String']['input']>;
-	from: Scalars['String']['input'];
-	mtknr: Scalars['String']['input'];
-	name: Scalars['String']['input'];
-	needsHardware: Scalars['Boolean']['input'];
-	needsRoomAlone: Scalars['Boolean']['input'];
-	program: Scalars['String']['input'];
-	until: Scalars['String']['input'];
+  compensation: Scalars['String']['input'];
+  deltaDurationPercent: Scalars['Int']['input'];
+  email?: InputMaybe<Scalars['String']['input']>;
+  from: Scalars['String']['input'];
+  mtknr: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  needsHardware: Scalars['Boolean']['input'];
+  needsRoomAlone: Scalars['Boolean']['input'];
+  program: Scalars['String']['input'];
+  until: Scalars['String']['input'];
 };
 
 export type NtaWithRegs = {
-	__typename?: 'NTAWithRegs';
-	nta: Nta;
-	regs?: Maybe<StudentRegsPerStudent>;
+  __typename?: 'NTAWithRegs';
+  nta: Nta;
+  regs?: Maybe<StudentRegsPerStudent>;
 };
 
 export type NtaWithRegsByExam = {
-	__typename?: 'NTAWithRegsByExam';
-	exam: ZpaExam;
-	ntas?: Maybe<Array<NtaWithRegs>>;
+  __typename?: 'NTAWithRegsByExam';
+  exam: ZpaExam;
+  ntas?: Maybe<Array<NtaWithRegs>>;
 };
 
 export type NtaWithRegsByExamAndTeacher = {
-	__typename?: 'NTAWithRegsByExamAndTeacher';
-	exams?: Maybe<Array<NtaWithRegsByExam>>;
-	teacher: Teacher;
+  __typename?: 'NTAWithRegsByExamAndTeacher';
+  exams?: Maybe<Array<NtaWithRegsByExam>>;
+  teacher: Teacher;
 };
 
 export type NtaRoomAloneWaiver = {
-	__typename?: 'NtaRoomAloneWaiver';
-	ancode: Scalars['Int']['output'];
-	mtknr: Scalars['String']['output'];
-	reason: Scalars['String']['output'];
+  __typename?: 'NtaRoomAloneWaiver';
+  ancode: Scalars['Int']['output'];
+  mtknr: Scalars['String']['output'];
+  reason: Scalars['String']['output'];
 };
 
 /** OptimizerConstraint describes one applied constraint (for the read-only view). */
 export type OptimizerConstraint = {
-	__typename?: 'OptimizerConstraint';
-	description: Scalars['String']['output'];
-	/** hard | soft */
-	kind: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	/** display priority (lower = more important). */
-	tier: Scalars['Int']['output'];
-	title: Scalars['String']['output'];
-	/** soft-constraint weight (0 for hard). */
-	weight: Scalars['Float']['output'];
+  __typename?: 'OptimizerConstraint';
+  description: Scalars['String']['output'];
+  /** hard | soft */
+  kind: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  /** display priority (lower = more important). */
+  tier: Scalars['Int']['output'];
+  title: Scalars['String']['output'];
+  /** soft-constraint weight (0 for hard). */
+  weight: Scalars['Float']['output'];
 };
 
 /**
@@ -1643,12 +1720,12 @@ export type OptimizerConstraint = {
  * simulated-annealing optimizer snapshot.
  */
 export type OptimizerProgress = {
-	__typename?: 'OptimizerProgress';
-	balance: Scalars['Boolean']['output'];
-	bestCost: Scalars['Float']['output'];
-	iteration: Scalars['Int']['output'];
-	total: Scalars['Int']['output'];
-	unfilled: Scalars['Int']['output'];
+  __typename?: 'OptimizerProgress';
+  balance: Scalars['Boolean']['output'];
+  bestCost: Scalars['Float']['output'];
+  iteration: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+  unfilled: Scalars['Int']['output'];
 };
 
 /**
@@ -1657,98 +1734,98 @@ export type OptimizerProgress = {
  * over between semesters; it always implies isNotInvigilator.
  */
 export type PermanentNonInvigilator = {
-	__typename?: 'PermanentNonInvigilator';
-	/** Denormalized display name, kept so the entry stays readable even after the teacher has left the FK07 invigilator pool. */
-	name: Scalars['String']['output'];
-	reason: Scalars['String']['output'];
-	teacherID: Scalars['Int']['output'];
+  __typename?: 'PermanentNonInvigilator';
+  /** Denormalized display name, kept so the entry stays readable even after the teacher has left the FK07 invigilator pool. */
+  name: Scalars['String']['output'];
+  reason: Scalars['String']['output'];
+  teacherID: Scalars['Int']['output'];
 };
 
 export type PlanEntry = {
-	__typename?: 'PlanEntry';
-	ancode: Scalars['Int']['output'];
-	dayNumber: Scalars['Int']['output'];
-	externalTime?: Maybe<Scalars['Time']['output']>;
-	locked: Scalars['Boolean']['output'];
-	/** fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock. */
-	phaseFixed: Scalars['Boolean']['output'];
-	slotNumber: Scalars['Int']['output'];
-	starttime: Scalars['Time']['output'];
+  __typename?: 'PlanEntry';
+  ancode: Scalars['Int']['output'];
+  dayNumber: Scalars['Int']['output'];
+  externalTime?: Maybe<Scalars['Time']['output']>;
+  locked: Scalars['Boolean']['output'];
+  /** fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock. */
+  phaseFixed: Scalars['Boolean']['output'];
+  slotNumber: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type Planer = {
-	__typename?: 'Planer';
-	email: Scalars['String']['output'];
-	name: Scalars['String']['output'];
+  __typename?: 'Planer';
+  email: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type PlannedExam = {
-	__typename?: 'PlannedExam';
-	ancode: Scalars['Int']['output'];
-	conflicts: Array<ZpaConflict>;
-	constraints?: Maybe<Constraints>;
-	mainExamer: Teacher;
-	maxDuration: Scalars['Int']['output'];
-	ntas: Array<Nta>;
-	planEntry?: Maybe<PlanEntry>;
-	plannedRooms?: Maybe<Array<PlannedRoom>>;
-	primussExams: Array<EnhancedPrimussExam>;
-	studentRegsCount: Scalars['Int']['output'];
-	zpaExam: ZpaExam;
+  __typename?: 'PlannedExam';
+  ancode: Scalars['Int']['output'];
+  conflicts: Array<ZpaConflict>;
+  constraints?: Maybe<Constraints>;
+  mainExamer: Teacher;
+  maxDuration: Scalars['Int']['output'];
+  ntas: Array<Nta>;
+  planEntry?: Maybe<PlanEntry>;
+  plannedRooms?: Maybe<Array<PlannedRoom>>;
+  primussExams: Array<EnhancedPrimussExam>;
+  studentRegsCount: Scalars['Int']['output'];
+  zpaExam: ZpaExam;
 };
 
 export type PlannedRoom = {
-	__typename?: 'PlannedRoom';
-	ancode: Scalars['Int']['output'];
-	day: Scalars['Int']['output'];
-	duration: Scalars['Int']['output'];
-	handicap: Scalars['Boolean']['output'];
-	handicapRoomAlone: Scalars['Boolean']['output'];
-	ntaMtknr?: Maybe<Scalars['String']['output']>;
-	prePlanned: Scalars['Boolean']['output'];
-	reserve: Scalars['Boolean']['output'];
-	room: Room;
-	slot: Scalars['Int']['output'];
-	studentsInRoom: Array<Scalars['String']['output']>;
+  __typename?: 'PlannedRoom';
+  ancode: Scalars['Int']['output'];
+  day: Scalars['Int']['output'];
+  duration: Scalars['Int']['output'];
+  handicap: Scalars['Boolean']['output'];
+  handicapRoomAlone: Scalars['Boolean']['output'];
+  ntaMtknr?: Maybe<Scalars['String']['output']>;
+  prePlanned: Scalars['Boolean']['output'];
+  reserve: Scalars['Boolean']['output'];
+  room: Room;
+  slot: Scalars['Int']['output'];
+  studentsInRoom: Array<Scalars['String']['output']>;
 };
 
 export type PlanningCondition = {
-	__typename?: 'PlanningCondition';
-	/** true when the condition (milestone) is reached. */
-	done: Scalars['Boolean']['output'];
-	/** If set, the area this condition gates while done (e.g. ROOMS, INVIGILATIONS); null if it is not a gate. */
-	gate?: Maybe<PlanningGate>;
-	key: Scalars['String']['output'];
-	phase: Scalars['String']['output'];
-	title: Scalars['String']['output'];
+  __typename?: 'PlanningCondition';
+  /** true when the condition (milestone) is reached. */
+  done: Scalars['Boolean']['output'];
+  /** If set, the area this condition gates while done (e.g. ROOMS, INVIGILATIONS); null if it is not a gate. */
+  gate?: Maybe<PlanningGate>;
+  key: Scalars['String']['output'];
+  phase: Scalars['String']['output'];
+  title: Scalars['String']['output'];
 };
 
 /** Areas that can be locked by a published gate. */
 export enum PlanningGate {
-	Exams = 'EXAMS',
-	Invigilations = 'INVIGILATIONS',
-	Rooms = 'ROOMS'
+  Exams = 'EXAMS',
+  Invigilations = 'INVIGILATIONS',
+  Rooms = 'ROOMS'
 }
 
 export type PlanningPhase = {
-	__typename?: 'PlanningPhase';
-	conditions: Array<PlanningCondition>;
-	key: Scalars['String']['output'];
-	title: Scalars['String']['output'];
+  __typename?: 'PlanningPhase';
+  conditions: Array<PlanningCondition>;
+  key: Scalars['String']['output'];
+  title: Scalars['String']['output'];
 };
 
 export type PlanningState = {
-	__typename?: 'PlanningState';
-	/** Areas whose generation is currently locked because a gate condition is set. */
-	blockedAreas: Array<PlanningGate>;
-	phases: Array<PlanningPhase>;
+  __typename?: 'PlanningState';
+  /** Areas whose generation is currently locked because a gate condition is set. */
+  blockedAreas: Array<PlanningGate>;
+  phases: Array<PlanningPhase>;
 };
 
 export type PreExam = {
-	__typename?: 'PreExam';
-	constraints?: Maybe<Constraints>;
-	planEntry?: Maybe<PlanEntry>;
-	zpaExam: ZpaExam;
+  __typename?: 'PreExam';
+  constraints?: Maybe<Constraints>;
+  planEntry?: Maybe<PlanEntry>;
+  zpaExam: ZpaExam;
 };
 
 /**
@@ -1757,22 +1834,22 @@ export type PreExam = {
  * reserve invigilation.
  */
 export type PrePlannedInvigilation = {
-	__typename?: 'PrePlannedInvigilation';
-	day: Scalars['Int']['output'];
-	invigilatorID: Scalars['Int']['output'];
-	isReserve: Scalars['Boolean']['output'];
-	roomName?: Maybe<Scalars['String']['output']>;
-	slot: Scalars['Int']['output'];
+  __typename?: 'PrePlannedInvigilation';
+  day: Scalars['Int']['output'];
+  invigilatorID: Scalars['Int']['output'];
+  isReserve: Scalars['Boolean']['output'];
+  roomName?: Maybe<Scalars['String']['output']>;
+  slot: Scalars['Int']['output'];
 };
 
 export type PrePlannedRoom = {
-	__typename?: 'PrePlannedRoom';
-	ancode: Scalars['Int']['output'];
-	mtknr?: Maybe<Scalars['String']['output']>;
-	reserve: Scalars['Boolean']['output'];
-	roomName: Scalars['String']['output'];
-	/** Optional exact number of students planned for this room; taken verbatim when generating. */
-	seats?: Maybe<Scalars['Int']['output']>;
+  __typename?: 'PrePlannedRoom';
+  ancode: Scalars['Int']['output'];
+  mtknr?: Maybe<Scalars['String']['output']>;
+  reserve: Scalars['Boolean']['output'];
+  roomName: Scalars['String']['output'];
+  /** Optional exact number of students planned for this room; taken verbatim when generating. */
+  seats?: Maybe<Scalars['Int']['output']>;
 };
 
 /**
@@ -1780,625 +1857,659 @@ export type PrePlannedRoom = {
  * ZPA exam list / Primuss data exist. Linked to a ZPA ancode later (phase 4).
  */
 export type PreplanExam = {
-	__typename?: 'PreplanExam';
-	/** Set once linked to a real ZPA exam. */
-	ancode?: Maybe<Scalars['Int']['output']>;
-	/**
-	 * PRE-EXAM ids that may run at the same time / right after this one despite sharing a
-	 * study program (no common students). Cancels the spreading for that pair.
-	 */
-	canShareSlot?: Maybe<Array<Scalars['Int']['output']>>;
-	/**
-	 * Constraints captured during pre-planning (room restrictions, same-slot, …),
-	 * carried over to the ZPA exam on linking. In sameSlot the ints are PRE-EXAM ids.
-	 */
-	constraints?: Maybe<Constraints>;
-	duration?: Maybe<Scalars['Int']['output']>;
-	/** EXaHM | SEB */
-	examKind: Scalars['String']['output'];
-	examerID: Scalars['Int']['output'];
-	/** Snapshot of the examer's name. */
-	examerName: Scalars['String']['output'];
-	expectedStudents: Scalars['Int']['output'];
-	id: Scalars['Int']['output'];
-	/** True when the slot is pinned and survives a re-run of the automatic assignment. */
-	isFixed: Scalars['Boolean']['output'];
-	module: Scalars['String']['output'];
-	/**
-	 * PRE-EXAM ids that should not run at the same time as this one (same students). Soft:
-	 * the assignment spreads them apart (different days, else maximum slot distance).
-	 */
-	notSameSlot?: Maybe<Array<Scalars['Int']['output']>>;
-	notes?: Maybe<Scalars['String']['output']>;
-	plannedDayNumber?: Maybe<Scalars['Int']['output']>;
-	plannedSlotNumber?: Maybe<Scalars['Int']['output']>;
-	/** StudyProgram shortnames. */
-	programs: Array<Scalars['String']['output']>;
+  __typename?: 'PreplanExam';
+  /** Set once linked to a real ZPA exam. */
+  ancode?: Maybe<Scalars['Int']['output']>;
+  /**
+   * PRE-EXAM ids that may run at the same time / right after this one despite sharing a
+   * study program (no common students). Cancels the spreading for that pair.
+   */
+  canShareSlot?: Maybe<Array<Scalars['Int']['output']>>;
+  /**
+   * Constraints captured during pre-planning (room restrictions, same-slot, …),
+   * carried over to the ZPA exam on linking. In sameSlot the ints are PRE-EXAM ids.
+   */
+  constraints?: Maybe<Constraints>;
+  duration?: Maybe<Scalars['Int']['output']>;
+  /** EXaHM | SEB */
+  examKind: Scalars['String']['output'];
+  examerID: Scalars['Int']['output'];
+  /** Snapshot of the examer's name. */
+  examerName: Scalars['String']['output'];
+  expectedStudents: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  /** True when the slot is pinned and survives a re-run of the automatic assignment. */
+  isFixed: Scalars['Boolean']['output'];
+  module: Scalars['String']['output'];
+  /**
+   * PRE-EXAM ids that should not run at the same time as this one (same students). Soft:
+   * the assignment spreads them apart (different days, else maximum slot distance).
+   */
+  notSameSlot?: Maybe<Array<Scalars['Int']['output']>>;
+  notes?: Maybe<Scalars['String']['output']>;
+  plannedDayNumber?: Maybe<Scalars['Int']['output']>;
+  plannedSlotNumber?: Maybe<Scalars['Int']['output']>;
+  /** StudyProgram shortnames. */
+  programs: Array<Scalars['String']['output']>;
 };
 
 export type PreplanExamInput = {
-	duration?: InputMaybe<Scalars['Int']['input']>;
-	examKind: Scalars['String']['input'];
-	examerID: Scalars['Int']['input'];
-	expectedStudents: Scalars['Int']['input'];
-	module: Scalars['String']['input'];
-	notes?: InputMaybe<Scalars['String']['input']>;
-	programs: Array<Scalars['String']['input']>;
+  duration?: InputMaybe<Scalars['Int']['input']>;
+  examKind: Scalars['String']['input'];
+  examerID: Scalars['Int']['input'];
+  expectedStudents: Scalars['Int']['input'];
+  module: Scalars['String']['input'];
+  notes?: InputMaybe<Scalars['String']['input']>;
+  programs: Array<Scalars['String']['input']>;
 };
 
 export type PreplanKindNeed = {
-	__typename?: 'PreplanKindNeed';
-	examCount: Scalars['Int']['output'];
-	/** Names of the suggested rooms (largest first). */
-	rooms: Array<Scalars['String']['output']>;
-	/** Greedily suggested number of rooms of this kind to cover the seats. */
-	roomsSuggested: Scalars['Int']['output'];
-	/** Rooms still to book in Anny to cover the demand (largest first); empty when enough is booked. */
-	roomsToBook: Array<Scalars['String']['output']>;
-	/** Total seats available across all rooms of this kind (per slot ceiling). */
-	seatsAvailable: Scalars['Int']['output'];
-	/** Seats already booked in Anny for this slot (0 for the unslotted bucket). */
-	seatsBooked: Scalars['Int']['output'];
-	seatsNeeded: Scalars['Int']['output'];
+  __typename?: 'PreplanKindNeed';
+  examCount: Scalars['Int']['output'];
+  /** Names of the suggested rooms (largest first). */
+  rooms: Array<Scalars['String']['output']>;
+  /** Greedily suggested number of rooms of this kind to cover the seats. */
+  roomsSuggested: Scalars['Int']['output'];
+  /** Rooms still to book in Anny to cover the demand (largest first); empty when enough is booked. */
+  roomsToBook: Array<Scalars['String']['output']>;
+  /** Total seats available across all rooms of this kind (per slot ceiling). */
+  seatsAvailable: Scalars['Int']['output'];
+  /** Seats already booked in Anny for this slot (0 for the unslotted bucket). */
+  seatsBooked: Scalars['Int']['output'];
+  seatsNeeded: Scalars['Int']['output'];
 };
 
 export type PreplanOverview = {
-	__typename?: 'PreplanOverview';
-	slots: Array<PreplanSlotNeed>;
+  __typename?: 'PreplanOverview';
+  slots: Array<PreplanSlotNeed>;
 };
 
 export type PreplanProgramConflict = {
-	__typename?: 'PreplanProgramConflict';
-	modules: Array<Scalars['String']['output']>;
-	preplanExamIDs: Array<Scalars['Int']['output']>;
-	program: Scalars['String']['output'];
+  __typename?: 'PreplanProgramConflict';
+  modules: Array<Scalars['String']['output']>;
+  preplanExamIDs: Array<Scalars['Int']['output']>;
+  program: Scalars['String']['output'];
 };
 
 export type PreplanSameSlotGroup = {
-	__typename?: 'PreplanSameSlotGroup';
-	/** true when every member is connected (the same-slot is fully carried over to the ZPA exams). */
-	complete: Scalars['Boolean']['output'];
-	members: Array<PreplanSameSlotMember>;
+  __typename?: 'PreplanSameSlotGroup';
+  /** true when every member is connected (the same-slot is fully carried over to the ZPA exams). */
+  complete: Scalars['Boolean']['output'];
+  members: Array<PreplanSameSlotMember>;
 };
 
 export type PreplanSameSlotMember = {
-	__typename?: 'PreplanSameSlotMember';
-	ancode?: Maybe<Scalars['Int']['output']>;
-	/** true when this member is linked to a ZPA ancode. */
-	connected: Scalars['Boolean']['output'];
-	examKind: Scalars['String']['output'];
-	id: Scalars['Int']['output'];
-	module: Scalars['String']['output'];
+  __typename?: 'PreplanSameSlotMember';
+  ancode?: Maybe<Scalars['Int']['output']>;
+  /** true when this member is linked to a ZPA ancode. */
+  connected: Scalars['Boolean']['output'];
+  examKind: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  module: Scalars['String']['output'];
 };
 
 export type PreplanSlotNeed = {
-	__typename?: 'PreplanSlotNeed';
-	/** Programs that appear in more than one pre-exam of this slot (possible clash). */
-	conflicts: Array<PreplanProgramConflict>;
-	/** null day/slot = the bucket of pre-exams without a slot yet. */
-	dayNumber?: Maybe<Scalars['Int']['output']>;
-	exahm: PreplanKindNeed;
-	seb: PreplanKindNeed;
-	slotNumber?: Maybe<Scalars['Int']['output']>;
-	starttime?: Maybe<Scalars['Time']['output']>;
+  __typename?: 'PreplanSlotNeed';
+  /** Programs that appear in more than one pre-exam of this slot (possible clash). */
+  conflicts: Array<PreplanProgramConflict>;
+  /** null day/slot = the bucket of pre-exams without a slot yet. */
+  dayNumber?: Maybe<Scalars['Int']['output']>;
+  exahm: PreplanKindNeed;
+  seb: PreplanKindNeed;
+  slotNumber?: Maybe<Scalars['Int']['output']>;
+  starttime?: Maybe<Scalars['Time']['output']>;
 };
 
 export type PreplanValidation = {
-	__typename?: 'PreplanValidation';
-	assignedCount: Scalars['Int']['output'];
-	/** Human-readable findings (German). */
-	messages: Array<Scalars['String']['output']>;
-	/** True when there are no findings (everything assigned, within capacity, no overlaps). */
-	ok: Scalars['Boolean']['output'];
-	/** ids of pre-exams without a slot. */
-	unassignedIDs: Array<Scalars['Int']['output']>;
+  __typename?: 'PreplanValidation';
+  assignedCount: Scalars['Int']['output'];
+  /** Human-readable findings (German). */
+  messages: Array<Scalars['String']['output']>;
+  /** True when there are no findings (everything assigned, within capacity, no overlaps). */
+  ok: Scalars['Boolean']['output'];
+  /** ids of pre-exams without a slot. */
+  unassignedIDs: Array<Scalars['Int']['output']>;
 };
 
 export type PrimussExam = {
-	__typename?: 'PrimussExam';
-	ancode: Scalars['Int']['output'];
-	examType: Scalars['String']['output'];
-	mainExamer: Scalars['String']['output'];
-	module: Scalars['String']['output'];
-	presence: Scalars['String']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'PrimussExam';
+  ancode: Scalars['Int']['output'];
+  examType: Scalars['String']['output'];
+  mainExamer: Scalars['String']['output'];
+  module: Scalars['String']['output'];
+  presence: Scalars['String']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type PrimussExamAncode = {
-	__typename?: 'PrimussExamAncode';
-	ancode: Scalars['Int']['output'];
-	numberOfStuds: Scalars['Int']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'PrimussExamAncode';
+  ancode: Scalars['Int']['output'];
+  numberOfStuds: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type PrimussExamByProgram = {
-	__typename?: 'PrimussExamByProgram';
-	exams: Array<PrimussExamWithCount>;
-	program: Scalars['String']['output'];
+  __typename?: 'PrimussExamByProgram';
+  exams: Array<PrimussExamWithCount>;
+  program: Scalars['String']['output'];
 };
 
 export type PrimussExamInput = {
-	ancode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
 };
 
 export type PrimussExamWithCount = {
-	__typename?: 'PrimussExamWithCount';
-	ancode: Scalars['Int']['output'];
-	/** true if this Primuss exam is connected to a ZPA or external (MUC.DAI) exam. */
-	connected: Scalars['Boolean']['output'];
-	examType: Scalars['String']['output'];
-	mainExamer: Scalars['String']['output'];
-	module: Scalars['String']['output'];
-	/**
-	 * true if connected to a ZPA exam selected to be planned by us (a subset of
-	 * connected; false for external/MUC.DAI links or not-to-plan ZPA exams).
-	 */
-	plannedZPA: Scalars['Boolean']['output'];
-	presence: Scalars['String']['output'];
-	program: Scalars['String']['output'];
-	studentRegsCount: Scalars['Int']['output'];
+  __typename?: 'PrimussExamWithCount';
+  ancode: Scalars['Int']['output'];
+  /** true if this Primuss exam is connected to a ZPA or external (MUC.DAI) exam. */
+  connected: Scalars['Boolean']['output'];
+  examType: Scalars['String']['output'];
+  mainExamer: Scalars['String']['output'];
+  module: Scalars['String']['output'];
+  /**
+   * true if connected to a ZPA exam selected to be planned by us (a subset of
+   * connected; false for external/MUC.DAI links or not-to-plan ZPA exams).
+   */
+  plannedZPA: Scalars['Boolean']['output'];
+  presence: Scalars['String']['output'];
+  program: Scalars['String']['output'];
+  studentRegsCount: Scalars['Int']['output'];
 };
 
 export type Query = {
-	__typename?: 'Query';
-	/**
-	 * Additional exams: fully specified entries that are appended to the ZPA upload
-	 * but are not part of the normal plan (replaces publish.additionalExams).
-	 */
-	additionalExams: Array<AdditionalExam>;
-	allAnnyBookings: Array<AnnyBooking>;
-	allProgramsInPlan?: Maybe<Array<Scalars['String']['output']>>;
-	allSemesterNames: Array<Semester>;
-	allowedSlots?: Maybe<Array<Slot>>;
-	ancodesInPlan?: Maybe<Array<Scalars['Int']['output']>>;
-	annyBookings: Array<AnnyBooking>;
-	/** The Anny settings stored in the DB (the token stays in the config file). */
-	annyConfig: AnnyConfig;
-	assembledExam?: Maybe<AssembledExam>;
-	assembledExams: Array<AssembledExam>;
-	/**
-	 * State of the cached assembled exams. dirty=true means an input changed since the
-	 * last generation (connected exams, zpa-exams-to-plan, constraints, NTAs, imports),
-	 * so the assembled exams — and everything derived from them (planned exams) — are
-	 * stale and should be regenerated.
-	 */
-	assembledExamsState: AssembledExamsState;
-	awkwardSlots: Array<Slot>;
-	/** All rooms blocked for a specific slot (not usable there, e.g. otherwise occupied). */
-	blockedRooms: Array<BlockedRoom>;
-	/** Auto-detected canShareSlot candidates (same module+program, different examer) not yet declared. */
-	canShareSlotSuggestions: Array<ExamPair>;
-	conflictingAncodes?: Maybe<Array<Conflict>>;
-	connectedExam?: Maybe<ConnectedExam>;
-	connectedExams: Array<ConnectedExam>;
-	constraintForAncode?: Maybe<Constraints>;
-	emailAttachments: Array<EmailAttachmentInfo>;
-	/**
-	 * Per-ancode exam duration overrides. They are only applied to exams whose ZPA
-	 * duration is 0 (i.e. not set in the ZPA); they feed the assembled exams.
-	 */
-	examDurationOverrides: Array<ExamDurationOverride>;
-	/**
-	 * Candidates for the consolidated exam-planning info email (replacing the separate
-	 * constraints + prepared emails): one entry per examer — every examer with at least one
-	 * exam I plan (toPlan and not notPlannedByMe, any faculty), plus the FK07 examers who do
-	 * have ZPA exam(s) this semester but none that I plan. Examers without any ZPA exam, and
-	 * non-FK07 examers without a planned exam, are excluded. For selecting/deselecting
-	 * recipients before sending. No slot/date is included.
-	 */
-	examPlanningMailRecipients: Array<ExamPlanningMailRecipient>;
-	/** Conflicts of the current plan, to review (accept per student). */
-	examScheduleConflicts: Array<ExamScheduleConflict>;
-	/** The read-only list of hard/soft constraints the exam-schedule generator applies. */
-	examScheduleConstraints: Array<OptimizerConstraint>;
-	examerInPlan?: Maybe<Array<ExamerInPlan>>;
-	/**
-	 * examersWithExamsPlannedByMe returns the main examers of all planned exams that
-	 * are planned by me (not flagged NotPlannedByMe).
-	 */
-	examersWithExamsPlannedByMe: Array<Teacher>;
-	/** Exam pairs declared as allowed to share a slot (no student legitimately sits both). */
-	examsCanShareSlot: Array<ExamPair>;
-	examsInSlot?: Maybe<Array<PlannedExam>>;
-	examsWithNtas: Array<PlannedExam>;
-	examsWithoutSlot: Array<PlannedExam>;
-	fk07programs: Array<Fk07Program>;
-	/**
-	 * Global generation tuning: the room time lag and the invigilation optimizer
-	 * (simulated annealing) parameters. Stored in the global plexams database; the
-	 * config file is only a seed/fallback. Steers room and invigilation generation.
-	 */
-	generationConfig: GenerationConfig;
-	invigilator?: Maybe<Teacher>;
-	/**
-	 * All teachers in the invigilator pool, including the ones currently excluded
-	 * (isNotInvigilator / permanent). Use this to manage constraints for everyone —
-	 * invigilatorsWithReq only returns the ones who actually invigilate.
-	 */
-	invigilatorCandidates: Array<Teacher>;
-	/**
-	 * Per-invigilator constraints stored in the DB (managed via the GUI): whether
-	 * they do no invigilation at all, additional excluded whole days and time
-	 * windows when they cannot invigilate. These are merged on top of the ZPA requirements.
-	 */
-	invigilatorConstraints: Array<InvigilatorConstraints>;
-	invigilatorTodos?: Maybe<InvigilationTodos>;
-	invigilators: Array<ZpaInvigilator>;
-	/**
-	 * invigilatorsExcludedByConfig returns the invigilators who would do invigilation
-	 * duty (factor > 0) but are excluded only because isNotInvigilator is set in their
-	 * DB constraints (see invigilatorConstraints). People who are out anyway are not
-	 * listed. (The field name is kept for backwards compatibility.)
-	 */
-	invigilatorsExcludedByConfig: Array<Invigilator>;
-	invigilatorsForDay?: Maybe<InvigilatorsForDay>;
-	invigilatorsWithReq: Array<Invigilator>;
-	/**
-	 * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
-	 * carry the program with a missing number (0/-1) first, then same-examer + similar
-	 * module, then either. For the GUI to confirm/correct the link.
-	 */
-	mucDaiZpaCandidates: Array<ZpaExam>;
-	mucdaiExams: Array<MucDaiExam>;
-	/**
-	 * Audit log of mutating operations (mutations + data-changing subscriptions),
-	 * newest first. Filter by operation name, by an ancode referenced in the
-	 * arguments, by arbitrary argument key/value pairs, and/or a time range.
-	 */
-	mutationLog: Array<MutationLogEntry>;
-	/** Distinct operation names present in the mutation log (for a filter dropdown). */
-	mutationLogNames: Array<Scalars['String']['output']>;
-	/**
-	 * A template for creating a new semester, seeded from the current semester's
-	 * config (slots/emails/go-slots carry over; the planner adjusts the dates).
-	 */
-	newSemesterConfigDefaults: SemesterConfigInput;
-	nta?: Maybe<NtaWithRegs>;
-	/** All accepted NTA room-alone waivers of the semester. */
-	ntaRoomAloneWaivers: Array<NtaRoomAloneWaiver>;
-	ntas?: Maybe<Array<Nta>>;
-	ntasWithRegs?: Maybe<Array<Student>>;
-	/**
-	 * Teachers who never do invigilation duty again (e.g. retired). Global (plexams
-	 * DB), carries over between semesters; always implies isNotInvigilator.
-	 */
-	permanentNonInvigilators: Array<PermanentNonInvigilator>;
-	/** The planner (name + email). Stored globally in the DB; the config is only a fallback. */
-	planer: Planer;
-	plannedExam?: Maybe<PlannedExam>;
-	plannedExams: Array<PlannedExam>;
-	plannedRoomForStudent?: Maybe<PlannedRoom>;
-	plannedRoomNames?: Maybe<Array<Scalars['String']['output']>>;
-	plannedRoomNamesInSlot?: Maybe<Array<Scalars['String']['output']>>;
-	plannedRooms: Array<PlannedRoom>;
-	plannedRoomsInSlot?: Maybe<Array<PlannedRoom>>;
-	/** The planning state (phases, conditions, currently locked areas). */
-	planningState: PlanningState;
-	preExamsInSlot?: Maybe<Array<PreExam>>;
-	prePlannedInvigilations: Array<PrePlannedInvigilation>;
-	prePlannedRooms: Array<PrePlannedRoom>;
-	preplanExam?: Maybe<PreplanExam>;
-	/**
-	 * Candidate ZPA exams for linking the given pre-exam, ranked by examer (same
-	 * teacher) and module-name similarity. Empty before the ZPA exams are imported.
-	 */
-	preplanExamAncodeSuggestions: Array<ZpaExam>;
-	/** SEB/EXaHM pre-planning pseudo-exams of this semester. */
-	preplanExams: Array<PreplanExam>;
-	/**
-	 * Room-need and program-overlap overview for the SEB/EXaHM pre-planning: per slot
-	 * (plus one entry with null day/slot for not-yet-slotted pre-exams) the seat demand
-	 * and a suggested set of rooms per kind, and the program overlaps within the slot.
-	 */
-	preplanOverview: PreplanOverview;
-	/**
-	 * Same-slot groups of pre-exams (>= 2 members) with each member's connection status, so
-	 * the GUI can show which members are still pending. The same-slot is only carried over to
-	 * the ZPA exams once every member of a group is connected (complete = true).
-	 */
-	preplanSameSlotGroups: Array<PreplanSameSlotGroup>;
-	primussExam: PrimussExam;
-	primussExams?: Maybe<Array<Maybe<PrimussExamByProgram>>>;
-	primussExamsForAnCode?: Maybe<Array<PrimussExam>>;
-	/** All building-management room requests of the semester. */
-	roomRequests: Array<RoomRequest>;
-	/** Dry-run: which management rooms would be requested for which exams (read-only, changes nothing). */
-	roomRequestsPreview: Array<RoomRequestPreview>;
-	rooms: Array<Room>;
-	roomsForSlot?: Maybe<RoomsForSlot>;
-	roomsForSlots: Array<RoomsForSlot>;
-	/**
-	 * All rooms allowed in a slot with their free seats and which exams already use
-	 * them — for sharing a room (e.g. as a reserve).
-	 */
-	roomsWithFreeSeatsForSlot: Array<RoomWithFreeSeats>;
-	roomsWithInvigilationsForSlot?: Maybe<InvigilationSlot>;
-	semester: Semester;
-	/** null when the semester has no config yet (fresh/empty DB) — create it via createSemester / init. */
-	semesterConfig?: Maybe<SemesterConfig>;
-	/** The raw, editable per-semester config (source of truth for the derived semesterConfig). */
-	semesterConfigInput?: Maybe<SemesterConfigInput>;
-	/** Special-interest groups (named ancode lists) used for the Studierenden-Info PDFs. */
-	specialInterests: Array<SpecialInterest>;
-	studentByMtknr?: Maybe<Student>;
-	/** All explicit per-student conflict decisions currently stored. */
-	studentConflictDecisions: Array<StudentConflictDecision>;
-	studentRegsForProgram?: Maybe<Array<StudentReg>>;
-	studentRegsImportErrors: Array<RegWithError>;
-	/**
-	 * State of the prepared student registrations (the per-student planned regs shown
-	 * via `students`). dirty=true means an input changed since the last generation
-	 * (connected exams, which exams are planned, NTAs, ZPA imports), so they should be
-	 * regenerated.
-	 */
-	studentRegsState: StudentRegsState;
-	students: Array<Student>;
-	studentsByName: Array<Student>;
-	/** All study programs (Studiengänge), global/cross-semester. */
-	studyPrograms: Array<StudyProgram>;
-	/**
-	 * Transfer history (imports from / uploads to ZPA, Anny, …), newest first.
-	 * The whole history since the start of the semester is kept; pass limit to cap it.
-	 */
-	syncLog: Array<SyncLogEntry>;
-	teacher?: Maybe<Teacher>;
-	teachers: Array<Teacher>;
-	/**
-	 * Students that could not be assigned a real room in their slot during the last
-	 * room generation (the replacement for the old 'No Room' placeholder).
-	 */
-	unplacedExams: Array<UnplacedExam>;
-	/** Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps). */
-	validatePreplanAssignment: PreplanValidation;
-	zpaAnCodes?: Maybe<Array<Maybe<AnCode>>>;
-	zpaExam?: Maybe<ZpaExam>;
-	zpaExams: Array<ZpaExam>;
-	zpaExamsByType: Array<ZpaExamsForType>;
-	zpaExamsNotToPlan: Array<ZpaExam>;
-	zpaExamsPlaningStatusUnknown: Array<ZpaExam>;
-	zpaExamsToPlan: Array<ZpaExam>;
-	zpaExamsToPlanWithConstraints: Array<ZpaExamWithConstraints>;
+  __typename?: 'Query';
+  /**
+   * Additional exams: fully specified entries that are appended to the ZPA upload
+   * but are not part of the normal plan (replaces publish.additionalExams).
+   */
+  additionalExams: Array<AdditionalExam>;
+  allAnnyBookings: Array<AnnyBooking>;
+  allProgramsInPlan?: Maybe<Array<Scalars['String']['output']>>;
+  allSemesterNames: Array<Semester>;
+  allowedSlots?: Maybe<Array<Slot>>;
+  ancodesInPlan?: Maybe<Array<Scalars['Int']['output']>>;
+  annyBookings: Array<AnnyBooking>;
+  /** The Anny settings stored in the DB (the token stays in the config file). */
+  annyConfig: AnnyConfig;
+  assembledExam?: Maybe<AssembledExam>;
+  assembledExams: Array<AssembledExam>;
+  /**
+   * State of the cached assembled exams. dirty=true means an input changed since the
+   * last generation (connected exams, zpa-exams-to-plan, constraints, NTAs, imports),
+   * so the assembled exams — and everything derived from them (planned exams) — are
+   * stale and should be regenerated.
+   */
+  assembledExamsState: AssembledExamsState;
+  awkwardSlots: Array<Slot>;
+  /** All rooms blocked for a specific slot (not usable there, e.g. otherwise occupied). */
+  blockedRooms: Array<BlockedRoom>;
+  /** Auto-detected canShareSlot candidates (same module+program, different examer) not yet declared. */
+  canShareSlotSuggestions: Array<ExamPair>;
+  conflictingAncodes?: Maybe<Array<Conflict>>;
+  connectedExam?: Maybe<ConnectedExam>;
+  connectedExams: Array<ConnectedExam>;
+  constraintForAncode?: Maybe<Constraints>;
+  emailAttachments: Array<EmailAttachmentInfo>;
+  /**
+   * Per-ancode exam duration overrides. They are only applied to exams whose ZPA
+   * duration is 0 (i.e. not set in the ZPA); they feed the assembled exams.
+   */
+  examDurationOverrides: Array<ExamDurationOverride>;
+  /**
+   * Candidates for the consolidated exam-planning info email (replacing the separate
+   * constraints + prepared emails): one entry per examer — every examer with at least one
+   * exam I plan (toPlan and not notPlannedByMe, any faculty), plus the FK07 examers who do
+   * have ZPA exam(s) this semester but none that I plan. Examers without any ZPA exam, and
+   * non-FK07 examers without a planned exam, are excluded. For selecting/deselecting
+   * recipients before sending. No slot/date is included.
+   */
+  examPlanningMailRecipients: Array<ExamPlanningMailRecipient>;
+  /** Conflicts of the current plan, to review (accept per student). */
+  examScheduleConflicts: Array<ExamScheduleConflict>;
+  /** The read-only list of hard/soft constraints the exam-schedule generator applies. */
+  examScheduleConstraints: Array<OptimizerConstraint>;
+  examerInPlan?: Maybe<Array<ExamerInPlan>>;
+  /**
+   * examersWithExamsPlannedByMe returns the main examers of all planned exams that
+   * are planned by me (not flagged NotPlannedByMe).
+   */
+  examersWithExamsPlannedByMe: Array<Teacher>;
+  /** Exam pairs declared as allowed to share a slot (no student legitimately sits both). */
+  examsCanShareSlot: Array<ExamPair>;
+  examsInSlot?: Maybe<Array<PlannedExam>>;
+  examsWithNtas: Array<PlannedExam>;
+  examsWithoutSlot: Array<PlannedExam>;
+  fk07programs: Array<Fk07Program>;
+  /**
+   * Global generation tuning: the room time lag and the invigilation optimizer
+   * (simulated annealing) parameters. Stored in the global plexams database; the
+   * config file is only a seed/fallback. Steers room and invigilation generation.
+   */
+  generationConfig: GenerationConfig;
+  invigilator?: Maybe<Teacher>;
+  /**
+   * All teachers in the invigilator pool, including the ones currently excluded
+   * (isNotInvigilator / permanent). Use this to manage constraints for everyone —
+   * invigilatorsWithReq only returns the ones who actually invigilate.
+   */
+  invigilatorCandidates: Array<Teacher>;
+  /**
+   * Per-invigilator constraints stored in the DB (managed via the GUI): whether
+   * they do no invigilation at all, additional excluded whole days and time
+   * windows when they cannot invigilate. These are merged on top of the ZPA requirements.
+   */
+  invigilatorConstraints: Array<InvigilatorConstraints>;
+  invigilatorTodos?: Maybe<InvigilationTodos>;
+  invigilators: Array<ZpaInvigilator>;
+  /**
+   * invigilatorsExcludedByConfig returns the invigilators who would do invigilation
+   * duty (factor > 0) but are excluded only because isNotInvigilator is set in their
+   * DB constraints (see invigilatorConstraints). People who are out anyway are not
+   * listed. (The field name is kept for backwards compatibility.)
+   */
+  invigilatorsExcludedByConfig: Array<Invigilator>;
+  invigilatorsForDay?: Maybe<InvigilatorsForDay>;
+  invigilatorsWithReq: Array<Invigilator>;
+  /**
+   * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
+   * carry the program with a missing number (0/-1) first, then same-examer + similar
+   * module, then either. For the GUI to confirm/correct the link.
+   */
+  mucDaiZpaCandidates: Array<ZpaExam>;
+  mucdaiExams: Array<MucDaiExam>;
+  /**
+   * Audit log of mutating operations (mutations + data-changing subscriptions),
+   * newest first. Filter by operation name, by an ancode referenced in the
+   * arguments, by arbitrary argument key/value pairs, and/or a time range.
+   */
+  mutationLog: Array<MutationLogEntry>;
+  /** Distinct operation names present in the mutation log (for a filter dropdown). */
+  mutationLogNames: Array<Scalars['String']['output']>;
+  /**
+   * A template for creating a new semester, seeded from the current semester's
+   * config (slots/emails/go-slots carry over; the planner adjusts the dates).
+   */
+  newSemesterConfigDefaults: SemesterConfigInput;
+  nta?: Maybe<NtaWithRegs>;
+  /** All accepted NTA room-alone waivers of the semester. */
+  ntaRoomAloneWaivers: Array<NtaRoomAloneWaiver>;
+  ntas?: Maybe<Array<Nta>>;
+  ntasWithRegs?: Maybe<Array<Student>>;
+  /**
+   * Teachers who never do invigilation duty again (e.g. retired). Global (plexams
+   * DB), carries over between semesters; always implies isNotInvigilator.
+   */
+  permanentNonInvigilators: Array<PermanentNonInvigilator>;
+  /** The planner (name + email). Stored globally in the DB; the config is only a fallback. */
+  planer: Planer;
+  plannedExam?: Maybe<PlannedExam>;
+  plannedExams: Array<PlannedExam>;
+  plannedRoomForStudent?: Maybe<PlannedRoom>;
+  plannedRoomNames?: Maybe<Array<Scalars['String']['output']>>;
+  plannedRoomNamesInSlot?: Maybe<Array<Scalars['String']['output']>>;
+  plannedRooms: Array<PlannedRoom>;
+  plannedRoomsInSlot?: Maybe<Array<PlannedRoom>>;
+  /** The planning state (phases, conditions, currently locked areas). */
+  planningState: PlanningState;
+  preExamsInSlot?: Maybe<Array<PreExam>>;
+  prePlannedInvigilations: Array<PrePlannedInvigilation>;
+  prePlannedRooms: Array<PrePlannedRoom>;
+  preplanExam?: Maybe<PreplanExam>;
+  /**
+   * Candidate ZPA exams for linking the given pre-exam, ranked by examer (same
+   * teacher) and module-name similarity. Empty before the ZPA exams are imported.
+   */
+  preplanExamAncodeSuggestions: Array<ZpaExam>;
+  /** SEB/EXaHM pre-planning pseudo-exams of this semester. */
+  preplanExams: Array<PreplanExam>;
+  /**
+   * Room-need and program-overlap overview for the SEB/EXaHM pre-planning: per slot
+   * (plus one entry with null day/slot for not-yet-slotted pre-exams) the seat demand
+   * and a suggested set of rooms per kind, and the program overlaps within the slot.
+   */
+  preplanOverview: PreplanOverview;
+  /**
+   * Same-slot groups of pre-exams (>= 2 members) with each member's connection status, so
+   * the GUI can show which members are still pending. The same-slot is only carried over to
+   * the ZPA exams once every member of a group is connected (complete = true).
+   */
+  preplanSameSlotGroups: Array<PreplanSameSlotGroup>;
+  primussExam: PrimussExam;
+  primussExams?: Maybe<Array<Maybe<PrimussExamByProgram>>>;
+  primussExamsForAnCode?: Maybe<Array<PrimussExam>>;
+  /** All building-management room requests of the semester. */
+  roomRequests: Array<RoomRequest>;
+  /** Dry-run: which management rooms would be requested for which exams (read-only, changes nothing). */
+  roomRequestsPreview: Array<RoomRequestPreview>;
+  rooms: Array<Room>;
+  roomsForSlot?: Maybe<RoomsForSlot>;
+  roomsForSlots: Array<RoomsForSlot>;
+  /**
+   * All rooms allowed in a slot with their free seats and which exams already use
+   * them — for sharing a room (e.g. as a reserve).
+   */
+  roomsWithFreeSeatsForSlot: Array<RoomWithFreeSeats>;
+  roomsWithInvigilationsForSlot?: Maybe<InvigilationSlot>;
+  semester: Semester;
+  /** null when the semester has no config yet (fresh/empty DB) — create it via createSemester / init. */
+  semesterConfig?: Maybe<SemesterConfig>;
+  /** The raw, editable per-semester config (source of truth for the derived semesterConfig). */
+  semesterConfigInput?: Maybe<SemesterConfigInput>;
+  /** Special-interest groups (named ancode lists) used for the Studierenden-Info PDFs. */
+  specialInterests: Array<SpecialInterest>;
+  studentByMtknr?: Maybe<Student>;
+  /** All explicit per-student conflict decisions currently stored. */
+  studentConflictDecisions: Array<StudentConflictDecision>;
+  studentRegsForProgram?: Maybe<Array<StudentReg>>;
+  studentRegsImportErrors: Array<RegWithError>;
+  /**
+   * State of the prepared student registrations (the per-student planned regs shown
+   * via `students`). dirty=true means an input changed since the last generation
+   * (connected exams, which exams are planned, NTAs, ZPA imports), so they should be
+   * regenerated.
+   */
+  studentRegsState: StudentRegsState;
+  students: Array<Student>;
+  studentsByName: Array<Student>;
+  /** All study programs (Studiengänge), global/cross-semester. */
+  studyPrograms: Array<StudyProgram>;
+  /**
+   * Transfer history (imports from / uploads to ZPA, Anny, …), newest first.
+   * The whole history since the start of the semester is kept; pass limit to cap it.
+   */
+  syncLog: Array<SyncLogEntry>;
+  teacher?: Maybe<Teacher>;
+  teachers: Array<Teacher>;
+  /**
+   * Students that could not be assigned a real room in their slot during the last
+   * room generation (the replacement for the old 'No Room' placeholder).
+   */
+  unplacedExams: Array<UnplacedExam>;
+  /** Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps). */
+  validatePreplanAssignment: PreplanValidation;
+  zpaAnCodes?: Maybe<Array<Maybe<AnCode>>>;
+  zpaExam?: Maybe<ZpaExam>;
+  zpaExams: Array<ZpaExam>;
+  zpaExamsByType: Array<ZpaExamsForType>;
+  zpaExamsNotToPlan: Array<ZpaExam>;
+  zpaExamsPlaningStatusUnknown: Array<ZpaExam>;
+  zpaExamsToPlan: Array<ZpaExam>;
+  zpaExamsToPlanWithConstraints: Array<ZpaExamWithConstraints>;
 };
+
 
 export type QueryAllowedSlotsArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryAnnyBookingsArgs = {
-	room?: InputMaybe<Scalars['String']['input']>;
+  room?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 export type QueryAssembledExamArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryAwkwardSlotsArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryConflictingAncodesArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryConnectedExamArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryConstraintForAncodeArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryEmailAttachmentsArgs = {
-	kind: Scalars['String']['input'];
+  kind: Scalars['String']['input'];
 };
+
 
 export type QueryExamsInSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryInvigilatorArgs = {
-	day: Scalars['Int']['input'];
-	room: Scalars['String']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  room: Scalars['String']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryInvigilatorsForDayArgs = {
-	day: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
 };
+
 
 export type QueryMucDaiZpaCandidatesArgs = {
-	primussAncode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
+  primussAncode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
 };
+
 
 export type QueryMutationLogArgs = {
-	ancode?: InputMaybe<Scalars['Int']['input']>;
-	args?: InputMaybe<Array<ArgFilterInput>>;
-	limit?: InputMaybe<Scalars['Int']['input']>;
-	name?: InputMaybe<Scalars['String']['input']>;
-	since?: InputMaybe<Scalars['Time']['input']>;
-	type?: InputMaybe<Scalars['String']['input']>;
-	until?: InputMaybe<Scalars['Time']['input']>;
+  ancode?: InputMaybe<Scalars['Int']['input']>;
+  args?: InputMaybe<Array<ArgFilterInput>>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  since?: InputMaybe<Scalars['Time']['input']>;
+  type?: InputMaybe<Scalars['String']['input']>;
+  until?: InputMaybe<Scalars['Time']['input']>;
 };
+
 
 export type QueryNtaArgs = {
-	mtknr: Scalars['String']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type QueryPlannedExamArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryPlannedRoomForStudentArgs = {
-	ancode: Scalars['Int']['input'];
-	mtknr: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type QueryPlannedRoomNamesInSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryPlannedRoomsInSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryPreExamsInSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryPreplanExamArgs = {
-	id: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type QueryPreplanExamAncodeSuggestionsArgs = {
-	id: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type QueryPrimussExamArgs = {
-	ancode: Scalars['Int']['input'];
-	program: Scalars['String']['input'];
+  ancode: Scalars['Int']['input'];
+  program: Scalars['String']['input'];
 };
+
 
 export type QueryPrimussExamsForAnCodeArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
+
 
 export type QueryRoomsForSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryRoomsWithFreeSeatsForSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryRoomsWithInvigilationsForSlotArgs = {
-	day: Scalars['Int']['input'];
-	time: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  time: Scalars['Int']['input'];
 };
+
 
 export type QueryStudentByMtknrArgs = {
-	mtknr: Scalars['String']['input'];
+  mtknr: Scalars['String']['input'];
 };
+
 
 export type QueryStudentRegsForProgramArgs = {
-	program: Scalars['String']['input'];
+  program: Scalars['String']['input'];
 };
+
 
 export type QueryStudentsByNameArgs = {
-	regex: Scalars['String']['input'];
+  regex: Scalars['String']['input'];
 };
+
 
 export type QuerySyncLogArgs = {
-	limit?: InputMaybe<Scalars['Int']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type QueryTeacherArgs = {
-	id: Scalars['Int']['input'];
+  id: Scalars['Int']['input'];
 };
+
 
 export type QueryTeachersArgs = {
-	fromZPA?: InputMaybe<Scalars['Boolean']['input']>;
+  fromZPA?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
 
 export type QueryZpaExamArgs = {
-	ancode: Scalars['Int']['input'];
+  ancode: Scalars['Int']['input'];
 };
 
+
 export type QueryZpaExamsArgs = {
-	fromZPA?: InputMaybe<Scalars['Boolean']['input']>;
+  fromZPA?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type RegWithError = {
-	__typename?: 'RegWithError';
-	error: ZpaStudentRegError;
-	registration: ZpaStudentReg;
+  __typename?: 'RegWithError';
+  error: ZpaStudentRegError;
+  registration: ZpaStudentReg;
 };
 
 export type RegWithProgram = {
-	__typename?: 'RegWithProgram';
-	program: Scalars['String']['output'];
-	reg: Scalars['Int']['output'];
+  __typename?: 'RegWithProgram';
+  program: Scalars['String']['output'];
+  reg: Scalars['Int']['output'];
 };
 
 export type Room = {
-	__typename?: 'Room';
-	deactivated: Scalars['Boolean']['output'];
-	exahm: Scalars['Boolean']['output'];
-	handicap: Scalars['Boolean']['output'];
-	hmebSeats?: Maybe<Scalars['Int']['output']>;
-	lab: Scalars['Boolean']['output'];
-	name: Scalars['String']['output'];
-	/** needsRequest is derived: true when requestWith is not NONE. */
-	needsRequest: Scalars['Boolean']['output'];
-	placesWithSocket: Scalars['Boolean']['output'];
-	/** Lower number = preferred when generating room requests (e.g. R1.006/R1.046 = 1, R1.049 = 2). */
-	requestPriority: Scalars['Int']['output'];
-	requestWith: RoomRequestType;
-	seats: Scalars['Int']['output'];
-	seb: Scalars['Boolean']['output'];
-	sebSeats?: Maybe<Scalars['Int']['output']>;
+  __typename?: 'Room';
+  deactivated: Scalars['Boolean']['output'];
+  exahm: Scalars['Boolean']['output'];
+  handicap: Scalars['Boolean']['output'];
+  hmebSeats?: Maybe<Scalars['Int']['output']>;
+  lab: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  /** needsRequest is derived: true when requestWith is not NONE. */
+  needsRequest: Scalars['Boolean']['output'];
+  placesWithSocket: Scalars['Boolean']['output'];
+  /** Lower number = preferred when generating room requests (e.g. R1.006/R1.046 = 1, R1.049 = 2). */
+  requestPriority: Scalars['Int']['output'];
+  requestWith: RoomRequestType;
+  seats: Scalars['Int']['output'];
+  seb: Scalars['Boolean']['output'];
+  sebSeats?: Maybe<Scalars['Int']['output']>;
 };
 
 export type RoomAndExam = {
-	__typename?: 'RoomAndExam';
-	exam: ZpaExam;
-	room: PlannedRoom;
+  __typename?: 'RoomAndExam';
+  exam: ZpaExam;
+  room: PlannedRoom;
 };
 
 export type RoomConstraints = {
-	__typename?: 'RoomConstraints';
-	/** extra seats to reserve on top of the registered students (capacity buffer). */
-	additionalSeats?: Maybe<Scalars['Int']['output']>;
-	allowedRooms?: Maybe<Array<Scalars['String']['output']>>;
-	comments?: Maybe<Scalars['String']['output']>;
-	exahm: Scalars['Boolean']['output'];
-	kdpJiraURL?: Maybe<Scalars['String']['output']>;
-	lab: Scalars['Boolean']['output'];
-	maxStudents?: Maybe<Scalars['Int']['output']>;
-	placesWithSocket: Scalars['Boolean']['output'];
-	seb: Scalars['Boolean']['output'];
+  __typename?: 'RoomConstraints';
+  /** extra seats to reserve on top of the registered students (capacity buffer). */
+  additionalSeats?: Maybe<Scalars['Int']['output']>;
+  allowedRooms?: Maybe<Array<Scalars['String']['output']>>;
+  comments?: Maybe<Scalars['String']['output']>;
+  exahm: Scalars['Boolean']['output'];
+  kdpJiraURL?: Maybe<Scalars['String']['output']>;
+  lab: Scalars['Boolean']['output'];
+  maxStudents?: Maybe<Scalars['Int']['output']>;
+  placesWithSocket: Scalars['Boolean']['output'];
+  seb: Scalars['Boolean']['output'];
 };
 
 /** One exam's use of a room in a slot. */
 export type RoomInSlotUsage = {
-	__typename?: 'RoomInSlotUsage';
-	ancode: Scalars['Int']['output'];
-	examer: Scalars['String']['output'];
-	module: Scalars['String']['output'];
-	studentCount: Scalars['Int']['output'];
+  __typename?: 'RoomInSlotUsage';
+  ancode: Scalars['Int']['output'];
+  examer: Scalars['String']['output'];
+  module: Scalars['String']['output'];
+  studentCount: Scalars['Int']['output'];
 };
 
 export type RoomInput = {
-	exahm: Scalars['Boolean']['input'];
-	handicap: Scalars['Boolean']['input'];
-	hmebSeats?: InputMaybe<Scalars['Int']['input']>;
-	lab: Scalars['Boolean']['input'];
-	name: Scalars['String']['input'];
-	placesWithSocket: Scalars['Boolean']['input'];
-	/** Lower number = preferred when generating room requests. Optional; defaults to 0 (irrelevant when requestWith is NONE). */
-	requestPriority?: Scalars['Int']['input'];
-	requestWith: RoomRequestType;
-	seats: Scalars['Int']['input'];
-	seb: Scalars['Boolean']['input'];
-	sebSeats?: InputMaybe<Scalars['Int']['input']>;
+  exahm: Scalars['Boolean']['input'];
+  handicap: Scalars['Boolean']['input'];
+  hmebSeats?: InputMaybe<Scalars['Int']['input']>;
+  lab: Scalars['Boolean']['input'];
+  name: Scalars['String']['input'];
+  placesWithSocket: Scalars['Boolean']['input'];
+  /** Lower number = preferred when generating room requests. Optional; defaults to 0 (irrelevant when requestWith is NONE). */
+  requestPriority?: Scalars['Int']['input'];
+  requestWith: RoomRequestType;
+  seats: Scalars['Int']['input'];
+  seb: Scalars['Boolean']['input'];
+  sebSeats?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type RoomRequest = {
-	__typename?: 'RoomRequest';
-	active: Scalars['Boolean']['output'];
-	approved: Scalars['Boolean']['output'];
-	day: Scalars['Int']['output'];
-	from: Scalars['Time']['output'];
-	room: Scalars['String']['output'];
-	slot: Scalars['Int']['output'];
-	until: Scalars['Time']['output'];
+  __typename?: 'RoomRequest';
+  active: Scalars['Boolean']['output'];
+  approved: Scalars['Boolean']['output'];
+  day: Scalars['Int']['output'];
+  from: Scalars['Time']['output'];
+  room: Scalars['String']['output'];
+  slot: Scalars['Int']['output'];
+  until: Scalars['Time']['output'];
 };
 
 /**
@@ -2408,16 +2519,16 @@ export type RoomRequest = {
  * be eyeballed in the GUI. The preview is read-only and changes nothing.
  */
 export type RoomRequestPreview = {
-	__typename?: 'RoomRequestPreview';
-	day: Scalars['Int']['output'];
-	exam: PlannedExam;
-	from: Scalars['Time']['output'];
-	room: Scalars['String']['output'];
-	seats: Scalars['Int']['output'];
-	simultaneousExams: Array<PlannedExam>;
-	slot: Scalars['Int']['output'];
-	students: Scalars['Int']['output'];
-	until: Scalars['Time']['output'];
+  __typename?: 'RoomRequestPreview';
+  day: Scalars['Int']['output'];
+  exam: PlannedExam;
+  from: Scalars['Time']['output'];
+  room: Scalars['String']['output'];
+  seats: Scalars['Int']['output'];
+  simultaneousExams: Array<PlannedExam>;
+  slot: Scalars['Int']['output'];
+  students: Scalars['Int']['output'];
+  until: Scalars['Time']['output'];
 };
 
 /**
@@ -2426,82 +2537,82 @@ export type RoomRequestPreview = {
  * via the building management (Gebäudemanagement).
  */
 export enum RoomRequestType {
-	Anny = 'ANNY',
-	Management = 'MANAGEMENT',
-	None = 'NONE'
+  Anny = 'ANNY',
+  Management = 'MANAGEMENT',
+  None = 'NONE'
 }
 
 /** A room allowed in a slot, with its free seats and the exams already using it. */
 export type RoomWithFreeSeats = {
-	__typename?: 'RoomWithFreeSeats';
-	exahm: Scalars['Boolean']['output'];
-	freeSeats: Scalars['Int']['output'];
-	/** handicap = true: NTA room, only for NTAs (not for normal students / non-NTA reserve). */
-	handicap: Scalars['Boolean']['output'];
-	lab: Scalars['Boolean']['output'];
-	roomName: Scalars['String']['output'];
-	seats: Scalars['Int']['output'];
-	seb: Scalars['Boolean']['output'];
-	/** The exams already using this room in the slot (empty if the room is still free). */
-	usedBy: Array<RoomInSlotUsage>;
-	usedSeats: Scalars['Int']['output'];
+  __typename?: 'RoomWithFreeSeats';
+  exahm: Scalars['Boolean']['output'];
+  freeSeats: Scalars['Int']['output'];
+  /** handicap = true: NTA room, only for NTAs (not for normal students / non-NTA reserve). */
+  handicap: Scalars['Boolean']['output'];
+  lab: Scalars['Boolean']['output'];
+  roomName: Scalars['String']['output'];
+  seats: Scalars['Int']['output'];
+  seb: Scalars['Boolean']['output'];
+  /** The exams already using this room in the slot (empty if the room is still free). */
+  usedBy: Array<RoomInSlotUsage>;
+  usedSeats: Scalars['Int']['output'];
 };
 
 export type RoomWithInvigilator = {
-	__typename?: 'RoomWithInvigilator';
-	invigilator?: Maybe<Teacher>;
-	maxDuration: Scalars['Int']['output'];
-	name: Scalars['String']['output'];
-	/** true if the invigilation for this room in this slot is pre-planned (fixed). */
-	prePlanned: Scalars['Boolean']['output'];
-	roomAndExams: Array<RoomAndExam>;
-	studentCount: Scalars['Int']['output'];
+  __typename?: 'RoomWithInvigilator';
+  invigilator?: Maybe<Teacher>;
+  maxDuration: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  /** true if the invigilation for this room in this slot is pre-planned (fixed). */
+  prePlanned: Scalars['Boolean']['output'];
+  roomAndExams: Array<RoomAndExam>;
+  studentCount: Scalars['Int']['output'];
 };
 
 export type RoomsForSlot = {
-	__typename?: 'RoomsForSlot';
-	day: Scalars['Int']['output'];
-	rooms: Array<Room>;
-	slot: Scalars['Int']['output'];
+  __typename?: 'RoomsForSlot';
+  day: Scalars['Int']['output'];
+  rooms: Array<Room>;
+  slot: Scalars['Int']['output'];
 };
 
 export type SaveSemesterConfigResult = {
-	__typename?: 'SaveSemesterConfigResult';
-	ok: Scalars['Boolean']['output'];
-	/** Non-fatal warnings, e.g. changes that may invalidate an existing plan. */
-	warnings: Array<Scalars['String']['output']>;
+  __typename?: 'SaveSemesterConfigResult';
+  ok: Scalars['Boolean']['output'];
+  /** Non-fatal warnings, e.g. changes that may invalidate an existing plan. */
+  warnings: Array<Scalars['String']['output']>;
 };
 
 export type Semester = {
-	__typename?: 'Semester';
-	/** false for databases that cannot be used with this code (no semester config). */
-	compatible: Scalars['Boolean']['output'];
-	/** the database label (e.g. '2026 SS' or a clone '2026 SS-Test'); selects the database. */
-	id: Scalars['String']['output'];
-	/** true when the database is protected: it can be selected, but all mutations fail. */
-	readOnly: Scalars['Boolean']['output'];
-	/** data schema version of the database (null when unknown/never stamped). */
-	schemaVersion?: Maybe<Scalars['Int']['output']>;
-	/**
-	 * the logical semester used against external systems (ZPA), e.g. '2026 SS' — for
-	 * a clone this stays the real semester, not the database name.
-	 */
-	semester?: Maybe<Scalars['String']['output']>;
+  __typename?: 'Semester';
+  /** false for databases that cannot be used with this code (no semester config). */
+  compatible: Scalars['Boolean']['output'];
+  /** the database label (e.g. '2026 SS' or a clone '2026 SS-Test'); selects the database. */
+  id: Scalars['String']['output'];
+  /** true when the database is protected: it can be selected, but all mutations fail. */
+  readOnly: Scalars['Boolean']['output'];
+  /** data schema version of the database (null when unknown/never stamped). */
+  schemaVersion?: Maybe<Scalars['Int']['output']>;
+  /**
+   * the logical semester used against external systems (ZPA), e.g. '2026 SS' — for
+   * a clone this stays the real semester, not the database name.
+   */
+  semester?: Maybe<Scalars['String']['output']>;
 };
 
 export type SemesterConfig = {
-	__typename?: 'SemesterConfig';
-	days: Array<ExamDay>;
-	emails: Emails;
-	/** Effective travel/break buffer (minutes) between a student's consecutive exams. */
-	examGapMinutes: Scalars['Int']['output'];
-	forbiddenSlots?: Maybe<Array<Slot>>;
-	from: Scalars['Time']['output'];
-	mucDaiSlots: Array<Slot>;
-	mucDaiSlotsRaw?: Maybe<Array<Array<Scalars['Int']['output']>>>;
-	slots: Array<Slot>;
-	starttimes: Array<Starttime>;
-	until: Scalars['Time']['output'];
+  __typename?: 'SemesterConfig';
+  days: Array<ExamDay>;
+  emails: Emails;
+  /** Effective travel/break buffer (minutes) between a student's consecutive exams. */
+  examGapMinutes: Scalars['Int']['output'];
+  forbiddenSlots?: Maybe<Array<Slot>>;
+  from: Scalars['Time']['output'];
+  mucDaiSlots: Array<Slot>;
+  mucDaiSlotsRaw?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  slots: Array<Slot>;
+  starttimes: Array<Starttime>;
+  until: Scalars['Time']['output'];
 };
 
 /**
@@ -2510,438 +2621,470 @@ export type SemesterConfig = {
  * it.
  */
 export type SemesterConfigInput = {
-	__typename?: 'SemesterConfigInput';
-	emails: Emails;
-	/** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
-	examGapMinutes?: Maybe<Scalars['Int']['output']>;
-	forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
-	/** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
-	from: Scalars['Time']['output'];
-	/** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
-	mucDaiSlots?: Maybe<Array<Array<Scalars['Int']['output']>>>;
-	/** Daily slot start times as "HH:MM". */
-	slots: Array<Scalars['String']['output']>;
-	until: Scalars['Time']['output'];
+  __typename?: 'SemesterConfigInput';
+  emails: Emails;
+  /** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
+  examGapMinutes?: Maybe<Scalars['Int']['output']>;
+  forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
+  /** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
+  from: Scalars['Time']['output'];
+  /** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
+  mucDaiSlots?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  /** Daily slot start times as "HH:MM". */
+  slots: Array<Scalars['String']['output']>;
+  until: Scalars['Time']['output'];
 };
 
 export type SemesterConfigInputData = {
-	emails: EmailsInput;
-	/** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
-	examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
-	forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
-	from: Scalars['Time']['input'];
-	/** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
-	mucDaiSlots?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
-	slots: Array<Scalars['String']['input']>;
-	until: Scalars['Time']['input'];
+  emails: EmailsInput;
+  /** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
+  examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
+  forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
+  from: Scalars['Time']['input'];
+  /** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
+  mucDaiSlots?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
+  slots: Array<Scalars['String']['input']>;
+  until: Scalars['Time']['input'];
 };
 
 export type Slot = {
-	__typename?: 'Slot';
-	dayNumber: Scalars['Int']['output'];
-	slotNumber: Scalars['Int']['output'];
-	starttime: Scalars['Time']['output'];
+  __typename?: 'Slot';
+  dayNumber: Scalars['Int']['output'];
+  slotNumber: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 /** A day/slot pair, used to block a room for several slots at once. */
 export type SlotInput = {
-	day: Scalars['Int']['input'];
-	slot: Scalars['Int']['input'];
+  day: Scalars['Int']['input'];
+  slot: Scalars['Int']['input'];
 };
 
 export type SoftCostItem = {
-	__typename?: 'SoftCostItem';
-	cost: Scalars['Float']['output'];
-	name: Scalars['String']['output'];
+  __typename?: 'SoftCostItem';
+  cost: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
 };
 
 /** SoftCostReport: the weighted soft-constraint penalty score (lower is better). */
 export type SoftCostReport = {
-	__typename?: 'SoftCostReport';
-	breakdown: Array<SoftCostItem>;
-	total: Scalars['Float']['output'];
+  __typename?: 'SoftCostReport';
+  breakdown: Array<SoftCostItem>;
+  total: Scalars['Float']['output'];
 };
 
 export type SpecialInterest = {
-	__typename?: 'SpecialInterest';
-	ancodes: Array<Scalars['Int']['output']>;
-	/** output file name for the generated PDF. */
-	filename: Scalars['String']['output'];
-	name: Scalars['String']['output'];
+  __typename?: 'SpecialInterest';
+  ancodes: Array<Scalars['Int']['output']>;
+  /** output file name for the generated PDF. */
+  filename: Scalars['String']['output'];
+  name: Scalars['String']['output'];
 };
 
 export type SpecialInterestInput = {
-	ancodes: Array<Scalars['Int']['input']>;
-	filename: Scalars['String']['input'];
-	name: Scalars['String']['input'];
+  ancodes: Array<Scalars['Int']['input']>;
+  filename: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
 
 export type Starttime = {
-	__typename?: 'Starttime';
-	number: Scalars['Int']['output'];
-	start: Scalars['String']['output'];
+  __typename?: 'Starttime';
+  number: Scalars['Int']['output'];
+  start: Scalars['String']['output'];
 };
 
 export type Student = {
-	__typename?: 'Student';
-	group: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	nta?: Maybe<Nta>;
-	program: Scalars['String']['output'];
-	regs: Array<Scalars['Int']['output']>;
-	regsWithProgram: Array<RegWithProgram>;
-	zpaStudent?: Maybe<ZpaStudent>;
+  __typename?: 'Student';
+  group: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  nta?: Maybe<Nta>;
+  program: Scalars['String']['output'];
+  regs: Array<Scalars['Int']['output']>;
+  regsWithProgram: Array<RegWithProgram>;
+  zpaStudent?: Maybe<ZpaStudent>;
 };
 
 /** StudentConflictDecision is a stored explicit decision for one student's conflict pair. */
 export type StudentConflictDecision = {
-	__typename?: 'StudentConflictDecision';
-	ancode1: Scalars['Int']['output'];
-	ancode2: Scalars['Int']['output'];
-	decision: ConflictDecision;
-	mtknr: Scalars['String']['output'];
+  __typename?: 'StudentConflictDecision';
+  ancode1: Scalars['Int']['output'];
+  ancode2: Scalars['Int']['output'];
+  decision: ConflictDecision;
+  mtknr: Scalars['String']['output'];
 };
 
 export type StudentReg = {
-	__typename?: 'StudentReg';
-	ancode: Scalars['Int']['output'];
-	group: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
-	name: Scalars['String']['output'];
-	presence: Scalars['String']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'StudentReg';
+  ancode: Scalars['Int']['output'];
+  group: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  presence: Scalars['String']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type StudentRegsPerAncode = {
-	__typename?: 'StudentRegsPerAncode';
-	ancode: Scalars['Int']['output'];
-	perProgram: Array<StudentRegsPerAncodeAndProgram>;
+  __typename?: 'StudentRegsPerAncode';
+  ancode: Scalars['Int']['output'];
+  perProgram: Array<StudentRegsPerAncodeAndProgram>;
 };
 
 export type StudentRegsPerAncodeAndProgram = {
-	__typename?: 'StudentRegsPerAncodeAndProgram';
-	ancode: Scalars['Int']['output'];
-	program: Scalars['String']['output'];
-	studentRegs: Array<StudentReg>;
+  __typename?: 'StudentRegsPerAncodeAndProgram';
+  ancode: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
+  studentRegs: Array<StudentReg>;
 };
 
 export type StudentRegsPerStudent = {
-	__typename?: 'StudentRegsPerStudent';
-	ancodes: Array<Scalars['Int']['output']>;
-	student: Student;
+  __typename?: 'StudentRegsPerStudent';
+  ancodes: Array<Scalars['Int']['output']>;
+  student: Student;
 };
 
 export type StudentRegsState = {
-	__typename?: 'StudentRegsState';
-	/** when they were last marked stale or (re)generated. */
-	changedAt?: Maybe<Scalars['Time']['output']>;
-	dirty: Scalars['Boolean']['output'];
-	/** the operation that last marked them stale (mutation/subscription name). */
-	reason?: Maybe<Scalars['String']['output']>;
+  __typename?: 'StudentRegsState';
+  /** when they were last marked stale or (re)generated. */
+  changedAt?: Maybe<Scalars['Time']['output']>;
+  dirty: Scalars['Boolean']['output'];
+  /** the operation that last marked them stale (mutation/subscription name). */
+  reason?: Maybe<Scalars['String']['output']>;
 };
 
 /** A study program (Studiengang), e.g. IF / DE / GN. */
 export type StudyProgram = {
-	__typename?: 'StudyProgram';
-	active: Scalars['Boolean']['output'];
-	/** Origin/grouping: fk07 | mucdai | misc. */
-	category: Scalars['String']['output'];
-	/** e.g. Bachelor / Master. */
-	degree?: Maybe<Scalars['String']['output']>;
-	/**
-	 * Base ancode for external (e.g. MUC.DAI) exams of this program: the local ZPA
-	 * ancode is externalExamsBase + primussAncode. Only for externally imported
-	 * programs (mucdai/misc).
-	 */
-	externalExamsBase?: Maybe<Scalars['Int']['output']>;
-	name: Scalars['String']['output'];
-	/** A retired fk07 program counts as an "old program" (no longer planned). */
-	retired: Scalars['Boolean']['output'];
-	/** Kürzel, e.g. IF (unique key). */
-	shortname: Scalars['String']['output'];
+  __typename?: 'StudyProgram';
+  active: Scalars['Boolean']['output'];
+  /** Origin/grouping: fk07 | mucdai | misc. */
+  category: Scalars['String']['output'];
+  /** e.g. Bachelor / Master. */
+  degree?: Maybe<Scalars['String']['output']>;
+  /**
+   * Base ancode for external (e.g. MUC.DAI) exams of this program: the local ZPA
+   * ancode is externalExamsBase + primussAncode. Only for externally imported
+   * programs (mucdai/misc).
+   */
+  externalExamsBase?: Maybe<Scalars['Int']['output']>;
+  name: Scalars['String']['output'];
+  /** A retired fk07 program counts as an "old program" (no longer planned). */
+  retired: Scalars['Boolean']['output'];
+  /** Kürzel, e.g. IF (unique key). */
+  shortname: Scalars['String']['output'];
 };
 
 export type StudyProgramInput = {
-	active: Scalars['Boolean']['input'];
-	category: Scalars['String']['input'];
-	degree?: InputMaybe<Scalars['String']['input']>;
-	externalExamsBase?: InputMaybe<Scalars['Int']['input']>;
-	name: Scalars['String']['input'];
-	retired: Scalars['Boolean']['input'];
-	shortname: Scalars['String']['input'];
+  active: Scalars['Boolean']['input'];
+  category: Scalars['String']['input'];
+  degree?: InputMaybe<Scalars['String']['input']>;
+  externalExamsBase?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  retired: Scalars['Boolean']['input'];
+  shortname: Scalars['String']['input'];
 };
 
 export type Subscription = {
-	__typename?: 'Subscription';
-	/**
-	 * assignInvigilations runs the automatic invigilation planning and streams its
-	 * output line by line (terminal style). With dryRun the optimizer only reports;
-	 * nothing is written to the database. seed and iterations override the config
-	 * defaults (0/null = keep config/default). The stream ends with a DONE line.
-	 */
-	assignInvigilations: LogLine;
-	/**
-	 * Assign rooms to all exams (rooms-for-exams) and stream the output. The allowed
-	 * rooms per slot are computed live from the current rooms/requests/bookings;
-	 * there is no separate rooms-for-slots step or cache.
-	 */
-	assignRoomsForExams: LogLine;
-	/**
-	 * generateExamRoomsPhase runs phase A: it schedules ONLY the EXaHM/SEB exams into the
-	 * booked T-building slots, maximizing room usage, and streams its output line by line.
-	 * With dryRun nothing is written. After a satisfactory run, fixExamRoomsPhase freezes
-	 * the result so the regular generateExamSchedule (phase B) leaves those exams untouched.
-	 */
-	generateExamRoomsPhase: LogLine;
-	/**
-	 * generateExamSchedule runs the automatic exam-schedule (Terminplan) generation and
-	 * streams its terminal-style output line by line. With dryRun nothing is written; the
-	 * final RESULT line carries the structured examReport either way. A non-dry-run write
-	 * is refused while the plan is gated (draft sent / published). With keepAssigned the
-	 * current plan is used as the warm start (only improve, minimal churn) instead of
-	 * building a fresh assignment from scratch.
-	 */
-	generateExamSchedule: LogLine;
-	/** Fetch the room bookings from anny.eu and store them (used for the EXaHM room slots). Streams its output. */
-	importAnnyBookings: LogLine;
-	/** Fetch exams from ZPA and cache them. */
-	importExamsFromZPA: LogLine;
-	/** Fetch invigilator requirements from ZPA and cache them. */
-	importInvigilatorRequirementsFromZPA: LogLine;
-	/** Fetch the ZPA infos of students with registrations and cache them. */
-	importStudentsFromZPA: LogLine;
-	/** Fetch teachers from ZPA and cache them. */
-	importTeachersFromZPA: LogLine;
-	/** Send the cover-page email to a single examer. */
-	sendEmailCoverPage: LogLine;
-	/** Send cover-page emails to all examers with exams planned by me. */
-	sendEmailCoverPages: LogLine;
-	sendEmailDraft: LogLine;
-	sendEmailExaHM: LogLine;
-	/**
-	 * Send the consolidated exam-planning info email to the selected examers (teacherIDs;
-	 * null/empty = all candidates from examPlanningMailRecipients). Per examer: the exams I
-	 * plan with their constraints (no slot/date) and a Jira link for (further) constraints,
-	 * or — for FK07 examers I plan nothing for — a note that I plan none of their exams.
-	 */
-	sendEmailExamPlanningInfo: LogLine;
-	sendEmailInvigilations: LogLine;
-	sendEmailInvigilationsMissing: LogLine;
-	/**
-	 * Send the secretariat a short note that the invigilation planning is finished,
-	 * everything is in ZPA and the plan may be posted. Send after publishing the
-	 * invigilation plan.
-	 */
-	sendEmailInvigilationsSecretariat: LogLine;
-	/**
-	 * Send the KDP the overview of the EXaHM/SEB room planning (by day/time and
-	 * room, with per-exam seat counts and a room-oriented CSV attachment). Send
-	 * after publishing the room plan.
-	 */
-	sendEmailKdpExahm: LogLine;
-	/**
-	 * Send the Lehrbeauftragten-Beauftragte:r (lbaba) an overview of all repeat
-	 * exams of LBAs I planned (dates and invigilations only).
-	 */
-	sendEmailLbaRepeaters: LogLine;
-	/** Email all NTAs their planned rooms after room planning. */
-	sendEmailNTAPlanned: LogLine;
-	/** Email NTAs with a claim to a room of their own (mtknr, or "all"). */
-	sendEmailNTARoomAlone: LogLine;
-	/** Inform the examers about a new NTA (by Matrikelnummer). */
-	sendEmailNewNTA: LogLine;
-	/** Send the primuss-data email for a single exam (by ZPA ancode). updated marks it as an update. */
-	sendEmailPrimussData: LogLine;
-	/** Send the primuss-data email to every examer with exams planned by me. */
-	sendEmailPrimussDataAll: LogLine;
-	/** Send primuss data for an exam not planned by us to a single address. */
-	sendEmailPrimussDataUnplanned: LogLine;
-	sendEmailPublishedExams: LogLine;
-	/** Send an individual published-invigilations email (with the personal plan PNG) to each invigilator. */
-	sendEmailPublishedInvigilations: LogLine;
-	sendEmailPublishedRooms: LogLine;
-	/** Send the request for the active building-management rooms to the Gebäudemanagement. */
-	sendEmailRoomRequests: LogLine;
-	/**
-	 * Send the secretariat the room occupancy (per non-request room, when it is used
-	 * by an exam; overlapping NTA times merged) with a request to check it against
-	 * ZPA. Send before publishing the room plan.
-	 */
-	sendEmailRoomsSecretariat: LogLine;
-	/** Upload the planned exams to ZPA without rooms or invigilators (dryRun = build only, do not post). */
-	uploadExamsToZPA: LogLine;
-	/** Upload the planned exams to ZPA including planned rooms and invigilators. */
-	uploadExamsWithInvigilatorsToZPA: LogLine;
-	/** Upload the planned exams to ZPA including planned rooms. */
-	uploadExamsWithRoomsToZPA: LogLine;
-	/** Upload the student registrations to ZPA. */
-	uploadStudentRegsToZPA: LogLine;
-	validateConflicts: LogLine;
-	validateConstraints: LogLine;
-	validateDB: LogLine;
-	validateInvigilationConstraints: LogLine;
-	validateInvigilationDuplicates: LogLine;
-	validateInvigilationsTimeDistance: LogLine;
-	validateInvigilatorRequirements: LogLine;
-	validateInvigilatorSlots: LogLine;
-	validatePrePlannedExahmRooms: LogLine;
-	validateRoomsBlocked: LogLine;
-	validateRoomsEnoughSeats: LogLine;
-	validateRoomsNeedRequest: LogLine;
-	validateRoomsPerExam: LogLine;
-	validateRoomsPerSlot: LogLine;
-	validateRoomsTimeDistance: LogLine;
-	validateStudentRegs: LogLine;
-	validateZPADateTimes: LogLine;
-	validateZPAInvigilators: LogLine;
-	validateZPARooms: LogLine;
+  __typename?: 'Subscription';
+  /**
+   * assignInvigilations runs the automatic invigilation planning and streams its
+   * output line by line (terminal style). With dryRun the optimizer only reports;
+   * nothing is written to the database. seed and iterations override the config
+   * defaults (0/null = keep config/default). The stream ends with a DONE line.
+   */
+  assignInvigilations: LogLine;
+  /**
+   * Assign rooms to all exams (rooms-for-exams) and stream the output. The allowed
+   * rooms per slot are computed live from the current rooms/requests/bookings;
+   * there is no separate rooms-for-slots step or cache.
+   */
+  assignRoomsForExams: LogLine;
+  /**
+   * generateExamRoomsPhase runs phase A: it schedules ONLY the EXaHM/SEB exams into the
+   * booked T-building slots, maximizing room usage, and streams its output line by line.
+   * With dryRun nothing is written. After a satisfactory run, fixExamRoomsPhase freezes
+   * the result so the regular generateExamSchedule (phase B) leaves those exams untouched.
+   */
+  generateExamRoomsPhase: LogLine;
+  /**
+   * generateExamSchedule runs the automatic exam-schedule (Terminplan) generation and
+   * streams its terminal-style output line by line. With dryRun nothing is written; the
+   * final RESULT line carries the structured examReport either way. A non-dry-run write
+   * is refused while the plan is gated (draft sent / published). With keepAssigned the
+   * current plan is used as the warm start (only improve, minimal churn) instead of
+   * building a fresh assignment from scratch.
+   */
+  generateExamSchedule: LogLine;
+  /** Fetch the room bookings from anny.eu and store them (used for the EXaHM room slots). Streams its output. */
+  importAnnyBookings: LogLine;
+  /** Fetch exams from ZPA and cache them. */
+  importExamsFromZPA: LogLine;
+  /** Fetch invigilator requirements from ZPA and cache them. */
+  importInvigilatorRequirementsFromZPA: LogLine;
+  /** Fetch the ZPA infos of students with registrations and cache them. */
+  importStudentsFromZPA: LogLine;
+  /** Fetch teachers from ZPA and cache them. */
+  importTeachersFromZPA: LogLine;
+  /** Send the cover-page email to a single examer. */
+  sendEmailCoverPage: LogLine;
+  /** Send cover-page emails to all examers with exams planned by me. */
+  sendEmailCoverPages: LogLine;
+  sendEmailDraft: LogLine;
+  sendEmailExaHM: LogLine;
+  /**
+   * Send the consolidated exam-planning info email to the selected examers (teacherIDs;
+   * null/empty = all candidates from examPlanningMailRecipients). Per examer: the exams I
+   * plan with their constraints (no slot/date) and a Jira link for (further) constraints,
+   * or — for FK07 examers I plan nothing for — a note that I plan none of their exams.
+   */
+  sendEmailExamPlanningInfo: LogLine;
+  sendEmailInvigilations: LogLine;
+  sendEmailInvigilationsMissing: LogLine;
+  /**
+   * Send the secretariat a short note that the invigilation planning is finished,
+   * everything is in ZPA and the plan may be posted. Send after publishing the
+   * invigilation plan.
+   */
+  sendEmailInvigilationsSecretariat: LogLine;
+  /**
+   * Send the KDP the overview of the EXaHM/SEB room planning (by day/time and
+   * room, with per-exam seat counts and a room-oriented CSV attachment). Send
+   * after publishing the room plan.
+   */
+  sendEmailKdpExahm: LogLine;
+  /**
+   * Send the Lehrbeauftragten-Beauftragte:r (lbaba) an overview of all repeat
+   * exams of LBAs I planned (dates and invigilations only).
+   */
+  sendEmailLbaRepeaters: LogLine;
+  /** Email all NTAs their planned rooms after room planning. */
+  sendEmailNTAPlanned: LogLine;
+  /** Email NTAs with a claim to a room of their own (mtknr, or "all"). */
+  sendEmailNTARoomAlone: LogLine;
+  /** Inform the examers about a new NTA (by Matrikelnummer). */
+  sendEmailNewNTA: LogLine;
+  /** Send the primuss-data email for a single exam (by ZPA ancode). updated marks it as an update. */
+  sendEmailPrimussData: LogLine;
+  /** Send the primuss-data email to every examer with exams planned by me. */
+  sendEmailPrimussDataAll: LogLine;
+  /** Send primuss data for an exam not planned by us to a single address. */
+  sendEmailPrimussDataUnplanned: LogLine;
+  sendEmailPublishedExams: LogLine;
+  /** Send an individual published-invigilations email (with the personal plan PNG) to each invigilator. */
+  sendEmailPublishedInvigilations: LogLine;
+  sendEmailPublishedRooms: LogLine;
+  /** Send the request for the active building-management rooms to the Gebäudemanagement. */
+  sendEmailRoomRequests: LogLine;
+  /**
+   * Send the secretariat the room occupancy (per non-request room, when it is used
+   * by an exam; overlapping NTA times merged) with a request to check it against
+   * ZPA. Send before publishing the room plan.
+   */
+  sendEmailRoomsSecretariat: LogLine;
+  /** Upload the planned exams to ZPA without rooms or invigilators (dryRun = build only, do not post). */
+  uploadExamsToZPA: LogLine;
+  /** Upload the planned exams to ZPA including planned rooms and invigilators. */
+  uploadExamsWithInvigilatorsToZPA: LogLine;
+  /** Upload the planned exams to ZPA including planned rooms. */
+  uploadExamsWithRoomsToZPA: LogLine;
+  /** Upload the student registrations to ZPA. */
+  uploadStudentRegsToZPA: LogLine;
+  validateConflicts: LogLine;
+  validateConstraints: LogLine;
+  validateDBConstraints: LogLine;
+  validateDBNtas: LogLine;
+  validateDBPlanEntries: LogLine;
+  validateDBReferences: LogLine;
+  validateDBRooms: LogLine;
+  validateInvigilationConstraints: LogLine;
+  validateInvigilationDuplicates: LogLine;
+  validateInvigilationsTimeDistance: LogLine;
+  validateInvigilatorRequirements: LogLine;
+  validateInvigilatorSlots: LogLine;
+  validatePrePlannedExahmRooms: LogLine;
+  validateRoomsBlocked: LogLine;
+  validateRoomsEnoughSeats: LogLine;
+  validateRoomsNeedRequest: LogLine;
+  validateRoomsPerExam: LogLine;
+  validateRoomsPerSlot: LogLine;
+  validateRoomsTimeDistance: LogLine;
+  validateStudentRegs: LogLine;
+  validateZPADateTimes: LogLine;
+  validateZPAInvigilators: LogLine;
+  validateZPARooms: LogLine;
 };
+
 
 export type SubscriptionAssignInvigilationsArgs = {
-	dryRun: Scalars['Boolean']['input'];
-	iterations?: InputMaybe<Scalars['Int']['input']>;
-	seed?: InputMaybe<Scalars['Int']['input']>;
+  dryRun: Scalars['Boolean']['input'];
+  iterations?: InputMaybe<Scalars['Int']['input']>;
+  seed?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type SubscriptionGenerateExamRoomsPhaseArgs = {
-	dryRun: Scalars['Boolean']['input'];
-	iterations?: InputMaybe<Scalars['Int']['input']>;
-	seed?: InputMaybe<Scalars['Int']['input']>;
+  dryRun: Scalars['Boolean']['input'];
+  iterations?: InputMaybe<Scalars['Int']['input']>;
+  seed?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type SubscriptionGenerateExamScheduleArgs = {
-	dryRun: Scalars['Boolean']['input'];
-	ignoreRatings?: InputMaybe<Scalars['Boolean']['input']>;
-	iterations?: InputMaybe<Scalars['Int']['input']>;
-	keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
-	seed?: InputMaybe<Scalars['Int']['input']>;
+  dryRun: Scalars['Boolean']['input'];
+  ignoreRatings?: InputMaybe<Scalars['Boolean']['input']>;
+  iterations?: InputMaybe<Scalars['Int']['input']>;
+  keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
+  seed?: InputMaybe<Scalars['Int']['input']>;
 };
+
 
 export type SubscriptionSendEmailCoverPageArgs = {
-	run: Scalars['Boolean']['input'];
-	teacherID: Scalars['Int']['input'];
+  run: Scalars['Boolean']['input'];
+  teacherID: Scalars['Int']['input'];
 };
+
 
 export type SubscriptionSendEmailCoverPagesArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailDraftArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailExaHmArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailExamPlanningInfoArgs = {
-	run: Scalars['Boolean']['input'];
-	teacherIDs?: InputMaybe<Array<Scalars['Int']['input']>>;
+  run: Scalars['Boolean']['input'];
+  teacherIDs?: InputMaybe<Array<Scalars['Int']['input']>>;
 };
+
 
 export type SubscriptionSendEmailInvigilationsArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailInvigilationsMissingArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailInvigilationsSecretariatArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailKdpExahmArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailLbaRepeatersArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailNtaPlannedArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailNtaRoomAloneArgs = {
-	mtknr: Scalars['String']['input'];
-	run: Scalars['Boolean']['input'];
+  mtknr: Scalars['String']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailNewNtaArgs = {
-	mtknr: Scalars['String']['input'];
-	run: Scalars['Boolean']['input'];
+  mtknr: Scalars['String']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPrimussDataArgs = {
-	ancode: Scalars['Int']['input'];
-	run: Scalars['Boolean']['input'];
-	updated: Scalars['Boolean']['input'];
+  ancode: Scalars['Int']['input'];
+  run: Scalars['Boolean']['input'];
+  updated: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPrimussDataAllArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPrimussDataUnplannedArgs = {
-	ancode: Scalars['Int']['input'];
-	email: Scalars['String']['input'];
-	program: Scalars['String']['input'];
-	run: Scalars['Boolean']['input'];
+  ancode: Scalars['Int']['input'];
+  email: Scalars['String']['input'];
+  program: Scalars['String']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPublishedExamsArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPublishedInvigilationsArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailPublishedRoomsArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailRoomRequestsArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionSendEmailRoomsSecretariatArgs = {
-	run: Scalars['Boolean']['input'];
+  run: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionUploadExamsToZpaArgs = {
-	dryRun: Scalars['Boolean']['input'];
+  dryRun: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionUploadExamsWithInvigilatorsToZpaArgs = {
-	dryRun: Scalars['Boolean']['input'];
+  dryRun: Scalars['Boolean']['input'];
 };
+
 
 export type SubscriptionUploadExamsWithRoomsToZpaArgs = {
-	dryRun: Scalars['Boolean']['input'];
+  dryRun: Scalars['Boolean']['input'];
 };
 
+
 export type SubscriptionValidateConflictsArgs = {
-	ancode: Scalars['Int']['input'];
-	onlyPlannedByMe: Scalars['Boolean']['input'];
+  ancode: Scalars['Int']['input'];
+  onlyPlannedByMe: Scalars['Boolean']['input'];
 };
 
 export type SyncChangeEntry = {
-	__typename?: 'SyncChangeEntry';
-	/** set only for changed entries */
-	fields?: Maybe<Array<SyncFieldChange>>;
-	name: Scalars['String']['output'];
-	/** added | removed | changed */
-	type: Scalars['String']['output'];
+  __typename?: 'SyncChangeEntry';
+  /** set only for changed entries */
+  fields?: Maybe<Array<SyncFieldChange>>;
+  name: Scalars['String']['output'];
+  /** added | removed | changed */
+  type: Scalars['String']['output'];
 };
 
 export type SyncFieldChange = {
-	__typename?: 'SyncFieldChange';
-	field: Scalars['String']['output'];
-	new: Scalars['String']['output'];
-	old: Scalars['String']['output'];
+  __typename?: 'SyncFieldChange';
+  field: Scalars['String']['output'];
+  new: Scalars['String']['output'];
+  old: Scalars['String']['output'];
 };
 
 /**
@@ -2949,38 +3092,38 @@ export type SyncFieldChange = {
  * For imports it also carries the diff against the DB state right before it.
  */
 export type SyncLogEntry = {
-	__typename?: 'SyncLogEntry';
-	added: Scalars['Int']['output'];
-	changed: Scalars['Int']['output'];
-	/** import | upload */
-	direction: Scalars['String']['output'];
-	/** per-entry detail (imports only) */
-	entries?: Maybe<Array<SyncChangeEntry>>;
-	/** human-readable label */
-	label: Scalars['String']['output'];
-	ok: Scalars['Boolean']['output'];
-	/** stable key, e.g. zpa-import-exams, zpa-upload-plan-exams-rooms, anny-import-bookings */
-	operation: Scalars['String']['output'];
-	removed: Scalars['Int']['output'];
-	summary: Scalars['String']['output'];
-	/** ZPA | Anny | … */
-	system: Scalars['String']['output'];
-	time: Scalars['Time']['output'];
+  __typename?: 'SyncLogEntry';
+  added: Scalars['Int']['output'];
+  changed: Scalars['Int']['output'];
+  /** import | upload */
+  direction: Scalars['String']['output'];
+  /** per-entry detail (imports only) */
+  entries?: Maybe<Array<SyncChangeEntry>>;
+  /** human-readable label */
+  label: Scalars['String']['output'];
+  ok: Scalars['Boolean']['output'];
+  /** stable key, e.g. zpa-import-exams, zpa-upload-plan-exams-rooms, anny-import-bookings */
+  operation: Scalars['String']['output'];
+  removed: Scalars['Int']['output'];
+  summary: Scalars['String']['output'];
+  /** ZPA | Anny | … */
+  system: Scalars['String']['output'];
+  time: Scalars['Time']['output'];
 };
 
 export type Teacher = {
-	__typename?: 'Teacher';
-	email: Scalars['String']['output'];
-	fk: Scalars['String']['output'];
-	fullname: Scalars['String']['output'];
-	id: Scalars['Int']['output'];
-	isActive: Scalars['Boolean']['output'];
-	isLBA: Scalars['Boolean']['output'];
-	isProf: Scalars['Boolean']['output'];
-	isProfHC: Scalars['Boolean']['output'];
-	isStaff: Scalars['Boolean']['output'];
-	lastSemester: Scalars['String']['output'];
-	shortname: Scalars['String']['output'];
+  __typename?: 'Teacher';
+  email: Scalars['String']['output'];
+  fk: Scalars['String']['output'];
+  fullname: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  isActive: Scalars['Boolean']['output'];
+  isLBA: Scalars['Boolean']['output'];
+  isProf: Scalars['Boolean']['output'];
+  isProfHC: Scalars['Boolean']['output'];
+  isStaff: Scalars['Boolean']['output'];
+  lastSemester: Scalars['String']['output'];
+  shortname: Scalars['String']['output'];
 };
 
 /**
@@ -2988,13 +3131,13 @@ export type Teacher = {
  * room generation (kept out of the planned rooms).
  */
 export type UnplacedExam = {
-	__typename?: 'UnplacedExam';
-	ancode: Scalars['Int']['output'];
-	day: Scalars['Int']['output'];
-	mtknrs: Array<Scalars['String']['output']>;
-	/** set if these are NTA students (then mtknrs has exactly one entry). */
-	ntaMtknr?: Maybe<Scalars['String']['output']>;
-	slot: Scalars['Int']['output'];
+  __typename?: 'UnplacedExam';
+  ancode: Scalars['Int']['output'];
+  day: Scalars['Int']['output'];
+  mtknrs: Array<Scalars['String']['output']>;
+  /** set if these are NTA students (then mtknrs has exactly one entry). */
+  ntaMtknr?: Maybe<Scalars['String']['output']>;
+  slot: Scalars['Int']['output'];
 };
 
 /**
@@ -3003,23 +3146,23 @@ export type UnplacedExam = {
  * affected exam / room / slot / invigilator / student and render it as a row.
  */
 export type ValidationFinding = {
-	__typename?: 'ValidationFinding';
-	ancode?: Maybe<Scalars['Int']['output']>;
-	day?: Maybe<Scalars['Int']['output']>;
-	invigilatorID?: Maybe<Scalars['Int']['output']>;
-	level: ValidationLevel;
-	message: Scalars['String']['output'];
-	relatedAncodes?: Maybe<Array<Scalars['Int']['output']>>;
-	room?: Maybe<Scalars['String']['output']>;
-	slot?: Maybe<Scalars['Int']['output']>;
-	studentMtknr?: Maybe<Scalars['String']['output']>;
+  __typename?: 'ValidationFinding';
+  ancode?: Maybe<Scalars['Int']['output']>;
+  day?: Maybe<Scalars['Int']['output']>;
+  invigilatorID?: Maybe<Scalars['Int']['output']>;
+  level: ValidationLevel;
+  message: Scalars['String']['output'];
+  relatedAncodes?: Maybe<Array<Scalars['Int']['output']>>;
+  room?: Maybe<Scalars['String']['output']>;
+  slot?: Maybe<Scalars['Int']['output']>;
+  studentMtknr?: Maybe<Scalars['String']['output']>;
 };
 
 /** ValidationLevel classifies a single validation finding. */
 export enum ValidationLevel {
-	Error = 'ERROR',
-	Info = 'INFO',
-	Warning = 'WARNING'
+  Error = 'ERROR',
+  Info = 'INFO',
+  Warning = 'WARNING'
 }
 
 /**
@@ -3028,91 +3171,91 @@ export enum ValidationLevel {
  * while the human-readable lines stream before it.
  */
 export type ValidationReport = {
-	__typename?: 'ValidationReport';
-	errorCount: Scalars['Int']['output'];
-	findings: Array<ValidationFinding>;
-	infoCount: Scalars['Int']['output'];
-	name: Scalars['String']['output'];
-	ok: Scalars['Boolean']['output'];
-	warningCount: Scalars['Int']['output'];
+  __typename?: 'ValidationReport';
+  errorCount: Scalars['Int']['output'];
+  findings: Array<ValidationFinding>;
+  infoCount: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+  ok: Scalars['Boolean']['output'];
+  warningCount: Scalars['Int']['output'];
 };
 
 export type ZpaConflict = {
-	__typename?: 'ZPAConflict';
-	ancode: Scalars['Int']['output'];
-	numberOfStuds: Scalars['Int']['output'];
-	primussAncodes: Array<PrimussExamAncode>;
+  __typename?: 'ZPAConflict';
+  ancode: Scalars['Int']['output'];
+  numberOfStuds: Scalars['Int']['output'];
+  primussAncodes: Array<PrimussExamAncode>;
 };
 
 export type ZpaExam = {
-	__typename?: 'ZPAExam';
-	ancode: Scalars['Int']['output'];
-	duration: Scalars['Int']['output'];
-	examType: Scalars['String']['output'];
-	examTypeFull: Scalars['String']['output'];
-	/**
-	 * Responsible faculty (Prüfungsplanung), e.g. FK03/FK08/FK12 for external MUC.DAI
-	 * exams. Empty for our own FK07 exams — the GUI can treat empty as FK07.
-	 */
-	faculty: Scalars['String']['output'];
-	groups: Array<Scalars['String']['output']>;
-	isRepeaterExam: Scalars['Boolean']['output'];
-	mainExamer: Scalars['String']['output'];
-	mainExamerID: Scalars['Int']['output'];
-	module: Scalars['String']['output'];
-	primussAncodes: Array<ZpaPrimussAncodes>;
-	semester: Scalars['String']['output'];
-	zpaID: Scalars['Int']['output'];
+  __typename?: 'ZPAExam';
+  ancode: Scalars['Int']['output'];
+  duration: Scalars['Int']['output'];
+  examType: Scalars['String']['output'];
+  examTypeFull: Scalars['String']['output'];
+  /**
+   * Responsible faculty (Prüfungsplanung), e.g. FK03/FK08/FK12 for external MUC.DAI
+   * exams. Empty for our own FK07 exams — the GUI can treat empty as FK07.
+   */
+  faculty: Scalars['String']['output'];
+  groups: Array<Scalars['String']['output']>;
+  isRepeaterExam: Scalars['Boolean']['output'];
+  mainExamer: Scalars['String']['output'];
+  mainExamerID: Scalars['Int']['output'];
+  module: Scalars['String']['output'];
+  primussAncodes: Array<ZpaPrimussAncodes>;
+  semester: Scalars['String']['output'];
+  zpaID: Scalars['Int']['output'];
 };
 
 export type ZpaExamWithConstraints = {
-	__typename?: 'ZPAExamWithConstraints';
-	constraints?: Maybe<Constraints>;
-	planEntry?: Maybe<PlanEntry>;
-	zpaExam: ZpaExam;
+  __typename?: 'ZPAExamWithConstraints';
+  constraints?: Maybe<Constraints>;
+  planEntry?: Maybe<PlanEntry>;
+  zpaExam: ZpaExam;
 };
 
 export type ZpaExamsForType = {
-	__typename?: 'ZPAExamsForType';
-	exams: Array<ZpaExam>;
-	type: Scalars['String']['output'];
+  __typename?: 'ZPAExamsForType';
+  exams: Array<ZpaExam>;
+  type: Scalars['String']['output'];
 };
 
 export type ZpaInvigilator = {
-	__typename?: 'ZPAInvigilator';
-	hasSubmittedRequirements: Scalars['Boolean']['output'];
-	teacher: Teacher;
+  __typename?: 'ZPAInvigilator';
+  hasSubmittedRequirements: Scalars['Boolean']['output'];
+  teacher: Teacher;
 };
 
 export type ZpaPrimussAncodes = {
-	__typename?: 'ZPAPrimussAncodes';
-	ancode: Scalars['Int']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'ZPAPrimussAncodes';
+  ancode: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type ZpaStudent = {
-	__typename?: 'ZPAStudent';
-	email: Scalars['String']['output'];
-	firstName: Scalars['String']['output'];
-	gender: Scalars['String']['output'];
-	greeting: Scalars['String']['output'];
-	group: Scalars['String']['output'];
-	lastName: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
+  __typename?: 'ZPAStudent';
+  email: Scalars['String']['output'];
+  firstName: Scalars['String']['output'];
+  gender: Scalars['String']['output'];
+  greeting: Scalars['String']['output'];
+  group: Scalars['String']['output'];
+  lastName: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
 };
 
 export type ZpaStudentReg = {
-	__typename?: 'ZPAStudentReg';
-	ancode: Scalars['Int']['output'];
-	mtknr: Scalars['String']['output'];
-	program: Scalars['String']['output'];
+  __typename?: 'ZPAStudentReg';
+  ancode: Scalars['Int']['output'];
+  mtknr: Scalars['String']['output'];
+  program: Scalars['String']['output'];
 };
 
 export type ZpaStudentRegError = {
-	__typename?: 'ZPAStudentRegError';
-	ancode: Scalars['String']['output'];
-	exam: Scalars['String']['output'];
-	mtknr: Scalars['String']['output'];
-	program: Scalars['String']['output'];
-	semester: Scalars['String']['output'];
+  __typename?: 'ZPAStudentRegError';
+  ancode: Scalars['String']['output'];
+  exam: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  program: Scalars['String']['output'];
+  semester: Scalars['String']['output'];
 };

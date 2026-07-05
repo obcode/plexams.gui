@@ -2792,7 +2792,11 @@ type Subscription {
 	validateConflicts(onlyPlannedByMe: Boolean!, ancode: Int!): LogLine!
 	validateConstraints: LogLine!
 	validateStudentRegs: LogLine!
-	validateDB: LogLine!
+	validateDBPlanEntries: LogLine!
+	validateDBConstraints: LogLine!
+	validateDBRooms: LogLine!
+	validateDBNtas: LogLine!
+	validateDBReferences: LogLine!
 	validatePrePlannedExahmRooms: LogLine!
 
 	"""
