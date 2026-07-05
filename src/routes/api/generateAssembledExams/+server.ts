@@ -1,33 +1,22 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { request as gqlrequest, gql } from 'graphql-request';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async () => {
-	try {
-		const data = await gqlrequest(
-			env.PLEXAMS_SERVER,
-			gql`
-				mutation {
-					generateAssembledExams {
-						state {
-							dirty
-							reason
-							changedAt
-						}
-						changes {
-							ancode
-							module
-							kind
-							details
-						}
-					}
+export const POST: RequestHandler = () =>
+	gqlProxy(gql`
+		mutation {
+			generateAssembledExams {
+				state {
+					dirty
+					reason
+					changedAt
 				}
-			`
-		);
-		return json(data);
-	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
-	}
-};
+				changes {
+					ancode
+					module
+					kind
+					details
+				}
+			}
+		}
+	`);

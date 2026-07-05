@@ -1,23 +1,16 @@
-import { env } from '$env/dynamic/private';
-import { json } from '@sveltejs/kit';
-import { request as gqlrequest, gql } from 'graphql-request';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { gql } from 'graphql-request';
+import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
 	const { force } = await request.json();
-
-	const mutation = gql`
-		mutation ($force: Boolean!) {
-			applyRoomRequestsPreview(force: $force)
-		}
-	`;
-
-	try {
-		const data = await gqlrequest(env.PLEXAMS_SERVER, mutation, { force: !!force });
-		return json(data);
-	} catch (e) {
-		// u. a. „… already exist" wenn force=false und bereits Anfragen existieren
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
-	}
+	// u. a. „… already exist" wenn force=false und bereits Anfragen existieren (400)
+	return gqlProxy(
+		gql`
+			mutation ($force: Boolean!) {
+				applyRoomRequestsPreview(force: $force)
+			}
+		`,
+		{ force: !!force }
+	);
 };
