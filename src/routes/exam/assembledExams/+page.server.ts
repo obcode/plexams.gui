@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
+import { NTA_FIELDS } from '$lib/gql/fragments';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -68,15 +69,7 @@ export const load: PageServerLoad = async () => {
 						numberOfStuds
 					}
 					ntas {
-						name
-						mtknr
-						compensation
-						deltaDurationPercent
-						needsRoomAlone
-						program
-						from
-						until
-						lastSemester
+						${NTA_FIELDS}
 					}
 				}
 				constraints {
@@ -106,15 +99,7 @@ export const load: PageServerLoad = async () => {
 				}
 				studentRegsCount
 				ntas {
-					name
-					mtknr
-					compensation
-					deltaDurationPercent
-					needsRoomAlone
-					program
-					from
-					until
-					lastSemester
+					${NTA_FIELDS}
 				}
 				maxDuration
 				planEntry {

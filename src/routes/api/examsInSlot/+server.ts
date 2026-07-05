@@ -1,5 +1,6 @@
 import { gql } from 'graphql-request';
 import { gqlProxy } from '$lib/server/gqlProxy';
+import { NTA_FIELDS } from '$lib/gql/fragments';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -50,15 +51,7 @@ export const POST: RequestHandler = async ({ request }) => {
 							numberOfStuds
 						}
 						ntas {
-							name
-							mtknr
-							compensation
-							deltaDurationPercent
-							needsRoomAlone
-							program
-							from
-							until
-							lastSemester
+							${NTA_FIELDS}
 						}
 					}
 					constraints {
@@ -89,15 +82,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					}
 					studentRegsCount
 					ntas {
-						name
-						mtknr
-						compensation
-						deltaDurationPercent
-						needsRoomAlone
-						program
-						from
-						until
-						lastSemester
+						${NTA_FIELDS}
 					}
 					maxDuration
 					planEntry {

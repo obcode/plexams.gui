@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { NTA_FIELDS } from '$lib/gql/fragments';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -51,15 +52,7 @@ export const load: PageServerLoad = async ({ params }) => {
 						numberOfStuds
 					}
 					ntas {
-						name
-						mtknr
-						compensation
-						deltaDurationPercent
-						needsRoomAlone
-						program
-						from
-						until
-						lastSemester
+						${NTA_FIELDS}
 					}
 				}
 				constraints {

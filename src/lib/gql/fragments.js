@@ -25,3 +25,20 @@ export const ZPA_EXAM_FIELDS = `
 		ancode
 	}
 `;
+
+// Standard-Auswahl eines NTA (Nachteilsausgleich) in Prüfungs-Sichten — die
+// 9-Felder-Variante, die in exam/assembledExams (+[ancode]) und api/examsInSlot
+// bislang byte-identisch dupliziert war. (Andere NTA-Auswahlen im Code sind
+// bewusst kürzer/länger, z. B. mit needsHardware oder ohne Stammdaten — die
+// bleiben inline.) Einsatz: `ntas { ${NTA_FIELDS} }`.
+export const NTA_FIELDS = `
+	name
+	mtknr
+	compensation
+	deltaDurationPercent
+	needsRoomAlone
+	program
+	from
+	until
+	lastSemester
+`;
