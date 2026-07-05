@@ -12,6 +12,7 @@
 	import { beforeNavigate } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import { lineDiff, diffStat } from '$lib/email/templateDiff';
+	import { highlightGoTemplate } from '$lib/email/templateHighlight';
 
 	/**
 	 * @typedef {Object} Variable
@@ -46,6 +47,19 @@
 
 	/** @type {HTMLTextAreaElement | undefined} */
 	let taEl = $state();
+	/** @type {HTMLPreElement | undefined} */
+	let hlEl = $state();
+
+	// Highlight-Overlay: {{ … }}-Aktionen hervorheben (deckungsgleich hinter der
+	// Textarea). Scroll der Textarea auf das <pre> spiegeln, sonst laufen sie bei
+	// langem Text auseinander.
+	let highlighted = $derived(highlightGoTemplate(buffer));
+	function syncScroll() {
+		if (hlEl && taEl) {
+			hlEl.scrollTop = taEl.scrollTop;
+			hlEl.scrollLeft = taEl.scrollLeft;
+		}
+	}
 
 	let view = $state(/** @type {'edit' | 'diff'} */ ('edit'));
 	let previewMode = $state(/** @type {'html' | 'text'} */ ('html'));
@@ -243,12 +257,22 @@
 				</div>
 
 				{#if view === 'edit'}
-					<textarea
-						bind:this={taEl}
-						bind:value={buffer}
-						spellcheck="false"
-						class="textarea textarea-bordered h-[55vh] w-full resize-y font-mono text-sm leading-relaxed"
-					></textarea>
+					<!-- Editor mit Highlight-Overlay: farbiges <pre> hinter transparenter
+					     Textarea. Beide teilen Font/Padding/Umbruch → deckungsgleich. -->
+					<div class="relative h-[55vh]">
+						<pre
+							bind:this={hlEl}
+							aria-hidden="true"
+							class="pointer-events-none absolute inset-0 m-0 overflow-auto rounded-lg border border-base-300 p-3 font-mono text-sm leading-relaxed break-words whitespace-pre-wrap">{@html highlighted}<br
+							/></pre>
+						<textarea
+							bind:this={taEl}
+							bind:value={buffer}
+							onscroll={syncScroll}
+							spellcheck="false"
+							class="absolute inset-0 m-0 resize-none overflow-auto rounded-lg border border-base-300 bg-transparent p-3 font-mono text-sm leading-relaxed break-words whitespace-pre-wrap text-transparent caret-base-content focus:border-primary focus:outline-none"
+						></textarea>
+					</div>
 				{:else}
 					<!-- Diff gegen den gespeicherten Stand -->
 					{@const savedRows = lineDiff(template.markdown, buffer)}
@@ -416,3 +440,12 @@
 		</table>
 	</div>
 {/snippet}
+
+<style>
+	/* Overlay-Spans kommen aus {@html} und tragen daher kein Svelte-Scoping →
+	   :global. Farbe/Fettung heben die {{ … }}-Aktionen hervor. */
+	:global(.hl-action) {
+		color: var(--color-primary);
+		font-weight: 600;
+	}
+</style>
