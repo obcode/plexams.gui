@@ -1,5 +1,7 @@
 <script>
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import { examInfo, loadExamInfo } from '$lib/validation/examInfo';
 
 	/**
 	 * @typedef {Object} Props
@@ -13,6 +15,14 @@
 	let { validator, onAcceptWaiver = null, onrestart } = $props();
 
 	let showTerminal = $state(false);
+
+	// Ancode → Modul/Erstprüfer:in für die Findings-Badges (einmalig geladen).
+	onMount(loadExamInfo);
+	/** Zusatzinfo „Modul · Erstprüfer:in" zu einem Ancode, falls bekannt. @param {number} ancode */
+	function examLabel(ancode) {
+		const info = $examInfo.get(ancode);
+		return info ? `${info.module} · ${info.mainExamer}` : '';
+	}
 
 	// ---- Verzicht „eigener Raum" akzeptieren ----
 	/** @type {any} */
@@ -157,10 +167,18 @@
 							{#if f.ancode || (f.relatedAncodes && f.relatedAncodes.length) || f.room || f.day != null || f.slot != null || f.invigilatorID != null || f.studentMtknr}
 								<div class="mt-1 flex flex-wrap gap-1">
 									{#if f.ancode}
-										<span class="badge badge-outline badge-xs">Prüfung {f.ancode}</span>
+										<span class="badge badge-outline badge-xs">
+											Prüfung {f.ancode}{#if examLabel(f.ancode)}<span class="opacity-70">
+													· {examLabel(f.ancode)}</span
+												>{/if}
+										</span>
 									{/if}
 									{#each f.relatedAncodes ?? [] as ra}
-										<span class="badge badge-outline badge-xs">↔ {ra}</span>
+										<span class="badge badge-outline badge-xs">
+											↔ {ra}{#if examLabel(ra)}<span class="opacity-70">
+													· {examLabel(ra)}</span
+												>{/if}
+										</span>
 									{/each}
 									{#if f.room}
 										<span class="badge badge-outline badge-xs">Raum {f.room}</span>

@@ -100,13 +100,16 @@
 
 	/** @param {number} a1 @param {number} a2 */
 	const allowShare = (a1, a2) =>
-		callMut('setExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
+		callMut('exam/setExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
 			patch(a1, a2, (w) => (w.canShareSlot = true))
 		);
 	/** @param {number} a1 @param {number} a2 */
 	const removeShare = (a1, a2) =>
-		callMut('removeExamsCanShareSlot', { ancode1: a1, ancode2: a2 }, `s${pairKey(a1, a2)}`, () =>
-			patch(a1, a2, (w) => (w.canShareSlot = false))
+		callMut(
+			'exam/removeExamsCanShareSlot',
+			{ ancode1: a1, ancode2: a2 },
+			`s${pairKey(a1, a2)}`,
+			() => patch(a1, a2, (w) => (w.canShareSlot = false))
 		);
 
 	// aufgeklappte Konflikte (betroffene Studierende sichtbar)
@@ -154,7 +157,7 @@
 	/** @param {any} c @param {any} s @param {'ACCEPT'|'VETO'} decision */
 	const decide = (c, s, decision) =>
 		callMut(
-			'setStudentConflictDecision',
+			'primuss/setStudentConflictDecision',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr, decision },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, decision))
@@ -162,7 +165,7 @@
 	/** @param {any} c @param {any} s */
 	const clearDecision = (c, s) =>
 		callMut(
-			'removeStudentConflictDecision',
+			'primuss/removeStudentConflictDecision',
 			{ ancode1: c.ancode1, ancode2: c.ancode2, mtknr: s.mtknr },
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
