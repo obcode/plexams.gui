@@ -25,7 +25,7 @@ export const load: PageServerLoad = async () => {
 							dayNumber
 							slotNumber
 							starttime
-							externalTime
+							external
 						}
 					}
 				}

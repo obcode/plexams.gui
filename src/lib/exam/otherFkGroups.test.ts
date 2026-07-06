@@ -11,9 +11,9 @@ const item = (over: Record<string, any> = {}) => ({
 });
 
 describe('hasTime', () => {
-	it('true nur bei gesetzter externalTime', () => {
-		expect(hasTime({ planEntry: { externalTime: '2026-07-06T11:00:00+02:00' } })).toBe(true);
-		expect(hasTime({ planEntry: { externalTime: null } })).toBe(false);
+	it('true nur bei gesetzter starttime', () => {
+		expect(hasTime({ planEntry: { starttime: '2026-07-06T11:00:00+02:00' } })).toBe(true);
+		expect(hasTime({ planEntry: { starttime: null } })).toBe(false);
 		expect(hasTime({ planEntry: null })).toBe(false);
 	});
 });
@@ -47,7 +47,7 @@ describe('buildGroups', () => {
 
 	it('onlyMissing blendet Prüfungen mit Zeit aus', () => {
 		const items = [
-			item({ ancode: 100, planEntry: { externalTime: '2026-07-06T11:00:00+02:00' } }),
+			item({ ancode: 100, planEntry: { starttime: '2026-07-06T11:00:00+02:00' } }),
 			item({ ancode: 101, planEntry: null })
 		];
 		const groups = buildGroups(items, { onlyMissing: true });

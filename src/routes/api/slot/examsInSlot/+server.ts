@@ -88,10 +88,11 @@ export const POST: RequestHandler = async ({ request }) => {
 					planEntry {
 						dayNumber
 						slotNumber
+						starttime
+						external
 						ancode
 						locked
 						phaseFixed
-						externalTime
 					}
 					plannedRooms {
 						room {

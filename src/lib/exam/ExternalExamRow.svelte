@@ -44,17 +44,17 @@
 
 	let date = $state('');
 	let time = $state('');
-	// Eingaben aus externalTime vorbelegen; reseedet nur bei Änderung der externen
-	// Zeit (der Effekt liest nur externalTime, nicht date/time → nicht beim Tippen).
+	// Eingaben aus der gesetzten Zeit vorbelegen; reseedet nur bei Änderung der Zeit
+	// (der Effekt liest nur starttime, nicht date/time → nicht beim Tippen).
 	$effect(() => {
-		const iso = exam.planEntry?.externalTime;
+		const iso = exam.planEntry?.starttime;
 		const p = iso ? berlinParts(iso) : { date: '', time: '' };
 		date = p.date;
 		time = p.time;
 	});
 
-	const hasTime = $derived(!!exam.planEntry?.externalTime);
-	// Zeit außerhalb des Prüfungszeitraums: nur externalTime, kein echter Slot
+	const hasTime = $derived(!!exam.planEntry?.starttime);
+	// Zeit außerhalb des Prüfungszeitraums: eine Zeit, aber kein echter Slot
 	// (dayNumber/slotNumber == 0). Dann keinen Slot zeigen, nur die Zeit + Hinweis.
 	const outsidePeriod = $derived(
 		hasTime && !exam.planEntry?.dayNumber && !exam.planEntry?.slotNumber
@@ -121,7 +121,7 @@
 		<div class="flex flex-wrap items-center gap-2">
 			{#if hasTime}
 				<span class="font-mono text-sm whitespace-nowrap tabular-nums">
-					{dateTime(exam.planEntry.externalTime)} Uhr
+					{dateTime(exam.planEntry.starttime)} Uhr
 				</span>
 			{:else}
 				<span class="badge badge-warning badge-sm">kein Termin</span>

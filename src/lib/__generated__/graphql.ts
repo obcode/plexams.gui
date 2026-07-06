@@ -1024,12 +1024,18 @@ export type Mutation = {
   setAnnyPersonalizationNames: AnnyConfig;
   /** Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0. */
   setExamDuration: ExamDurationOverride;
+  /**
+   * Manually place an exam at an absolute start time. dayNumber/slotNumber are derived
+   * from starttime (0 when outside the planning period). Any time is accepted — the GUI
+   * warns client-side when it is not one of the semester's standard start times.
+   */
+  setExamTime: Scalars['Boolean']['output'];
   /** Declare / undeclare that two exams may share a slot. */
   setExamsCanShareSlot: Scalars['Boolean']['output'];
   /**
    * Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
-   * faculty). The matching slot is computed and stored as the plan entry's
-   * externalTime. date: dd.mm.yyyy, time: HH:MM.
+   * faculty). The exam's plan entry stores the absolute starttime; dayNumber/slotNumber
+   * are derived (0 when outside the planning period). date: dd.mm.yyyy, time: HH:MM.
    */
   setExternalExamTime: Scalars['Boolean']['output'];
   /** Store the generation config (global). Returns the saved config. */
@@ -1438,6 +1444,12 @@ export type MutationSetExamDurationArgs = {
 };
 
 
+export type MutationSetExamTimeArgs = {
+  ancode: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
+};
+
+
 export type MutationSetExamsCanShareSlotArgs = {
   ancode1: Scalars['Int']['input'];
   ancode2: Scalars['Int']['input'];
@@ -1749,7 +1761,8 @@ export type PlanEntry = {
   __typename?: 'PlanEntry';
   ancode: Scalars['Int']['output'];
   dayNumber: Scalars['Int']['output'];
-  externalTime?: Maybe<Scalars['Time']['output']>;
+  /** True for exams planned by another faculty (their time still lives in starttime). */
+  external: Scalars['Boolean']['output'];
   locked: Scalars['Boolean']['output'];
   /** fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock. */
   phaseFixed: Scalars['Boolean']['output'];

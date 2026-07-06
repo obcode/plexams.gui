@@ -45,7 +45,8 @@ export const POST: RequestHandler = async ({ request }) => {
 					planEntry {
 						dayNumber
 						slotNumber
-						externalTime
+						starttime
+						external
 						ancode
 						locked
 					}

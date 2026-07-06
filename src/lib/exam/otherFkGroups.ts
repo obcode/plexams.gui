@@ -9,9 +9,9 @@ export const SOURCE_LABEL: Record<OtherFkSource, string> = {
 	zpa: 'ZPA'
 };
 
-/** Hat die Prüfung bereits eine (externe) Zeit? */
-export function hasTime(e: { planEntry?: { externalTime?: string | null } | null }): boolean {
-	return !!e.planEntry?.externalTime;
+/** Hat die Prüfung bereits eine Zeit? (steht jetzt immer in starttime) */
+export function hasTime(e: { planEntry?: { starttime?: string | null } | null }): boolean {
+	return !!e.planEntry?.starttime;
 }
 
 export type GroupFilter = {

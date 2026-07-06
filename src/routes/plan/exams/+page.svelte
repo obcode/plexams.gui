@@ -243,9 +243,8 @@
 		(() => {
 			const items = [];
 			for (const e of plannedFiltered) {
-				// Nur echte Slots (1-basiert): externe Out-of-Period-Prüfungen (Slot 0/0)
-				// liefern zwar ihre externalTime als starttime, gehören aber mangels Slot
-				// nicht in den Plan.
+				// Nur echte Slots (1-basiert): Out-of-Period-Prüfungen (Slot 0/0) haben zwar
+				// eine starttime, gehören aber mangels Slot nicht in den Plan.
 				if (!e.planEntry?.slotNumber) continue;
 				const iso = e.planEntry?.starttime;
 				const dt = dateObj(iso);
@@ -348,8 +347,8 @@
 				});
 	};
 
-	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, nur
-	// externalTime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
+	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, Zeit in
+	// starttime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
 	// im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
 	let otherFkNoSlot = $derived(
 		(data.otherFkExams ?? [])

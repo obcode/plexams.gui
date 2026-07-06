@@ -172,9 +172,12 @@
 				</div>
 			</Tooltip>
 		{:else}
-			{#if exam.planEntry && exam.planEntry.externalTime != null}
-				<div class="badge badge-ghost badge-sm mb-1 tabular-nums">
-					{mkStarttime(exam.planEntry.externalTime)}
+			{#if exam.planEntry?.external && exam.planEntry.starttime != null}
+				<div
+					class="badge badge-ghost badge-sm mb-1 tabular-nums"
+					title="von anderer Fakultät geplant"
+				>
+					{mkStarttime(exam.planEntry.starttime)}
 				</div>
 			{/if}
 			<div class="flex items-start gap-2">

@@ -1164,10 +1164,17 @@ type Mutation {
 
 	"""
 	Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
-	faculty). The matching slot is computed and stored as the plan entry's
-	externalTime. date: dd.mm.yyyy, time: HH:MM.
+	faculty). The exam's plan entry stores the absolute starttime; dayNumber/slotNumber
+	are derived (0 when outside the planning period). date: dd.mm.yyyy, time: HH:MM.
 	"""
 	setExternalExamTime(ancode: Int!, date: String!, time: String!): Boolean!
+
+	"""
+	Manually place an exam at an absolute start time. dayNumber/slotNumber are derived
+	from starttime (0 when outside the planning period). Any time is accepted — the GUI
+	warns client-side when it is not one of the semester's standard start times.
+	"""
+	setExamTime(ancode: Int!, starttime: Time!): Boolean!
 
 	"""
 	Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
@@ -1603,7 +1610,11 @@ type PlanEntry {
 	dayNumber: Int!
 	slotNumber: Int!
 	starttime: Time!
-	externalTime: Time
+
+	"""
+	True for exams planned by another faculty (their time still lives in starttime).
+	"""
+	external: Boolean!
 	ancode: Int!
 	locked: Boolean!
 

@@ -8,11 +8,12 @@ import type { PageServerLoad } from './$types';
 //   (a) ZPA-Prüfungen mit Constraint notPlannedByMe → FK = notPlannedByMeInFK
 //       (Fallback: Fakultät des/der Prüfenden)
 //   (b) MUC.DAI-Prüfungen anderer FKs → FK = plannedBy (≠ FK07)
-// Beide werden über setExternalExamTime(ancode) terminiert; außerhalb des
-// Zeitraums liegende Prüfungen behalten nur eine Zeit (externalTime), keinen Slot.
+// Beide werden über setExternalExamTime(ancode) terminiert; die Zeit steht immer in
+// starttime, außerhalb des Zeitraums liegende Prüfungen haben keinen Slot (day/slot 0).
 
 type PlanEntryTime = {
-	externalTime: string | null;
+	starttime: string | null;
+	external: boolean;
 	dayNumber: number;
 	slotNumber: number;
 };
@@ -80,7 +81,8 @@ export const load: PageServerLoad = async () => {
 						plannedBy
 						ancode
 						planEntry {
-							externalTime
+							starttime
+							external
 							dayNumber
 							slotNumber
 						}
@@ -100,7 +102,8 @@ export const load: PageServerLoad = async () => {
 							notPlannedByMeInFK
 						}
 						planEntry {
-							externalTime
+							starttime
+							external
 							dayNumber
 							slotNumber
 						}
