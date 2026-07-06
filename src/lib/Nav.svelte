@@ -251,6 +251,36 @@
 
 	const menus: Menu[] = [
 		{
+			label: 'Stammdaten',
+			items: [
+				{ href: '/studyprograms', label: '🎓 Studiengänge' },
+				{ href: '/rooms', label: '🚪 Räume' },
+				{ href: '/nta/all', label: '♿ NTAs' },
+				{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
+			]
+		},
+		{
+			label: 'Semesterdaten',
+			items: [
+				{ section: 'ZPA' },
+				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
+				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
+				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
+				{ section: 'Primuss' },
+				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
+				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
+				{ href: '/students', label: '🎓 Studierende' },
+				{ section: 'Weitere' },
+				{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
+				{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
+				{ href: '/nta/semester', label: '♿ NTA' },
+				{ href: '/log', label: '🧾 Mutations-Log' },
+				{ section: 'Konfiguration' },
+				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
+				{ href: '/config/new', label: '➕ Neues Semester anlegen' }
+			]
+		},
+		{
 			label: 'Vorbereitung',
 			items: [
 				{ section: 'SEB/EXaHM-Prüfungen' },
@@ -298,36 +328,6 @@
 				{ href: '/email/templates', label: '📝 E-Mail-Vorlagen' },
 				{ href: '/email/attachments', label: '📎 Anhänge (Deckblätter, Bilder)' },
 				{ href: '/email/specialInterests', label: '⭐ Special Interests' }
-			]
-		},
-		{
-			label: 'Semesterdaten',
-			items: [
-				{ section: 'ZPA' },
-				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
-				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
-				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
-				{ section: 'Primuss' },
-				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
-				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
-				{ href: '/students', label: '🎓 Studierende' },
-				{ section: 'Weitere' },
-				{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
-				{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
-				{ href: '/nta/semester', label: '♿ NTA' },
-				{ href: '/log', label: '🧾 Mutations-Log' },
-				{ section: 'Konfiguration' },
-				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
-				{ href: '/config/new', label: '➕ Neues Semester anlegen' }
-			]
-		},
-		{
-			label: 'Stammdaten',
-			items: [
-				{ href: '/studyprograms', label: '🎓 Studiengänge' },
-				{ href: '/rooms', label: '🚪 Räume' },
-				{ href: '/nta/all', label: '♿ NTAs' },
-				{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
 			]
 		}
 	];

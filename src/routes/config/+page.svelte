@@ -71,7 +71,7 @@
 			warnings = out.warnings ?? [];
 			showWarnings = warnings.length > 0;
 			savedAt = new Date().toLocaleTimeString('de-DE');
-			// Tage/Slots/MUC.DAI-Slots wurden neu berechnet → Config neu laden
+			// Tage/Anfangszeiten/MUC.DAI-Zeiten wurden neu berechnet → Config neu laden
 			await invalidateAll();
 		} catch (e) {
 			errorMsg = e instanceof Error ? e.message : String(e);
@@ -127,10 +127,10 @@
 	{/if}
 
 	<!-- Nach dem Speichern lädt invalidateAll die serverseitig neu berechnete
-	     Config (Tage/Slots/MUC.DAI-Slots). {#key} baut das Formular dann neu auf,
-	     sodass sein interner $state frisch aus der Config initialisiert wird. -->
+	     Config (Tage/Anfangszeiten/MUC.DAI-Zeiten). {#key} baut das Formular dann neu
+	     auf, sodass sein interner $state frisch aus der Config initialisiert wird. -->
 	{#key data.config}
-		<SemesterConfigForm bind:this={formComp} config={data.config} />
+		<SemesterConfigForm bind:this={formComp} config={data.config} days={data.days} />
 	{/key}
 
 	<div class="flex items-center gap-3">

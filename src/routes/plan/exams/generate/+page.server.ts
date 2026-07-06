@@ -48,7 +48,6 @@ export const load: PageServerLoad = async () => {
 						tier
 					}
 					generationConfig {
-						timelagMin
 						iterations
 						startTemp
 						endTemp
@@ -70,9 +69,11 @@ export const load: PageServerLoad = async () => {
 						from
 						until
 						examGapMinutes
-						slots
+						startTimes
 						forbiddenDays
-						mucDaiSlots
+						mucDaiAllowedTimes
+						timelagMin
+						notTooCloseMinutes
 						emails {
 							profs
 							lbas

@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const mutation = gql`
 		mutation ($input: GenerationConfigInput!) {
 			setGenerationConfig(input: $input) {
-				timelagMin
+				iterations
 			}
 		}
 	`;

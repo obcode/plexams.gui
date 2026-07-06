@@ -69,7 +69,7 @@
 	</div>
 
 	<p class="max-w-3xl text-sm text-base-content/60">
-		Die Felder sind aus dem aktuellen Semester <strong>vorbefüllt</strong> (Slots, E-Mails, MUC.DAI-Slots
+		Die Felder sind aus dem aktuellen Semester <strong>vorbefüllt</strong> (Anfangszeiten, E-Mails, MUC.DAI-Zeiten
 		übernehmen — Termine anpassen).
 	</p>
 

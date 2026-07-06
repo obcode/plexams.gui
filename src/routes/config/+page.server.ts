@@ -17,9 +17,11 @@ export const load: PageServerLoad = async () => {
 				semesterConfigInput {
 					from
 					until
-					slots
+					startTimes
 					forbiddenDays
-					mucDaiSlots
+					mucDaiAllowedTimes
+					timelagMin
+					notTooCloseMinutes
 					emails {
 						profs
 						lbas
@@ -36,11 +38,36 @@ export const load: PageServerLoad = async () => {
 		`
 	);
 
+	// Prüfungstage kommen vom Backend (semesterConfig.days), damit z. B. spätere
+	// Samstags-Nutzung nur dort geändert werden muss. Separat + tolerant: ohne Config
+	// (frisches Semester) kann semesterConfig fehlschlagen — dann leitet das Formular
+	// die Tage aus from/until ab.
+	let days: { number: number; date: string }[] = [];
+	try {
+		const dd = await request<any>(
+			env.PLEXAMS_SERVER,
+			gql`
+				query {
+					semesterConfig {
+						days {
+							number
+							date
+						}
+					}
+				}
+			`
+		);
+		if (dd.semesterConfig?.days) days = dd.semesterConfig.days;
+	} catch {
+		// ohne Config (frisches Semester) kann semesterConfig fehlschlagen → keine Tage
+	}
+
 	return {
 		semester: data.semester?.id ?? '',
 		// global (semesterübergreifend) in der DB
 		planer: data.planer ?? { name: '', email: '' },
 		// null = frisches Semester ohne Config → leeres Formular
-		config: data.semesterConfigInput ?? null
+		config: data.semesterConfigInput ?? null,
+		days
 	};
 };

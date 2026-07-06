@@ -563,8 +563,6 @@ export type GenerationConfig = {
   slotTimeWeight: Scalars['Float']['output'];
   slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
-  /** minutes buffer between two uses of a room / between invigilations. */
-  timelagMin: Scalars['Int']['output'];
   /** allowed deviation (minutes) from an invigilator's target workload. */
   toleranceMin: Scalars['Int']['output'];
   weightBeyondTolerance: Scalars['Float']['output'];
@@ -585,7 +583,6 @@ export type GenerationConfigInput = {
   slotTimeWeight: Scalars['Float']['input'];
   slotTimeWinterEarliest: Scalars['String']['input'];
   startTemp: Scalars['Float']['input'];
-  timelagMin: Scalars['Int']['input'];
   toleranceMin: Scalars['Int']['input'];
   weightBeyondTolerance: Scalars['Float']['input'];
   weightCoverage: Scalars['Float']['input'];
@@ -2624,10 +2621,15 @@ export type SemesterConfig = {
   examGapMinutes: Scalars['Int']['output'];
   forbiddenSlots?: Maybe<Array<Slot>>;
   from: Scalars['Time']['output'];
+  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
   mucDaiSlots: Array<Slot>;
-  mucDaiSlotsRaw?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  /** Minimum spacing (minutes) below which two of a student's exams count as "too close". */
+  notTooCloseMinutes: Scalars['Int']['output'];
   slots: Array<Slot>;
   starttimes: Array<Starttime>;
+  /** Turnaround buffer (minutes) between two uses of a room / between invigilations. */
+  timelagMin: Scalars['Int']['output'];
   until: Scalars['Time']['output'];
 };
 
@@ -2644,10 +2646,14 @@ export type SemesterConfigInput = {
   forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
   /** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
   from: Scalars['Time']['output'];
-  /** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
-  mucDaiSlots?: Maybe<Array<Array<Scalars['Int']['output']>>>;
+  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
+  /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */
+  notTooCloseMinutes?: Maybe<Scalars['Int']['output']>;
   /** Daily slot start times as "HH:MM". */
-  slots: Array<Scalars['String']['output']>;
+  startTimes: Array<Scalars['String']['output']>;
+  /** Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15). */
+  timelagMin?: Maybe<Scalars['Int']['output']>;
   until: Scalars['Time']['output'];
 };
 
@@ -2657,9 +2663,13 @@ export type SemesterConfigInputData = {
   examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
   forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
   from: Scalars['Time']['input'];
-  /** MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from). */
-  mucDaiSlots?: InputMaybe<Array<Array<Scalars['Int']['input']>>>;
-  slots: Array<Scalars['String']['input']>;
+  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  mucDaiAllowedTimes?: InputMaybe<Array<Scalars['Time']['input']>>;
+  /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */
+  notTooCloseMinutes?: InputMaybe<Scalars['Int']['input']>;
+  startTimes: Array<Scalars['String']['input']>;
+  /** Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15). */
+  timelagMin?: InputMaybe<Scalars['Int']['input']>;
   until: Scalars['Time']['input'];
 };
 

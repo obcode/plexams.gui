@@ -3,7 +3,6 @@ import { request, gql } from 'graphql-request';
 import type { PageServerLoad } from './$types';
 
 const FIELDS = `
-	timelagMin
 	iterations
 	startTemp
 	endTemp

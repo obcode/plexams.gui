@@ -83,9 +83,11 @@
 			from: base.from,
 			until: base.until,
 			examGapMinutes: examGap === '' || examGap == null ? null : Number(examGap),
-			slots: base.slots ?? [],
+			startTimes: base.startTimes ?? [],
 			forbiddenDays: base.forbiddenDays ?? [],
-			mucDaiSlots: base.mucDaiSlots ?? [],
+			mucDaiAllowedTimes: base.mucDaiAllowedTimes ?? [],
+			timelagMin: base.timelagMin ?? null,
+			notTooCloseMinutes: base.notTooCloseMinutes ?? null,
 			emails: {
 				profs: e.profs,
 				lbas: e.lbas,
@@ -140,7 +142,6 @@
 		slotTimeError = '';
 		// invigilation-/SA-Felder verbatim übernehmen, nur die Tageszeiten-Felder ändern
 		const input = {
-			timelagMin: g.timelagMin,
 			iterations: g.iterations,
 			startTemp: g.startTemp,
 			endTemp: g.endTemp,

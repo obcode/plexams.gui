@@ -185,7 +185,6 @@
 
 	// --- Globale Optimierer-Parameter (generationConfig) ---
 	const NUM_FIELDS = [
-		{ key: 'timelagMin', label: 'Zeitabstand (min)', int: true },
 		{ key: 'iterations', label: 'Iterationen', int: true },
 		{ key: 'startTemp', label: 'Start-Temperatur' },
 		{ key: 'endTemp', label: 'End-Temperatur' },

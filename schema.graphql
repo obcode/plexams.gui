@@ -678,10 +678,6 @@ enum SlotTimeConstraintMode {
 }
 
 type GenerationConfig {
-	"""
-	minutes buffer between two uses of a room / between invigilations.
-	"""
-	timelagMin: Int!
 	iterations: Int!
 	startTemp: Float!
 	endTemp: Float!
@@ -709,7 +705,6 @@ type GenerationConfig {
 }
 
 input GenerationConfigInput {
-	timelagMin: Int!
 	iterations: Int!
 	startTemp: Float!
 	endTemp: Float!
@@ -2457,8 +2452,12 @@ type SemesterConfig {
 	days: [ExamDay!]!
 	starttimes: [Starttime!]!
 	slots: [Slot!]!
-	mucDaiSlotsRaw: [[Int!]!]
 	mucDaiSlots: [Slot!]!
+
+	"""
+	Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon).
+	"""
+	mucDaiAllowedTimes: [Time!]
 	forbiddenSlots: [Slot!]
 	from: Time!
 	until: Time!
@@ -2468,6 +2467,16 @@ type SemesterConfig {
 	Effective travel/break buffer (minutes) between a student's consecutive exams.
 	"""
 	examGapMinutes: Int!
+
+	"""
+	Turnaround buffer (minutes) between two uses of a room / between invigilations.
+	"""
+	timelagMin: Int!
+
+	"""
+	Minimum spacing (minutes) below which two of a student's exams count as "too close".
+	"""
+	notTooCloseMinutes: Int!
 }
 
 """
@@ -2485,37 +2494,57 @@ type SemesterConfigInput {
 	"""
 	Daily slot start times as "HH:MM".
 	"""
-	slots: [String!]!
+	startTimes: [String!]!
 	forbiddenDays: [Time!]
 
 	"""
-	MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from).
+	Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon).
 	"""
-	mucDaiSlots: [[Int!]!]
+	mucDaiAllowedTimes: [Time!]
 	emails: Emails!
 
 	"""
 	Travel/break buffer (minutes) a student needs between two consecutive exams (null = default).
 	"""
 	examGapMinutes: Int
+
+	"""
+	Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15).
+	"""
+	timelagMin: Int
+
+	"""
+	Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120).
+	"""
+	notTooCloseMinutes: Int
 }
 
 input SemesterConfigInputData {
 	from: Time!
 	until: Time!
-	slots: [String!]!
+	startTimes: [String!]!
 	forbiddenDays: [Time!]
 
 	"""
-	MUC.DAI slots as absolute [dayNumber, slotNumber] pairs (day 1 = from).
+	Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon).
 	"""
-	mucDaiSlots: [[Int!]!]
+	mucDaiAllowedTimes: [Time!]
 	emails: EmailsInput!
 
 	"""
 	Travel/break buffer (minutes) a student needs between two consecutive exams (null = default).
 	"""
 	examGapMinutes: Int
+
+	"""
+	Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15).
+	"""
+	timelagMin: Int
+
+	"""
+	Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120).
+	"""
+	notTooCloseMinutes: Int
 }
 
 type Slot {

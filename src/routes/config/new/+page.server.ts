@@ -13,9 +13,11 @@ export const load: PageServerLoad = async () => {
 				newSemesterConfigDefaults {
 					from
 					until
-					slots
+					startTimes
 					forbiddenDays
-					mucDaiSlots
+					mucDaiAllowedTimes
+					timelagMin
+					notTooCloseMinutes
 					emails {
 						profs
 						lbas

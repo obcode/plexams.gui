@@ -3,8 +3,8 @@
 	// Initialwerte über `config` (null = leer). Das gebaute Input liefert getInput().
 	//
 	// `form` ist tief mit `bind:` verdrahtet (bind:value auf verschachtelte Felder,
-	// Slot-/Sperrtag-Arrays, MUC.DAI-Set) und muss daher ein tief-reaktiver $state
-	// bleiben — ein writable $derived würde die bind:-Reaktivität brechen. Beim
+	// Anfangszeiten-/Sperrtag-Arrays, MUC.DAI-Set) und muss daher ein tief-reaktiver
+	// $state bleiben — ein writable $derived würde die bind:-Reaktivität brechen. Beim
 	// Config-Wechsel (nach dem Speichern lädt /config die neu berechnete Config)
 	// setzt der Aufrufer das Formular per {#key config} zurück (Remount), statt hier
 	// einen run()/$effect-Reset zu fahren.
@@ -12,10 +12,14 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} [config]
+	 * @property {{ number: number, date: string }[] | null} [days] Prüfungstage vom
+	 *   Backend (semesterConfig.days). Wenn gesetzt, liefern sie die Spalten der
+	 *   MUC.DAI-Matrix; sonst werden sie aus from/until abgeleitet (z. B. beim
+	 *   Anlegen eines neuen Semesters, für das das Backend noch keine Tage kennt).
 	 */
 
 	/** @type {Props} */
-	let { config = null } = $props();
+	let { config = null, days = null } = $props();
 
 	/** @param {string} iso */
 	const datePart = (iso) => (iso ?? '').slice(0, 10);
@@ -34,12 +38,17 @@
 			from: c.from ?? '',
 			until: c.until ?? '',
 			/** @type {string[]} */
-			slots: [...(c.slots ?? [])],
+			startTimes: [...(c.startTimes ?? [])],
 			/** @type {string[]} */
 			forbiddenDays: [...(c.forbiddenDays ?? [])],
-			// MUC.DAI-Slots als Set von "tag-slot"-Schlüsseln (absolute Paare, Tag 1 = from)
+			// MUC.DAI: Menge absoluter Anfangszeiten (Time-Strings), wie vom Backend geliefert.
 			/** @type {Set<string>} */
-			mucDai: new Set((c.mucDaiSlots ?? []).map((/** @type {number[]} */ p) => `${p[0]}-${p[1]}`)),
+			mucDai: new Set(c.mucDaiAllowedTimes ?? []),
+			// Zeitabstände (optional; Default 15 / 120). '' = leer → null an das Backend.
+			/** @type {number | ''} */
+			timelagMin: c.timelagMin ?? 15,
+			/** @type {number | ''} */
+			notTooCloseMinutes: c.notTooCloseMinutes ?? 120,
 			emails: {
 				profs: e.profs ?? '',
 				lbas: e.lbas ?? '',
@@ -57,9 +66,9 @@
 
 	let form = $state(initForm(config));
 
-	const addSlot = () => (form.slots = [...form.slots, '']);
+	const addStartTime = () => (form.startTimes = [...form.startTimes, '']);
 	/** @param {number} i */
-	const rmSlot = (i) => (form.slots = form.slots.filter((_, j) => j !== i));
+	const rmStartTime = (i) => (form.startTimes = form.startTimes.filter((_, j) => j !== i));
 	const addForbidden = () => (form.forbiddenDays = [...form.forbiddenDays, '']);
 	/** @param {number} i */
 	const rmForbidden = (i) => (form.forbiddenDays = form.forbiddenDays.filter((_, j) => j !== i));
@@ -68,7 +77,9 @@
 	const rmExaminer = (i) =>
 		(form.emails.additionalExamer = form.emails.additionalExamer.filter((_, j) => j !== i));
 
-	// ---- MUC.DAI-Slot-Matrix (Zeilen = Slots/Uhrzeit, Spalten = Prüfungstage/Datum) ----
+	// ---- MUC.DAI-Matrix (Zeilen = Anfangszeit, Spalten = Prüfungstag/Datum) ----
+	// Jede angekreuzte Zelle entspricht einer absoluten Anfangszeit (Time), gebildet
+	// aus dem Datum des Tages + der Uhrzeit der Zeile.
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 	/** @param {string} iso */
 	const fmtDay = (iso) => {
@@ -80,13 +91,22 @@
 		};
 	};
 
-	// Prüfungstage = Werktage (Mo–Fr) zwischen from und until, fortlaufend ab Tag 1 = from.
-	// Wochenenden werden – wie die ExamDays des Servers – übersprungen.
+	/** @param {{ number: number, date: string }[]} list */
+	function daysFromBackend(list) {
+		return (list ?? []).map((d) => {
+			const iso = String(d.date).slice(0, 10);
+			return { number: d.number, iso, date: d.date, ...fmtDay(iso) };
+		});
+	}
+
+	// Fallback (neues Semester): Prüfungstage = Werktage (Mo–Fr) zwischen from und
+	// until, fortlaufend ab Tag 1 = from. Wochenenden werden übersprungen. Für ein
+	// bestehendes Semester liefert stattdessen das Backend die Tage (days-Prop).
 	/** @param {string} fromIso @param {string} untilIso */
 	function examDays(fromIso, untilIso) {
 		const f = (fromIso ?? '').slice(0, 10);
 		const u = (untilIso ?? '').slice(0, 10);
-		/** @type {{number:number, wd:string, label:string, iso:string}[]} */
+		/** @type {{number:number, wd:string, label:string, iso:string, date:string}[]} */
 		const out = [];
 		if (!f || !u || f > u) return out;
 		let [y, m, d] = f.split('-').map(Number);
@@ -98,7 +118,7 @@
 			if (dow !== 0 && dow !== 6) {
 				n++;
 				const iso = cur.toISOString().slice(0, 10);
-				out.push({ number: n, iso, ...fmtDay(iso) });
+				out.push({ number: n, iso, date: iso, ...fmtDay(iso) });
 			}
 			cur.setUTCDate(cur.getUTCDate() + 1);
 			if (n > 200) break; // Sicherung
@@ -106,62 +126,89 @@
 		return out;
 	}
 
-	let matrixDays = $derived(examDays(form.from, form.until));
-	// Zeilen aus den (editierbaren) Slot-Startzeiten; Slot-Nr = Position (1-basiert).
+	// Spalten: Backend-Tage bevorzugen; sonst lokal aus from/until (neues Semester).
+	let matrixDays = $derived(
+		days && days.length ? daysFromBackend(days) : examDays(form.from, form.until)
+	);
+	// Zeilen aus den (editierbaren) Anfangszeiten; leere Zeilen werden ausgelassen.
 	let matrixRows = $derived(
-		form.slots.map((t, i) => ({ slotNumber: i + 1, time: (t ?? '').trim() }))
+		form.startTimes.map((t, i) => ({ n: i + 1, time: (t ?? '').trim() })).filter((r) => r.time)
 	);
 	let forbiddenSet = $derived(
 		new Set(form.forbiddenDays.filter(Boolean).map((/** @type {string} */ x) => x.slice(0, 10)))
 	);
 
-	/** @param {number} day @param {number} slot @param {Set<string>} mucDai */
-	const cellChecked = (day, slot, mucDai) => mucDai.has(`${day}-${slot}`);
-	/** @param {number} day @param {number} slot */
-	function toggleCell(day, slot) {
-		const k = `${day}-${slot}`;
+	// Absolute Anfangszeit (Time-String) einer Zelle: Datum des Tages + Uhrzeit der Zeile,
+	// in der Zeitzone des Backend-Datums (bzw. Z für lokal berechnete Tage).
+	/** @param {{ iso: string, date?: string }} day @param {string} time */
+	function cellTime(day, time) {
+		const full = String(day.date ?? '');
+		const datePart = (full || day.iso).slice(0, 10);
+		const tz = full.length > 19 ? full.slice(19) : 'Z';
+		return `${datePart}T${(time ?? '').slice(0, 5)}:00${tz}`;
+	}
+	// Vergleich auf Minutengenauigkeit — robust gegen Sekunden/Format-Abweichungen
+	// zwischen dem, was wir senden, und dem, was das Backend zurückgibt.
+	/** @param {string} t */
+	const timeKey = (t) => String(t).slice(0, 16);
+	/** Vorhandenes Set-Mitglied für die Zelle (oder null).
+	 * @param {Set<string>} s @param {{ iso: string, date?: string }} day @param {string} time */
+	function cellMember(s, day, time) {
+		const k = timeKey(cellTime(day, time));
+		for (const m of s) if (timeKey(m) === k) return m;
+		return null;
+	}
+
+	/** @param {{ iso: string, date?: string }} day @param {string} time */
+	const cellChecked = (day, time) => !!cellMember(form.mucDai, day, time);
+	/** @param {{ iso: string, date?: string }} day @param {string} time */
+	function toggleCell(day, time) {
 		const s = new Set(form.mucDai);
-		if (s.has(k)) s.delete(k);
-		else s.add(k);
+		const ex = cellMember(s, day, time);
+		if (ex) s.delete(ex);
+		else s.add(cellTime(day, time));
 		form.mucDai = s;
 	}
 	/** Spalte (Tag) umschalten: an, wenn noch nicht alle gesetzt sind, sonst aus.
-	 * @param {number} day */
+	 * @param {{ iso: string, date?: string }} day */
 	function toggleDay(day) {
 		const s = new Set(form.mucDai);
-		const allSet = matrixRows.every((r) => s.has(`${day}-${r.slotNumber}`));
+		const allSet = matrixRows.every((r) => cellMember(s, day, r.time));
 		for (const r of matrixRows) {
-			const k = `${day}-${r.slotNumber}`;
-			if (allSet) s.delete(k);
-			else s.add(k);
+			const ex = cellMember(s, day, r.time);
+			if (allSet && ex) s.delete(ex);
+			else if (!allSet && !ex) s.add(cellTime(day, r.time));
 		}
 		form.mucDai = s;
 	}
-	/** Zeile (Slot) umschalten.
-	 * @param {number} slot */
-	function toggleSlotRow(slot) {
+	/** Zeile (Anfangszeit) umschalten.
+	 * @param {string} time */
+	function toggleTimeRow(time) {
 		const s = new Set(form.mucDai);
-		const allSet = matrixDays.every((d) => s.has(`${d.number}-${slot}`));
+		const allSet = matrixDays.every((d) => cellMember(s, d, time));
 		for (const d of matrixDays) {
-			const k = `${d.number}-${slot}`;
-			if (allSet) s.delete(k);
-			else s.add(k);
+			const ex = cellMember(s, d, time);
+			if (allSet && ex) s.delete(ex);
+			else if (!allSet && !ex) s.add(cellTime(d, time));
 		}
 		form.mucDai = s;
 	}
 	const clearMucDai = () => (form.mucDai = new Set());
+
+	/** @param {number | ''} v */
+	const intOrNull = (v) => (v === '' || v == null ? null : Number(v));
 
 	// Das fertige SemesterConfigInputData-Objekt (vom Eltern-Page aufgerufen).
 	export function getInput() {
 		return {
 			from: form.from,
 			until: form.until,
-			slots: form.slots.map((s) => s.trim()).filter(Boolean),
+			startTimes: form.startTimes.map((s) => s.trim()).filter(Boolean),
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
-			// Set → absolute [Tag, Slot]-Paare, sortiert
-			mucDaiSlots: [...form.mucDai]
-				.map((k) => k.split('-').map(Number))
-				.sort((a, b) => a[0] - b[0] || a[1] - b[1]),
+			// Menge absoluter Anfangszeiten (Time-Strings), sortiert
+			mucDaiAllowedTimes: [...form.mucDai].sort(),
+			timelagMin: intOrNull(form.timelagMin),
+			notTooCloseMinutes: intOrNull(form.notTooCloseMinutes),
 			emails: {
 				profs: form.emails.profs,
 				lbas: form.emails.lbas,
@@ -204,36 +251,64 @@
 		<p class="text-xs text-base-content/50">„von (from)" ist der Planungsbeginn = Tag 1.</p>
 	</div>
 
-	<!-- Slots -->
+	<!-- Anfangszeiten -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex items-center gap-2">
-			<span class="font-semibold">Slot-Startzeiten</span>
-			<span class="badge badge-ghost badge-sm">{form.slots.length}</span>
-			<button class="btn btn-ghost btn-xs" onclick={addSlot}>+ Slot</button>
+			<span class="font-semibold">Anfangszeiten</span>
+			<span class="badge badge-ghost badge-sm">{form.startTimes.length}</span>
+			<button class="btn btn-ghost btn-xs" onclick={addStartTime}>+ Anfangszeit</button>
 		</div>
-		{#if form.slots.length === 0}
+		{#if form.startTimes.length === 0}
 			<div class="text-xs text-base-content/50">keine</div>
 		{:else}
 			<div class="flex flex-wrap gap-2">
-				{#each form.slots as _, i}
+				{#each form.startTimes as _, i}
 					<div class="flex items-center gap-1">
 						<span class="text-xs text-base-content/50">{i + 1}.</span>
 						<input
 							type="time"
 							class="input input-bordered input-sm w-28"
-							bind:value={form.slots[i]}
+							bind:value={form.startTimes[i]}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmSlot(i)}>✕</button>
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmStartTime(i)}>✕</button
+						>
 					</div>
 				{/each}
 			</div>
 		{/if}
 	</div>
 
-	<!-- MUC.DAI-Slots als Matrix: Zeilen = Slot/Uhrzeit, Spalten = Prüfungstag/Datum -->
+	<!-- Zeitabstände -->
+	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
+		<div class="font-semibold">Zeitabstände (Minuten)</div>
+		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Turnaround Raum/Aufsicht, Min</span>
+				<input
+					type="number"
+					min="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={form.timelagMin}
+				/>
+				<span class="text-[11px] text-base-content/40">Default 15</span>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">zu nah ab, Min</span>
+				<input
+					type="number"
+					min="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={form.notTooCloseMinutes}
+				/>
+				<span class="text-[11px] text-base-content/40">Default 120</span>
+			</label>
+		</div>
+	</div>
+
+	<!-- MUC.DAI-Anfangszeiten als Matrix: Zeilen = Uhrzeit, Spalten = Prüfungstag/Datum -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex flex-wrap items-center gap-2">
-			<span class="font-semibold">MUC.DAI-Slots</span>
+			<span class="font-semibold">MUC.DAI-Anfangszeiten</span>
 			<span class="badge badge-ghost badge-sm">{form.mucDai.size}</span>
 			<div class="flex-1"></div>
 			<button class="btn btn-ghost btn-xs" onclick={clearMucDai} disabled={form.mucDai.size === 0}>
@@ -241,15 +316,15 @@
 			</button>
 		</div>
 		<p class="text-xs text-base-content/50">
-			Ankreuzen, welche Tag/Slot-Zellen MUC.DAI-Slots sind. Tag 1 = „von (from)", Wochenenden sind
-			ausgelassen. Klick auf einen Spalten- oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
+			Ankreuzen, zu welchen Terminen MUC.DAI-Prüfungen beginnen dürfen. Klick auf einen Spalten-
+			oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
 		</p>
 		<p class="text-xs text-base-content/50">
-			Üblicherweise an Tag 1 Nachmittagsslots und dann immer abwechselnd Vor- und Nachmittags.
+			Üblicherweise an Tag 1 nachmittags und dann immer abwechselnd vor- und nachmittags.
 		</p>
 		{#if matrixDays.length === 0 || matrixRows.length === 0}
 			<div class="text-xs text-base-content/50">
-				Bitte zuerst Zeitraum (von/bis) und Slot-Startzeiten setzen.
+				Bitte zuerst Zeitraum (von/bis) und Anfangszeiten setzen.
 			</div>
 		{:else}
 			<div class="overflow-x-auto">
@@ -268,7 +343,7 @@
 										title="Tag {d.number} – ganze Spalte umschalten{forbiddenSet.has(d.iso)
 											? ' (Sperrtag)'
 											: ''}"
-										onclick={() => toggleDay(d.number)}
+										onclick={() => toggleDay(d)}
 									>
 										<span class="text-[10px] font-medium">{d.wd}</span>
 										<span class="text-[10px] tabular-nums">{d.label}</span>
@@ -284,10 +359,10 @@
 								<th class="bg-base-100 sticky left-0 z-10 p-0 text-right">
 									<button
 										class="flex w-full items-center justify-end gap-1 rounded px-2 py-0.5 hover:bg-base-200"
-										title="Slot {r.slotNumber} – ganze Zeile umschalten"
-										onclick={() => toggleSlotRow(r.slotNumber)}
+										title="{r.time} – ganze Zeile umschalten"
+										onclick={() => toggleTimeRow(r.time)}
 									>
-										<span class="tabular-nums">{r.time || `Slot ${r.slotNumber}`}</span>
+										<span class="tabular-nums">{r.time}</span>
 									</button>
 								</th>
 								{#each matrixDays as d}
@@ -295,9 +370,9 @@
 										<input
 											type="checkbox"
 											class="checkbox checkbox-xs"
-											checked={cellChecked(d.number, r.slotNumber, form.mucDai)}
-											onchange={() => toggleCell(d.number, r.slotNumber)}
-											title="Tag {d.number} ({d.wd} {d.label}) · Slot {r.slotNumber} ({r.time})"
+											checked={cellChecked(d, r.time)}
+											onchange={() => toggleCell(d, r.time)}
+											title="Tag {d.number} ({d.wd} {d.label}) · {r.time}"
 										/>
 									</td>
 								{/each}
