@@ -6,6 +6,12 @@ WORKDIR /app
 
 # --- Build: alle Deps installieren und die App bauen ---
 FROM base AS builder
+# GUI-Version aus dem semantic-release-Tag (docker.yml reicht sie als build-arg
+# durch). .git ist per .dockerignore ausgeschlossen, daher greift hier nicht der
+# `git describe`-Fallback aus vite.config.js — ohne diesen ARG bliebe nur der
+# package.json-Platzhalter.
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .

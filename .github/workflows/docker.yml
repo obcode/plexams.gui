@@ -48,3 +48,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # GUI-Version aus dem semantic-release-Release-Tag (z. B. v1.204.0) in
+          # den Build reichen; vite.config.js liest sie als APP_VERSION.
+          build-args: |
+            APP_VERSION=${{ github.event.release.tag_name }}
