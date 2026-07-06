@@ -4,6 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import { invalidateAll } from '$app/navigation';
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	let { data } = $props();
@@ -502,6 +503,20 @@
 			{/if}
 		{/if}
 	</div>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (Konflikt-Ratings, Slot-Teilung)
+		</summary>
+		<div class="mt-2 flex flex-col gap-3">
+			<DatasetCsvTransfer name="conflict-ratings" title="Konflikt-Ratings">
+				Bewertungen von Konflikten (ACCEPT/VETO).
+			</DatasetCsvTransfer>
+			<DatasetCsvTransfer name="can-share-slot" title="Dürfen Slot teilen">
+				Prüfungspaare, die sich einen Slot teilen dürfen.
+			</DatasetCsvTransfer>
+		</div>
+	</details>
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">

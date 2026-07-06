@@ -11,7 +11,11 @@
 -->
 <script>
 	import WriteButton from '$lib/WriteButton.svelte';
-	import { semesterDumpDownloadUrl, restoreSemesterDump } from '$lib/backup/transfer.js';
+	import {
+		semesterDumpDownloadUrl,
+		myInputsCsvDownloadUrl,
+		restoreSemesterDump
+	} from '$lib/backup/transfer.js';
 
 	let fileInput = $state(/** @type {HTMLInputElement | undefined} */ (undefined));
 	let file = $state(/** @type {File | null} */ (null));
@@ -69,6 +73,9 @@
 	<div class="flex flex-wrap items-end gap-3">
 		<a class="btn btn-outline btn-sm" href={semesterDumpDownloadUrl()}>
 			⬇️ Gesamtes Semester herunterladen
+		</a>
+		<a class="btn btn-outline btn-sm" href={myInputsCsvDownloadUrl()}>
+			⬇️ Meine Eingaben als CSV
 		</a>
 
 		<label class="flex flex-col gap-1">

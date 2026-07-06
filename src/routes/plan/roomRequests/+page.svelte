@@ -6,6 +6,7 @@
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 
 	let { data } = $props();
 
@@ -350,6 +351,17 @@
 			<DatasetTransfer name="room-requests" title="Raumanfragen">
 				Enthält die Raumanfragen (Gebäudemanagement). Der Upload überschreibt die Raumanfragen.
 			</DatasetTransfer>
+		</div>
+	</details>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (Raumanfragen)
+		</summary>
+		<div class="mt-2">
+			<DatasetCsvTransfer name="room-requests" title="Raumanfragen" fullReplace>
+				Die Raumanfragen (Gebäudemanagement).
+			</DatasetCsvTransfer>
 		</div>
 	</details>
 

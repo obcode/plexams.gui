@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import {
 	datasetDownloadUrl,
 	semesterDumpDownloadUrl,
+	datasetCsvDownloadUrl,
+	myInputsCsvDownloadUrl,
 	interpretTransferResponse
 } from './transfer.js';
 
@@ -36,6 +38,33 @@ describe('download URLs', () => {
 
 	it('baut die Semester-Dump-URL', () => {
 		expect(semesterDumpDownloadUrl()).toBe('http://backend:8080/download/semester-dump.zip');
+	});
+
+	it('baut die CSV-Dataset-URL mit encodetem name auf /download/dataset-csv', () => {
+		expect(datasetCsvDownloadUrl('exam-times')).toBe(
+			'http://backend:8080/download/dataset-csv?name=exam-times'
+		);
+	});
+
+	it('baut die My-Inputs-CSV-URL', () => {
+		expect(myInputsCsvDownloadUrl()).toBe('http://backend:8080/download/my-inputs-csv.zip');
+	});
+});
+
+describe('interpretTransferResponse (CSV-Erfolg)', () => {
+	it('reicht das CSV-Ergebnis (dataset/applied/skipped) durch', async () => {
+		const body = {
+			dataset: 'constraints',
+			applied: 5,
+			skipped: ['Zeile 3: unbekannte ancode 999']
+		};
+		const r = await interpretTransferResponse({
+			ok: true,
+			status: 200,
+			json: async () => body,
+			text: async () => ''
+		});
+		expect(r).toEqual({ ok: true, result: body });
 	});
 });
 

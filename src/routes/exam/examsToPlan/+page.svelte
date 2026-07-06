@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	let { data } = $props();
@@ -450,6 +451,23 @@
 				gehört zu den Constraints — es ist kein eigener Datensatz. Der Upload überschreibt die
 				Constraints.
 			</DatasetTransfer>
+		</div>
+	</details>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (Constraints, Auswahl, Dauer)
+		</summary>
+		<div class="mt-2 flex flex-col gap-3">
+			<DatasetCsvTransfer name="constraints" title="Constraints">
+				Alle Prüfungs-Constraints (inkl. „nicht von mir geplant" / notPlannedByMe).
+			</DatasetCsvTransfer>
+			<DatasetCsvTransfer name="exams-to-plan" title="Prüfungsauswahl">
+				Welche Prüfungen zu planen sind bzw. nicht geplant werden.
+			</DatasetCsvTransfer>
+			<DatasetCsvTransfer name="duration-overrides" title="Dauer-Overrides">
+				Abweichende Prüfungsdauern (Overrides, z. B. bei ZPA-Dauer 0).
+			</DatasetCsvTransfer>
 		</div>
 	</details>
 

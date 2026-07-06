@@ -3,6 +3,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 
 	let { data } = $props();
@@ -823,6 +824,17 @@
 			<DatasetTransfer name="preplan" title="SEB/EXaHM-Vorplanung">
 				Enthält die SEB/EXaHM-Vorplanung. Der Upload überschreibt die Vorplanung des Semesters.
 			</DatasetTransfer>
+		</div>
+	</details>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (Vorplanung)
+		</summary>
+		<div class="mt-2">
+			<DatasetCsvTransfer name="preplan" title="SEB/EXaHM-Vorplanung">
+				Die SEB/EXaHM-Vorplanung.
+			</DatasetCsvTransfer>
 		</div>
 	</details>
 

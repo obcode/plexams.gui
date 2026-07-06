@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import ExternalExamRow from '$lib/exam/ExternalExamRow.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import { buildGroups, hasTime } from '$lib/exam/otherFkGroups';
 
 	let { data } = $props();
@@ -52,6 +53,21 @@
 				Enthält die externen Prüfungen und ihre Zeiten. Der Upload überschreibt nur diese
 				Einträge/Zeiten, nicht den übrigen Plan.
 			</DatasetTransfer>
+		</div>
+	</details>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (externe Prüfungen &amp; Zeiten)
+		</summary>
+		<div class="mt-2 flex flex-col gap-3">
+			<DatasetCsvTransfer name="external-exams" title="Externe Prüfungen (Stammdaten)">
+				Stammdaten der externen Prüfungen <strong>ohne Zeit</strong>.
+			</DatasetCsvTransfer>
+			<DatasetCsvTransfer name="exam-times" title="Prüfungszeiten">
+				Absolutes Datum &amp; Uhrzeit der externen/MUC.DAI-Prüfungen. Der Import berechnet den Slot
+				neu.
+			</DatasetCsvTransfer>
 		</div>
 	</details>
 

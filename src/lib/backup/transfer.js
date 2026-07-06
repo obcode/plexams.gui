@@ -1,9 +1,11 @@
 import { backendBase } from '$lib/backend.js';
 
 // Sichern/Wiederherstellen von Semesterdaten über die REST-Routen von plexams.go
-// (kein GraphQL). Zwei Ebenen:
+// (kein GraphQL). Drei Ebenen:
 //   • kompletter Semester-Dump (ZIP)  – /download/semester-dump.zip, /upload/semester-dump.zip
 //   • einzelne Datensätze (JSON)      – /download/dataset?name=…, /upload/dataset
+//   • einzelne Datensätze (CSV)       – /download/dataset-csv?name=…, /upload/dataset-csv
+//                                       plus /download/my-inputs-csv.zip (alle als CSV)
 //
 // Anders als bei den E-Mail-Anhängen (postUpload) wird der Fehlertext auch bei
 // HTTP 409 durchgereicht: der Server nennt dort die blockierende Collection bzw.
@@ -27,8 +29,26 @@ export function semesterDumpDownloadUrl() {
 }
 
 /**
+ * Download-URL für einen einzelnen Datensatz als CSV (Content-Disposition gesetzt).
+ * @param {string} name
+ * @returns {string}
+ */
+export function datasetCsvDownloadUrl(name) {
+	return `${backendBase()}/download/dataset-csv?name=${encodeURIComponent(name)}`;
+}
+
+/**
+ * Download-URL für alle eigenen Eingaben als ZIP mit je einer CSV pro Datensatz.
+ * @returns {string}
+ */
+export function myInputsCsvDownloadUrl() {
+	return `${backendBase()}/download/my-inputs-csv.zip`;
+}
+
+/**
  * @typedef {{ restored?: Record<string, number>, total?: number }} RestoreResult
- * @typedef {{ ok: true, result: RestoreResult } | { ok: false, status: number, error: string }} TransferResult
+ * @typedef {{ dataset?: string, applied?: number, skipped?: string[] }} CsvImportResult
+ * @typedef {{ ok: true, result: any } | { ok: false, status: number, error: string }} TransferResult
  */
 
 /**
@@ -43,6 +63,20 @@ export async function uploadDataset(name, file) {
 	fd.append('name', name);
 	fd.append('file', file);
 	return postTransfer(`${backendBase()}/upload/dataset`, fd);
+}
+
+/**
+ * Einen einzelnen Datensatz als CSV hochladen. Aktualisiert/ergänzt pro Zeile
+ * (Ausnahme room-requests = Voll-Ersatz). Erfolg: { dataset, applied, skipped }.
+ * @param {string} name
+ * @param {File} file
+ * @returns {Promise<TransferResult>}
+ */
+export async function uploadDatasetCsv(name, file) {
+	const fd = new FormData();
+	fd.append('name', name);
+	fd.append('file', file);
+	return postTransfer(`${backendBase()}/upload/dataset-csv`, fd);
 }
 
 /**
