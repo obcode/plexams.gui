@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
+	import SemesterDump from '$lib/backup/SemesterDump.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	let { data } = $props();
@@ -140,6 +141,9 @@
 			Validierungsfehler (z. B. ungültiger Zeitraum oder Slot) meldet der Server.
 		</span>
 	</div>
+
+	<div class="divider my-2"></div>
+	<SemesterDump />
 </div>
 
 <!-- Hinweise nach erfolgreichem Speichern (nicht-blockierend) -->

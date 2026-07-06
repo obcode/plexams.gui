@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 
 	let { data } = $props();
 
@@ -324,6 +325,17 @@
 			/>
 		</label>
 	</div>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			💾 MUC.DAI-Verknüpfungen sichern / wiederherstellen
+		</summary>
+		<div class="mt-2">
+			<DatasetTransfer name="mucdai-links" title="MUC.DAI-Verknüpfungen">
+				Enthält die MUC.DAI-Verknüpfungen. Der Upload überschreibt die Verknüpfungen.
+			</DatasetTransfer>
+		</div>
+	</details>
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">

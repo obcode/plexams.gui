@@ -1,5 +1,3 @@
-import { env } from '$env/dynamic/public';
-
 // Helfer für den serverseitigen E-Mail-Anhang-Speicher.
 //
 // Binärdateien werden per REST direkt an plexams.go hochgeladen (NICHT über
@@ -9,11 +7,10 @@ import { env } from '$env/dynamic/public';
 //
 // kind: 'cover-page' (key = Lehrer-ID) | 'invigilation-image' (key = Aufsichts-ID)
 
-/** Basis-URL von plexams.go (gleicher Host wie /query, aber ohne /query). */
-export function backendBase() {
-	const url = env.PUBLIC_PLEXAMS_SERVER || 'http://localhost:8080/query';
-	return url.replace(/\/query\/?$/, '');
-}
+// backendBase() lebt jetzt zentral in $lib/backend.js (von mehreren Bereichen
+// genutzt); hier re-exportiert, damit bestehende Importe unverändert bleiben.
+export { backendBase } from '$lib/backend.js';
+import { backendBase } from '$lib/backend.js';
 
 /**
  * @typedef {{ key: string, filename: string, size: number, uploadedAt: string }} Attachment

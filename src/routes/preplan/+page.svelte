@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 
 	let { data } = $props();
@@ -813,6 +814,17 @@
 		</WriteButton>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Prüfung</button>
 	</div>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			💾 Vorplanung sichern / wiederherstellen
+		</summary>
+		<div class="mt-2">
+			<DatasetTransfer name="preplan" title="SEB/EXaHM-Vorplanung">
+				Enthält die SEB/EXaHM-Vorplanung. Der Upload überschreibt die Vorplanung des Semesters.
+			</DatasetTransfer>
+		</div>
+	</details>
 
 	<!-- 🔌 Anny importieren → danach Übersicht (seatsBooked) neu laden -->
 	<SubscriptionTerminal

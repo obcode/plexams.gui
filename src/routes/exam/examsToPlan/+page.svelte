@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
+	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	let { data } = $props();
@@ -438,6 +439,19 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{filtered.length} / {counts.total}</span
 		>
 	</div>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			💾 Constraints sichern / wiederherstellen
+		</summary>
+		<div class="mt-2">
+			<DatasetTransfer name="constraints" title="Constraints">
+				Enthält alle Prüfungs-Constraints. Auch das Feld „nicht von mir geplant" (notPlannedByMe)
+				gehört zu den Constraints — es ist kein eigener Datensatz. Der Upload überschreibt die
+				Constraints.
+			</DatasetTransfer>
+		</div>
+	</details>
 
 	<!-- Banner: nicht zugeordnete Prüfungen -->
 	{#if counts.unknown > 0}
