@@ -1,6 +1,7 @@
 <script>
 	import '../app.css';
 	import Nav from '$lib/Nav.svelte';
+	import Footer from '$lib/Footer.svelte';
 	import { themeChange } from 'theme-change';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
@@ -9,10 +10,11 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} [children]
+	 * @property {import('./$types').LayoutData} [data]
 	 */
 
 	/** @type {Props} */
-	let { children } = $props();
+	let { children, data } = $props();
 
 	// Nach jeder erfolgreichen Mutation (POST an /api/…) den „aufbereitete
 	// Prüfungen veraltet?"-Zustand sofort neu prüfen. Reiner Beobachter: die
@@ -59,4 +61,5 @@
 <div class="p-8">
 	<Nav />
 	{@render children?.()}
+	<Footer guiVersion={data?.guiVersion} serverInfo={data?.serverInfo} />
 </div>
