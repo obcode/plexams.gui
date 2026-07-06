@@ -558,6 +558,11 @@ export type GenerationConfig = {
   endTemp: Scalars['Float']['output'];
   iterations: Scalars['Int']['output'];
   maxSpanHours: Scalars['Float']['output'];
+  /** exam-schedule "avoid unfavourable times of day" soft constraint. */
+  slotTimeMode: SlotTimeConstraintMode;
+  slotTimeSummerLatest: Scalars['String']['output'];
+  slotTimeWeight: Scalars['Float']['output'];
+  slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
   /** minutes buffer between two uses of a room / between invigilations. */
   timelagMin: Scalars['Int']['output'];
@@ -577,6 +582,10 @@ export type GenerationConfigInput = {
   endTemp: Scalars['Float']['input'];
   iterations: Scalars['Int']['input'];
   maxSpanHours: Scalars['Float']['input'];
+  slotTimeMode: SlotTimeConstraintMode;
+  slotTimeSummerLatest: Scalars['String']['input'];
+  slotTimeWeight: Scalars['Float']['input'];
+  slotTimeWinterEarliest: Scalars['String']['input'];
   startTemp: Scalars['Float']['input'];
   timelagMin: Scalars['Int']['input'];
   toleranceMin: Scalars['Int']['input'];
@@ -2668,6 +2677,18 @@ export type SlotInput = {
   day: Scalars['Int']['input'];
   slot: Scalars['Int']['input'];
 };
+
+/**
+ * Steers the exam-schedule "avoid unfavourable times of day" soft constraint.
+ * AUTO picks the rule from the semester (WS avoids early slots, SS avoids late
+ * slots); WINTER/SUMMER force a variant; OFF disables it.
+ */
+export enum SlotTimeConstraintMode {
+  Auto = 'AUTO',
+  Off = 'OFF',
+  Summer = 'SUMMER',
+  Winter = 'WINTER'
+}
 
 export type SoftCostItem = {
   __typename?: 'SoftCostItem';

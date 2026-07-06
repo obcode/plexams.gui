@@ -665,6 +665,18 @@ type GenerateStudentRegsResult {
 	studentCount: Int!
 }
 
+"""
+Steers the exam-schedule "avoid unfavourable times of day" soft constraint.
+AUTO picks the rule from the semester (WS avoids early slots, SS avoids late
+slots); WINTER/SUMMER force a variant; OFF disables it.
+"""
+enum SlotTimeConstraintMode {
+	AUTO
+	WINTER
+	SUMMER
+	OFF
+}
+
 type GenerationConfig {
 	"""
 	minutes buffer between two uses of a room / between invigilations.
@@ -687,6 +699,14 @@ type GenerationConfig {
 	weightPreferExamDays: Float!
 	weightDistribution: Float!
 	weightDaySpan: Float!
+
+	"""
+	exam-schedule "avoid unfavourable times of day" soft constraint.
+	"""
+	slotTimeMode: SlotTimeConstraintMode!
+	slotTimeWeight: Float!
+	slotTimeWinterEarliest: String!
+	slotTimeSummerLatest: String!
 }
 
 input GenerationConfigInput {
@@ -704,6 +724,10 @@ input GenerationConfigInput {
 	weightPreferExamDays: Float!
 	weightDistribution: Float!
 	weightDaySpan: Float!
+	slotTimeMode: SlotTimeConstraintMode!
+	slotTimeWeight: Float!
+	slotTimeWinterEarliest: String!
+	slotTimeSummerLatest: String!
 }
 
 type ImportMucDaiResult {

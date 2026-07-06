@@ -117,6 +117,68 @@
 		}
 	}
 
+	// Tageszeiten-meiden-Constraint (Teil der globalen generationConfig). Der Input
+	// ist komplett non-null, daher beim Speichern die volle Config zurückschreiben
+	// (Round-Trip über data.generationConfig, wie bei examGap/semesterConfigInput).
+	let slotTimeMode = $state(data.generationConfig?.slotTimeMode ?? 'AUTO');
+	/** @type {number | ''} */
+	let slotTimeWeight = $state(data.generationConfig?.slotTimeWeight ?? 5);
+	let slotTimeWinterEarliest = $state(data.generationConfig?.slotTimeWinterEarliest ?? '10:00');
+	let slotTimeSummerLatest = $state(data.generationConfig?.slotTimeSummerLatest ?? '13:00');
+	let slotTimeBusy = $state(false);
+	let slotTimeInfo = $state('');
+	let slotTimeError = $state('');
+	async function saveSlotTime() {
+		if (slotTimeBusy) return;
+		const g = data.generationConfig;
+		if (!g) {
+			slotTimeError = 'Generation-Config nicht geladen.';
+			return;
+		}
+		slotTimeBusy = true;
+		slotTimeInfo = '';
+		slotTimeError = '';
+		// invigilation-/SA-Felder verbatim übernehmen, nur die Tageszeiten-Felder ändern
+		const input = {
+			timelagMin: g.timelagMin,
+			iterations: g.iterations,
+			startTemp: g.startTemp,
+			endTemp: g.endTemp,
+			toleranceMin: g.toleranceMin,
+			maxSpanHours: g.maxSpanHours,
+			weightMinuteBalance: g.weightMinuteBalance,
+			weightBeyondTolerance: g.weightBeyondTolerance,
+			weightOverTargetFactor: g.weightOverTargetFactor,
+			weightCoverage: g.weightCoverage,
+			weightMaxDays: g.weightMaxDays,
+			weightPreferExamDays: g.weightPreferExamDays,
+			weightDistribution: g.weightDistribution,
+			weightDaySpan: g.weightDaySpan,
+			slotTimeMode,
+			slotTimeWeight: slotTimeWeight === '' || slotTimeWeight == null ? 0 : Number(slotTimeWeight),
+			slotTimeWinterEarliest,
+			slotTimeSummerLatest
+		};
+		try {
+			const res = await fetch('/api/semester/setGenerationConfig', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ input })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				slotTimeError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			slotTimeInfo = 'Tageszeiten-Einstellung gespeichert.';
+			await invalidateAll();
+		} catch (err) {
+			slotTimeError = err instanceof Error ? err.message : String(err);
+		} finally {
+			slotTimeBusy = false;
+		}
+	}
+
 	// --- Laufzeit-Status ---
 	let running = $state(false);
 	let writeRun = $state(false); // letzter/aktueller Lauf schreibt in die DB?
@@ -809,6 +871,74 @@
 		shareList={data.shareList}
 		loadError={data.conflictsError}
 	/>
+
+	<!-- Ungünstige Tageszeiten meiden (Teil der globalen generationConfig) -->
+	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
+		<div class="flex items-baseline gap-2">
+			<span class="font-medium">Ungünstige Tageszeiten meiden</span>
+			<span class="text-xs text-base-content/50">· global · wirkt beim nächsten „Generieren"</span>
+		</div>
+		<div class="flex flex-wrap items-end gap-4">
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Tageszeiten meiden</span>
+				<select
+					class="select select-bordered select-sm w-44"
+					bind:value={slotTimeMode}
+					disabled={slotTimeBusy || !data.generationConfig}
+				>
+					<option value="AUTO">Automatik (nach Semester)</option>
+					<option value="WINTER">Winter (frühe meiden)</option>
+					<option value="SUMMER">Sommer (späte meiden)</option>
+					<option value="OFF">Aus</option>
+				</select>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Gewicht (pro Anmeldung/Stunde)</span>
+				<input
+					type="number"
+					step="any"
+					min="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={slotTimeWeight}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+				/>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Winter: nicht vor</span>
+				<input
+					type="time"
+					class="input input-bordered input-sm w-28"
+					bind:value={slotTimeWinterEarliest}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+				/>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Sommer: nicht nach</span>
+				<input
+					type="time"
+					class="input input-bordered input-sm w-28"
+					bind:value={slotTimeSummerLatest}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+				/>
+			</label>
+			<button
+				class="btn btn-outline btn-sm"
+				disabled={slotTimeBusy || !data.generationConfig}
+				onclick={saveSlotTime}
+			>
+				{slotTimeBusy ? 'speichert …' : 'speichern'}
+			</button>
+			{#if slotTimeInfo}<span class="text-xs text-success">{slotTimeInfo}</span>{/if}
+			{#if slotTimeError}<span class="text-xs text-error">{slotTimeError}</span>{/if}
+		</div>
+		<span class="max-w-3xl text-xs text-base-content/50">
+			Bestraft Prüfungen zu ungünstigen Beginn-Uhrzeiten graduell, skaliert mit der Anmeldezahl.
+			<strong>Automatik</strong> richtet sich nach dem Semester: im Wintersemester werden frühe Slots
+			(Beginn vor „Winter: nicht vor"), im Sommersemester späte Slots (Beginn nach „Sommer: nicht nach")
+			gemieden. Winter/Sommer erzwingen eine Variante, Aus schaltet den Constraint ab. Erscheint unten
+			in „Angewandte Constraints".
+		</span>
+	</div>
 
 	<!-- Angewandte Constraints (read-only) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">

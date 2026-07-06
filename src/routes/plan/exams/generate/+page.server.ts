@@ -21,6 +21,8 @@ export const load: PageServerLoad = async () => {
 		constraints: [] as any[],
 		// volles Config-Input für den examGapMinutes-Round-Trip
 		semesterConfigInput: null as any,
+		// volle generationConfig für den slotTime-Round-Trip (Input ist komplett non-null)
+		generationConfig: null as any,
 		loadError: '',
 		conflicts: [] as any[],
 		decisions: [] as any[],
@@ -44,6 +46,26 @@ export const load: PageServerLoad = async () => {
 						kind
 						weight
 						tier
+					}
+					generationConfig {
+						timelagMin
+						iterations
+						startTemp
+						endTemp
+						toleranceMin
+						maxSpanHours
+						weightMinuteBalance
+						weightBeyondTolerance
+						weightOverTargetFactor
+						weightCoverage
+						weightMaxDays
+						weightPreferExamDays
+						weightDistribution
+						weightDaySpan
+						slotTimeMode
+						slotTimeWeight
+						slotTimeWinterEarliest
+						slotTimeSummerLatest
 					}
 					semesterConfigInput {
 						from
@@ -71,6 +93,7 @@ export const load: PageServerLoad = async () => {
 		out.constraints = [...(data.examScheduleConstraints ?? [])].sort(
 			(a: any, b: any) => a.tier - b.tier
 		);
+		out.generationConfig = data.generationConfig ?? null;
 		out.semesterConfigInput = data.semesterConfigInput ?? null;
 	} catch (e) {
 		out.loadError = gqlErrorMessage(e);
