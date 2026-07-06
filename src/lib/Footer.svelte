@@ -26,20 +26,36 @@
 	}
 
 	/**
-	 * Nur ein exakter semantic-release-Tag (v1.2.3) hat ein GitHub-Release; ein
-	 * dirty/ahead `git describe` (v1.2.3-4-gabc123, …-dirty) ist ein dev-Build.
+	 * Den zugrunde liegenden semantic-release-Tag extrahieren. `git describe`
+	 * hängt bei dev-Builds `-<n>-g<sha>` bzw. `-dirty` an (v1.2.3-4-gabc123) —
+	 * das führende v1.2.3 ist trotzdem ein real existierendes Release.
+	 * @param {string|null|undefined} raw
+	 * @returns {string|null} z. B. „v1.2.3" oder null, wenn kein Tag erkennbar
+	 */
+	function baseReleaseTag(raw) {
+		const m = raw?.match(/^v?(\d+\.\d+\.\d+)/);
+		return m ? `v${m[1]}` : null;
+	}
+
+	/**
+	 * Ist die Version ein exakter Tag (kein `git describe`-Suffix)? Dann verweist
+	 * der Link auf genau dieses Release, sonst „basiert auf" (dev-Build).
 	 * @param {string|null|undefined} raw
 	 */
-	function isReleaseTag(raw) {
+	function isExactTag(raw) {
 		return !!raw && /^v?\d+\.\d+\.\d+$/.test(raw);
 	}
 
 	const guiDisplay = $derived(display(guiVersion));
-	// Link aufs GUI-Release nur, wenn die Version ein sauberer Tag ist.
+	const guiExact = $derived(isExactTag(guiVersion));
+	// Immer aufs zugehörige GitHub-Release verlinken: bei sauberem Tag auf genau
+	// dieses, bei dev-Builds auf das zugrunde liegende Release; ist gar kein Tag
+	// erkennbar, auf die Releases-Übersicht.
+	const guiReleaseTag = $derived(baseReleaseTag(guiVersion));
 	const guiReleaseURL = $derived(
-		isReleaseTag(guiVersion)
-			? `https://github.com/obcode/plexams.gui/releases/tag/${display(guiVersion)}`
-			: null
+		guiReleaseTag
+			? `https://github.com/obcode/plexams.gui/releases/tag/${guiReleaseTag}`
+			: 'https://github.com/obcode/plexams.gui/releases'
 	);
 
 	const serverDisplay = $derived(display(serverInfo?.version));
@@ -48,16 +64,15 @@
 <footer
 	class="mt-8 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-base-300 pt-3 text-xs text-base-content/60"
 >
-	<!-- Eigene GUI-Version -->
+	<!-- Eigene GUI-Version: immer als Link aufs (zugehörige) GitHub-Release -->
 	{#if guiDisplay}
 		<span>
 			GUI
-			{#if guiReleaseURL}
-				<a class="link link-hover" href={guiReleaseURL} target="_blank" rel="noopener">
-					{guiDisplay}
-				</a>
-			{:else}
+			<a class="link link-hover" href={guiReleaseURL} target="_blank" rel="noopener">
 				{guiDisplay}
+			</a>
+			{#if !guiExact}
+				<span class="opacity-70">(dev)</span>
 			{/if}
 		</span>
 	{/if}
