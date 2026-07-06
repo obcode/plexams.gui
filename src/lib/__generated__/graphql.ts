@@ -560,7 +560,6 @@ export type GenerationConfig = {
   maxSpanHours: Scalars['Float']['output'];
   /** exam-schedule "avoid unfavourable times of day" soft constraint. */
   slotTimeMode: SlotTimeConstraintMode;
-  slotTimeSummerLatest: Scalars['String']['output'];
   slotTimeWeight: Scalars['Float']['output'];
   slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
@@ -583,7 +582,6 @@ export type GenerationConfigInput = {
   iterations: Scalars['Int']['input'];
   maxSpanHours: Scalars['Float']['input'];
   slotTimeMode: SlotTimeConstraintMode;
-  slotTimeSummerLatest: Scalars['String']['input'];
   slotTimeWeight: Scalars['Float']['input'];
   slotTimeWinterEarliest: Scalars['String']['input'];
   startTemp: Scalars['Float']['input'];

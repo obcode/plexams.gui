@@ -125,7 +125,6 @@
 	/** @type {number | ''} */
 	let slotTimeWeight = $state(data.generationConfig?.slotTimeWeight ?? 5);
 	let slotTimeWinterEarliest = $state(data.generationConfig?.slotTimeWinterEarliest ?? '10:00');
-	let slotTimeSummerLatest = $state(data.generationConfig?.slotTimeSummerLatest ?? '13:00');
 	let slotTimeBusy = $state(false);
 	let slotTimeInfo = $state('');
 	let slotTimeError = $state('');
@@ -157,8 +156,7 @@
 			weightDaySpan: g.weightDaySpan,
 			slotTimeMode,
 			slotTimeWeight: slotTimeWeight === '' || slotTimeWeight == null ? 0 : Number(slotTimeWeight),
-			slotTimeWinterEarliest,
-			slotTimeSummerLatest
+			slotTimeWinterEarliest
 		};
 		try {
 			const res = await fetch('/api/semester/setGenerationConfig', {
@@ -927,15 +925,6 @@
 					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
 				/>
 			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Sommer: nicht nach</span>
-				<input
-					type="time"
-					class="input input-bordered input-sm w-28"
-					bind:value={slotTimeSummerLatest}
-					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
-				/>
-			</label>
 			<button
 				class="btn btn-outline btn-sm"
 				disabled={slotTimeBusy || !data.generationConfig}
@@ -949,9 +938,10 @@
 		<span class="max-w-3xl text-xs text-base-content/50">
 			Bestraft Prüfungen zu ungünstigen Beginn-Uhrzeiten graduell, skaliert mit der Anmeldezahl.
 			<strong>Automatik</strong> richtet sich nach dem Semester: im Wintersemester werden frühe Slots
-			(Beginn vor „Winter: nicht vor"), im Sommersemester späte Slots (Beginn nach „Sommer: nicht nach")
-			gemieden. Winter/Sommer erzwingen eine Variante, Aus schaltet den Constraint ab. Erscheint unten
-			in „Angewandte Constraints".
+			(Beginn vor „Winter: nicht vor") gemieden. Im Sommersemester werden generell frühe Slots bevorzugt
+			(die Strafe steigt monoton mit der Uhrzeit, große Prüfungen werden dadurch nach vorne gezogen)
+			– ohne konfigurierbare Obergrenze. Winter/Sommer erzwingen eine Variante, Aus schaltet den Constraint
+			ab. Erscheint unten in „Angewandte Constraints".
 		</span>
 	</div>
 

@@ -65,7 +65,6 @@ export const load: PageServerLoad = async () => {
 						slotTimeMode
 						slotTimeWeight
 						slotTimeWinterEarliest
-						slotTimeSummerLatest
 					}
 					semesterConfigInput {
 						from

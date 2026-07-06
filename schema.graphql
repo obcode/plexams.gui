@@ -706,7 +706,6 @@ type GenerationConfig {
 	slotTimeMode: SlotTimeConstraintMode!
 	slotTimeWeight: Float!
 	slotTimeWinterEarliest: String!
-	slotTimeSummerLatest: String!
 }
 
 input GenerationConfigInput {
@@ -727,7 +726,6 @@ input GenerationConfigInput {
 	slotTimeMode: SlotTimeConstraintMode!
 	slotTimeWeight: Float!
 	slotTimeWinterEarliest: String!
-	slotTimeSummerLatest: String!
 }
 
 type ImportMucDaiResult {
