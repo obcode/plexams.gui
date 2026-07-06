@@ -25,7 +25,8 @@
 		conflictingAncodes,
 		refresh = $bindable(),
 		onselected,
-		onunselected
+		onunselected,
+		onplace
 	} = $props();
 
 	let exams = $state<any[]>([]);
@@ -82,6 +83,15 @@
 <div class="flex justify-between">
 	{#if !forbiddenSlot}
 		<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
+	{/if}
+	{#if selectedExam != null && selectedExam !== -1 && !forbiddenSlot}
+		<button
+			class="btn btn-primary btn-xs m-1"
+			title="gewählte Prüfung auf {time.start} ({mkDateShort(day.date)}) setzen"
+			onclick={() => onplace?.({ day, time })}
+		>
+			＋ hier
+		</button>
 	{/if}
 	{#if exams.length > 0}
 		<div class="flex justify-end">

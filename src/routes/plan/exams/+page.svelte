@@ -13,10 +13,12 @@
 	import { filterPlanned } from '$lib/exam/examFilter';
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
+	import { combineStarttime, isStandardStarttime } from '$lib/exam/setExamTime';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	let { data } = $props();
 
-	let examsWithoutSlot = data.examsWithoutSlot ?? [];
+	let examsWithoutSlot = $derived(data.examsWithoutSlot ?? []);
 
 	let onlyPlannedByMe = $state(true);
 	let details = $state(false);
@@ -147,6 +149,89 @@
 		selectedExam = -1;
 		selectedExamerID = -1;
 		conflictingAncodes = [];
+		resetPlaceInputs();
+	}
+
+	// ---- Manuelle Platzierung (setExamTime) ----
+	// Das Backend speichert die absolute Startzeit und leitet Tag/Slot ab; es akzeptiert
+	// jede Zeit. Zwei Wege: Klick auf eine Slot-Zelle („＋ hier", Standard-Anfangszeit)
+	// oder freie Datum/Zeit-Eingabe. Für die freie Eingabe warnen wir client-seitig, wenn
+	// die Uhrzeit keine Standard-Anfangszeit ist (isStandardStarttime).
+	let placeNonce = $state(0); // ++ nach Erfolg → {#key} baut das Raster neu (Slots holen frisch)
+	let placeBusy = $state(false);
+	let placeError = $state('');
+	let placeDate = $state('');
+	let placeTime = $state('');
+	let nonStandard = $state(false); // freie Zeit ist keine Standard-Anfangszeit → Bestätigung nötig
+
+	let standardStarts = $derived(
+		(data.semesterConfig?.starttimes ?? []).map((/** @type {any} */ t) => t.start)
+	);
+
+	function resetPlaceInputs() {
+		placeDate = '';
+		placeTime = '';
+		nonStandard = false;
+		placeError = '';
+	}
+
+	// Offset-Referenz für ein Datum: der passende Prüfungstag (gleiche Zeitzone wie das
+	// Backend), sonst der erste Tag, sonst 'Z'.
+	/** @param {string} date yyyy-mm-dd */
+	function tzRefFor(date) {
+		const days = data.semesterConfig?.days ?? [];
+		const hit = days.find((/** @type {any} */ d) => String(d.date).slice(0, 10) === date);
+		return (hit ?? days[0])?.date ?? null;
+	}
+
+	/** @param {string} starttime absolute Time */
+	async function placeExam(starttime) {
+		if (placeBusy || selectedExam === -1) return;
+		placeBusy = true;
+		placeError = '';
+		try {
+			const res = await fetch('/api/exam/setExamTime', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ancode: selectedExam, starttime })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				placeError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+			placeNonce++;
+			handleUnselect();
+		} catch (e) {
+			placeError = e instanceof Error ? e.message : String(e);
+		} finally {
+			placeBusy = false;
+		}
+	}
+
+	// Klick auf „＋ hier" einer Slot-Zelle → Standard-Anfangszeit dieses Slots.
+	/** @param {{ day: any, time: any }} payload */
+	function handlePlace(payload) {
+		const { day, time } = payload;
+		placeExam(combineStarttime(day.date, time.start, day.date));
+	}
+
+	// Freie Datum/Zeit-Eingabe. force überspringt die Standard-Zeit-Warnung.
+	/** @param {boolean} [force] */
+	function submitFreeTime(force = false) {
+		placeError = '';
+		if (!placeDate || !placeTime) {
+			placeError = 'Datum und Zeit angeben.';
+			return;
+		}
+		const starttime = combineStarttime(placeDate, placeTime, tzRefFor(placeDate));
+		if (!force && !isStandardStarttime(starttime, standardStarts)) {
+			nonStandard = true;
+			return;
+		}
+		nonStandard = false;
+		placeExam(starttime);
 	}
 
 	async function fetchAllowedSlots(/** @type {any} */ ancode) {
@@ -408,6 +493,46 @@
 			{/if}
 		</div>
 
+		<!-- Platzierungsleiste: bei gewählter Prüfung „＋ hier" im Slot oder freie Zeit -->
+		{#if selectedExam !== -1}
+			<div class="flex flex-col gap-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
+				<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+					<span class="font-medium">
+						Ancode <span class="font-mono">{selectedExam}</span> platzieren:
+					</span>
+					<span class="text-base-content/60">
+						auf „＋ hier" in einem Slot klicken — oder freie Zeit setzen:
+					</span>
+					<input type="date" class="input input-bordered input-xs w-36" bind:value={placeDate} />
+					<input type="time" class="input input-bordered input-xs w-24" bind:value={placeTime} />
+					<button
+						class="btn btn-primary btn-xs"
+						disabled={placeBusy || !placeDate || !placeTime}
+						onclick={() => submitFreeTime(false)}
+					>
+						{placeBusy ? '…' : 'setzen'}
+					</button>
+					<button class="btn btn-ghost btn-xs" onclick={handleUnselect}>Auswahl aufheben</button>
+				</div>
+				{#if nonStandard}
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="badge badge-warning badge-sm">keine Standard-Anfangszeit</span>
+						<span class="text-base-content/60">
+							{placeTime} ist keine der Anfangszeiten des Semesters.
+						</span>
+						<button
+							class="btn btn-warning btn-xs"
+							disabled={placeBusy}
+							onclick={() => submitFreeTime(true)}
+						>
+							trotzdem übernehmen
+						</button>
+					</div>
+				{/if}
+				{#if placeError}<div class="text-xs text-error">{placeError}</div>{/if}
+			</div>
+		{/if}
+
 		<!-- Filter-Toolbar -->
 		<div
 			class="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-base-300 bg-base-100 p-3 text-sm"
@@ -530,200 +655,208 @@
 					refresh={refresh[`${day.number},${time.number}`]}
 					onselected={handleSelect}
 					onunselected={handleUnselect}
+					onplace={handlePlace}
 				/>
 			</div>
 		{/snippet}
 
-		{#if view === 'kalender'}
-			<div class="flex flex-col gap-6">
-				{#each weeks.weekList as w}
-					<div class="flex flex-col gap-1">
-						<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
-						<div class="overflow-x-auto rounded-lg border border-base-300">
-							<table class="table table-sm w-full">
-								<thead>
-									<tr>
-										<th class="w-16 bg-base-200"></th>
-										{#each weeks.cols as wd}
-											{@const d = w.byWd.get(wd)}
-											<th class="bg-base-200 text-center">
-												<div>{WD2[wd]}</div>
-												{#if d}
-													<div class="text-xs font-normal text-base-content/60">
-														#{d.number} · {ddmm(/** @type {Date} */ (dateObj(d.date)))}
-													</div>
-												{/if}
-											</th>
-										{/each}
-									</tr>
-								</thead>
-								<tbody>
-									{#each data.semesterConfig.starttimes as time}
+		<!-- Nach einer Platzierung (placeNonce++) baut {#key} das Raster + die Listen neu
+		     auf, damit die Slots (die ihre Prüfungen selbst laden) frisch holen. -->
+		{#key placeNonce}
+			{#if view === 'kalender'}
+				<div class="flex flex-col gap-6">
+					{#each weeks.weekList as w}
+						<div class="flex flex-col gap-1">
+							<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
+							<div class="overflow-x-auto rounded-lg border border-base-300">
+								<table class="table table-sm w-full">
+									<thead>
 										<tr>
-											<td class="bg-base-200 text-center align-top text-xs tabular-nums">
-												<div class="font-semibold">{time.start}</div>
-												<div class="text-base-content/50">#{time.number}</div>
-											</td>
+											<th class="w-16 bg-base-200"></th>
 											{#each weeks.cols as wd}
 												{@const d = w.byWd.get(wd)}
-												<td class="align-top">
-													{#if d}{@render slotCell(d, time)}{/if}
-												</td>
+												<th class="bg-base-200 text-center">
+													<div>{WD2[wd]}</div>
+													{#if d}
+														<div class="text-xs font-normal text-base-content/60">
+															#{d.number} · {ddmm(/** @type {Date} */ (dateObj(d.date)))}
+														</div>
+													{/if}
+												</th>
 											{/each}
 										</tr>
-									{/each}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{:else if !timeCal.weekList.length}
-			<div class="text-sm text-base-content/50">Keine geplanten Prüfungen mit Zeit.</div>
-		{:else}
-			<div class="flex flex-col gap-6">
-				{#each timeCal.weekList as w}
-					<div class="flex flex-col gap-1">
-						<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
-						<div class="overflow-x-auto">
-							<div class="flex gap-2" style="min-width:max-content">
-								<div
-									class="relative w-12 shrink-0"
-									style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
-								>
-									{#each timeCal.hours as h}
-										<div
-											class="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-base-content/50"
-											style="top:{(h - timeCal.min) * PX_PER_MIN}px"
-										>
-											{hhmm(h)}
-										</div>
-									{/each}
-								</div>
-								{#each timeCal.cols as wd}
-									{@const dd = w.byWd.get(wd)}
-									<div class="flex-1" style="min-width:11rem">
-										<div class="mb-1 text-center text-xs font-medium text-base-content/60">
-											{WD2[wd]}{#if dd}
-												· {ddmm(dd.items[0].dt)}{/if}
-										</div>
-										<div
-											class="relative rounded border border-base-200 bg-base-100"
-											style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
-										>
-											{#each timeCal.hours as h}
-												<div
-													class="absolute inset-x-0 border-t border-base-200/70"
-													style="top:{(h - timeCal.min) * PX_PER_MIN}px"
-												></div>
-											{/each}
-											{#if dd}
-												{#each dd.items as x}
-													<div
-														class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(
-															x
-														)}"
-														style="top:{(x.startMin - timeCal.min) * PX_PER_MIN}px; height:{x.dur *
-															PX_PER_MIN}px; left:calc({(x.col / dd.ncols) *
-															100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
-														title="{fmtAncode(x.e.zpaExam)} · {x.e.zpaExam.module} ({x.e.zpaExam
-															.mainExamer}) · {hhmm(x.startMin)}–{hhmm(
-															x.endMin
-														)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
-													>
-														<div
-															class="flex items-center gap-1 text-[11px] font-semibold leading-tight"
-														>
-															<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
-															<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
-															<span class="ml-auto flex items-center gap-0.5">
-																{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
-																	>{/if}
-																{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
-																		>🏗️</span
-																	>{/if}
-																{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span
-																	>{/if}
-															</span>
-														</div>
-														<div class="truncate text-[10px] leading-tight">
-															{x.e.zpaExam.module}
-														</div>
-														<div
-															class="text-[10px] leading-tight tabular-nums text-base-content/60"
-														>
-															{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}
-														</div>
-													</div>
+									</thead>
+									<tbody>
+										{#each data.semesterConfig.starttimes as time}
+											<tr>
+												<td class="bg-base-200 text-center align-top text-xs tabular-nums">
+													<div class="font-semibold">{time.start}</div>
+													<div class="text-base-content/50">#{time.number}</div>
+												</td>
+												{#each weeks.cols as wd}
+													{@const d = w.byWd.get(wd)}
+													<td class="align-top">
+														{#if d}{@render slotCell(d, time)}{/if}
+													</td>
 												{/each}
-											{/if}
-										</div>
-									</div>
-								{/each}
+											</tr>
+										{/each}
+									</tbody>
+								</table>
 							</div>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-
-		<ExamsWithoutSlot
-			{examsWithoutSlot}
-			{maxSlots}
-			{showExam}
-			{showAncode}
-			{showExamerID}
-			{showOnlyOnline}
-			{showOnlyExahm}
-			{showOnlySEB}
-			{selectedExam}
-			{selectedExamerID}
-			{onlyPlannedByMe}
-			{details}
-			{moveable}
-			{conflictingAncodes}
-			onselected={handleSelect}
-			onunselected={handleUnselect}
-		/>
-
-		{#if otherFkNoSlot.length}
-			<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-200 p-3">
-				<div class="flex items-center gap-2">
-					<h2 class="text-lg font-semibold">Von anderen FKs geplant (ohne Slot)</h2>
-					<span class="badge badge-neutral badge-sm tabular-nums">{otherFkNoSlot.length}</span>
-				</div>
-				<p class="text-sm text-base-content/60">
-					Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald sie
-					eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster. Zeiten
-					setzt du unter <a href="/exam/external" class="link link-primary">Prüfungen anderer FKs</a
-					>.
-				</p>
-				<div class="flex flex-wrap gap-2">
-					{#each otherFkNoSlot as e (e.ancode)}
-						{@const t = fmtDateTime(e.planEntry?.starttime)}
-						<div
-							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-base-content/30 bg-base-200 p-2 text-xs opacity-90"
-						>
-							<div class="flex items-center gap-1 font-semibold">
-								<span class="font-mono">{otherFkAncode(e)}</span>
-								{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span
-									>{/if}
-							</div>
-							<div class="truncate">{e.zpaExam?.module}</div>
-							<div class="text-base-content/50">
-								{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}
-							</div>
-							{#if t}
-								<div class="tabular-nums text-base-content/70">
-									{t} Uhr <span class="text-base-content/40">(außerhalb Zeitraum)</span>
-								</div>
-							{:else}
-								<div class="text-warning">noch keine Zeit</div>
-							{/if}
 						</div>
 					{/each}
 				</div>
-			</div>
-		{/if}
+			{:else if !timeCal.weekList.length}
+				<div class="text-sm text-base-content/50">Keine geplanten Prüfungen mit Zeit.</div>
+			{:else}
+				<div class="flex flex-col gap-6">
+					{#each timeCal.weekList as w}
+						<div class="flex flex-col gap-1">
+							<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
+							<div class="overflow-x-auto">
+								<div class="flex gap-2" style="min-width:max-content">
+									<div
+										class="relative w-12 shrink-0"
+										style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
+									>
+										{#each timeCal.hours as h}
+											<div
+												class="absolute right-1 -translate-y-1/2 text-[10px] tabular-nums text-base-content/50"
+												style="top:{(h - timeCal.min) * PX_PER_MIN}px"
+											>
+												{hhmm(h)}
+											</div>
+										{/each}
+									</div>
+									{#each timeCal.cols as wd}
+										{@const dd = w.byWd.get(wd)}
+										<div class="flex-1" style="min-width:11rem">
+											<div class="mb-1 text-center text-xs font-medium text-base-content/60">
+												{WD2[wd]}{#if dd}
+													· {ddmm(dd.items[0].dt)}{/if}
+											</div>
+											<div
+												class="relative rounded border border-base-200 bg-base-100"
+												style="height:{(timeCal.max - timeCal.min) * PX_PER_MIN}px"
+											>
+												{#each timeCal.hours as h}
+													<div
+														class="absolute inset-x-0 border-t border-base-200/70"
+														style="top:{(h - timeCal.min) * PX_PER_MIN}px"
+													></div>
+												{/each}
+												{#if dd}
+													{#each dd.items as x}
+														<div
+															class="absolute overflow-hidden rounded border border-l-4 border-base-300 bg-base-100 p-1 shadow-sm {blockColor(
+																x
+															)}"
+															style="top:{(x.startMin - timeCal.min) *
+																PX_PER_MIN}px; height:{x.dur * PX_PER_MIN}px; left:calc({(x.col /
+																dd.ncols) *
+																100}% + 2px); width:calc({100 / dd.ncols}% - 4px)"
+															title="{fmtAncode(x.e.zpaExam)} · {x.e.zpaExam.module} ({x.e.zpaExam
+																.mainExamer}) · {hhmm(x.startMin)}–{hhmm(
+																x.endMin
+															)} · {x.dur} Min · ∑{x.e.studentRegsCount}"
+														>
+															<div
+																class="flex items-center gap-1 text-[11px] font-semibold leading-tight"
+															>
+																<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
+																<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
+																<span class="ml-auto flex items-center gap-0.5">
+																	{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
+																		>{/if}
+																	{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
+																			>🏗️</span
+																		>{/if}
+																	{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung"
+																			>🔁</span
+																		>{/if}
+																</span>
+															</div>
+															<div class="truncate text-[10px] leading-tight">
+																{x.e.zpaExam.module}
+															</div>
+															<div
+																class="text-[10px] leading-tight tabular-nums text-base-content/60"
+															>
+																{hhmm(x.startMin)} · {x.dur}′ · ∑{x.e.studentRegsCount}
+															</div>
+														</div>
+													{/each}
+												{/if}
+											</div>
+										</div>
+									{/each}
+								</div>
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			<ExamsWithoutSlot
+				{examsWithoutSlot}
+				{maxSlots}
+				{showExam}
+				{showAncode}
+				{showExamerID}
+				{showOnlyOnline}
+				{showOnlyExahm}
+				{showOnlySEB}
+				{selectedExam}
+				{selectedExamerID}
+				{onlyPlannedByMe}
+				{details}
+				{moveable}
+				{conflictingAncodes}
+				onselected={handleSelect}
+				onunselected={handleUnselect}
+			/>
+
+			{#if otherFkNoSlot.length}
+				<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-200 p-3">
+					<div class="flex items-center gap-2">
+						<h2 class="text-lg font-semibold">Von anderen FKs geplant (ohne Slot)</h2>
+						<span class="badge badge-neutral badge-sm tabular-nums">{otherFkNoSlot.length}</span>
+					</div>
+					<p class="text-sm text-base-content/60">
+						Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald
+						sie eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster.
+						Zeiten setzt du unter <a href="/exam/external" class="link link-primary"
+							>Prüfungen anderer FKs</a
+						>.
+					</p>
+					<div class="flex flex-wrap gap-2">
+						{#each otherFkNoSlot as e (e.ancode)}
+							{@const t = fmtDateTime(e.planEntry?.starttime)}
+							<div
+								class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-base-300 border-l-base-content/30 bg-base-200 p-2 text-xs opacity-90"
+							>
+								<div class="flex items-center gap-1 font-semibold">
+									<span class="font-mono">{otherFkAncode(e)}</span>
+									{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span
+										>{/if}
+								</div>
+								<div class="truncate">{e.zpaExam?.module}</div>
+								<div class="text-base-content/50">
+									{e.zpaExam?.mainExamer} · ∑{e.studentRegsCount}
+								</div>
+								{#if t}
+									<div class="tabular-nums text-base-content/70">
+										{t} Uhr <span class="text-base-content/40">(außerhalb Zeitraum)</span>
+									</div>
+								{:else}
+									<div class="text-warning">noch keine Zeit</div>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
+			{/if}
+		{/key}
 	</div>
 {/if}
