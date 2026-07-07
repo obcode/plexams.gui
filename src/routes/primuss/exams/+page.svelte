@@ -45,6 +45,43 @@
 		}
 	}
 
+	// --- Sammellisten zurücksetzen (resetPrimussData) ---
+	// Destruktiv: löscht alle importierten Primuss-Sammellisten. Backend blockt
+	// bei laufender Validierung/Transfer/E-Mail. Nach Erfolg neu laden — der
+	// Planning-State-Punkt „Primuss-Anmeldedaten importiert" ist danach offen.
+	let resetting = $state(false);
+	let resetError = $state('');
+	/** @type {string[] | null} */
+	let resetCleared = $state(null);
+
+	async function resetPrimussData() {
+		if (resetting) return;
+		if (
+			!confirm(
+				'Wirklich alle importierten Primuss-Sammellisten löschen? Alle Studiengänge werden geleert; die Sammellisten müssen danach neu hochgeladen werden.'
+			)
+		)
+			return;
+		resetting = true;
+		resetError = '';
+		resetCleared = null;
+		try {
+			const res = await fetch('/api/primuss/resetPrimussData', { method: 'POST' });
+			const json = await res.json().catch(() => ({}));
+			if (!res.ok || json?.error) {
+				resetError = json?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			resetCleared = json?.resetPrimussData ?? [];
+			result = null;
+			await invalidateAll(); // Primuss-Ansichten neu laden
+		} catch (e) {
+			resetError = e instanceof Error ? e.message : String(e);
+		} finally {
+			resetting = false;
+		}
+	}
+
 	let programs = $derived(result?.programs ?? []);
 	let skipped = $derived(result?.skipped ?? []);
 	let affected = $derived(result?.affectedZpaAncodes ?? []);
@@ -188,16 +225,24 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{data.primussExams.length}</span>
 		<span class="text-sm text-base-content/60">Studiengänge</span>
 		<div class="flex-1"></div>
-		<label class="btn btn-outline btn-sm" class:btn-disabled={uploading}>
+		<label class="btn btn-outline btn-sm" class:btn-disabled={uploading || resetting}>
 			{uploading ? 'lädt hoch …' : 'Sammellisten-ZIP importieren'}
 			<input
 				type="file"
 				accept=".zip,application/zip"
 				class="hidden"
 				onchange={onFile}
-				disabled={uploading}
+				disabled={uploading || resetting}
 			/>
 		</label>
+		<WriteButton
+			class="btn btn-outline btn-error btn-sm"
+			disabled={uploading || resetting}
+			title="alle importierten Primuss-Sammellisten löschen (destruktiv)"
+			onclick={resetPrimussData}
+		>
+			{resetting ? 'setzt zurück …' : 'Sammellisten zurücksetzen'}
+		</WriteButton>
 	</div>
 
 	{#if blocked}
@@ -210,6 +255,21 @@
 	{/if}
 	{#if uploadError}
 		<div class="alert alert-error py-2 text-sm"><span>{uploadError}</span></div>
+	{/if}
+	{#if resetError}
+		<div class="alert alert-error py-2 text-sm"><span>{resetError}</span></div>
+	{/if}
+	{#if resetCleared}
+		<div class="alert alert-success py-2 text-sm">
+			<span>
+				{#if resetCleared.length}
+					Sammellisten zurückgesetzt — geleerte Studiengänge ({resetCleared.length}):
+					<span class="break-words">{resetCleared.join(', ')}</span>
+				{:else}
+					Sammellisten zurückgesetzt — es waren keine Daten importiert.
+				{/if}
+			</span>
+		</div>
 	{/if}
 
 	{#if result}

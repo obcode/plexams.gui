@@ -79,7 +79,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                               |
 | `api/preplan/`      |        13 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung)                                               |
 | `api/semester/`     |        10 | Semester/Workspace wechseln & anlegen, Read-only-Schutz, Config, Planer, Generierungs-Config                               |
-| `api/primuss/`      |         8 | Primuss-Ancodes, StudentRegs, Studierende, Konflikt-Entscheidungen                                                         |
+| `api/primuss/`      |         9 | Primuss-Ancodes, StudentRegs, Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                                     |
 | `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                |
 | `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                  |
 | `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                 |
