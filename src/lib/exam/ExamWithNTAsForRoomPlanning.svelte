@@ -164,7 +164,7 @@
 		if (slotRooms !== null || loadingRooms) return;
 		loadingRooms = true;
 		try {
-			const res = await fetch('/api/plan/roomsWithFreeSeatsForSlot', {
+			const res = await fetch('/api/plan/roomsWithFreeSeatsAt', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ starttime })

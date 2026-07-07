@@ -33,7 +33,7 @@
 	let exams = $state<any[]>([]);
 
 	async function fetchExams() {
-		const response = await fetch('/api/slot/examsInSlot', {
+		const response = await fetch('/api/slot/examsAt', {
 			method: 'POST',
 			body: JSON.stringify({ starttime: combineStarttime(day.date, time.start, day.date) }),
 			headers: {

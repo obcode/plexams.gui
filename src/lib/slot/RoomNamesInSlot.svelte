@@ -6,7 +6,7 @@
 	let roomNames = $state<string[]>([]);
 
 	async function fetchRoomNames() {
-		const response = await fetch('/api/plan/roomNamesInSlot', {
+		const response = await fetch('/api/plan/roomNamesAt', {
 			method: 'POST',
 			body: JSON.stringify({ starttime }),
 			headers: { 'content-type': 'application/json' }

@@ -274,7 +274,7 @@
 		const key = entryKey(dayNumber, slotNumber, roomName);
 		if (
 			await post(
-				'/api/plan/prePlanInvigilationInSlot',
+				'/api/plan/prePlanInvigilationAt',
 				{ starttime: slotStarttime(dayNumber, slotNumber), roomName },
 				key
 			)

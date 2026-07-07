@@ -19,20 +19,20 @@ const READ_POST_PATHS = new Set([
 	// reine Lese-Abfragen:
 	'/api/email/renderEmailTemplatePreview',
 	'/api/exam/conflictingAncodes',
-	'/api/plan/roomsWithFreeSeatsForSlot',
+	'/api/plan/roomsWithFreeSeatsAt',
 	'/api/slot/awkwardSlots',
-	'/api/plan/roomNamesInSlot',
+	'/api/plan/roomNamesAt',
 	'/api/slot/allowedSlots',
 	'/api/preplan/validatePreplanAssignment',
 	'/api/primuss/students',
 	'/api/plan/slotWithNTAs',
-	'/api/slot/preExamsInSlot',
-	'/api/slot/examsInSlot',
-	'/api/plan/roomsForSlot',
-	'/api/plan/roomsWithInvigilationsForSlot',
+	'/api/slot/preExamsAt',
+	'/api/slot/examsAt',
+	'/api/plan/roomsAt',
+	'/api/plan/roomsWithInvigilationsAt',
 	'/api/plan/invigilatorsForDay',
 	'/api/plan/plannedRoomForStudent',
-	'/api/plan/examsInSlot',
+	'/api/plan/examsAt',
 	'/api/preplan/preplanExamAncodeSuggestions'
 ]);
 

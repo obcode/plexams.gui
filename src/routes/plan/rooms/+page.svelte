@@ -156,7 +156,7 @@
 		blockError = null;
 		try {
 			const starttime = combineStarttime(dayDateById[day], slotStartById[slot], dayDateById[day]);
-			const url = isBlocked ? '/api/room/unblockRoomForSlot' : '/api/room/blockRoomForSlot';
+			const url = isBlocked ? '/api/room/unblockRoomAt' : '/api/room/blockRoomAt';
 			const body = isBlocked ? { room, starttime } : { room, starttime, reason };
 			const res = await fetch(url, {
 				method: 'POST',
@@ -204,7 +204,7 @@
 			const starttimes = allSlots.map((/** @type {number} */ s) =>
 				combineStarttime(dayDateById[day], slotStartById[s], dayDateById[day])
 			);
-			const url = allBlocked ? '/api/room/unblockRoomForSlots' : '/api/room/blockRoomForSlots';
+			const url = allBlocked ? '/api/room/unblockRoomAtTimes' : '/api/room/blockRoomAtTimes';
 			const body = allBlocked ? { room, starttimes } : { room, starttimes, reason };
 			const res = await fetch(url, {
 				method: 'POST',

@@ -14,7 +14,7 @@
 	let loading = $state(true);
 
 	async function fetchSlot(starttime: string) {
-		const response = await fetch('/api/plan/roomsWithInvigilationsForSlot', {
+		const response = await fetch('/api/plan/roomsWithInvigilationsAt', {
 			method: 'POST',
 			body: JSON.stringify({ starttime }),
 			headers: {

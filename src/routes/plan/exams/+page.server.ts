@@ -195,9 +195,9 @@ export const load: PageServerLoad = async () => {
 	}
 
 	// „nicht von mir geplant"-Prüfungen (andere FK): zu-planende ZPA-Prüfungen mit
-	// gesetztem Flag. Die mit echtem Slot erscheinen bereits über examsInSlot bzw.
+	// gesetztem Flag. Die mit echtem Slot erscheinen bereits über examsAt bzw.
 	// plannedExams im Raster/Zeit-View; hier brauchen wir v. a. die OHNE Slot
-	// (Slot 0/0 out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
+	// (out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
 	let otherFkExams;
 	try {
 		const od = await request<any>(
