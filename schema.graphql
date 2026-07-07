@@ -1247,7 +1247,7 @@ type Mutation {
 	Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
 	or neither). The slot must be a real slot of this semester.
 	"""
-	setPreplanExamSlot(id: Int!, dayNumber: Int, slotNumber: Int): PreplanExam!
+	setPreplanExamTime(id: Int!, starttime: Time): PreplanExam!
 
 	"""
 	Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
@@ -1353,14 +1353,14 @@ type Mutation {
 	resetRoomsForExams: Boolean!
 
 	"""
-	Set the approved flag of a room request (key: room/day/slot).
+	Set the approved flag of a room request (key: room/starttime).
 	"""
-	setRoomRequestApproved(room: String!, day: Int!, slot: Int!, approved: Boolean!): RoomRequest!
+	setRoomRequestApproved(room: String!, starttime: Time!, approved: Boolean!): RoomRequest!
 
 	"""
 	Activate/deactivate a room request; inactive requests are not used for room planning.
 	"""
-	setRoomRequestActive(room: String!, day: Int!, slot: Int!, active: Boolean!): RoomRequest!
+	setRoomRequestActive(room: String!, starttime: Time!, active: Boolean!): RoomRequest!
 
 	"""
 	One-time import of roomConstraints.<room>.reservations from the semester config into the DB. Returns the number imported.
@@ -1376,21 +1376,15 @@ type Mutation {
 	applyRoomRequestsPreview(force: Boolean!): Int!
 
 	"""
-	Manually add a single room request (key: room/day/slot). Errors if one already exists. Starts active and not approved.
+	Manually add a single room request (key: room/starttime). Errors if one already exists. Starts active and not approved.
 	"""
-	addRoomRequest(room: String!, day: Int!, slot: Int!, from: Time!, until: Time!): RoomRequest!
+	addRoomRequest(room: String!, starttime: Time!, from: Time!, until: Time!): RoomRequest!
 
 	"""
 	Change the time range of an existing room request, e.g. extend it for an NTA
-	(key: room/day/slot). Errors if it does not exist.
+	(key: room/starttime). Errors if it does not exist.
 	"""
-	updateRoomRequestTime(
-		room: String!
-		day: Int!
-		slot: Int!
-		from: Time!
-		until: Time!
-	): RoomRequest!
+	updateRoomRequestTime(room: String!, starttime: Time!, from: Time!, until: Time!): RoomRequest!
 
 	"""
 	Replace the raw per-semester config. The derived semesterConfig (days, slots,
@@ -1724,8 +1718,7 @@ type PreplanExam {
 	programs: [String!]!
 	expectedStudents: Int!
 	duration: Int
-	plannedDayNumber: Int
-	plannedSlotNumber: Int
+	plannedStarttime: Time
 
 	"""
 	True when the slot is pinned and survives a re-run of the automatic assignment.
@@ -1854,10 +1847,8 @@ type PreplanSameSlotMember {
 
 type PreplanSlotNeed {
 	"""
-	null day/slot = the bucket of pre-exams without a slot yet.
+	null starttime = the bucket of pre-exams without a slot yet.
 	"""
-	dayNumber: Int
-	slotNumber: Int
 	starttime: Time
 	exahm: PreplanKindNeed!
 	seb: PreplanKindNeed!
@@ -2338,8 +2329,7 @@ type RoomInSlotUsage {
 
 type RoomRequest {
 	room: String!
-	day: Int!
-	slot: Int!
+	starttime: Time!
 	from: Time!
 	until: Time!
 	approved: Boolean!
@@ -2354,8 +2344,7 @@ be eyeballed in the GUI. The preview is read-only and changes nothing.
 """
 type RoomRequestPreview {
 	room: String!
-	day: Int!
-	slot: Int!
+	starttime: Time!
 	from: Time!
 	until: Time!
 	students: Int!
@@ -2555,8 +2544,6 @@ input SemesterConfigInputData {
 }
 
 type Slot {
-	dayNumber: Int!
-	slotNumber: Int!
 	starttime: Time!
 }
 
@@ -3001,8 +2988,7 @@ type ValidationFinding {
 	ancode: Int
 	relatedAncodes: [Int!]
 	room: String
-	day: Int
-	slot: Int
+	starttime: Time
 	invigilatorID: Int
 	studentMtknr: String
 }

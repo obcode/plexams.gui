@@ -58,8 +58,7 @@ export const load: PageServerLoad = async () => {
 						invigilations {
 							roomName
 							slot {
-								dayNumber
-								slotNumber
+								starttime
 							}
 							isReserve
 							isSelfInvigilation

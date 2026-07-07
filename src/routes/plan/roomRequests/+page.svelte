@@ -14,7 +14,7 @@
 	let section = $state('manage');
 
 	/** @param {any} r */
-	const key = (r) => `${r.room}-${r.day}-${r.slot}`;
+	const key = (r) => `${r.room}-${r.starttime}`;
 
 	// from/until sind ISO-Zeitstempel mit Offset (z. B. ...T10:15:00+02:00).
 	// Direkt aus dem String formatieren (kein new Date) → keine Zeitzonen-Probleme.
@@ -125,8 +125,8 @@
 				kind === 'approve' ? '/api/room/setRoomRequestApproved' : '/api/room/setRoomRequestActive';
 			const body =
 				kind === 'approve'
-					? { room: req.room, day: req.day, slot: req.slot, approved: !req.approved }
-					: { room: req.room, day: req.day, slot: req.slot, active: !req.active };
+					? { room: req.room, starttime: req.starttime, approved: !req.approved }
+					: { room: req.room, starttime: req.starttime, active: !req.active };
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -201,19 +201,23 @@
 		if (!modalValid) return;
 		mSaving = true;
 		mError = null;
-		let from, until, slot;
+		let from, until, starttime;
 		if (modalMode === 'edit') {
 			from = isoReplaceTime(mEditReq.from, mFromTime);
 			until = isoReplaceTime(mEditReq.until, mUntilTime);
-			slot = Number(mSlot);
+			// starttime (Slot-Schlüssel) bleibt unverändert; nur der Zeitbereich ändert sich.
+			starttime = mEditReq.starttime;
 		} else {
 			const info = dayInfo[Number(mDay)];
-			slot = slotForTime(mFromTime);
-			if (!info || !slot) {
+			const slotNum = slotForTime(mFromTime);
+			const slotStart = data.starttimes.find((/** @type {any} */ s) => s.number === slotNum)?.start;
+			if (!info || !slotNum || !slotStart) {
 				mError = 'Tag/Startzeit konnten keinem Slot zugeordnet werden.';
 				mSaving = false;
 				return;
 			}
+			// starttime = Anfangszeit des zugeordneten Slots an diesem Tag.
+			starttime = `${info.date}T${slotStart}:00${info.offset}`;
 			from = `${info.date}T${mFromTime}:00${info.offset}`;
 			until = `${info.date}T${mUntilTime}:00${info.offset}`;
 		}
@@ -223,7 +227,7 @@
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ room: mRoom, day: Number(mDay), slot, from, until })
+				body: JSON.stringify({ room: mRoom, starttime, from, until })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {

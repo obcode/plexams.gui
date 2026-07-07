@@ -7,8 +7,7 @@ export const GET: RequestHandler = async () => {
 		query {
 			roomRequestsPreview {
 				room
-				day
-				slot
+				starttime
 				from
 				until
 				students

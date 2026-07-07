@@ -845,7 +845,7 @@ export type Mutation = {
   addPrimussAncode: ConnectedExam;
   /** Create a new room (key: name). Errors if a room with that name already exists. */
   addRoom: Room;
-  /** Manually add a single room request (key: room/day/slot). Errors if one already exists. Starts active and not approved. */
+  /** Manually add a single room request (key: room/starttime). Errors if one already exists. Starts active and not approved. */
   addRoomRequest: RoomRequest;
   addZpaExamToPlan: Scalars['Boolean']['output'];
   /**
@@ -1086,12 +1086,12 @@ export type Mutation = {
    * Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
    * or neither). The slot must be a real slot of this semester.
    */
-  setPreplanExamSlot: PreplanExam;
+  setPreplanExamTime: PreplanExam;
   /** Activate/deactivate a room (key: name). A deactivated room is not used for planning. */
   setRoomActive: Room;
   /** Activate/deactivate a room request; inactive requests are not used for room planning. */
   setRoomRequestActive: RoomRequest;
-  /** Set the approved flag of a room request (key: room/day/slot). */
+  /** Set the approved flag of a room request (key: room/starttime). */
   setRoomRequestApproved: RoomRequest;
   /**
    * Switch the running server to another database (workspace) at runtime. `name` is
@@ -1134,7 +1134,7 @@ export type Mutation = {
   updateRoom: Room;
   /**
    * Change the time range of an existing room request, e.g. extend it for an NTA
-   * (key: room/day/slot). Errors if it does not exist.
+   * (key: room/starttime). Errors if it does not exist.
    */
   updateRoomRequestTime: RoomRequest;
   /** Create or update an additional exam (key: ancode). */
@@ -1190,10 +1190,9 @@ export type MutationAddRoomArgs = {
 
 
 export type MutationAddRoomRequestArgs = {
-  day: Scalars['Int']['input'];
   from: Scalars['Time']['input'];
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
   until: Scalars['Time']['input'];
 };
 
@@ -1526,10 +1525,9 @@ export type MutationSetPreplanExamNotSameSlotArgs = {
 };
 
 
-export type MutationSetPreplanExamSlotArgs = {
-  dayNumber?: InputMaybe<Scalars['Int']['input']>;
+export type MutationSetPreplanExamTimeArgs = {
   id: Scalars['Int']['input'];
-  slotNumber?: InputMaybe<Scalars['Int']['input']>;
+  starttime?: InputMaybe<Scalars['Time']['input']>;
 };
 
 
@@ -1541,17 +1539,15 @@ export type MutationSetRoomActiveArgs = {
 
 export type MutationSetRoomRequestActiveArgs = {
   active: Scalars['Boolean']['input'];
-  day: Scalars['Int']['input'];
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
 export type MutationSetRoomRequestApprovedArgs = {
   approved: Scalars['Boolean']['input'];
-  day: Scalars['Int']['input'];
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
@@ -1608,10 +1604,9 @@ export type MutationUpdateRoomArgs = {
 
 
 export type MutationUpdateRoomRequestTimeArgs = {
-  day: Scalars['Int']['input'];
   from: Scalars['Time']['input'];
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
   until: Scalars['Time']['input'];
 };
 
@@ -1894,8 +1889,7 @@ export type PreplanExam = {
    */
   notSameSlot?: Maybe<Array<Scalars['Int']['output']>>;
   notes?: Maybe<Scalars['String']['output']>;
-  plannedDayNumber?: Maybe<Scalars['Int']['output']>;
-  plannedSlotNumber?: Maybe<Scalars['Int']['output']>;
+  plannedStarttime?: Maybe<Scalars['Time']['output']>;
   /** StudyProgram shortnames. */
   programs: Array<Scalars['String']['output']>;
 };
@@ -1966,11 +1960,9 @@ export type PreplanSlotNeed = {
   __typename?: 'PreplanSlotNeed';
   /** Programs that appear in more than one pre-exam of this slot (possible clash). */
   conflicts: Array<PreplanProgramConflict>;
-  /** null day/slot = the bucket of pre-exams without a slot yet. */
-  dayNumber?: Maybe<Scalars['Int']['output']>;
   exahm: PreplanKindNeed;
   seb: PreplanKindNeed;
-  slotNumber?: Maybe<Scalars['Int']['output']>;
+  /** null starttime = the bucket of pre-exams without a slot yet. */
   starttime?: Maybe<Scalars['Time']['output']>;
 };
 
@@ -2513,10 +2505,9 @@ export type RoomRequest = {
   __typename?: 'RoomRequest';
   active: Scalars['Boolean']['output'];
   approved: Scalars['Boolean']['output'];
-  day: Scalars['Int']['output'];
   from: Scalars['Time']['output'];
   room: Scalars['String']['output'];
-  slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
   until: Scalars['Time']['output'];
 };
 
@@ -2528,13 +2519,12 @@ export type RoomRequest = {
  */
 export type RoomRequestPreview = {
   __typename?: 'RoomRequestPreview';
-  day: Scalars['Int']['output'];
   exam: PlannedExam;
   from: Scalars['Time']['output'];
   room: Scalars['String']['output'];
   seats: Scalars['Int']['output'];
   simultaneousExams: Array<PlannedExam>;
-  slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
   students: Scalars['Int']['output'];
   until: Scalars['Time']['output'];
 };
@@ -2671,8 +2661,6 @@ export type SemesterConfigInputData = {
 
 export type Slot = {
   __typename?: 'Slot';
-  dayNumber: Scalars['Int']['output'];
-  slotNumber: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
 };
 
@@ -3174,13 +3162,12 @@ export type UnplacedExam = {
 export type ValidationFinding = {
   __typename?: 'ValidationFinding';
   ancode?: Maybe<Scalars['Int']['output']>;
-  day?: Maybe<Scalars['Int']['output']>;
   invigilatorID?: Maybe<Scalars['Int']['output']>;
   level: ValidationLevel;
   message: Scalars['String']['output'];
   relatedAncodes?: Maybe<Array<Scalars['Int']['output']>>;
   room?: Maybe<Scalars['String']['output']>;
-  slot?: Maybe<Scalars['Int']['output']>;
+  starttime?: Maybe<Scalars['Time']['output']>;
   studentMtknr?: Maybe<Scalars['String']['output']>;
 };
 

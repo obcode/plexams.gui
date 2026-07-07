@@ -8,8 +8,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		gql`
 			query ($ancode: Int!) {
 				awkwardSlots(ancode: $ancode) {
-					dayNumber
-					slotNumber
+					starttime
 				}
 			}
 		`,

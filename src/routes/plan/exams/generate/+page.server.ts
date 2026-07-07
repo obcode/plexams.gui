@@ -114,8 +114,6 @@ export const load: PageServerLoad = async () => {
 						isRepeaterExam1
 						location1
 						slot1 {
-							dayNumber
-							slotNumber
 							starttime
 						}
 						ancode2
@@ -125,8 +123,6 @@ export const load: PageServerLoad = async () => {
 						isRepeaterExam2
 						location2
 						slot2 {
-							dayNumber
-							slotNumber
 							starttime
 						}
 						studentCount

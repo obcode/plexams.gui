@@ -61,11 +61,12 @@
 
 	// self-invigilations (the person supervises their own exam) — used to colour the
 	// matching exam green instead of rendering a separate (zero-duration) block.
+	// Slot hat nur noch starttime → Kalendertag + Startminute direkt daraus.
 	const selfInvigSlots = invigilations
 		.filter((/** @type {{ isSelfInvigilation: boolean }} */ inv) => inv.isSelfInvigilation)
-		.map((/** @type {{ slot: { dayNumber: number, slotNumber: number } }} */ inv) => ({
-			day: inv.slot.dayNumber,
-			min: slotStartMin.get(inv.slot.slotNumber) ?? 0
+		.map((/** @type {{ slot: { starttime: string } }} */ inv) => ({
+			dk: dateKey(inv.slot.starttime),
+			min: toMinutes(inv.slot.starttime)
 		}));
 
 	// time axis for the calendar
@@ -160,8 +161,8 @@
 			const startMin = toMinutes(et.from);
 			const endMin = toMinutes(et.until);
 			const isSelf = selfInvigSlots.some(
-				(/** @type {{ day: number, min: number }} */ s) =>
-					s.day === day.number && s.min >= startMin && s.min < endMin
+				(/** @type {{ dk: string, min: number }} */ s) =>
+					s.dk === dateKey(day.date) && s.min >= startMin && s.min < endMin
 			);
 			events.push({
 				startMin,
@@ -175,9 +176,9 @@
 		}
 		// invigilations (self-invigilations are shown via the green exam above)
 		for (const inv of withInvigilations ? invigilations : []) {
-			if (inv.slot?.dayNumber !== day.number) continue;
+			if (dateKey(inv.slot?.starttime) !== dateKey(day.date)) continue;
 			if (inv.isSelfInvigilation) continue;
-			const startMin = slotStartMin.get(inv.slot.slotNumber) ?? 0;
+			const startMin = toMinutes(inv.slot.starttime);
 			const endMin = startMin + (inv.duration > 0 ? inv.duration : SLOT_DURATION);
 			if (inv.isReserve) {
 				events.push({

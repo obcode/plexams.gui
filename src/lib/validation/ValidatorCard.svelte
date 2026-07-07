@@ -16,6 +16,18 @@
 
 	let showTerminal = $state(false);
 
+	// Findings tragen jetzt eine absolute Startzeit (starttime) statt Tag/Slot.
+	// Direkt aus dem ISO-String formatieren (kein new Date) → „Mo 13.07. 08:30".
+	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	/** @param {string} iso */
+	function fmtStarttime(iso) {
+		const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(String(iso ?? ''));
+		if (!m) return '';
+		const [, y, mo, d, hm] = m;
+		const wd = WD[new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d))).getUTCDay()];
+		return `${wd} ${d}.${mo}. ${hm}`;
+	}
+
 	// Ancode → Modul/Erstprüfer:in für die Findings-Badges (einmalig geladen).
 	onMount(loadExamInfo);
 	/** Zusatzinfo „Modul · Erstprüfer:in" zu einem Ancode, falls bekannt. @param {number} ancode */
@@ -168,7 +180,7 @@
 						<span class="mt-0.5">{levelIcon(f.level)}</span>
 						<div class="min-w-0 flex-1">
 							<div class="break-words">{f.message}</div>
-							{#if f.ancode || (f.relatedAncodes && f.relatedAncodes.length) || f.room || f.day != null || f.slot != null || f.invigilatorID != null || f.studentMtknr}
+							{#if f.ancode || (f.relatedAncodes && f.relatedAncodes.length) || f.room || f.starttime || f.invigilatorID != null || f.studentMtknr}
 								<div class="mt-1 flex flex-wrap gap-1">
 									{#if f.ancode}
 										<span class="badge badge-outline badge-xs">
@@ -187,12 +199,10 @@
 									{#if f.room}
 										<span class="badge badge-outline badge-xs">Raum {f.room}</span>
 									{/if}
-									{#if f.day != null && f.slot != null}
-										<span class="badge badge-outline badge-xs">Tag {f.day} · Slot {f.slot}</span>
-									{:else if f.day != null}
-										<span class="badge badge-outline badge-xs">Tag {f.day}</span>
-									{:else if f.slot != null}
-										<span class="badge badge-outline badge-xs">Slot {f.slot}</span>
+									{#if f.starttime}
+										<span class="badge badge-outline badge-xs tabular-nums"
+											>{fmtStarttime(f.starttime)}</span
+										>
 									{/if}
 									{#if f.invigilatorID != null}
 										<span class="badge badge-outline badge-xs">Aufsicht {f.invigilatorID}</span>

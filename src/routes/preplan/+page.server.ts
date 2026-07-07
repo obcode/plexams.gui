@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -16,8 +17,7 @@ export const load: PageServerLoad = async () => {
 					programs
 					expectedStudents
 					duration
-					plannedDayNumber
-					plannedSlotNumber
+					plannedStarttime
 					isFixed
 					notSameSlot
 					canShareSlot
@@ -59,16 +59,17 @@ export const load: PageServerLoad = async () => {
 				}
 				semesterConfig {
 					days {
+						number
 						date
 					}
+					starttimes {
+						number
+						start
+					}
 					slots {
-						dayNumber
-						slotNumber
 						starttime
 					}
 					mucDaiSlots {
-						dayNumber
-						slotNumber
 						starttime
 					}
 				}
@@ -134,6 +135,12 @@ export const load: PageServerLoad = async () => {
 		(data.semesterConfig?.days ?? []).map((d: any) => dayKey(d.date)).filter(Boolean)
 	);
 
+	// Zeitbasiert: Slot hat nur noch starttime; Tag/Slot lokal ableiten (für Keys/Sort).
+	const cfgDaysNum = data.semesterConfig?.days ?? [];
+	const cfgStarts = data.semesterConfig?.starttimes ?? [];
+	const dn = (st: string) => dayNumberForTime(st, cfgDaysNum);
+	const sn = (st: string) => slotNumberForTime(st, cfgStarts);
+
 	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert) — nur innerhalb
 	// der Prüfungszeit (Datum aus starttime muss ein konfigurierter Prüfungstag sein).
 	const slotMap = new Map<string, any>();
@@ -143,7 +150,9 @@ export const load: PageServerLoad = async () => {
 	]) {
 		const dk = dayKey(s.starttime);
 		if (examDates.size && dk && !examDates.has(dk)) continue;
-		slotMap.set(`${s.dayNumber}-${s.slotNumber}`, s);
+		const dayNumber = dn(s.starttime);
+		const slotNumber = sn(s.starttime);
+		slotMap.set(`${dayNumber}-${slotNumber}`, { ...s, dayNumber, slotNumber });
 	}
 	const slots = [...slotMap.values()].sort(
 		(a: any, b: any) => a.dayNumber - b.dayNumber || a.slotNumber - b.slotNumber
@@ -211,9 +220,15 @@ export const load: PageServerLoad = async () => {
 		return rooms.sort((a, b) => a.localeCompare(b));
 	}
 
-	// Übersicht: „ohne Slot"-Eimer (dayNumber == null) zuerst, dann nach Tag/Slot.
+	// Übersicht: „ohne Slot"-Eimer (starttime == null) zuerst, dann nach Tag/Slot.
+	// PreplanSlotNeed liefert nur noch starttime → Tag/Slot lokal ableiten.
 	const overview = (data.preplanOverview?.slots ?? [])
 		.slice()
+		.map((s: any) => ({
+			...s,
+			dayNumber: s.starttime ? dn(s.starttime) : null,
+			slotNumber: s.starttime ? sn(s.starttime) : null
+		}))
 		.sort((a: any, b: any) => {
 			if (a.dayNumber == null) return -1;
 			if (b.dayNumber == null) return 1;

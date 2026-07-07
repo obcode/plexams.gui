@@ -14,7 +14,7 @@
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { combineStarttime, isStandardStarttime } from '$lib/exam/setExamTime';
-	import { inPeriod } from '$lib/slot/derive';
+	import { inPeriod, dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	let { data } = $props();
@@ -103,8 +103,13 @@
 
 	let mucdaiSlot = /** @type {any} */ (new Map());
 
+	// Slot hat nur noch starttime → Grid-Key (day,slot) lokal ableiten.
+	/** @param {string} iso */
+	const slotKey = (iso) =>
+		`${dayNumberForTime(iso, data.semesterConfig?.days)},${slotNumberForTime(iso, data.semesterConfig?.starttimes)}`;
+
 	for (const slot of data.semesterConfig?.mucDaiSlots ?? []) {
-		mucdaiSlot[`${slot.dayNumber},${slot.slotNumber}`] = 'rounded ring-2 ring-error/70';
+		mucdaiSlot[slotKey(slot.starttime)] = 'rounded ring-2 ring-error/70';
 	}
 
 	let mucdaiSlotToShow = $state(/** @type {any} */ (new Map()));
@@ -133,12 +138,12 @@
 		selectedExamerID = payload.mainExamerID;
 		let allowedSlots = await fetchAllowedSlots(payload.ancode);
 		for (let slot of allowedSlots) {
-			slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'allowed';
+			slotsStatus[slotKey(slot.starttime)] = 'allowed';
 		}
 		let akwardSlots = await fetchAwkwardSlots(payload.ancode);
 		for (let slot of akwardSlots) {
-			if (slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] == 'allowed') {
-				slotsStatus[`${slot.dayNumber},${slot.slotNumber}`] = 'awkward';
+			if (slotsStatus[slotKey(slot.starttime)] == 'allowed') {
+				slotsStatus[slotKey(slot.starttime)] = 'awkward';
 			}
 		}
 		let res = await fetchconflictingAncodes(payload.ancode);

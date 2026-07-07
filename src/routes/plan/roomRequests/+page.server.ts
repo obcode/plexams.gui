@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
-import { combineStarttime } from '$lib/exam/setExamTime';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
 // Gebäudemanagement-Raumanforderungen (nur diese; Anny/T-Räume haben eine
@@ -15,8 +15,7 @@ export const load: PageServerLoad = async () => {
 			query {
 				roomRequests {
 					room
-					day
-					slot
+					starttime
 					from
 					until
 					approved
@@ -66,17 +65,11 @@ export const load: PageServerLoad = async () => {
 			}
 		`
 	);
-	const dateByDay = new Map<number, string>(
-		(cfg.semesterConfig?.days ?? []).map((d: any) => [d.number, d.date])
-	);
-	const startBySlot = new Map<number, string>(
-		(cfg.semesterConfig?.starttimes ?? []).map((t: any) => [t.number, t.start])
-	);
-	const slotStarttime = (day: number, slot: number) =>
-		combineStarttime(dateByDay.get(day), startBySlot.get(slot), dateByDay.get(day));
+	const cfgDays = cfg.semesterConfig?.days ?? [];
+	const cfgStarts = cfg.semesterConfig?.starttimes ?? [];
 
-	// Belegung pro (day, slot) einmal laden.
-	const slotKeys = [...new Set(roomRequests.map((r: any) => `${r.day}-${r.slot}`))] as string[];
+	// Belegung je Startzeit einmal laden (die Anfragen tragen die starttime direkt).
+	const startKeys = [...new Set(roomRequests.map((r: any) => r.starttime))] as string[];
 	const slotQuery = gql`
 		query ($starttime: Time!) {
 			examsAt(starttime: $starttime) {
@@ -108,23 +101,19 @@ export const load: PageServerLoad = async () => {
 	`;
 
 	const slotResults = await Promise.all(
-		slotKeys.map(async (k): Promise<[string, any[]]> => {
-			const [day, slot] = k.split('-').map(Number);
+		startKeys.map(async (starttime): Promise<[string, any[]]> => {
 			try {
-				const d = await request<any>(env.PLEXAMS_SERVER, slotQuery, {
-					starttime: slotStarttime(day, slot)
-				});
-				return [k, d.examsAt ?? []];
+				const d = await request<any>(env.PLEXAMS_SERVER, slotQuery, { starttime });
+				return [starttime, d.examsAt ?? []];
 			} catch {
-				return [k, []];
+				return [starttime, []];
 			}
 		})
 	);
 
-	// key `${day}-${slot}-${room}` → Liste der dort geplanten Prüfungen
+	// key `${starttime}-${room}` → Liste der dort geplanten Prüfungen
 	const plannedByKey: Record<string, any[]> = {};
-	for (const [k, exams] of slotResults) {
-		const [day, slot] = k.split('-');
+	for (const [starttime, exams] of slotResults) {
 		for (const e of exams) {
 			const perRoom: Record<string, { regular: number; ntas: any[] }> = {};
 			for (const pr of e.plannedRooms ?? []) {
@@ -145,7 +134,7 @@ export const load: PageServerLoad = async () => {
 				}
 			}
 			for (const rn of Object.keys(perRoom)) {
-				const mk = `${day}-${slot}-${rn}`;
+				const mk = `${starttime}-${rn}`;
 				if (!plannedByKey[mk]) plannedByKey[mk] = [];
 				plannedByKey[mk].push({
 					ancode: e.ancode,
@@ -160,9 +149,13 @@ export const load: PageServerLoad = async () => {
 		}
 	}
 
+	// Tag/Slot rein zur Anzeige/Gruppierung aus der Startzeit ableiten (starttime bleibt
+	// der Schlüssel für die Mutationen).
 	const enriched = roomRequests.map((r: any) => ({
 		...r,
-		planned: plannedByKey[`${r.day}-${r.slot}-${r.room}`] ?? []
+		day: dayNumberForTime(r.starttime, cfgDays),
+		slot: slotNumberForTime(r.starttime, cfgStarts),
+		planned: plannedByKey[`${r.starttime}-${r.room}`] ?? []
 	}));
 
 	// Für „Anfrage hinzufügen": die als Management-Request markierten Räume (cfg oben).

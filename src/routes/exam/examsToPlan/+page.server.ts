@@ -74,8 +74,7 @@ export const load: PageServerLoad = async () => {
 			preplanExams {
 				ancode
 				isFixed
-				plannedDayNumber
-				plannedSlotNumber
+				plannedStarttime
 			}
 			examDurationOverrides {
 				ancode
@@ -113,10 +112,12 @@ export const load: PageServerLoad = async () => {
 	}
 	for (const pp of data.preplanExams ?? []) {
 		if (pp.ancode == null || !pp.isFixed) continue;
-		const slot =
-			pp.plannedSlotNumber != null
-				? { dayNumber: pp.plannedDayNumber, slotNumber: pp.plannedSlotNumber }
-				: null;
+		const slot = pp.plannedStarttime
+			? {
+					dayNumber: dayNumberForTime(pp.plannedStarttime, data.semesterConfig.days),
+					slotNumber: slotNumberForTime(pp.plannedStarttime, data.semesterConfig.starttimes)
+				}
+			: null;
 		planned[pp.ancode] = planned[pp.ancode] ?? { slot, preplanned: true };
 		planned[pp.ancode].preplanned = true;
 		if (!planned[pp.ancode].slot && slot) planned[pp.ancode].slot = slot;

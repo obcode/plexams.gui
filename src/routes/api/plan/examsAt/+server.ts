@@ -79,8 +79,6 @@ export const POST: RequestHandler = async ({ request }) => {
 						}
 					}
 					slot {
-						dayNumber
-						slotNumber
 						starttime
 					}
 				}

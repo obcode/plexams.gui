@@ -34,8 +34,7 @@
 		const rooms = new Set();
 		for (const e of data.exams) {
 			if (e.examKind !== kind) continue;
-			if (e.plannedDayNumber !== slot.dayNumber || e.plannedSlotNumber !== slot.slotNumber)
-				continue;
+			if (e.plannedStarttime !== slot.starttime) continue;
 			for (const r of e.constraints?.roomConstraints?.allowedRooms ?? []) rooms.add(r);
 		}
 		return [...rooms].sort((a, b) => a.localeCompare(b));
@@ -64,10 +63,7 @@
 		return `${wd} ${d}.${mo}., ${hm} Uhr ${ds}`;
 	};
 	/** @param {any} e */
-	const slotValue = (e) =>
-		e.plannedDayNumber != null && e.plannedSlotNumber != null
-			? `${e.plannedDayNumber}-${e.plannedSlotNumber}`
-			: '';
+	const slotValue = (e) => e.plannedStarttime ?? '';
 
 	// ---- Wochen-Kalender der eingeplanten Slots ----
 	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -267,12 +263,11 @@
 		if (busy.has(e.id)) return;
 		busy = new Set(busy).add(e.id);
 		listError = '';
-		const [d, s] = value ? value.split('-').map(Number) : [null, null];
 		try {
-			const res = await fetch('/api/preplan/setPreplanExamSlot', {
+			const res = await fetch('/api/preplan/setPreplanExamTime', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ id: e.id, dayNumber: d, slotNumber: s })
+				body: JSON.stringify({ id: e.id, starttime: value || null })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -675,8 +670,7 @@
 				const w = weeks.get(key);
 				if (!w.byDay.has(wd)) w.byDay.set(wd, []);
 				const slotExams = (data.exams ?? []).filter(
-					(/** @type {any} */ e) =>
-						e.plannedDayNumber === s.dayNumber && e.plannedSlotNumber === s.slotNumber
+					(/** @type {any} */ e) => e.plannedStarttime === s.starttime
 				);
 				w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
 			}
@@ -693,7 +687,7 @@
 		})()
 	);
 	let unplanned = $derived(
-		(data.exams ?? []).filter((/** @type {any} */ e) => e.plannedDayNumber == null)
+		(data.exams ?? []).filter((/** @type {any} */ e) => e.plannedStarttime == null)
 	);
 	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
 	let catRank = $derived(
@@ -1221,7 +1215,7 @@
 									>
 										<option value="" class="text-warning">— nicht zugeordnet</option>
 										{#each data.slots as s}
-											<option value="{s.dayNumber}-{s.slotNumber}">{slotLabel(s)}</option>
+											<option value={s.starttime}>{slotLabel(s)}</option>
 										{/each}
 									</select>
 									{#if slotValue(e) && !e.isFixed}

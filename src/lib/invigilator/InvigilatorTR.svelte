@@ -1,6 +1,7 @@
 <script>
 	import InvigilatorDays from './InvigilatorDays.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
+	import { dayNumberForTime } from '$lib/slot/derive';
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} semesterConfig
@@ -104,8 +105,10 @@
 				(/** @type {number} */ n) => !excludedDayNums.has(n)
 			),
 			...(invigilator.todos?.invigilations ?? [])
-				.map((/** @type {{ slot?: { dayNumber: number } }} */ inv) => inv.slot?.dayNumber)
-				.filter((/** @type {number | undefined} */ n) => n != null)
+				.map((/** @type {{ slot?: { starttime: string } }} */ inv) =>
+					dayNumberForTime(inv.slot?.starttime, semesterConfig.days)
+				)
+				.filter((/** @type {number} */ n) => n > 0)
 		])
 	]
 		.sort((/** @type {number} */ a, /** @type {number} */ b) => a - b)

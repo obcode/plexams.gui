@@ -148,7 +148,7 @@
 			text
 			validation {
 				name ok errorCount warningCount infoCount skipped skipReason
-				findings { level message ancode relatedAncodes room day slot invigilatorID studentMtknr }
+				findings { level message ancode relatedAncodes room starttime invigilatorID studentMtknr }
 			}`;
 		if (!spec.length) {
 			return { query: `subscription { ${def.key} { ${fields} } }`, variables: {} };

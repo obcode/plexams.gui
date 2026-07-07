@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -11,16 +12,14 @@ export const load: PageServerLoad = async () => {
 					date
 				}
 				mucDaiSlots {
-					dayNumber
-					slotNumber
+					starttime
 				}
 				starttimes {
 					number
 					start
 				}
 				forbiddenSlots {
-					dayNumber
-					slotNumber
+					starttime
 				}
 			}
 			roomsForSlots {
@@ -264,7 +263,8 @@ export const load: PageServerLoad = async () => {
 
 	if (semesterConfig.forbiddenSlots) {
 		for (const slot of semesterConfig.forbiddenSlots) {
-			const key = `${slot.dayNumber},${slot.slotNumber}`;
+			// Slot hat nur noch starttime → Tag/Slot lokal ableiten für den Grid-Key.
+			const key = `${dayNumberForTime(slot.starttime, semesterConfig.days)},${slotNumberForTime(slot.starttime, semesterConfig.starttimes)}`;
 			globalSlotStatus.set(key, 'forbidden');
 		}
 	}
