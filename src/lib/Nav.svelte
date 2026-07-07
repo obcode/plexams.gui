@@ -243,41 +243,53 @@
 	});
 
 	type MenuLink = { href: string; label: string };
-	// Ein Menüeintrag ist entweder ein Link oder eine Abschnittsüberschrift (Trenner).
-	type MenuItem = MenuLink | { section: string };
+	// Eine Untergruppe (Fly-out): eigener Titel mit eigenen Einträgen.
+	type MenuGroup = { group: string; items: MenuItem[] };
+	// Ein Menüeintrag ist ein Link, eine Abschnittsüberschrift (Trenner) oder eine Untergruppe.
+	type MenuItem = MenuLink | { section: string } | MenuGroup;
 	type Menu = { label: string; items: MenuItem[] };
 
 	const isLink = (i: MenuItem): i is MenuLink => 'href' in i;
+	const isGroup = (i: MenuItem): i is MenuGroup => 'group' in i;
+
+	// Alle Links (auch aus Untergruppen) flach — für aktive-Pfad-Ermittlung.
+	const flatLinks = (items: MenuItem[]): MenuLink[] =>
+		items.flatMap((i) => (isLink(i) ? [i] : isGroup(i) ? flatLinks(i.items) : []));
 
 	const menus: Menu[] = [
 		{
-			label: 'Stammdaten',
+			label: 'Daten',
 			items: [
-				{ href: '/studyprograms', label: '🎓 Studiengänge' },
-				{ href: '/rooms', label: '🚪 Räume' },
-				{ href: '/nta/all', label: '♿ NTAs' },
-				{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
-			]
-		},
-		{
-			label: 'Semesterdaten',
-			items: [
-				{ section: 'ZPA' },
-				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
-				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
-				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
-				{ section: 'Primuss' },
-				{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
-				{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
-				{ href: '/students', label: '🎓 Studierende' },
-				{ section: 'Weitere' },
-				{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
-				{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
-				{ href: '/nta/semester', label: '♿ NTA' },
-				{ href: '/log', label: '🧾 Mutations-Log' },
-				{ section: 'Konfiguration' },
-				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
-				{ href: '/config/new', label: '➕ Neues Semester anlegen' }
+				{
+					group: 'Stammdaten',
+					items: [
+						{ href: '/studyprograms', label: '🎓 Studiengänge' },
+						{ href: '/rooms', label: '🚪 Räume' },
+						{ href: '/nta/all', label: '♿ NTAs' },
+						{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
+					]
+				},
+				{
+					group: 'Semesterdaten',
+					items: [
+						{ section: 'ZPA' },
+						{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
+						{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
+						{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
+						{ section: 'Primuss' },
+						{ href: '/primuss/mucdai', label: '💻 MUC.DAI-Prüfungen' },
+						{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
+						{ href: '/students', label: '🎓 Studierende' },
+						{ section: 'Weitere' },
+						{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
+						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
+						{ href: '/nta/semester', label: '♿ NTA' },
+						{ href: '/log', label: '🧾 Mutations-Log' },
+						{ section: 'Konfiguration' },
+						{ href: '/config', label: '⚙️ Semester-Konfiguration' },
+						{ href: '/config/new', label: '➕ Neues Semester anlegen' }
+					]
+				}
 			]
 		},
 		{
@@ -352,14 +364,14 @@
 	});
 	let activeHref = $derived(
 		menus
-			.flatMap((m) => m.items.filter(isLink).map((i) => i.href))
+			.flatMap((m) => flatLinks(m.items).map((i) => i.href))
 			.reduce(
 				(best, href) => (matchLen(href, pathname) > matchLen(best, pathname) ? href : best),
 				''
 			)
 	);
 	let activeMenu = $derived(
-		menus.find((m) => m.items.some((i) => isLink(i) && i.href === activeHref))?.label ?? ''
+		menus.find((m) => flatLinks(m.items).some((i) => i.href === activeHref))?.label ?? ''
 	);
 
 	const themes = [
@@ -453,6 +465,45 @@
 											: ''}"
 										href={item.href}>{item.label}</a
 									>
+								</li>
+							{:else if isGroup(item)}
+								{@const groupActive = item.items.some((s) => isLink(s) && s.href === activeHref)}
+								<li class="group/flyout relative">
+									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+									<div
+										tabindex="0"
+										role="button"
+										class="rounded-lg {groupActive ? 'font-medium text-primary' : ''}"
+									>
+										<span class="flex-1">{item.group}</span>
+										<svg
+											class="h-3 w-3 opacity-50"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											stroke-width="2.5"
+										>
+											<path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+										</svg>
+									</div>
+									<ul
+										class="invisible absolute top-0 left-full z-[60] max-h-[75vh] w-64 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 opacity-0 shadow-xl transition-opacity !ml-1 before:!hidden group-focus-within/flyout:visible group-focus-within/flyout:opacity-100 group-hover/flyout:visible group-hover/flyout:opacity-100"
+									>
+										{#each item.items as sub}
+											{#if isLink(sub)}
+												<li>
+													<a
+														class="rounded-lg {sub.href === activeHref
+															? 'bg-primary/15 font-medium text-primary'
+															: ''}"
+														href={sub.href}>{sub.label}</a
+													>
+												</li>
+											{:else if !isGroup(sub)}
+												<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{sub.section}</li>
+											{/if}
+										{/each}
+									</ul>
 								</li>
 							{:else}
 								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{item.section}</li>
@@ -689,6 +740,33 @@
 													: ''}
 												href={item.href}>{item.label}</a
 											>
+										</li>
+									{:else if isGroup(item)}
+										{@const groupActive = item.items.some(
+											(s) => isLink(s) && s.href === activeHref
+										)}
+										<li>
+											<details open={groupActive}>
+												<summary class="font-medium {groupActive ? 'text-primary' : ''}"
+													>{item.group}</summary
+												>
+												<ul>
+													{#each item.items as sub}
+														{#if isLink(sub)}
+															<li>
+																<a
+																	class={sub.href === activeHref
+																		? 'bg-primary/15 font-medium text-primary'
+																		: ''}
+																	href={sub.href}>{sub.label}</a
+																>
+															</li>
+														{:else if !isGroup(sub)}
+															<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{sub.section}</li>
+														{/if}
+													{/each}
+												</ul>
+											</details>
 										</li>
 									{:else}
 										<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{item.section}</li>
