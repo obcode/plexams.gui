@@ -1,13 +1,17 @@
 ---
 name: slot-free-migration
-description: "backend is moving from slot-based to a time-based (slot-free) model; GUI config forms migrated first, Terminplan/Räume/Aufsichten still pending"
+description: "backend moved from a slot-based to a time-based (slot-free) model; GUI migration COMPLETE (config, Terminplan, Räume, Aufsichten, Preplan, RoomRequests, Validation)"
 metadata: 
   node_type: memory
   type: project
   originSessionId: e1615a78-27a3-4756-ba83-10325bc291fa
 ---
 
-The plexams.go backend is being reworked from a slot-based to a **time-based (slot-free)** scheduling model, in incremental steps.
+The plexams.go backend was reworked from a slot-based to a **time-based (slot-free)** scheduling model, in incremental steps. **The GUI migration is now COMPLETE** (steps 1–4 below).
+
+**Step 4 (done in GUI, 2026-07-07 — "D-Rest"):** the `Slot` type lost `dayNumber`/`slotNumber` — **only `starttime: Time!` remains**. Every consumer now derives day/slot locally from starttime via [$lib/slot/derive.ts] or renders straight from the time: `semesterConfig.slots`/`mucDaiSlots`/`forbiddenSlots`, `allowedSlots`/`awkwardSlots`, `Invigilation.slot` (InvigilatorDays/TR, invigilation/planning), conflict `slot1`/`slot2` (ExamConflictsPanel `fmtSlot` uses starttime). Also: Preplan (`setPreplanExamSlot`→`setPreplanExamTime(id, starttime)`, `PreplanExam.plannedDay/SlotNumber`→`plannedStarttime`, `PreplanSlotNeed`→starttime only; the /preplan slot dropdown/calendar/assignment key by starttime). RoomRequests (`RoomRequest`/`RoomRequestPreview` day/slot→`starttime`; `addRoomRequest`/`setRoomRequestApproved`/`setRoomRequestActive`/`updateRoomRequestTime` take `starttime`; day/slot only derived for display). ValidationFinding day/slot→`starttime` (ValidatorCard shows the formatted time). `api/preplan/setPreplanExamSlot` folder renamed to `setPreplanExamTime`. Grid rendering: columns from `semesterConfig.days[].date`, rows from `starttimes[].start`; `ExamDay.number`/`Starttime.number` stay as render ordinals.
+
+**Nothing slot-based remains** except `ExamScheduleDiagnostics` (generation report KPIs, still slot-based by design) and `RoomsForSlot` (kept day+slot+starttime; `roomsForSlots` plural unchanged).
 
 **Step 1 (done in GUI, 2026-07-06)** — only the SemesterConfig / GenerationConfig **forms** were adapted to the new GraphQL interface:
 - Input `slots: [String!]!` → `startTimes: [String!]!` (label „Anfangszeiten").
@@ -22,7 +26,7 @@ The plexams.go backend is being reworked from a slot-based to a **time-based (sl
 
 **Step 3 (done in GUI, 2026-07-07 — "D1+D2"):** the whole planning surface (Terminplan, Räume, Aufsichten) went time-based. The 5 output types **PlanEntry / PlannedRoom / UnplacedExam / BlockedRoom / PrePlannedInvigilation lost day/slot — only `starttime` remains**. Slot queries/mutations renamed to `*At(starttime)` / `*AtTimes(starttimes:[Time!])`: examsAt, preExamsAt, plannedRoomNamesAt, roomsAt, roomsWithFreeSeatsAt, roomsWithInvigilationsAt, invigilator(room,starttime), invigilatorsForDay(date:Time!), blockRoomAt/unblockRoomAt/blockRoomAtTimes/unblockRoomAtTimes, prePlanInvigilation(starttime)/removePrePlannedInvigilation(starttime)/prePlanInvigilationAt. `SlotInput` dropped; `RoomsForSlot` gained starttime (kept day/slot). Internal `/api/**` route paths were kept stable (only the GraphQL inside + request bodies changed). New helper **[$lib/slot/derive.ts]** (`dayNumberForTime`/`slotNumberForTime`/`inPeriod`, tested) derives grid day/slot from a starttime; clients build the absolute starttime via `combineStarttime(day.date, time.start, day.date)`.
 
-**Still slot-based (untouched):** the `Slot` type (allowedSlots/awkwardSlots, `SemesterConfig.slots`/`mucDaiSlots`, conflict slot1/slot2), `Invigilation.slot`, preplan (`preplanExams.plannedDay/SlotNumber`, `preplanOverview.slots`, `setPreplanExamSlot`), and `roomsForSlots` (plural). Don't rename those. `ExamScheduleDiagnostics` stays slot-based too.
+_(As of step 3 the Slot type / preplan / roomRequests were still slot-based; **step 4 below migrated all of them** — this paragraph is kept only for history.)_
 
 **Timezone assumption:** derivation/`combineStarttime` treat Time strings as carrying the backend's local (Berlin) offset — HH:MM is read literally from the ISO string (as `minutesOfDay` already did). If the backend ever emits UTC `Z` times, slot-number derivation would mismatch; verify against a live backend.
 
