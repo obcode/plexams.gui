@@ -1857,6 +1857,7 @@ export type PrePlannedInvigilation = {
   isReserve: Scalars['Boolean']['output'];
   roomName?: Maybe<Scalars['String']['output']>;
   slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type PrePlannedRoom = {
