@@ -3,11 +3,11 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { day } = await request.json();
+	const { date } = await request.json();
 	return gqlProxy(
 		gql`
-			query ($day: Int!) {
-				invigilatorsForDay(day: $day) {
+			query ($date: Time!) {
+				invigilatorsForDay(date: $date) {
 					want {
 						teacher {
 							fullname
@@ -73,6 +73,6 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			}
 		`,
-		{ day }
+		{ date }
 	);
 };

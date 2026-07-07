@@ -3,13 +3,13 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { room, slots } = await request.json();
+	const { room, starttimes } = await request.json();
 
 	const mutation = gql`
-		mutation ($room: String!, $slots: [SlotInput!]!) {
-			unblockRoomForSlots(room: $room, slots: $slots)
+		mutation ($room: String!, $starttimes: [Time!]!) {
+			unblockRoomAtTimes(room: $room, starttimes: $starttimes)
 		}
 	`;
 
-	return gqlProxy(mutation, { room, slots });
+	return gqlProxy(mutation, { room, starttimes });
 };

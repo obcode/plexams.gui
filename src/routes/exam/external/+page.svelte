@@ -154,7 +154,7 @@
 						</thead>
 						<tbody>
 							{#each group.exams as exam (exam.sourceLabel + '-' + exam.ancode)}
-								<ExternalExamRow {exam} onsaved={onSaved} />
+								<ExternalExamRow {exam} days={data.days} onsaved={onSaved} />
 							{/each}
 						</tbody>
 					</table>

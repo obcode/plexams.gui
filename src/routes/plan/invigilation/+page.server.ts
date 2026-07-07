@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { combineStarttime } from '$lib/exam/setExamTime';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -49,8 +50,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	`;
 
 	const slotQuery = gql`
-		query ($day: Int!, $time: Int!) {
-			roomsWithInvigilationsForSlot(day: $day, time: $time) {
+		query ($starttime: Time!) {
+			roomsWithInvigilationsAt(starttime: $starttime) {
 				reserve {
 					shortname
 					id
@@ -90,10 +91,9 @@ export const load: PageServerLoad = async ({ url }) => {
 				const slots = await Promise.all(
 					semesterConfig.starttimes.map(async (time: { number: number; start: string }) => {
 						const data = await request<any>(env.PLEXAMS_SERVER, slotQuery, {
-							day: day.number,
-							time: time.number
+							starttime: combineStarttime(day.date, time.start, day.date)
 						});
-						return { time, slot: data.roomsWithInvigilationsForSlot };
+						return { time, slot: data.roomsWithInvigilationsAt };
 					})
 				);
 				return { ...day, slots };

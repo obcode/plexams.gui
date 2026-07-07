@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -23,8 +24,7 @@ export const load: PageServerLoad = async () => {
 				seats
 			}
 			plannedRooms {
-				day
-				slot
+				starttime
 				prePlanned
 				room {
 					name
@@ -39,15 +39,13 @@ export const load: PageServerLoad = async () => {
 			}
 			unplacedExams {
 				ancode
-				day
-				slot
+				starttime
 				mtknrs
 				ntaMtknr
 			}
 			blockedRooms {
 				room
-				day
-				slot
+				starttime
 				reason
 			}
 			planningState {
@@ -57,6 +55,14 @@ export const load: PageServerLoad = async () => {
 	`;
 
 	const data = await request<any>(env.PLEXAMS_SERVER, query);
+
+	// Zeitbasiert: PlannedRoom/UnplacedExam/BlockedRoom liefern nur noch starttime.
+	// day/slot werden hier lokal aus der Startzeit + semesterConfig abgeleitet, damit
+	// die (day-slot)-Keys/Anzeigen unverändert bleiben.
+	const cfgDays = data.semesterConfig?.days ?? [];
+	const cfgStarts = data.semesterConfig?.starttimes ?? [];
+	const dayOf = (st: string) => dayNumberForTime(st, cfgDays);
+	const slotOf = (st: string) => slotNumberForTime(st, cfgStarts);
 
 	// Nicht zugeordnete Studierende (kommen nicht mehr als „No Room" aus
 	// plannedRooms, sondern aus unplacedExams). Modul/Prüfer per ancode joinen.
@@ -70,8 +76,8 @@ export const load: PageServerLoad = async () => {
 				ancode: u.ancode,
 				module: ex?.zpaExam?.module ?? '',
 				mainExamer: ex?.zpaExam?.mainExamer ?? '',
-				day: u.day ?? null,
-				slot: u.slot ?? null,
+				day: dayOf(u.starttime),
+				slot: slotOf(u.starttime),
 				count: (u.mtknrs ?? []).length,
 				nta: u.ntaMtknr != null
 			};
@@ -85,20 +91,22 @@ export const load: PageServerLoad = async () => {
 	// Set für die „nach Räumen"-Übersicht: welcher Raum ist in welchem day-slot
 	// geplant. (devalue serialisiert Sets über die SvelteKit-Grenze.)
 	const plannedRooms = new Set(
-		(data.plannedRooms ?? []).map((r: any) => `${r.day}-${r.slot}-${r.room.name}`)
+		(data.plannedRooms ?? []).map(
+			(r: any) => `${dayOf(r.starttime)}-${slotOf(r.starttime)}-${r.room.name}`
+		)
 	);
 
 	// vorgeplante (gepinnte) Räume je Slot — für den Hinweis beim Sperren.
 	const prePlannedRooms = new Set(
 		(data.plannedRooms ?? [])
 			.filter((r: any) => r.prePlanned)
-			.map((r: any) => `${r.day}-${r.slot}-${r.room.name}`)
+			.map((r: any) => `${dayOf(r.starttime)}-${slotOf(r.starttime)}-${r.room.name}`)
 	);
 
 	// Wie oft (in wie vielen Slots) ist jeder Raum geplant?
 	const roomSlotSets: Record<string, Set<string>> = {};
 	for (const r of data.plannedRooms ?? []) {
-		(roomSlotSets[r.room.name] ??= new Set()).add(`${r.day}-${r.slot}`);
+		(roomSlotSets[r.room.name] ??= new Set()).add(`${dayOf(r.starttime)}-${slotOf(r.starttime)}`);
 	}
 	const roomCounts: Record<string, number> = {};
 	for (const [name, set] of Object.entries(roomSlotSets)) roomCounts[name] = set.size;
@@ -119,7 +127,12 @@ export const load: PageServerLoad = async () => {
 		unplaced,
 		totalUnplaced,
 		unplacedAncodes,
-		blockedRooms: data.blockedRooms ?? [],
+		blockedRooms: (data.blockedRooms ?? []).map((b: any) => ({
+			room: b.room,
+			day: dayOf(b.starttime),
+			slot: slotOf(b.starttime),
+			reason: b.reason
+		})),
 		roomsBlocked: (data.planningState?.blockedAreas ?? []).includes('ROOMS')
 	};
 };

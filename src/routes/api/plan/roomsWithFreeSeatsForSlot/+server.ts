@@ -3,11 +3,11 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { day, time } = await request.json();
+	const { starttime } = await request.json();
 
 	const query = gql`
-		query ($day: Int!, $time: Int!) {
-			roomsWithFreeSeatsForSlot(day: $day, time: $time) {
+		query ($starttime: Time!) {
+			roomsWithFreeSeatsAt(starttime: $starttime) {
 				roomName
 				seats
 				usedSeats
@@ -26,5 +26,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	`;
 
-	return gqlProxy(query, { day, time });
+	return gqlProxy(query, { starttime });
 };

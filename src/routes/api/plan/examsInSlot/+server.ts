@@ -3,11 +3,11 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { day, time } = await request.json();
+	const { starttime } = await request.json();
 	return gqlProxy(
 		gql`
-			query ($day: Int!, $time: Int!) {
-				examsInSlot(day: $day, time: $time) {
+			query ($starttime: Time!) {
+				examsAt(starttime: $starttime) {
 					exam {
 						ancode
 						zpaExam {
@@ -86,6 +86,6 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			}
 		`,
-		{ day, time }
+		{ starttime }
 	);
 };

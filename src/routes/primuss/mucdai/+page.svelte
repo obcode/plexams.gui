@@ -2,8 +2,15 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 
 	let { data } = $props();
+
+	// Zeitbasiert: planEntry hat nur noch starttime; Tag/Slot lokal ableiten.
+	/** @param {string | null | undefined} iso */
+	const dNum = (iso) => dayNumberForTime(iso, data.semesterConfig?.days);
+	/** @param {string | null | undefined} iso */
+	const sNum = (iso) => slotNumberForTime(iso, data.semesterConfig?.starttimes);
 
 	let programs = $derived(
 		[...new Set(data.mucdaiExams.map((/** @type {any} */ e) => e.program))].sort(
@@ -454,9 +461,9 @@
 							<td class="text-sm tabular-nums">
 								{#if g.planEntry?.starttime}
 									{dateTime(g.planEntry.starttime)}
-									{#if g.planEntry.slotNumber}
+									{#if dNum(g.planEntry.starttime)}
 										<span class="text-base-content/50"
-											>({g.planEntry.dayNumber}/{g.planEntry.slotNumber})</span
+											>({dNum(g.planEntry.starttime)}/{sNum(g.planEntry.starttime)})</span
 										>
 									{:else}
 										<span class="text-base-content/50" title="Zeit außerhalb des Prüfungszeitraums"

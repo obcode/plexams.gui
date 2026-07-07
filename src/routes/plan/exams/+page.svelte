@@ -14,6 +14,7 @@
 	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { combineStarttime, isStandardStarttime } from '$lib/exam/setExamTime';
+	import { inPeriod } from '$lib/slot/derive';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	let { data } = $props();
@@ -328,9 +329,9 @@
 		(() => {
 			const items = [];
 			for (const e of plannedFiltered) {
-				// Nur echte Slots (1-basiert): Out-of-Period-Prüfungen (Slot 0/0) haben zwar
-				// eine starttime, gehören aber mangels Slot nicht in den Plan.
-				if (!e.planEntry?.slotNumber) continue;
+				// Nur Prüfungen innerhalb des Zeitraums: Out-of-Period-Prüfungen haben zwar
+				// eine starttime, gehören aber mangels echtem Prüfungstag nicht in den Plan.
+				if (!inPeriod(e.planEntry?.starttime, data.semesterConfig?.days)) continue;
 				const iso = e.planEntry?.starttime;
 				const dt = dateObj(iso);
 				const startMin = minutesOfDay(iso);
@@ -432,13 +433,13 @@
 				});
 	};
 
-	// „von anderen FKs geplant" OHNE echten Slot: Slot 0/0 (out-of-period, Zeit in
-	// starttime) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen bereits
-	// im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
+	// „von anderen FKs geplant" OHNE echten Slot: out-of-period (Zeit in starttime,
+	// aber kein Prüfungstag) oder noch ganz ohne Zeit. Die MIT echtem Slot erscheinen
+	// bereits im Raster/in der Zeit-Ansicht und werden hier nicht dupliziert.
 	let otherFkNoSlot = $derived(
 		(data.otherFkExams ?? [])
 			.filter(
-				(/** @type {any} */ e) => !(e.planEntry?.dayNumber > 0 && e.planEntry?.slotNumber > 0)
+				(/** @type {any} */ e) => !inPeriod(e.planEntry?.starttime, data.semesterConfig?.days)
 			)
 			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode)
 	);

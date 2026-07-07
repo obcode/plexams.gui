@@ -128,8 +128,7 @@ export const load: PageServerLoad = async () => {
 				studentRegsCount
 				maxDuration
 				planEntry {
-					dayNumber
-					slotNumber
+					starttime
 					ancode
 					locked
 					phaseFixed
@@ -179,8 +178,6 @@ export const load: PageServerLoad = async () => {
 					}
 				}
 				planEntry {
-					dayNumber
-					slotNumber
 					starttime
 					locked
 					phaseFixed
@@ -224,8 +221,6 @@ export const load: PageServerLoad = async () => {
 							notPlannedByMeInFK
 						}
 						planEntry {
-							dayNumber
-							slotNumber
 							starttime
 						}
 						studentRegsCount

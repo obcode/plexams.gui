@@ -4,11 +4,11 @@ import { NTA_FIELDS } from '$lib/gql/fragments';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	const { day, time } = await request.json();
+	const { starttime } = await request.json();
 	return gqlProxy(
 		gql`
-			query ($day: Int!, $time: Int!) {
-				examsInSlot(day: $day, time: $time) {
+			query ($starttime: Time!) {
+				examsAt(starttime: $starttime) {
 					ancode
 					zpaExam {
 						zpaID
@@ -86,8 +86,6 @@ export const POST: RequestHandler = async ({ request }) => {
 					}
 					maxDuration
 					planEntry {
-						dayNumber
-						slotNumber
 						starttime
 						external
 						ancode
@@ -117,6 +115,6 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			}
 		`,
-		{ day, time }
+		{ starttime }
 	);
 };

@@ -3,6 +3,7 @@
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
+	import { combineStarttime } from '$lib/exam/setExamTime';
 	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 	import { slide } from 'svelte/transition';
@@ -154,8 +155,9 @@
 		blockBusy = new Set(blockBusy).add(key);
 		blockError = null;
 		try {
+			const starttime = combineStarttime(dayDateById[day], slotStartById[slot], dayDateById[day]);
 			const url = isBlocked ? '/api/room/unblockRoomForSlot' : '/api/room/blockRoomForSlot';
-			const body = isBlocked ? { room, day, slot } : { room, day, slot, reason };
+			const body = isBlocked ? { room, starttime } : { room, starttime, reason };
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -199,9 +201,11 @@
 		blockBusy = new Set(blockBusy).add(dayKey);
 		blockError = null;
 		try {
-			const slots = allSlots.map((/** @type {number} */ s) => ({ day, slot: s }));
+			const starttimes = allSlots.map((/** @type {number} */ s) =>
+				combineStarttime(dayDateById[day], slotStartById[s], dayDateById[day])
+			);
 			const url = allBlocked ? '/api/room/unblockRoomForSlots' : '/api/room/blockRoomForSlots';
-			const body = allBlocked ? { room, slots } : { room, slots, reason };
+			const body = allBlocked ? { room, starttimes } : { room, starttimes, reason };
 			const res = await fetch(url, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
@@ -423,7 +427,9 @@
 													<div class="text-xs text-base-content/60">{time.start}</div>
 												</div>
 												{#if showRooms === 'all'}
-													<RoomNamesInSlot day={day.number} time={time.number} />
+													<RoomNamesInSlot
+														starttime={combineStarttime(day.date, time.start, day.date)}
+													/>
 												{/if}
 											</div>
 											<div class="col-span-12 sm:col-span-10">
@@ -431,6 +437,7 @@
 													<ExamsForRoomPlanning
 														day={day.number}
 														time={time.number}
+														starttime={combineStarttime(day.date, time.start, day.date)}
 														{showOnlyExamsWithNTAs}
 														{details}
 														{showRooms}

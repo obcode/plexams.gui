@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
+import { combineStarttime } from '$lib/exam/setExamTime';
 import type { PageServerLoad } from './$types';
 
 // Gebäudemanagement-Raumanforderungen (nur diese; Anny/T-Räume haben eine
@@ -33,11 +34,52 @@ export const load: PageServerLoad = async () => {
 		return m ? `${m[1]}:${m[2]}` : '';
 	};
 
+	// Semester-Config (Tage/Anfangszeiten) zuerst laden — für den return und um die
+	// absolute Startzeit je (day, slot) für die zeitbasierte examsAt-Query zu bauen.
+	const cfg = await request<any>(
+		env.PLEXAMS_SERVER,
+		gql`
+			query {
+				semesterConfig {
+					days {
+						number
+						date
+					}
+					starttimes {
+						number
+						start
+					}
+				}
+				rooms {
+					name
+					requestWith
+					deactivated
+				}
+				planningState {
+					phases {
+						conditions {
+							key
+							done
+						}
+					}
+				}
+			}
+		`
+	);
+	const dateByDay = new Map<number, string>(
+		(cfg.semesterConfig?.days ?? []).map((d: any) => [d.number, d.date])
+	);
+	const startBySlot = new Map<number, string>(
+		(cfg.semesterConfig?.starttimes ?? []).map((t: any) => [t.number, t.start])
+	);
+	const slotStarttime = (day: number, slot: number) =>
+		combineStarttime(dateByDay.get(day), startBySlot.get(slot), dateByDay.get(day));
+
 	// Belegung pro (day, slot) einmal laden.
 	const slotKeys = [...new Set(roomRequests.map((r: any) => `${r.day}-${r.slot}`))] as string[];
 	const slotQuery = gql`
-		query ($day: Int!, $time: Int!) {
-			examsInSlot(day: $day, time: $time) {
+		query ($starttime: Time!) {
+			examsAt(starttime: $starttime) {
 				ancode
 				zpaExam {
 					module
@@ -69,8 +111,10 @@ export const load: PageServerLoad = async () => {
 		slotKeys.map(async (k): Promise<[string, any[]]> => {
 			const [day, slot] = k.split('-').map(Number);
 			try {
-				const d = await request<any>(env.PLEXAMS_SERVER, slotQuery, { day, time: slot });
-				return [k, d.examsInSlot ?? []];
+				const d = await request<any>(env.PLEXAMS_SERVER, slotQuery, {
+					starttime: slotStarttime(day, slot)
+				});
+				return [k, d.examsAt ?? []];
 			} catch {
 				return [k, []];
 			}
@@ -121,39 +165,7 @@ export const load: PageServerLoad = async () => {
 		planned: plannedByKey[`${r.day}-${r.slot}-${r.room}`] ?? []
 	}));
 
-	// Für „Anfrage hinzufügen": alle Prüfungstage, Slot-Startzeiten und die
-	// als Management-Request markierten Räume.
-	const cfg = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				semesterConfig {
-					days {
-						number
-						date
-					}
-					starttimes {
-						number
-						start
-					}
-				}
-				rooms {
-					name
-					requestWith
-					deactivated
-				}
-				planningState {
-					phases {
-						conditions {
-							key
-							done
-						}
-					}
-				}
-			}
-		`
-	);
-
+	// Für „Anfrage hinzufügen": die als Management-Request markierten Räume (cfg oben).
 	const managementRooms = (cfg.rooms ?? [])
 		.filter((r: any) => r.requestWith === 'MANAGEMENT' && !r.deactivated)
 		.map((r: any) => r.name)

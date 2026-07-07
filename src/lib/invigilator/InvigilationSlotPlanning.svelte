@@ -3,26 +3,26 @@
 	import { onMount } from 'svelte';
 
 	let {
-		day,
 		time,
+		starttime,
 		details,
 		selectedInvigilator
-	}: { day: any; time: any; details: boolean; selectedInvigilator: any } = $props();
+	}: { time: any; starttime: string; details: boolean; selectedInvigilator: any } = $props();
 
 	let slot = $state<any>(undefined);
 	let noRooms = $state(true);
 	let loading = $state(true);
 
-	async function fetchSlot(day: any, time: any) {
+	async function fetchSlot(starttime: string) {
 		const response = await fetch('/api/plan/roomsWithInvigilationsForSlot', {
 			method: 'POST',
-			body: JSON.stringify({ day, time }),
+			body: JSON.stringify({ starttime }),
 			headers: {
 				'content-type': 'application/json'
 			}
 		});
 		let data = await response.json();
-		slot = data.roomsWithInvigilationsForSlot;
+		slot = data.roomsWithInvigilationsAt;
 		noRooms = !slot || !slot.roomsWithInvigilators || slot.roomsWithInvigilators.length == 0;
 		loading = false;
 	}
@@ -35,7 +35,7 @@
 	});
 
 	onMount(() => {
-		fetchSlot(day, time.number);
+		fetchSlot(starttime);
 	});
 </script>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
+	import { combineStarttime } from '$lib/exam/setExamTime';
 
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 	let {
@@ -34,13 +35,13 @@
 	async function fetchExams() {
 		const response = await fetch('/api/slot/examsInSlot', {
 			method: 'POST',
-			body: JSON.stringify({ day: day.number, time: time.number }),
+			body: JSON.stringify({ starttime: combineStarttime(day.date, time.start, day.date) }),
 			headers: {
 				'content-type': 'application/json'
 			}
 		});
 		let data = await response.json();
-		exams = data.examsInSlot;
+		exams = data.examsAt;
 		countIt();
 	}
 

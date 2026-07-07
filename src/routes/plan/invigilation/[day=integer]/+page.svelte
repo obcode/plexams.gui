@@ -8,6 +8,11 @@
 	let selectedInvigilator = $state(0);
 	let details = $state(true);
 
+	// absolute Datum/Zeit des angezeigten Tages (für die zeitbasierten Queries)
+	const dayDate = $derived(
+		data.semesterConfig?.days?.find((d: any) => d.number == data.day)?.date ?? null
+	);
+
 	async function handleSelect(detail: { selectedInvigilator: any }) {
 		selectedInvigilator = 0;
 		selectedInvigilator = detail.selectedInvigilator;
@@ -56,7 +61,7 @@
 	<div class="grid grid-cols-12 gap-4">
 		<div class="col-span-2">
 			<InvigilatorsForDay
-				day={data.day}
+				date={dayDate}
 				{selectedInvigilator}
 				onselected={handleSelect}
 				onunselected={handleUnselect}

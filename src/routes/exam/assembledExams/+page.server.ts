@@ -103,8 +103,6 @@ export const load: PageServerLoad = async () => {
 				}
 				maxDuration
 				planEntry {
-					dayNumber
-					slotNumber
 					ancode
 					locked
 					starttime

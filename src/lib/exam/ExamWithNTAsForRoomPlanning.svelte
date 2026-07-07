@@ -11,6 +11,7 @@
 	 * @property {boolean} [dimOthers] - bei Raumauswahl: andere Räume/Prüfungen gedimmt mit anzeigen
 	 * @property {number | null} [day] - Tag dieser Karte (Raum-Vorplanung, freie Plätze pro Slot)
 	 * @property {number | null} [time] - Slot dieser Karte
+	 * @property {string | null} [starttime] - absolute Startzeit dieses Slots (für roomsWithFreeSeatsAt)
 	 * @property {boolean} [showOnlyWithoutRoom] - nur Prüfungen anzeigen, die (noch) keinen Raum haben
 	 * @property {boolean} [highlightNotPrePlanned] - nicht fixierte (nicht vorgeplante) Räume hervorheben, fixierte gedimmt
 	 * @property {Record<string, number>} [prePlannedSeats] - fix vorgeplante Platzzahlen je „ancode|raum|mtknr"
@@ -26,6 +27,7 @@
 		dimOthers = false,
 		day = null,
 		time = null,
+		starttime = null,
 		showOnlyWithoutRoom = false,
 		highlightNotPrePlanned = false,
 		prePlannedSeats = {},
@@ -165,11 +167,11 @@
 			const res = await fetch('/api/plan/roomsWithFreeSeatsForSlot', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ day, time })
+				body: JSON.stringify({ starttime })
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
-			slotRooms = d.roomsWithFreeSeatsForSlot ?? [];
+			slotRooms = d.roomsWithFreeSeatsAt ?? [];
 		} catch (e) {
 			pickError = e instanceof Error ? e.message : String(e);
 			slotRooms = [];

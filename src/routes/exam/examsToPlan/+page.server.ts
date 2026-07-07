@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '$lib/gql/fragments';
 import type { PageServerLoad } from './$types';
 
@@ -67,8 +68,7 @@ export const load: PageServerLoad = async () => {
 			plannedExams {
 				ancode
 				planEntry {
-					dayNumber
-					slotNumber
+					starttime
 				}
 			}
 			preplanExams {
@@ -102,8 +102,13 @@ export const load: PageServerLoad = async () => {
 		{ slot: { dayNumber: number; slotNumber: number } | null; preplanned: boolean }
 	> = {};
 	for (const pe of data.plannedExams ?? []) {
-		if (pe.planEntry && pe.planEntry.slotNumber != null) {
-			planned[pe.ancode] = { slot: pe.planEntry, preplanned: true };
+		if (pe.planEntry?.starttime) {
+			// Zeitbasiert: Tag/Slot aus starttime ableiten (day/slot gibt es nicht mehr).
+			const slot = {
+				dayNumber: dayNumberForTime(pe.planEntry.starttime, data.semesterConfig.days),
+				slotNumber: slotNumberForTime(pe.planEntry.starttime, data.semesterConfig.starttimes)
+			};
+			planned[pe.ancode] = { slot, preplanned: true };
 		}
 	}
 	for (const pp of data.preplanExams ?? []) {

@@ -3,8 +3,13 @@
 	// Setzt die externe Zeit über /api/exam/setExternalExamTime(ancode) und meldet
 	// Erfolg per onsaved-Callback nach oben (dort invalidateAll).
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { inPeriod } from '$lib/slot/derive';
 
-	let { exam, onsaved }: { exam: any; onsaved?: () => void } = $props();
+	let {
+		exam,
+		days = [],
+		onsaved
+	}: { exam: any; days?: { number: number; date: string }[]; onsaved?: () => void } = $props();
 
 	/** „13.07. 08:30" (Berlin) */
 	const dateTime = (iso: string) => {
@@ -54,11 +59,9 @@
 	});
 
 	const hasTime = $derived(!!exam.planEntry?.starttime);
-	// Zeit außerhalb des Prüfungszeitraums: eine Zeit, aber kein echter Slot
-	// (dayNumber/slotNumber == 0). Dann keinen Slot zeigen, nur die Zeit + Hinweis.
-	const outsidePeriod = $derived(
-		hasTime && !exam.planEntry?.dayNumber && !exam.planEntry?.slotNumber
-	);
+	// Zeit außerhalb des Prüfungszeitraums: eine Zeit, aber kein echter Prüfungstag
+	// (starttime fällt auf keinen semesterConfig-Tag). Dann nur die Zeit + Hinweis zeigen.
+	const outsidePeriod = $derived(hasTime && !inPeriod(exam.planEntry?.starttime, days));
 	let saving = $state(false);
 	let error = $state('');
 

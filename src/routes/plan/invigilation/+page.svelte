@@ -2,9 +2,27 @@
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { combineStarttime } from '$lib/exam/setExamTime';
 	let { data } = $props();
 
 	let days = $state(data.days);
+
+	// Zeitbasierte Mutationen (prePlanInvigilation*/removePrePlannedInvigilation) und
+	// invigilatorsForDay brauchen die absolute Startzeit bzw. das Datum. day/slot sind
+	// nur noch UI-Keys; die Startzeit bauen wir aus Tag-Datum + Slot-Uhrzeit.
+	const dateByDay = new Map(
+		(data.semesterConfig?.days ?? []).map((/** @type {any} */ d) => [d.number, d.date])
+	);
+	const startBySlot = new Map(
+		(data.semesterConfig?.starttimes ?? []).map((/** @type {any} */ t) => [t.number, t.start])
+	);
+	/** @param {number} dayNumber @param {number} slotNumber */
+	const slotStarttime = (dayNumber, slotNumber) =>
+		combineStarttime(
+			dateByDay.get(dayNumber),
+			startBySlot.get(slotNumber),
+			dateByDay.get(dayNumber)
+		);
 	// mtknr -> NTA, to mark NTA students sitting in a room
 	const ntaMap = new Map((data.ntas ?? []).map((/** @type {any} */ n) => [n.mtknr, n]));
 
@@ -197,7 +215,7 @@
 		const res = await fetch('/api/plan/invigilatorsForDay', {
 			method: 'POST',
 			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ day: dayNumber })
+			body: JSON.stringify({ date: dateByDay.get(dayNumber) })
 		});
 		const d = await res.json().catch(() => ({}));
 		const ifd = d.invigilatorsForDay;
@@ -257,7 +275,7 @@
 		if (
 			await post(
 				'/api/plan/prePlanInvigilationInSlot',
-				{ day: dayNumber, slot: slotNumber, roomName },
+				{ starttime: slotStarttime(dayNumber, slotNumber), roomName },
 				key
 			)
 		) {
@@ -273,7 +291,7 @@
 		if (
 			await post(
 				'/api/plan/removePrePlannedInvigilation',
-				{ day: dayNumber, slot: slotNumber, roomName },
+				{ starttime: slotStarttime(dayNumber, slotNumber), roomName },
 				key
 			)
 		) {
@@ -291,7 +309,7 @@
 		if (
 			await post(
 				'/api/plan/prePlanInvigilation',
-				{ invigilatorID: pickSel, day: dayNumber, slot: slotNumber, roomName },
+				{ invigilatorID: pickSel, starttime: slotStarttime(dayNumber, slotNumber), roomName },
 				key
 			)
 		) {

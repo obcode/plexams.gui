@@ -3,12 +3,12 @@
 	import { onMount } from 'svelte';
 
 	let {
-		day,
+		date,
 		selectedInvigilator,
 		onselected,
 		onunselected
 	}: {
-		day: any;
+		date: string;
 		selectedInvigilator: any;
 		onselected?: (detail: any) => void;
 		onunselected?: (detail: any) => void;
@@ -17,10 +17,10 @@
 	let want = $state<any[]>([]);
 	let can = $state<any[]>([]);
 
-	async function fetchInviglatorsForDay(day: any) {
+	async function fetchInviglatorsForDay(date: string) {
 		const response = await fetch('/api/plan/invigilatorsForDay', {
 			method: 'POST',
-			body: JSON.stringify({ day }),
+			body: JSON.stringify({ date }),
 			headers: {
 				'content-type': 'application/json'
 			}
@@ -37,7 +37,7 @@
 	}
 
 	onMount(() => {
-		fetchInviglatorsForDay(day);
+		fetchInviglatorsForDay(date);
 	});
 </script>
 

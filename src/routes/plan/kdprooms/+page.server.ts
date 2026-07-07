@@ -1,5 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { request } from 'graphql-request';
+import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
 const BOOKING_TIMEZONE = 'Europe/Berlin';
@@ -35,8 +36,7 @@ export const load: PageServerLoad = async () => {
 				ancode
 				studentRegsCount
 				planEntry {
-					dayNumber
-					slotNumber
+					starttime
 				}
 				zpaExam {
 					module
@@ -122,9 +122,12 @@ export const load: PageServerLoad = async () => {
 		const wantsSeb = exam.constraints?.roomConstraints?.seb;
 		if (!wantsExahm && !wantsSeb) continue;
 		const pe = exam.planEntry;
-		// If exam not yet in a slot, still list under day/slot = -1/-1 to surface reserved rooms
-		const dayNumber = pe?.dayNumber ?? -1;
-		const slotNumber = pe?.slotNumber ?? -1;
+		// Zeitbasiert: Tag/Slot aus starttime ableiten. Ohne Zeit (noch nicht verplant)
+		// weiter unter day/slot = -1/-1 listen, um reservierte Räume zu zeigen.
+		const dayNumber = pe?.starttime ? dayNumberForTime(pe.starttime, data.semesterConfig.days) : -1;
+		const slotNumber = pe?.starttime
+			? slotNumberForTime(pe.starttime, data.semesterConfig.starttimes)
+			: -1;
 		const key = `${dayNumber}-${slotNumber}`;
 		if (!slotMap.has(key)) {
 			slotMap.set(key, {

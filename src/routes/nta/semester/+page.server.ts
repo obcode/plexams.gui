@@ -147,8 +147,6 @@ async function loadStudents() {
 							plannedExam(ancode: ${ancode}) {
 								planEntry {
 									starttime
-									dayNumber
-									slotNumber
 								}
 							}
 						}
@@ -161,7 +159,7 @@ async function loadStudents() {
 						if (examData.assembledExam.roomName != null) {
 							const invigilatorQuery = gql`
 								query {
-									invigilator(room: "${examData.assembledExam.roomName}", day: ${planData.plannedExam.planEntry.dayNumber}, time: ${planData.plannedExam.planEntry.slotNumber}) {
+									invigilator(room: "${examData.assembledExam.roomName}", starttime: "${planData.plannedExam.planEntry.starttime}") {
 										shortname
 									}
 								}

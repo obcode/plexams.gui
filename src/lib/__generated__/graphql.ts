@@ -144,10 +144,9 @@ export type BalanceReport = {
 /** A room blocked for one slot (not usable for planning there). */
 export type BlockedRoom = {
   __typename?: 'BlockedRoom';
-  day: Scalars['Int']['output'];
   reason?: Maybe<Scalars['String']['output']>;
   room: Scalars['String']['output'];
-  slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type Conflict = {
@@ -856,10 +855,10 @@ export type Mutation = {
    * approved flags). Returns the number written.
    */
   applyRoomRequestsPreview: Scalars['Int']['output'];
-  /** Block a room for a slot so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
-  blockRoomForSlot: BlockedRoom;
-  /** Block a room for several slots at once (e.g. a whole day or a time range). Returns the stored blocks. */
-  blockRoomForSlots: Array<BlockedRoom>;
+  /** Block a room at a starttime so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
+  blockRoomAt: BlockedRoom;
+  /** Block a room at several starttimes at once (e.g. a whole day or a time range). Returns the stored blocks. */
+  blockRoomAtTimes: Array<BlockedRoom>;
   clearEmailAttachments: Scalars['Int']['output'];
   /**
    * Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
@@ -961,14 +960,14 @@ export type Mutation = {
   online: Scalars['Boolean']['output'];
   placesWithSockets: Scalars['Boolean']['output'];
   possibleDays: Scalars['Boolean']['output'];
-  /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) in a slot. */
+  /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at a starttime. */
   prePlanInvigilation: Scalars['Boolean']['output'];
   /**
-   * prePlanInvigilationInSlot promotes the invigilation currently planned for a
-   * room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
+   * prePlanInvigilationAt promotes the invigilation currently planned for a
+   * room (roomName) or the reserve (roomName == null) at a starttime to a pre-planned,
    * fixed assignment, so it survives a re-run of the automatic planning.
    */
-  prePlanInvigilationInSlot: Scalars['Boolean']['output'];
+  prePlanInvigilationAt: Scalars['Boolean']['output'];
   prePlanRoom: Scalars['Boolean']['output'];
   /** Remove the duration override for an ancode. Returns false if there was none. */
   removeExamDuration: Scalars['Boolean']['output'];
@@ -979,7 +978,7 @@ export type Mutation = {
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
   removePermanentNonInvigilator: Scalars['Boolean']['output'];
-  /** Remove a pre-planned invigilation (key: day/slot/roomName; roomName null = the reserve). */
+  /** Remove a pre-planned invigilation (key: starttime/roomName; roomName null = the reserve). */
   removePrePlannedInvigilation: Scalars['Boolean']['output'];
   /** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
   removePrePlannedRoom: Scalars['Boolean']['output'];
@@ -1122,10 +1121,10 @@ export type Mutation = {
    * VETO forces it to count despite an automatic repeat down-weighting).
    */
   setStudentConflictDecision: Scalars['Boolean']['output'];
-  /** Remove a room block for a slot (key: room/day/slot). */
-  unblockRoomForSlot: Scalars['Boolean']['output'];
-  /** Remove the room blocks for several slots at once. Returns how many blocks were removed. */
-  unblockRoomForSlots: Scalars['Int']['output'];
+  /** Remove a room block at a starttime (key: room/starttime). */
+  unblockRoomAt: Scalars['Boolean']['output'];
+  /** Remove the room blocks at several starttimes at once. Returns how many blocks were removed. */
+  unblockRoomAtTimes: Scalars['Int']['output'];
   /** unfixExamRoomsPhase clears the phase-A freeze on all exams (manual Locked stays). */
   unfixExamRoomsPhase: Scalars['Boolean']['output'];
   /** Update the editable fields of an existing NTA (key: mtknr). Errors if it does not exist. */
@@ -1209,18 +1208,17 @@ export type MutationApplyRoomRequestsPreviewArgs = {
 };
 
 
-export type MutationBlockRoomForSlotArgs = {
-  day: Scalars['Int']['input'];
+export type MutationBlockRoomAtArgs = {
   reason?: InputMaybe<Scalars['String']['input']>;
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type MutationBlockRoomForSlotsArgs = {
+export type MutationBlockRoomAtTimesArgs = {
   reason?: InputMaybe<Scalars['String']['input']>;
   room: Scalars['String']['input'];
-  slots: Array<SlotInput>;
+  starttimes: Array<Scalars['Time']['input']>;
 };
 
 
@@ -1334,17 +1332,15 @@ export type MutationPossibleDaysArgs = {
 
 
 export type MutationPrePlanInvigilationArgs = {
-  day: Scalars['Int']['input'];
   invigilatorID: Scalars['Int']['input'];
   roomName?: InputMaybe<Scalars['String']['input']>;
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type MutationPrePlanInvigilationInSlotArgs = {
-  day: Scalars['Int']['input'];
+export type MutationPrePlanInvigilationAtArgs = {
   roomName?: InputMaybe<Scalars['String']['input']>;
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
@@ -1386,9 +1382,8 @@ export type MutationRemovePermanentNonInvigilatorArgs = {
 
 
 export type MutationRemovePrePlannedInvigilationArgs = {
-  day: Scalars['Int']['input'];
   roomName?: InputMaybe<Scalars['String']['input']>;
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
@@ -1584,16 +1579,15 @@ export type MutationSetStudentConflictDecisionArgs = {
 };
 
 
-export type MutationUnblockRoomForSlotArgs = {
-  day: Scalars['Int']['input'];
+export type MutationUnblockRoomAtArgs = {
   room: Scalars['String']['input'];
-  slot: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type MutationUnblockRoomForSlotsArgs = {
+export type MutationUnblockRoomAtTimesArgs = {
   room: Scalars['String']['input'];
-  slots: Array<SlotInput>;
+  starttimes: Array<Scalars['Time']['input']>;
 };
 
 
@@ -1760,13 +1754,11 @@ export type PermanentNonInvigilator = {
 export type PlanEntry = {
   __typename?: 'PlanEntry';
   ancode: Scalars['Int']['output'];
-  dayNumber: Scalars['Int']['output'];
   /** True for exams planned by another faculty (their time still lives in starttime). */
   external: Scalars['Boolean']['output'];
   locked: Scalars['Boolean']['output'];
   /** fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock. */
   phaseFixed: Scalars['Boolean']['output'];
-  slotNumber: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
 };
 
@@ -1794,7 +1786,6 @@ export type PlannedExam = {
 export type PlannedRoom = {
   __typename?: 'PlannedRoom';
   ancode: Scalars['Int']['output'];
-  day: Scalars['Int']['output'];
   duration: Scalars['Int']['output'];
   handicap: Scalars['Boolean']['output'];
   handicapRoomAlone: Scalars['Boolean']['output'];
@@ -1802,7 +1793,7 @@ export type PlannedRoom = {
   prePlanned: Scalars['Boolean']['output'];
   reserve: Scalars['Boolean']['output'];
   room: Room;
-  slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
   studentsInRoom: Array<Scalars['String']['output']>;
 };
 
@@ -1852,11 +1843,9 @@ export type PreExam = {
  */
 export type PrePlannedInvigilation = {
   __typename?: 'PrePlannedInvigilation';
-  day: Scalars['Int']['output'];
   invigilatorID: Scalars['Int']['output'];
   isReserve: Scalars['Boolean']['output'];
   roomName?: Maybe<Scalars['String']['output']>;
-  slot: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
 };
 
@@ -2102,9 +2091,9 @@ export type Query = {
    * are planned by me (not flagged NotPlannedByMe).
    */
   examersWithExamsPlannedByMe: Array<Teacher>;
+  examsAt?: Maybe<Array<PlannedExam>>;
   /** Exam pairs declared as allowed to share a slot (no student legitimately sits both). */
   examsCanShareSlot: Array<ExamPair>;
-  examsInSlot?: Maybe<Array<PlannedExam>>;
   examsWithNtas: Array<PlannedExam>;
   examsWithoutSlot: Array<PlannedExam>;
   fk07programs: Array<Fk07Program>;
@@ -2174,12 +2163,12 @@ export type Query = {
   plannedExams: Array<PlannedExam>;
   plannedRoomForStudent?: Maybe<PlannedRoom>;
   plannedRoomNames?: Maybe<Array<Scalars['String']['output']>>;
-  plannedRoomNamesInSlot?: Maybe<Array<Scalars['String']['output']>>;
+  plannedRoomNamesAt?: Maybe<Array<Scalars['String']['output']>>;
   plannedRooms: Array<PlannedRoom>;
-  plannedRoomsInSlot?: Maybe<Array<PlannedRoom>>;
+  plannedRoomsAt?: Maybe<Array<PlannedRoom>>;
   /** The planning state (phases, conditions, currently locked areas). */
   planningState: PlanningState;
-  preExamsInSlot?: Maybe<Array<PreExam>>;
+  preExamsAt?: Maybe<Array<PreExam>>;
   prePlannedInvigilations: Array<PrePlannedInvigilation>;
   prePlannedRooms: Array<PrePlannedRoom>;
   preplanExam?: Maybe<PreplanExam>;
@@ -2210,14 +2199,14 @@ export type Query = {
   /** Dry-run: which management rooms would be requested for which exams (read-only, changes nothing). */
   roomRequestsPreview: Array<RoomRequestPreview>;
   rooms: Array<Room>;
-  roomsForSlot?: Maybe<RoomsForSlot>;
+  roomsAt?: Maybe<RoomsForSlot>;
   roomsForSlots: Array<RoomsForSlot>;
   /**
    * All rooms allowed in a slot with their free seats and which exams already use
    * them — for sharing a room (e.g. as a reserve).
    */
-  roomsWithFreeSeatsForSlot: Array<RoomWithFreeSeats>;
-  roomsWithInvigilationsForSlot?: Maybe<InvigilationSlot>;
+  roomsWithFreeSeatsAt: Array<RoomWithFreeSeats>;
+  roomsWithInvigilationsAt?: Maybe<InvigilationSlot>;
   semester: Semester;
   /** null when the semester has no config yet (fresh/empty DB) — create it via createSemester / init. */
   semesterConfig?: Maybe<SemesterConfig>;
@@ -2306,21 +2295,19 @@ export type QueryEmailAttachmentsArgs = {
 };
 
 
-export type QueryExamsInSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryExamsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
 export type QueryInvigilatorArgs = {
-  day: Scalars['Int']['input'];
   room: Scalars['String']['input'];
-  time: Scalars['Int']['input'];
+  starttime: Scalars['Time']['input'];
 };
 
 
 export type QueryInvigilatorsForDayArgs = {
-  day: Scalars['Int']['input'];
+  date: Scalars['Time']['input'];
 };
 
 
@@ -2357,21 +2344,18 @@ export type QueryPlannedRoomForStudentArgs = {
 };
 
 
-export type QueryPlannedRoomNamesInSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryPlannedRoomNamesAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type QueryPlannedRoomsInSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryPlannedRoomsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type QueryPreExamsInSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryPreExamsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
@@ -2396,21 +2380,18 @@ export type QueryPrimussExamsForAnCodeArgs = {
 };
 
 
-export type QueryRoomsForSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryRoomsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type QueryRoomsWithFreeSeatsForSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryRoomsWithFreeSeatsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
-export type QueryRoomsWithInvigilationsForSlotArgs = {
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
+export type QueryRoomsWithInvigilationsAtArgs = {
+  starttime: Scalars['Time']['input'];
 };
 
 
@@ -2601,6 +2582,7 @@ export type RoomsForSlot = {
   day: Scalars['Int']['output'];
   rooms: Array<Room>;
   slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type SaveSemesterConfigResult = {
@@ -2692,12 +2674,6 @@ export type Slot = {
   dayNumber: Scalars['Int']['output'];
   slotNumber: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
-};
-
-/** A day/slot pair, used to block a room for several slots at once. */
-export type SlotInput = {
-  day: Scalars['Int']['input'];
-  slot: Scalars['Int']['input'];
 };
 
 /**
@@ -3184,11 +3160,10 @@ export type Teacher = {
 export type UnplacedExam = {
   __typename?: 'UnplacedExam';
   ancode: Scalars['Int']['output'];
-  day: Scalars['Int']['output'];
   mtknrs: Array<Scalars['String']['output']>;
   /** set if these are NTA students (then mtknrs has exactly one entry). */
   ntaMtknr?: Maybe<Scalars['String']['output']>;
-  slot: Scalars['Int']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 /**

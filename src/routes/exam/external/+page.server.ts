@@ -14,13 +14,12 @@ import type { PageServerLoad } from './$types';
 type PlanEntryTime = {
 	starttime: string | null;
 	external: boolean;
-	dayNumber: number;
-	slotNumber: number;
 };
 
 // Ergebnis-Shape der Query (nur die selektierten Felder — bewusst schlanker als
 // die vollen Schema-Typen aus $lib/gql/types).
 type QueryResult = {
+	semesterConfig: { days: { number: number; date: string }[] } | null;
 	mucdaiExams: {
 		primussAncode: number;
 		module: string;
@@ -70,6 +69,12 @@ export const load: PageServerLoad = async () => {
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
+					semesterConfig {
+						days {
+							number
+							date
+						}
+					}
 					mucdaiExams {
 						primussAncode
 						module
@@ -83,8 +88,6 @@ export const load: PageServerLoad = async () => {
 						planEntry {
 							starttime
 							external
-							dayNumber
-							slotNumber
 						}
 					}
 					zpaExamsToPlanWithConstraints {
@@ -104,8 +107,6 @@ export const load: PageServerLoad = async () => {
 						planEntry {
 							starttime
 							external
-							dayNumber
-							slotNumber
 						}
 					}
 					teachers {
@@ -158,8 +159,12 @@ export const load: PageServerLoad = async () => {
 			});
 		}
 
-		return { items, loadError: '' };
+		return { items, days: data.semesterConfig?.days ?? [], loadError: '' };
 	} catch (e) {
-		return { items: [] as OtherFkItem[], loadError: gqlErrorMessage(e) };
+		return {
+			items: [] as OtherFkItem[],
+			days: [] as { number: number; date: string }[],
+			loadError: gqlErrorMessage(e)
+		};
 	}
 };

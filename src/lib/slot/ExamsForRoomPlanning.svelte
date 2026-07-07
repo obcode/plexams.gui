@@ -5,6 +5,7 @@
 	let {
 		day,
 		time,
+		starttime,
 		showOnlyExamsWithNTAs,
 		details,
 		showRooms,
@@ -18,6 +19,7 @@
 	}: {
 		day: number;
 		time: number;
+		starttime: string;
 		showOnlyExamsWithNTAs: boolean;
 		details: boolean;
 		showRooms: any;
@@ -33,13 +35,13 @@
 	async function fetchExamsInSlot() {
 		const response = await fetch('/api/slot/examsInSlot', {
 			method: 'POST',
-			body: JSON.stringify({ day, time }),
+			body: JSON.stringify({ starttime }),
 			headers: {
 				'content-type': 'application/json'
 			}
 		});
 		let data = await response.json();
-		examsInSlot = data.examsInSlot;
+		examsInSlot = data.examsAt;
 	}
 
 	onMount(() => {
@@ -57,6 +59,7 @@
 			{dimOthers}
 			{day}
 			{time}
+			{starttime}
 			{showOnlyWithoutRoom}
 			{highlightNotPrePlanned}
 			{prePlannedSeats}

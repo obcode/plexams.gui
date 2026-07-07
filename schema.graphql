@@ -177,8 +177,7 @@ A room blocked for one slot (not usable for planning there).
 """
 type BlockedRoom {
 	room: String!
-	day: Int!
-	slot: Int!
+	starttime: Time!
 	reason: String
 }
 
@@ -1097,21 +1096,21 @@ type Mutation {
 	setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
 
 	"""
-	Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) in a slot.
+	Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at a starttime.
 	"""
-	prePlanInvigilation(invigilatorID: Int!, day: Int!, slot: Int!, roomName: String): Boolean!
+	prePlanInvigilation(invigilatorID: Int!, starttime: Time!, roomName: String): Boolean!
 
 	"""
-	Remove a pre-planned invigilation (key: day/slot/roomName; roomName null = the reserve).
+	Remove a pre-planned invigilation (key: starttime/roomName; roomName null = the reserve).
 	"""
-	removePrePlannedInvigilation(day: Int!, slot: Int!, roomName: String): Boolean!
+	removePrePlannedInvigilation(starttime: Time!, roomName: String): Boolean!
 
 	"""
-	prePlanInvigilationInSlot promotes the invigilation currently planned for a
-	room (roomName) or the reserve (roomName == null) in a slot to a pre-planned,
+	prePlanInvigilationAt promotes the invigilation currently planned for a
+	room (roomName) or the reserve (roomName == null) at a starttime to a pre-planned,
 	fixed assignment, so it survives a re-run of the automatic planning.
 	"""
-	prePlanInvigilationInSlot(day: Int!, slot: Int!, roomName: String): Boolean!
+	prePlanInvigilationAt(starttime: Time!, roomName: String): Boolean!
 
 	"""
 	Reset the assigned invigilations (invigilations_other) so only the
@@ -1306,24 +1305,24 @@ type Mutation {
 	removePrePlannedRoom(ancode: Int!, roomName: String!, mtknr: String): Boolean!
 
 	"""
-	Block a room for a slot so it is not used for planning there (e.g. otherwise occupied). reason is an optional note.
+	Block a room at a starttime so it is not used for planning there (e.g. otherwise occupied). reason is an optional note.
 	"""
-	blockRoomForSlot(room: String!, day: Int!, slot: Int!, reason: String): BlockedRoom!
+	blockRoomAt(room: String!, starttime: Time!, reason: String): BlockedRoom!
 
 	"""
-	Remove a room block for a slot (key: room/day/slot).
+	Remove a room block at a starttime (key: room/starttime).
 	"""
-	unblockRoomForSlot(room: String!, day: Int!, slot: Int!): Boolean!
+	unblockRoomAt(room: String!, starttime: Time!): Boolean!
 
 	"""
-	Block a room for several slots at once (e.g. a whole day or a time range). Returns the stored blocks.
+	Block a room at several starttimes at once (e.g. a whole day or a time range). Returns the stored blocks.
 	"""
-	blockRoomForSlots(room: String!, slots: [SlotInput!]!, reason: String): [BlockedRoom!]!
+	blockRoomAtTimes(room: String!, starttimes: [Time!]!, reason: String): [BlockedRoom!]!
 
 	"""
-	Remove the room blocks for several slots at once. Returns how many blocks were removed.
+	Remove the room blocks at several starttimes at once. Returns how many blocks were removed.
 	"""
-	unblockRoomForSlots(room: String!, slots: [SlotInput!]!): Int!
+	unblockRoomAtTimes(room: String!, starttimes: [Time!]!): Int!
 
 	"""
 	Activate/deactivate a room (key: name). A deactivated room is not used for planning.
@@ -1607,8 +1606,6 @@ type PermanentNonInvigilator {
 }
 
 type PlanEntry {
-	dayNumber: Int!
-	slotNumber: Int!
 	starttime: Time!
 
 	"""
@@ -1644,8 +1641,7 @@ type PlannedExam {
 }
 
 type PlannedRoom {
-	day: Int!
-	slot: Int!
+	starttime: Time!
 	room: Room!
 	ancode: Int!
 	duration: Int!
@@ -1808,8 +1804,6 @@ reserve invigilation.
 """
 type PrePlannedInvigilation {
 	invigilatorID: Int!
-	day: Int!
-	slot: Int!
 	starttime: Time!
 	roomName: String
 	isReserve: Boolean!
@@ -2060,9 +2054,9 @@ type Query {
 	listed. (The field name is kept for backwards compatibility.)
 	"""
 	invigilatorsExcludedByConfig: [Invigilator!]!
-	roomsWithInvigilationsForSlot(day: Int!, time: Int!): InvigilationSlot
-	invigilatorsForDay(day: Int!): InvigilatorsForDay
-	invigilator(room: String!, day: Int!, time: Int!): Teacher
+	roomsWithInvigilationsAt(starttime: Time!): InvigilationSlot
+	invigilatorsForDay(date: Time!): InvigilatorsForDay
+	invigilator(room: String!, starttime: Time!): Teacher
 	prePlannedInvigilations: [PrePlannedInvigilation!]!
 
 	"""
@@ -2132,8 +2126,8 @@ type Query {
 	are planned by me (not flagged NotPlannedByMe).
 	"""
 	examersWithExamsPlannedByMe: [Teacher!]!
-	preExamsInSlot(day: Int!, time: Int!): [PreExam!]
-	examsInSlot(day: Int!, time: Int!): [PlannedExam!]
+	preExamsAt(starttime: Time!): [PreExam!]
+	examsAt(starttime: Time!): [PlannedExam!]
 	examsWithoutSlot: [PlannedExam!]!
 	allowedSlots(ancode: Int!): [Slot!]
 	awkwardSlots(ancode: Int!): [Slot!]!
@@ -2184,12 +2178,12 @@ type Query {
 	studentRegsForProgram(program: String!): [StudentReg!]
 	rooms: [Room!]!
 	prePlannedRooms: [PrePlannedRoom!]!
-	roomsForSlot(day: Int!, time: Int!): RoomsForSlot
+	roomsAt(starttime: Time!): RoomsForSlot
 	roomsForSlots: [RoomsForSlot!]!
 	plannedRooms: [PlannedRoom!]!
 	plannedRoomNames: [String!]
-	plannedRoomNamesInSlot(day: Int!, time: Int!): [String!]
-	plannedRoomsInSlot(day: Int!, time: Int!): [PlannedRoom!]
+	plannedRoomNamesAt(starttime: Time!): [String!]
+	plannedRoomsAt(starttime: Time!): [PlannedRoom!]
 	plannedRoomForStudent(ancode: Int!, mtknr: String!): PlannedRoom
 
 	"""
@@ -2201,7 +2195,7 @@ type Query {
 	All rooms allowed in a slot with their free seats and which exams already use
 	them — for sharing a room (e.g. as a reserve).
 	"""
-	roomsWithFreeSeatsForSlot(day: Int!, time: Int!): [RoomWithFreeSeats!]!
+	roomsWithFreeSeatsAt(starttime: Time!): [RoomWithFreeSeats!]!
 
 	"""
 	Students that could not be assigned a real room in their slot during the last
@@ -2384,6 +2378,7 @@ enum RoomRequestType {
 type RoomsForSlot {
 	day: Int!
 	slot: Int!
+	starttime: Time!
 	rooms: [Room!]!
 }
 
@@ -2563,14 +2558,6 @@ type Slot {
 	dayNumber: Int!
 	slotNumber: Int!
 	starttime: Time!
-}
-
-"""
-A day/slot pair, used to block a room for several slots at once.
-"""
-input SlotInput {
-	day: Int!
-	slot: Int!
 }
 
 type SoftCostItem {
@@ -2994,8 +2981,7 @@ room generation (kept out of the planned rooms).
 """
 type UnplacedExam {
 	ancode: Int!
-	day: Int!
-	slot: Int!
+	starttime: Time!
 	mtknrs: [String!]!
 
 	"""

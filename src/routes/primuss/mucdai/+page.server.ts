@@ -5,10 +5,20 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await request<{ mucdaiExams: any[] }>(
+		const data = await request<{ mucdaiExams: any[]; semesterConfig: any }>(
 			env.PLEXAMS_SERVER,
 			gql`
 				query {
+					semesterConfig {
+						days {
+							number
+							date
+						}
+						starttimes {
+							number
+							start
+						}
+					}
 					mucdaiExams {
 						primussAncode
 						module
@@ -22,8 +32,6 @@ export const load: PageServerLoad = async () => {
 						ancode
 						linkStatus
 						planEntry {
-							dayNumber
-							slotNumber
 							starttime
 							external
 						}
@@ -31,9 +39,13 @@ export const load: PageServerLoad = async () => {
 				}
 			`
 		);
-		return { mucdaiExams: data.mucdaiExams ?? [], loadError: '' };
+		return {
+			mucdaiExams: data.mucdaiExams ?? [],
+			semesterConfig: data.semesterConfig ?? null,
+			loadError: ''
+		};
 	} catch (e) {
 		// Backend-Fehler nicht als 500 durchschlagen lassen — Seite zeigt einen Hinweis.
-		return { mucdaiExams: [] as any[], loadError: gqlErrorMessage(e) };
+		return { mucdaiExams: [] as any[], semesterConfig: null, loadError: gqlErrorMessage(e) };
 	}
 };
