@@ -16,10 +16,13 @@
 	 *   Backend (semesterConfig.days). Wenn gesetzt, liefern sie die Spalten der
 	 *   MUC.DAI-Matrix; sonst werden sie aus from/until abgeleitet (z. B. beim
 	 *   Anlegen eines neuen Semesters, für das das Backend noch keine Tage kennt).
+	 * @property {{ maxSeatsPerSlot: number } | null} [effective] Effektive, aus der
+	 *   Config berechnete Werte (SemesterConfig) für Hinweistexte. null = frisches
+	 *   Semester ohne Config.
 	 */
 
 	/** @type {Props} */
-	let { config = null, days = null } = $props();
+	let { config = null, days = null, effective = null } = $props();
 
 	/** @param {string} iso */
 	const datePart = (iso) => (iso ?? '').slice(0, 10);
@@ -49,6 +52,9 @@
 			timelagMin: c.timelagMin ?? 15,
 			/** @type {number | ''} */
 			notTooCloseMinutes: c.notTooCloseMinutes ?? 120,
+			// Max. Plätze pro Startzeit (optional; leer/0 = unbegrenzt).
+			/** @type {number | ''} */
+			maxSeatsPerSlot: c.maxSeatsPerSlot ?? '',
 			emails: {
 				profs: e.profs ?? '',
 				lbas: e.lbas ?? '',
@@ -209,6 +215,7 @@
 			mucDaiAllowedTimes: [...form.mucDai].sort(),
 			timelagMin: intOrNull(form.timelagMin),
 			notTooCloseMinutes: intOrNull(form.notTooCloseMinutes),
+			maxSeatsPerSlot: intOrNull(form.maxSeatsPerSlot),
 			emails: {
 				profs: form.emails.profs,
 				lbas: form.emails.lbas,
@@ -278,9 +285,9 @@
 		{/if}
 	</div>
 
-	<!-- Zeitabstände -->
+	<!-- Zeitabstände & Kapazität -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-		<div class="font-semibold">Zeitabstände (Minuten)</div>
+		<div class="font-semibold">Zeitabstände &amp; Kapazität</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Turnaround Raum/Aufsicht, Min</span>
@@ -302,7 +309,27 @@
 				/>
 				<span class="text-[11px] text-base-content/40">Default 120</span>
 			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Max. Plätze pro Startzeit</span>
+				<input
+					type="number"
+					min="0"
+					placeholder="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={form.maxSeatsPerSlot}
+				/>
+				<span class="text-[11px] text-base-content/40">
+					0 = unbegrenzt{#if effective}
+						· effektiv: {effective.maxSeatsPerSlot === 0
+							? 'unbegrenzt'
+							: effective.maxSeatsPerSlot}{/if}
+				</span>
+			</label>
 		</div>
+		<p class="text-xs text-base-content/50">
+			„Max. Plätze pro Startzeit" begrenzt, wie viele Studierende gleichzeitig (zur selben
+			Startzeit) geprüft werden — für feinere Startzeiten/Morgen-Packung; 0 = unbegrenzt.
+		</p>
 	</div>
 
 	<!-- MUC.DAI-Anfangszeiten als Matrix: Zeilen = Uhrzeit, Spalten = Prüfungstag/Datum -->

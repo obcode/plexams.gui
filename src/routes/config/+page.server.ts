@@ -22,6 +22,7 @@ export const load: PageServerLoad = async () => {
 					mucDaiAllowedTimes
 					timelagMin
 					notTooCloseMinutes
+					maxSeatsPerSlot
 					emails {
 						profs
 						lbas
@@ -43,6 +44,8 @@ export const load: PageServerLoad = async () => {
 	// (frisches Semester) kann semesterConfig fehlschlagen — dann leitet das Formular
 	// die Tage aus from/until ab.
 	let days: { number: number; date: string }[] = [];
+	// Effektive (aus der Config berechnete) Werte für Hinweistexte im Formular.
+	let effective: { maxSeatsPerSlot: number } | null = null;
 	try {
 		const dd = await request<any>(
 			env.PLEXAMS_SERVER,
@@ -53,11 +56,13 @@ export const load: PageServerLoad = async () => {
 							number
 							date
 						}
+						maxSeatsPerSlot
 					}
 				}
 			`
 		);
 		if (dd.semesterConfig?.days) days = dd.semesterConfig.days;
+		if (dd.semesterConfig) effective = { maxSeatsPerSlot: dd.semesterConfig.maxSeatsPerSlot };
 	} catch {
 		// ohne Config (frisches Semester) kann semesterConfig fehlschlagen → keine Tage
 	}
@@ -68,6 +73,8 @@ export const load: PageServerLoad = async () => {
 		planer: data.planer ?? { name: '', email: '' },
 		// null = frisches Semester ohne Config → leeres Formular
 		config: data.semesterConfigInput ?? null,
-		days
+		days,
+		// effektive Werte (SemesterConfig) für Hinweistexte; null bei frischem Semester
+		effective
 	};
 };

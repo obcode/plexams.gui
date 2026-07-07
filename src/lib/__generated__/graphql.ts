@@ -2619,6 +2619,8 @@ export type SemesterConfig = {
   examGapMinutes: Scalars['Int']['output'];
   forbiddenSlots?: Maybe<Array<Slot>>;
   from: Scalars['Time']['output'];
+  /** Effective cap on how many students may be examined at the same start time (0 = unlimited). */
+  maxSeatsPerSlot: Scalars['Int']['output'];
   /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
   mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
   mucDaiSlots: Array<Slot>;
@@ -2644,6 +2646,8 @@ export type SemesterConfigInput = {
   forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
   /** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
   from: Scalars['Time']['output'];
+  /** Cap on how many students may be examined at the same start time (null/0 = unlimited). */
+  maxSeatsPerSlot?: Maybe<Scalars['Int']['output']>;
   /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
   mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
   /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */
@@ -2661,6 +2665,8 @@ export type SemesterConfigInputData = {
   examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
   forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
   from: Scalars['Time']['input'];
+  /** Cap on how many students may be examined at the same start time (null/0 = unlimited). */
+  maxSeatsPerSlot?: InputMaybe<Scalars['Int']['input']>;
   /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
   mucDaiAllowedTimes?: InputMaybe<Array<Scalars['Time']['input']>>;
   /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */

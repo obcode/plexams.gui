@@ -130,7 +130,12 @@
 	     Config (Tage/Anfangszeiten/MUC.DAI-Zeiten). {#key} baut das Formular dann neu
 	     auf, sodass sein interner $state frisch aus der Config initialisiert wird. -->
 	{#key data.config}
-		<SemesterConfigForm bind:this={formComp} config={data.config} days={data.days} />
+		<SemesterConfigForm
+			bind:this={formComp}
+			config={data.config}
+			days={data.days}
+			effective={data.effective}
+		/>
 	{/key}
 
 	<div class="flex items-center gap-3">
