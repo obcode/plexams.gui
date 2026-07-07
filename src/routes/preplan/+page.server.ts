@@ -75,8 +75,6 @@ export const load: PageServerLoad = async () => {
 				}
 				preplanOverview {
 					slots {
-						dayNumber
-						slotNumber
 						starttime
 						exahm {
 							examCount
