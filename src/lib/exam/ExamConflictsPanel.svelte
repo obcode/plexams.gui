@@ -60,12 +60,13 @@
 		});
 	}
 
-	// Konflikte enthalten nur noch SAME_SLOT/ADJACENT/SAME_DAY (kein NEXT_DAY mehr;
-	// die Folgetag-Zahl steht rein informativ im Qualitäts-Panel, diagnostics.nextDay).
+	// Zeitbasierte Klassifikation: Konflikte enthalten nur noch OVERLAP/TOO_CLOSE/SAME_DAY
+	// (kein NEXT_DAY mehr; der Folgetag wird verworfen und steht rein informativ im
+	// Qualitäts-Panel, diagnostics.nextDay). Farben spiegeln die Severity error/warning/info.
 	const PROX = /** @type {Record<string, { label: string, cls: string }>} */ ({
-		SAME_SLOT: { label: 'gleicher Slot', cls: 'badge-error' },
-		ADJACENT: { label: 'direkt nacheinander', cls: 'badge-error' },
-		SAME_DAY: { label: 'selber Tag', cls: 'badge-warning' }
+		OVERLAP: { label: 'Überschneidung', cls: 'badge-error' },
+		TOO_CLOSE: { label: 'zu nah', cls: 'badge-warning' },
+		SAME_DAY: { label: 'selber Tag', cls: 'badge-info' }
 	});
 
 	let busy = $state('');

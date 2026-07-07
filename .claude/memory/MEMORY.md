@@ -6,7 +6,7 @@
 - [UI design language](ui-design-language.md) — progressively modernize every touched page to one consistent daisyUI/theme-token look; no hard-coded colors
 - [External exam dates](external-exam-dates.md) — /exam/external sets dates for MUC.DAI (other-FK) and ZPA notPlannedByMe exams via setExternalExamTime; FK badges
 - [Exam schedule generation](exam-schedule-generation.md) — /plan/exams/generate runs generateExamSchedule (LogLine sub, examReport, EXAMS gate); read-only examScheduleConstraints
-- [Slot-free migration](slot-free-migration.md) — backend moving slot→time model; config forms migrated (startTimes/mucDaiAllowedTimes/timelagMin/notTooCloseMinutes); Terminplan/Räume/Aufsichten still slot-based
+- [Slot-free migration](slot-free-migration.md) — backend moving slot→time model; done: config forms (startTimes/mucDaiAllowedTimes/timelagMin/notTooCloseMinutes) + PlanEntry.starttime/external & setExamTime placement in Terminplan; Räume/Aufsichten still slot-based
 - [Source structure](source-structure.md) — NavBar (workflow) vs src/ (domain); docs/ROUTES.md maps Nav→route→lib→api; api endpoints grouped by domain, new ones never flat
 - [Refactor roadmap](refactor-roadmap.md) — ongoing architecture refactor: what's done + open blocks (TS, runes, e2e); conventions (semilinear, extract-to-lib-and-test)
 - [Svelte runes migration](svelte-runes-migration.md) — plan to move legacy Svelte syntax → runes (within Svelte 5), combined with the TS migration

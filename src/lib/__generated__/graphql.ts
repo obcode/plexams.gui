@@ -435,7 +435,7 @@ export type ExamScheduleConflict = {
   mainExamer2: Scalars['String']['output'];
   module1: Scalars['String']['output'];
   module2: Scalars['String']['output'];
-  /** worst proximity across affected students: SAME_SLOT | ADJACENT | SAME_DAY. */
+  /** worst proximity across affected students: OVERLAP | TOO_CLOSE | SAME_DAY. */
   proximity: Scalars['String']['output'];
   /** the planned slot of exam 1. */
   slot1: Slot;

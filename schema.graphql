@@ -527,7 +527,7 @@ type ExamScheduleConflict {
 	studentCount: Int!
 
 	"""
-	worst proximity across affected students: SAME_SLOT | ADJACENT | SAME_DAY.
+	worst proximity across affected students: OVERLAP | TOO_CLOSE | SAME_DAY.
 	"""
 	proximity: String!
 
