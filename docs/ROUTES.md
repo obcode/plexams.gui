@@ -75,7 +75,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 
 | Ordner              | Endpunkte | Inhalt                                                                                                                     |
 | ------------------- | --------: | -------------------------------------------------------------------------------------------------------------------------- |
-| `api/exam/`         |        19 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen, MUC.DAI-Verknüpfung, externe Termine                                   |
+| `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                |
 | `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                               |
 | `api/preplan/`      |        13 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung)                                               |
 | `api/semester/`     |        10 | Semester/Workspace wechseln & anlegen, Read-only-Schutz, Config, Planer, Generierungs-Config                               |

@@ -1,7 +1,13 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
-	import { assembledExamsState } from '$lib/assembledExams/store';
+	import WriteButton from '$lib/WriteButton.svelte';
+	import {
+		assembledExamsState,
+		checkAssembledExams,
+		resetAssembledExams,
+		resettingAssembled
+	} from '$lib/assembledExams/store';
 	import { studentRegsState } from '$lib/studentRegs/store';
 	import { preparing, regeneratePreparation } from '$lib/prepare';
 	let { data } = $props();
@@ -44,6 +50,36 @@
 		// erscheinen (data.plannedExams kommt aus dem SSR-load).
 		await invalidateAll();
 	}
+
+	// --- Aufbereitete Prüfungen zurücksetzen (resetAssembledExams) ---
+	// Destruktiv: löscht die gecachten Assembled Exams. Backend blockt bei
+	// laufender Validierung/Transfer/E-Mail. Nach Erfolg Zustand + Views neu
+	// laden — der Planning-State-Punkt „Aufbereitete Prüfungen erstellt" ist
+	// danach wieder offen.
+	let resetError = $state('');
+	/** @type {number | null} */
+	let resetRemoved = $state(null);
+
+	async function runReset() {
+		if ($resettingAssembled || $preparing) return;
+		if (
+			!confirm(
+				'Wirklich die aufbereiteten Prüfungen zurücksetzen? Der Cache wird gelöscht und muss danach neu generiert werden.'
+			)
+		)
+			return;
+		resetError = '';
+		resetRemoved = null;
+		const { removed, error } = await resetAssembledExams();
+		if (error) {
+			resetError = error;
+			return;
+		}
+		resetRemoved = removed;
+		prepResult = null;
+		await checkAssembledExams(); // Zustand neu holen (jetzt veraltet/offen)
+		await invalidateAll(); // Assembled-Exams-Views neu laden
+	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -58,11 +94,19 @@
 		<div class="flex flex-wrap items-center gap-3">
 			<button
 				class="btn btn-primary btn-sm"
-				disabled={!canGenerate || $preparing}
+				disabled={!canGenerate || $preparing || $resettingAssembled}
 				onclick={runPrepare}
 			>
 				{$preparing ? 'generiert …' : stale ? 'neu generieren' : 'Generieren'}
 			</button>
+			<WriteButton
+				class="btn btn-outline btn-error btn-sm"
+				disabled={$preparing || $resettingAssembled}
+				title="gecachte aufbereitete Prüfungen löschen (destruktiv)"
+				onclick={runReset}
+			>
+				{$resettingAssembled ? 'setzt zurück …' : 'Zurücksetzen'}
+			</WriteButton>
 			{#if !canGenerate}
 				<span class="text-sm text-warning">
 					Erst ZPA- &amp; Primuss-Prüfungen verknüpfen, Constraints einpflegen und die Haken auf der
@@ -79,6 +123,20 @@
 
 		{#if prepError}
 			<div class="alert alert-error py-2 text-sm"><span>{prepError}</span></div>
+		{/if}
+
+		{#if resetError}
+			<div class="alert alert-error py-2 text-sm"><span>{resetError}</span></div>
+		{/if}
+
+		{#if resetRemoved !== null}
+			<div class="alert alert-success py-2 text-sm">
+				<span>
+					Aufbereitete Prüfungen zurückgesetzt — {resetRemoved} Prüfung(en) entfernt.
+				</span>
+				<button class="btn btn-ghost btn-xs" onclick={() => (resetRemoved = null)}>schließen</button
+				>
+			</div>
 		{/if}
 
 		{#if prepResult}

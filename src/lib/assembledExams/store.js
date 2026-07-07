@@ -13,6 +13,7 @@ import { browser } from '$app/environment';
 export const assembledExamsState = writable({ dirty: false, reason: null, changedAt: null });
 
 export const regeneratingAssembled = writable(false);
+export const resettingAssembled = writable(false);
 
 let inflight = false;
 
@@ -53,5 +54,28 @@ export async function regenerateAssembledExams() {
 		return { changes: [], error: e instanceof Error ? e.message : String(e) };
 	} finally {
 		regeneratingAssembled.set(false);
+	}
+}
+
+/**
+ * Gecachte aufbereitete Prüfungen löschen (destruktiv). Liefert die Anzahl der
+ * entfernten Prüfungen bzw. einen Fehler. Danach ist der Cache leer; Aufrufer
+ * sollten checkAssembledExams() (Zustand neu holen) und die Views neu laden.
+ * @returns {Promise<{ removed: number, error: string | null }>}
+ */
+export async function resetAssembledExams() {
+	if (!browser) return { removed: 0, error: null };
+	resettingAssembled.set(true);
+	try {
+		const res = await fetch('/api/exam/resetAssembledExams', { method: 'POST' });
+		const d = await res.json().catch(() => ({}));
+		if (!res.ok || d?.error) {
+			return { removed: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
+		}
+		return { removed: d.resetAssembledExams ?? 0, error: null };
+	} catch (e) {
+		return { removed: 0, error: e instanceof Error ? e.message : String(e) };
+	} finally {
+		resettingAssembled.set(false);
 	}
 }
