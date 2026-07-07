@@ -31,6 +31,8 @@ export const load: PageServerLoad = async () => {
 						maxStudents
 						additionalSeats
 						comments
+						preExamMinutes
+						postExamMinutes
 					}
 				}
 			}

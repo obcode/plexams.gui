@@ -277,6 +277,8 @@ export type ConstraintsInput = {
   online?: InputMaybe<Scalars['Boolean']['input']>;
   placesWithSocket?: InputMaybe<Scalars['Boolean']['input']>;
   possibleDays?: InputMaybe<Array<Scalars['Time']['input']>>;
+  postExamMinutes?: InputMaybe<Scalars['Int']['input']>;
+  preExamMinutes?: InputMaybe<Scalars['Int']['input']>;
   sameSlot?: InputMaybe<Array<Scalars['Int']['input']>>;
   seb?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -2474,6 +2476,16 @@ export type RoomConstraints = {
   lab: Scalars['Boolean']['output'];
   maxStudents?: Maybe<Scalars['Int']['output']>;
   placesWithSocket: Scalars['Boolean']['output'];
+  /**
+   * total wrap-up time in minutes after the exam that replaces the default 15
+   * (null = default 15).
+   */
+  postExamMinutes?: Maybe<Scalars['Int']['output']>;
+  /**
+   * total lead time in minutes before the exam that replaces the default 15
+   * (null = default 15).
+   */
+  preExamMinutes?: Maybe<Scalars['Int']['output']>;
   seb: Scalars['Boolean']['output'];
 };
 

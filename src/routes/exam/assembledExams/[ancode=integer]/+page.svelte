@@ -62,6 +62,16 @@
 				{#if c?.roomConstraints?.lab}<span class="badge badge-neutral badge-sm">Labor</span>{/if}
 				{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm">Steckdosen</span
 					>{/if}
+				{#if c?.roomConstraints?.preExamMinutes}<span
+						class="badge badge-ghost badge-sm"
+						title="verlängerter Vorlauf (ersetzt Standard 15 Min)"
+						>Vorlauf {c.roomConstraints.preExamMinutes} Min</span
+					>{/if}
+				{#if c?.roomConstraints?.postExamMinutes}<span
+						class="badge badge-ghost badge-sm"
+						title="verlängerter Nachlauf (ersetzt Standard 15 Min)"
+						>Nachlauf {c.roomConstraints.postExamMinutes} Min</span
+					>{/if}
 				{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm"
 						>🚫 {c.excludeDays.map(day).join(', ')}</span
 					>{/if}

@@ -417,6 +417,9 @@
 		// Pre-Exams: nur allowedRooms + die Slot-Relationen sind relevant.
 		if ((rc.allowedRooms || []).length)
 			out.push({ t: `Räume: ${rc.allowedRooms.join(', ')}`, cls: 'badge-ghost' });
+		if (rc.preExamMinutes) out.push({ t: `Vorlauf ${rc.preExamMinutes} Min`, cls: 'badge-ghost' });
+		if (rc.postExamMinutes)
+			out.push({ t: `Nachlauf ${rc.postExamMinutes} Min`, cls: 'badge-ghost' });
 		if ((c.sameSlot || []).length)
 			out.push({ t: `=Slot: ${c.sameSlot.map(moduleOf).join(', ')}`, cls: 'badge-info' });
 		if ((e.notSameSlot || []).length)
@@ -444,9 +447,13 @@
 		const c = e.constraints || {};
 		const rc = c.roomConstraints || {};
 		conEditing = e;
-		// Für Pre-Exams nimmt setPreplanExamConstraints nur sameSlot + allowedRooms an.
+		// Für Pre-Exams nimmt setPreplanExamConstraints nur sameSlot + allowedRooms an;
+		// dazu der verlängerte Vor-/Nachlauf (leer = Standard 15 Min), der beim
+		// Verbinden mit dem ZPA-Ancode automatisch übernommen wird.
 		conForm = {
 			allowedRooms: (rc.allowedRooms || []).join(', '),
+			preExamMinutes: rc.preExamMinutes ?? '',
+			postExamMinutes: rc.postExamMinutes ?? '',
 			sameSlot: [...(c.sameSlot || [])]
 		};
 		conNotSame = [...(e.notSameSlot || [])];
@@ -528,13 +535,16 @@
 		if (conSaving) return;
 		conSaving = true;
 		conError = '';
-		// Pre-Exams: das Backend übernimmt nur sameSlot + allowedRooms (Rest ignoriert).
+		// Pre-Exams: das Backend übernimmt sameSlot + allowedRooms + Vor-/Nachlauf
+		// (Rest ignoriert). Vor-/Nachlauf leer = Standard 15 Min (null).
 		const constraints = {
 			sameSlot: conForm.sameSlot.map(Number),
 			allowedRooms: conForm.allowedRooms
 				.split(/[\s,]+/)
 				.map((/** @type {string} */ s) => s.trim())
-				.filter(Boolean)
+				.filter(Boolean),
+			preExamMinutes: Number(conForm.preExamMinutes) || null,
+			postExamMinutes: Number(conForm.postExamMinutes) || null
 		};
 		try {
 			const res = await fetch('/api/preplan/setPreplanExamConstraints', {
@@ -1540,7 +1550,7 @@
 				Constraints werden beim Verknüpfen mit der ZPA-Prüfung automatisch übernommen.
 			</div>
 
-			<!-- Raum-Einschränkung (für Pre-Exams nur allowedRooms relevant) -->
+			<!-- Raum-Einschränkung (für Pre-Exams nur allowedRooms + Vor-/Nachlauf relevant) -->
 			<div class="mt-3 flex flex-col gap-2 rounded-lg border border-base-300 p-3">
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">
@@ -1553,6 +1563,30 @@
 						placeholder="z. B. R1.046, R1.049"
 					/>
 				</label>
+				<!-- Vor-/Nachlauf für die Raumbelegung; leer = Standard 15 Min. -->
+				<div class="flex flex-wrap items-end gap-3">
+					<label class="flex flex-col gap-1">
+						<span class="text-xs font-medium text-base-content/60">Vorlauf (Min.)</span>
+						<input
+							type="number"
+							class="input input-bordered input-sm w-28"
+							bind:value={conForm.preExamMinutes}
+							placeholder="15"
+							title="Gesamter Vorlauf vor der Prüfung (ersetzt Standard 15 Min); leer = 15"
+						/>
+					</label>
+					<label class="flex flex-col gap-1">
+						<span class="text-xs font-medium text-base-content/60">Nachlauf (Min.)</span>
+						<input
+							type="number"
+							class="input input-bordered input-sm w-28"
+							bind:value={conForm.postExamMinutes}
+							placeholder="15"
+							title="Gesamter Nachlauf nach der Prüfung (ersetzt Standard 15 Min); leer = 15"
+						/>
+					</label>
+					<span class="pb-2 text-xs text-base-content/40">leer = Standard 15 Min.</span>
+				</div>
 			</div>
 
 			<!-- sameSlot: andere Preplan-Prüfungen -->

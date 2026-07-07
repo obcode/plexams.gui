@@ -67,6 +67,9 @@
 		placesWithSocket: !!rc.placesWithSocket,
 		maxStudents: rc.maxStudents ?? 0,
 		additionalSeats: rc.additionalSeats ?? 0,
+		// leer = Standard 15 Min. Vor-/Nachlauf für die Raumbelegung
+		preExamMinutes: rc.preExamMinutes ?? '',
+		postExamMinutes: rc.postExamMinutes ?? '',
 		comments: rc.comments ?? '',
 		kdpJiraURL: rc.kdpJiraURL ?? '',
 		/** @type {Set<string>} ausgewählte Sperrtage (date-part) */
@@ -133,6 +136,8 @@
 					sameSlot: form.sameSlot,
 					maxStudents: Number(form.maxStudents) || null,
 					additionalSeats: Number(form.additionalSeats) || null,
+					preExamMinutes: Number(form.preExamMinutes) || null,
+					postExamMinutes: Number(form.postExamMinutes) || null,
 					kdpJiraURL: form.kdpJiraURL.trim() || null,
 					comments: form.comments.trim() || null
 				};
@@ -170,6 +175,8 @@
 							kdpJiraURL: form.kdpJiraURL.trim() || null,
 							maxStudents: Number(form.maxStudents) || null,
 							additionalSeats: Number(form.additionalSeats) || null,
+							preExamMinutes: Number(form.preExamMinutes) || null,
+							postExamMinutes: Number(form.postExamMinutes) || null,
 							comments: form.comments.trim() || null
 						}
 			});
@@ -279,6 +286,31 @@
 					<span class="text-xs font-medium text-base-content/60">KDP-Jira-URL</span>
 					<input type="text" class="input input-bordered input-sm" bind:value={form.kdpJiraURL} />
 				</label>
+			</div>
+
+			<!-- Vor-/Nachlauf für die Raumbelegung; leer = Standard 15 Min. -->
+			<div class="flex flex-wrap items-end gap-3">
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Vorlauf (Min.)</span>
+					<input
+						type="number"
+						class="input input-bordered input-sm w-28"
+						bind:value={form.preExamMinutes}
+						placeholder="15"
+						title="Gesamter Vorlauf vor der Prüfung (ersetzt Standard 15 Min); leer = 15"
+					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Nachlauf (Min.)</span>
+					<input
+						type="number"
+						class="input input-bordered input-sm w-28"
+						bind:value={form.postExamMinutes}
+						placeholder="15"
+						title="Gesamter Nachlauf nach der Prüfung (ersetzt Standard 15 Min); leer = 15"
+					/>
+				</label>
+				<span class="pb-2 text-xs text-base-content/40">leer = Standard 15 Min.</span>
 			</div>
 
 			<label class="flex flex-col gap-1">

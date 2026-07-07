@@ -344,6 +344,8 @@ input ConstraintsInput {
 	maxStudents: Int
 	additionalSeats: Int
 	comments: String
+	preExamMinutes: Int
+	postExamMinutes: Int
 }
 
 """
@@ -2297,6 +2299,18 @@ type RoomConstraints {
 	"""
 	additionalSeats: Int
 	comments: String
+
+	"""
+	total lead time in minutes before the exam that replaces the default 15
+	(null = default 15).
+	"""
+	preExamMinutes: Int
+
+	"""
+	total wrap-up time in minutes after the exam that replaces the default 15
+	(null = default 15).
+	"""
+	postExamMinutes: Int
 }
 
 input RoomInput {

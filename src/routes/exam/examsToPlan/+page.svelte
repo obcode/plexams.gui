@@ -90,6 +90,8 @@
 			(rc.allowedRooms ?? []).length ||
 			rc.maxStudents ||
 			rc.additionalSeats ||
+			rc.preExamMinutes ||
+			rc.postExamMinutes ||
 			rc.comments ||
 			rc.kdpJiraURL);
 	/** @param {any} c */
@@ -754,6 +756,16 @@
 							{#if c?.roomConstraints?.additionalSeats}<span
 									class="badge badge-ghost badge-sm"
 									title="Platz-Puffer">+{c.roomConstraints.additionalSeats} Plätze</span
+								>{/if}
+							{#if c?.roomConstraints?.preExamMinutes}<span
+									class="badge badge-ghost badge-sm"
+									title="verlängerter Vorlauf (ersetzt Standard 15 Min)"
+									>Vorlauf {c.roomConstraints.preExamMinutes} Min</span
+								>{/if}
+							{#if c?.roomConstraints?.postExamMinutes}<span
+									class="badge badge-ghost badge-sm"
+									title="verlängerter Nachlauf (ersetzt Standard 15 Min)"
+									>Nachlauf {c.roomConstraints.postExamMinutes} Min</span
 								>{/if}
 							{#if !hasConstraints(c)}<span class="text-base-content/30">keine</span>{/if}
 							<button class="btn btn-ghost btn-xs ml-auto" onclick={() => openEdit(e)}>✎</button>

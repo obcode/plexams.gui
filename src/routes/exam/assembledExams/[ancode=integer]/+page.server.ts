@@ -69,6 +69,8 @@ export const load: PageServerLoad = async ({ params }) => {
 						lab
 						exahm
 						seb
+						preExamMinutes
+						postExamMinutes
 					}
 				}
 				conflicts {
