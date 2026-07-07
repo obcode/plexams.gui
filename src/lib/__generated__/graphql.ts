@@ -448,19 +448,19 @@ export type ExamScheduleConflict = {
 /** Quality report of a generated (or current) exam schedule. */
 export type ExamScheduleDiagnostics = {
   __typename?: 'ExamScheduleDiagnostics';
-  adjacent: Scalars['Int']['output'];
   further: Scalars['Int']['output'];
-  maxExamsPerSlot: Scalars['Int']['output'];
-  maxSlotSeats: Scalars['Int']['output'];
+  maxExamsAt: Scalars['Int']['output'];
+  maxSeatsAt: Scalars['Int']['output'];
   nextDay: Scalars['Int']['output'];
+  overlaps: Scalars['Int']['output'];
   pairs: Scalars['Int']['output'];
   sameDay: Scalars['Int']['output'];
-  sameSlot: Scalars['Int']['output'];
   slotsOverThreshold: Scalars['Int']['output'];
-  slotsUsed: Scalars['Int']['output'];
+  starttimesUsed: Scalars['Int']['output'];
   students: Scalars['Int']['output'];
-  studentsWithAdjacent: Scalars['Int']['output'];
   studentsWithSameDay: Scalars['Int']['output'];
+  studentsWithTooClose: Scalars['Int']['output'];
+  tooClose: Scalars['Int']['output'];
   within3: Scalars['Int']['output'];
   worstStudentPenalty: Scalars['Float']['output'];
 };

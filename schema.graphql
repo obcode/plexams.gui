@@ -561,19 +561,19 @@ Quality report of a generated (or current) exam schedule.
 type ExamScheduleDiagnostics {
 	students: Int!
 	pairs: Int!
-	sameSlot: Int!
-	adjacent: Int!
+	overlaps: Int!
+	tooClose: Int!
 	sameDay: Int!
 	nextDay: Int!
 	within3: Int!
 	further: Int!
-	studentsWithAdjacent: Int!
+	studentsWithTooClose: Int!
 	studentsWithSameDay: Int!
 	worstStudentPenalty: Float!
-	maxSlotSeats: Int!
-	slotsUsed: Int!
+	maxSeatsAt: Int!
+	starttimesUsed: Int!
 	slotsOverThreshold: Int!
-	maxExamsPerSlot: Int!
+	maxExamsAt: Int!
 }
 
 type ExamScheduleReport {

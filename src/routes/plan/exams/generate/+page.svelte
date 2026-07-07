@@ -275,19 +275,19 @@
 					diagnostics {
 						students
 						pairs
-						sameSlot
-						adjacent
+						overlaps
+						tooClose
 						sameDay
 						nextDay
 						within3
 						further
-						studentsWithAdjacent
+						studentsWithTooClose
 						studentsWithSameDay
 						worstStudentPenalty
-						maxSlotSeats
-						slotsUsed
+						maxSeatsAt
+						starttimesUsed
 						slotsOverThreshold
-						maxExamsPerSlot
+						maxExamsAt
 					}
 				}
 			}
@@ -764,10 +764,10 @@
 				<h3 class="font-semibold">Qualität für Studierende</h3>
 				<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
-						<div class="text-xs text-base-content/60">direkt nacheinander (adjacent)</div>
-						<div class="text-lg font-semibold tabular-nums">{fmt(d.adjacent)}</div>
+						<div class="text-xs text-base-content/60">zu nah</div>
+						<div class="text-lg font-semibold tabular-nums">{fmt(d.tooClose)}</div>
 						<div class="text-xs text-base-content/50">
-							{fmt(d.studentsWithAdjacent)} Studierende betroffen
+							{fmt(d.studentsWithTooClose)} Studierende betroffen
 						</div>
 					</div>
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
@@ -796,9 +796,16 @@
 						<span class="text-base-content/50">Paare</span>
 						<span class="ml-1 font-medium tabular-nums">{fmt(d.pairs)}</span>
 					</div>
-					<div class="rounded border border-base-200 px-2 py-1">
-						<span class="text-base-content/50">selber Slot</span>
-						<span class="ml-1 font-medium tabular-nums">{fmt(d.sameSlot)}</span>
+					<div
+						class="rounded border px-2 py-1 {d.overlaps > 0
+							? 'border-error/40 bg-error/10'
+							: 'border-base-200'}"
+						title="Überschneidungen (gleichzeitig geprüft) — sollte 0 sein"
+					>
+						<span class="text-base-content/50">Überschneidungen</span>
+						<span class="ml-1 font-medium tabular-nums {d.overlaps > 0 ? 'text-error' : ''}"
+							>{fmt(d.overlaps)}</span
+						>
 					</div>
 					<div class="rounded border border-base-200 px-2 py-1">
 						<span class="text-base-content/50">in 3 Tagen</span>
@@ -810,22 +817,28 @@
 					</div>
 				</div>
 
-				<h3 class="mt-2 font-semibold">Slot-Auslastung</h3>
+				<h3 class="mt-2 font-semibold">Auslastung je Startzeit</h3>
 				<div class="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
 					<div class="rounded border border-base-200 px-2 py-1">
-						<span class="text-base-content/50">Slots genutzt</span>
-						<span class="ml-1 font-medium tabular-nums">{fmt(d.slotsUsed)}</span>
+						<span class="text-base-content/50">Startzeiten genutzt</span>
+						<span class="ml-1 font-medium tabular-nums">{fmt(d.starttimesUsed)}</span>
+					</div>
+					<div
+						class="rounded border border-base-200 px-2 py-1"
+						title="größte Zahl gleichzeitig (zur selben Startzeit) geprüfter Studierender"
+					>
+						<span class="text-base-content/50">max. Plätze gleichzeitig</span>
+						<span class="ml-1 font-medium tabular-nums">{fmt(d.maxSeatsAt)}</span>
 					</div>
 					<div class="rounded border border-base-200 px-2 py-1">
-						<span class="text-base-content/50">max. Sitze/Slot</span>
-						<span class="ml-1 font-medium tabular-nums">{fmt(d.maxSlotSeats)}</span>
+						<span class="text-base-content/50">max. Prüfungen/Startzeit</span>
+						<span class="ml-1 font-medium tabular-nums">{fmt(d.maxExamsAt)}</span>
 					</div>
-					<div class="rounded border border-base-200 px-2 py-1">
-						<span class="text-base-content/50">max. Prüfungen/Slot</span>
-						<span class="ml-1 font-medium tabular-nums">{fmt(d.maxExamsPerSlot)}</span>
-					</div>
-					<div class="rounded border border-base-200 px-2 py-1">
-						<span class="text-base-content/50">Slots über Schwelle</span>
+					<div
+						class="rounded border border-base-200 px-2 py-1"
+						title="Startzeiten über der Platz-Schwelle (Max. Plätze pro Startzeit)"
+					>
+						<span class="text-base-content/50">über Schwelle</span>
 						<span class="ml-1 font-medium tabular-nums">{fmt(d.slotsOverThreshold)}</span>
 					</div>
 				</div>
