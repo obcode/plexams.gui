@@ -646,6 +646,11 @@
 	let teacherById = $derived(
 		new Map((data.teachers ?? []).map((/** @type {any} */ t) => [t.id, t.shortname]))
 	);
+	// Für den Kalender den ZPA-shortname (über examerID) statt des Namens-Snapshots nutzen.
+	// (nach teacherById deklariert — examerDisplay greift bei der Init darauf zu)
+	let calendarExams = $derived(
+		(data.exams ?? []).map((/** @type {any} */ e) => ({ ...e, examerName: examerDisplay(e) }))
+	);
 	let examerFiltered = $derived(
 		examerQuery.trim()
 			? teacherOptions.filter((/** @type {any} */ o) =>
@@ -949,7 +954,7 @@
 		{/if}
 
 		<PreplanCalendar
-			exams={data.exams}
+			exams={calendarExams}
 			calendarSlots={data.calendarSlots}
 			annyBars={data.annyBars}
 			bookingRooms={data.bookingRooms}
