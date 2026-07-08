@@ -7,53 +7,10 @@
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
 	import { PREPLAN_CONFIG_FIELDS } from '$lib/semester/generationConfig';
+	import PreplanCalendar from '$lib/preplan/PreplanCalendar.svelte';
 
 	let { data } = $props();
 
-	// Ampel je Art und Slot (exakt nach Spec):
-	//  seatsNeeded == 0            → neutral (kein Bedarf)
-	//  seatsNeeded > seatsAvailable → rot   (Kapazität reicht nicht)
-	//  seatsBooked >= seatsNeeded   → grün  (genug gebucht)
-	//  sonst                        → gelb  (noch X Plätze buchen)
-	/** @param {any} n */
-	function roomStatus(n) {
-		if (!n || n.seatsNeeded === 0) return { level: 'neutral', text: 'kein Bedarf', deficit: 0 };
-		if (n.seatsNeeded > n.seatsAvailable)
-			return { level: 'red', text: 'Kapazität reicht nicht', deficit: 0 };
-		if (n.seatsBooked >= n.seatsNeeded)
-			return { level: 'green', text: 'genug gebucht', deficit: 0 };
-		const deficit = n.seatsNeeded - n.seatsBooked;
-		return { level: 'yellow', text: `noch ${deficit} Plätze buchen`, deficit };
-	}
-	/** @type {Record<string, string>} */
-	const STATUS_DOT = { neutral: '⚪', red: '🔴', green: '🟢', yellow: '🟡' };
-	// „eingeschränkt auf: …" — Räume, auf die die Preplan-Prüfungen dieses Slots/dieser
-	// Art per roomConstraints.allowedRooms begrenzt sind (begrenzt seatsAvailable/rooms
-	// serverseitig; hier nur zur Anzeige aus den Constraints abgeleitet).
-	/** @param {any} slot @param {string} kind */
-	function restrictedRooms(slot, kind) {
-		/** @type {Set<string>} */
-		const rooms = new Set();
-		for (const e of data.exams) {
-			if (e.examKind !== kind) continue;
-			if (e.plannedStarttime !== slot.starttime) continue;
-			for (const r of e.constraints?.roomConstraints?.allowedRooms ?? []) rooms.add(r);
-		}
-		return [...rooms].sort((a, b) => a.localeCompare(b));
-	}
-
-	/** @param {string} level */
-	const statusBorder = (level) =>
-		level === 'red'
-			? 'border-error/50 bg-error/5'
-			: level === 'yellow'
-				? 'border-warning/50 bg-warning/5'
-				: level === 'green'
-					? 'border-success/40 bg-success/5'
-					: 'border-base-300';
-
-	/** @param {string} t */
-	const fmtTime = (t) => /(\d{2}:\d{2})/.exec(t ?? '')?.[1] ?? '';
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 	/** @param {any} s → „Mo 13.07., 08:30 Uhr" (Datum/Zeit stecken in starttime) */
 	const slotLabel = (s) => {
@@ -66,53 +23,6 @@
 	/** @param {any} e */
 	const slotValue = (e) => e.plannedStarttime ?? '';
 
-	// ---- Wochen-Kalender der eingeplanten Slots ----
-	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
-	/** @param {string} iso */
-	const dateObj = (iso) => {
-		const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ''));
-		return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null;
-	};
-	/** @param {Date} dt → Mo=1 … So=7 */
-	const isoWeekday = (dt) => ((dt.getUTCDay() + 6) % 7) + 1;
-	/** @param {Date} dt → Montag der Woche */
-	const mondayOf = (dt) => {
-		const m = new Date(dt);
-		m.setUTCDate(dt.getUTCDate() - (isoWeekday(dt) - 1));
-		return m;
-	};
-	/** @param {Date} dt → ISO-Kalenderwoche */
-	function isoWeekNum(dt) {
-		const d = new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
-		d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7) + 3); // Donnerstag dieser Woche
-		const firstThu = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
-		firstThu.setUTCDate(firstThu.getUTCDate() - ((firstThu.getUTCDay() + 6) % 7) + 3);
-		return 1 + Math.round((d.getTime() - firstThu.getTime()) / 604800000);
-	}
-	/** @param {Date} dt */
-	const ddmm = (dt) =>
-		`${String(dt.getUTCDate()).padStart(2, '0')}.${String(dt.getUTCMonth() + 1).padStart(2, '0')}.`;
-	/** @param {Date} monday @param {number} col */
-	const colDate = (monday, col) => {
-		const d = new Date(monday);
-		d.setUTCDate(monday.getUTCDate() + (col - 1));
-		return d;
-	};
-
-	/** @type {Record<string, number>} */
-	const LEVEL_RANK = { neutral: 0, green: 1, yellow: 2, red: 3 };
-	/** @param {any} slot → „schlimmster" Raum-Status der Arten (für die Slot-Färbung) */
-	function worstLevel(slot) {
-		let lv = 'neutral';
-		for (const need of [slot.exahm, slot.seb]) {
-			if (need.examCount > 0) {
-				const l = roomStatus(need).level;
-				if (LEVEL_RANK[l] > LEVEL_RANK[lv]) lv = l;
-			}
-		}
-		return lv;
-	}
-
 	// --- Filter der Prüfungstabelle nach Studiengang (Badges mit Anzahl) ---
 	/** @type {string[]} */
 	let selectedPrograms = $state([]);
@@ -121,10 +31,6 @@
 		(selectedPrograms = selectedPrograms.includes(p)
 			? selectedPrograms.filter((x) => x !== p)
 			: [...selectedPrograms, p]);
-	/** passt die Prüfung zum aktiven Studiengang-Filter? @param {any} ex */
-	const matchesProgFilter = (ex) =>
-		selectedPrograms.length > 0 &&
-		(ex.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p));
 
 	let listError = $state('');
 	/** @type {Set<number>} */
@@ -660,43 +566,6 @@
 			generating = false;
 		}
 	}
-	let calendar = $derived(
-		(() => {
-			const planned = (data.calendarSlots ?? []).filter(
-				(/** @type {any} */ s) => s.dayNumber != null && s.starttime
-			);
-			/** @type {Map<string, any>} */
-			const weeks = new Map();
-			/** @type {Set<number>} */
-			const usedWd = new Set();
-			for (const s of planned) {
-				const dt = dateObj(s.starttime);
-				if (!dt) continue;
-				const wd = isoWeekday(dt);
-				usedWd.add(wd);
-				const mon = mondayOf(dt);
-				const key = mon.toISOString().slice(0, 10);
-				if (!weeks.has(key))
-					weeks.set(key, { monday: mon, weekNum: isoWeekNum(dt), byDay: new Map() });
-				const w = weeks.get(key);
-				if (!w.byDay.has(wd)) w.byDay.set(wd, []);
-				const slotExams = (data.exams ?? []).filter(
-					(/** @type {any} */ e) => e.plannedStarttime === s.starttime
-				);
-				w.byDay.get(wd).push({ slot: s, exams: slotExams, time: fmtTime(s.starttime) });
-			}
-			for (const w of weeks.values())
-				for (const arr of w.byDay.values())
-					arr.sort(
-						(/** @type {any} */ a, /** @type {any} */ b) => a.slot.slotNumber - b.slot.slotNumber
-					);
-			const weekList = [...weeks.values()].sort(
-				(/** @type {any} */ a, /** @type {any} */ b) => a.monday.getTime() - b.monday.getTime()
-			);
-			const cols = [1, 2, 3, 4, 5].concat([6, 7].filter((d) => usedWd.has(d)));
-			return { weekList, cols };
-		})()
-	);
 	let unplanned = $derived(
 		(data.exams ?? []).filter((/** @type {any} */ e) => e.plannedStarttime == null)
 	);
@@ -1020,129 +889,13 @@
 			</div>
 		{/if}
 
-		{#if calendar.weekList.length === 0}
-			<div class="rounded-lg border border-base-300 p-6 text-center text-sm text-base-content/50">
-				Noch keine Prüfungen in Slots eingeplant.
-			</div>
-		{:else}
-			{#each calendar.weekList as w}
-				<div class="flex flex-col gap-1">
-					<div class="text-sm font-medium text-base-content/70">
-						KW {w.weekNum} · {ddmm(w.monday)}–{ddmm(
-							colDate(w.monday, calendar.cols[calendar.cols.length - 1])
-						)}
-					</div>
-					<div
-						class="grid gap-2"
-						style="grid-template-columns: repeat({calendar.cols.length}, minmax(0, 1fr))"
-					>
-						{#each calendar.cols as col}
-							{@const date = colDate(w.monday, col)}
-							{@const entries = w.byDay.get(col) || []}
-							<div class="flex flex-col gap-1 rounded-lg border border-base-300 bg-base-100 p-1.5">
-								<div class="text-xs font-medium tabular-nums">{WD2[col]} {ddmm(date)}</div>
-								{#each entries as en}
-									{@const usedBooked = (en.slot.bookedRooms || []).filter(
-										(/** @type {string} */ r) => !(en.slot.freeRooms || []).includes(r)
-									)}
-									{#if en.exams.length}
-										<div
-											class="rounded border bg-base-200/30 p-1.5 text-xs {statusBorder(
-												worstLevel(en.slot)
-											)}"
-										>
-											<div class="font-medium tabular-nums">{en.time} Uhr</div>
-											{#each en.exams as ex}
-												<div
-													class="mt-0.5 flex items-center gap-1 {selectedPrograms.length
-														? matchesProgFilter(ex)
-															? 'rounded bg-primary/25 px-1 py-0.5 font-semibold text-primary ring-1 ring-primary'
-															: 'opacity-25 grayscale'
-														: ''}"
-												>
-													<span
-														class="badge badge-xs {ex.examKind === 'SEB'
-															? 'badge-error'
-															: 'badge-info'}"
-													>
-														{ex.examKind}
-													</span>
-													{#if ex.isFixed}<span title="fixiert">🔒</span>{/if}
-													<span class="truncate" title="{ex.module} · {examerDisplay(ex)}"
-														>{ex.module}</span
-													>
-													<span class="truncate text-base-content/50">{examerDisplay(ex)}</span>
-													<span class="tabular-nums text-base-content/40"
-														>{ex.expectedStudents}</span
-													>
-													{#if ex.programs?.length}
-														<span class="truncate text-base-content/40">
-															{#each ex.programs as p, i}{i ? ', ' : ''}<span
-																	class={selectedPrograms.includes(p)
-																		? 'font-semibold text-primary'
-																		: ''}>{p}</span
-																>{/each}
-														</span>
-													{/if}
-												</div>
-											{/each}
-											{#each [{ label: 'EXaHM', need: en.slot.exahm }, { label: 'SEB', need: en.slot.seb }] as k}
-												{#if k.need.examCount > 0}
-													{@const st = roomStatus(k.need)}
-													{@const restricted = restrictedRooms(en.slot, k.label)}
-													<div class="mt-1 flex flex-wrap items-center gap-x-1">
-														<span>{STATUS_DOT[st.level]}</span>
-														<span class="font-medium">{k.label}</span>
-														<span
-															class="tabular-nums text-base-content/60"
-															title="genutzt / gebucht"
-															>{k.need.seatsNeeded}/{k.need.seatsBooked} Pl.</span
-														>
-														{#if st.level === 'yellow' && k.need.roomsToBook.length}
-															<span class="text-warning">→ {k.need.roomsToBook.join(', ')}</span>
-														{:else if st.level === 'red'}
-															<span class="text-error">Kapazität!</span>
-														{/if}
-													</div>
-													{#if restricted.length}
-														<div class="text-base-content/40">nur: {restricted.join(', ')}</div>
-													{:else if k.need.rooms.length && k.need.seatsBooked === 0}
-														<div class="text-base-content/40">
-															Vorschlag: {k.need.rooms.join(', ')}
-														</div>
-													{/if}
-												{/if}
-											{/each}
-											{#if usedBooked.length}
-												<div class="mt-1 text-base-content/50">
-													🔌 genutzt: {usedBooked.join(', ')}
-												</div>
-											{/if}
-											{#each en.slot.conflicts as c}
-												<div class="mt-0.5 text-warning">
-													⚠ {c.program}: {c.modules.join(', ')}
-												</div>
-											{/each}
-										</div>
-									{/if}
-									{#if en.slot.freeRooms && en.slot.freeRooms.length}
-										<div
-											class="rounded border border-dashed border-base-300 bg-base-100 px-1.5 py-1 text-xs text-base-content/50"
-										>
-											<span class="tabular-nums">{en.time}</span> · 🔓 frei: {en.slot.freeRooms.join(
-												', '
-											)}
-										</div>
-									{/if}
-								{:else}
-									<div class="py-2 text-center text-base-content/20">—</div>
-								{/each}
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/each}
-		{/if}
+		<PreplanCalendar
+			exams={data.exams}
+			calendarSlots={data.calendarSlots}
+			annyBars={data.annyBars}
+			bookingRooms={data.bookingRooms}
+			{selectedPrograms}
+		/>
 	</div>
 
 	{#if data.exams.length === 0}

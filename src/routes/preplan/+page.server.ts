@@ -194,6 +194,19 @@ export const load: PageServerLoad = async () => {
 		return t ? Number(t[1]) * 60 + Number(t[2]) : null;
 	}
 
+	// zusammenhängende Intervalle mergen (zwei aneinandergrenzende Buchungen
+	// desselben Raums = ein Balken).
+	function mergeIntervals(ivs: { start: number; end: number }[]) {
+		const sorted = [...ivs].sort((a, b) => a.start - b.start);
+		const out: { start: number; end: number }[] = [];
+		for (const iv of sorted) {
+			const last = out[out.length - 1];
+			if (last && iv.start <= last.end) last.end = Math.max(last.end, iv.end);
+			else out.push({ ...iv });
+		}
+		return out;
+	}
+
 	const annyByDayRoom = new Map<string, { start: number; end: number }[]>();
 	for (const b of data.allAnnyBookings ?? []) {
 		// nur eigene Buchungen (mine) zählen — fremde Anny-Buchungen sind nicht „unsere"
@@ -284,6 +297,31 @@ export const load: PageServerLoad = async () => {
 		});
 	}
 
+	// --- Zeichenbare Anny-Balken für den Zeitachsen-Kalender ---
+	// eigene, nicht stornierte T-Raum-Buchungen innerhalb des Prüfungszeitraums,
+	// pro Tag+Raum zu Balken gemergt (gleiche mine-Logik wie seatsBooked).
+	const annyBars: { dateKey: string; room: string; startMin: number; endMin: number }[] = [];
+	for (const [key, ivs] of annyByDayRoom) {
+		const [dk, room] = key.split('|');
+		if (examDates.size && !examDates.has(dk)) continue;
+		for (const iv of mergeIntervals(ivs))
+			annyBars.push({ dateKey: dk, room, startMin: iv.start, endMin: iv.end });
+	}
+	annyBars.sort(
+		(a, b) =>
+			a.dateKey.localeCompare(b.dateKey) || a.startMin - b.startMin || a.room.localeCompare(b.room)
+	);
+
+	// Raum-Menge für das Farb-Mapping — aus ALLEN (nicht stornierten) Buchungen,
+	// damit die Raum-Farben exakt denen von /rooms/annyBookings entsprechen.
+	const bookingRooms = [
+		...new Set(
+			(data.allAnnyBookings ?? [])
+				.filter((b: any) => !b.canceledAt && b.room)
+				.map((b: any) => b.room as string)
+		)
+	].sort((a, b) => String(a).localeCompare(String(b)));
+
 	return {
 		exams: data.preplanExams ?? [],
 		teachers,
@@ -291,6 +329,8 @@ export const load: PageServerLoad = async () => {
 		slots,
 		overview,
 		calendarSlots,
+		annyBars,
+		bookingRooms,
 		sameSlotGroups: data.preplanSameSlotGroups ?? [],
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
 		zpaPresent: (data.zpaExams ?? []).length > 0,

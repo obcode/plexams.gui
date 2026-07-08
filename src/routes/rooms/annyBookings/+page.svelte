@@ -3,12 +3,13 @@
 	import StreamAction from '$lib/zpa/StreamAction.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
+	import { roomColorMap, roomOrder as sortRooms } from '$lib/preplan/calendar.js';
 
 	let { data } = $props();
 	let bookings = $derived(data.bookings || []);
 	let slots = $derived(data.slots || []);
 	let roomOrder = $derived(data.roomOrder || []);
-	let annyRooms = $derived(data.annyRooms || []);
+	let annyRooms = $derived(sortRooms(data.annyRooms || []));
 	let examDays = $derived(data.examDays || []);
 
 	/** @type {'calendar' | 'list' | 'matrix'} */
@@ -27,11 +28,7 @@
 		!examMin || !examMax || (b.dateKey && b.dateKey >= examMin && b.dateKey <= examMax);
 
 	let mineCount = $derived(bookings.filter((/** @type {any} */ b) => b.mine).length);
-	let roomsInBookings = $derived(
-		[...new Set(bookings.map((/** @type {any} */ b) => b.room).filter(Boolean))].sort(
-			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
-		)
-	);
+	let roomsInBookings = $derived(sortRooms(bookings.map((/** @type {any} */ b) => b.room)));
 
 	let filtered = $derived(
 		bookings.filter((/** @type {any} */ b) => {
@@ -48,34 +45,9 @@
 		})
 	);
 
-	// --- Raum-Farben (kategoriale Palette für die Kalenderansicht) ---
-	const PALETTE = [
-		'#60a5fa',
-		'#f87171',
-		'#34d399',
-		'#fbbf24',
-		'#a78bfa',
-		'#f472b6',
-		'#22d3ee',
-		'#fb923c',
-		'#4ade80',
-		'#e879f9',
-		'#2dd4bf',
-		'#facc15'
-	];
-	let roomColors = $derived(
-		Object.fromEntries(
-			roomsInBookings.map((/** @type {string} */ r, /** @type {number} */ i) => [
-				r,
-				PALETTE[i % PALETTE.length]
-			])
-		)
-	);
-	let legendRooms = $derived(
-		[...new Set(filtered.map((/** @type {any} */ b) => b.room).filter(Boolean))].sort(
-			(/** @type {string} */ a, /** @type {string} */ b) => a.localeCompare(b)
-		)
-	);
+	// --- Raum-Farben (kategoriale Palette, geteilt mit dem Preplan-Kalender) ---
+	let roomColors = $derived(roomColorMap(roomsInBookings));
+	let legendRooms = $derived(sortRooms(filtered.map((/** @type {any} */ b) => b.room)));
 
 	// --- Kalender aufbauen ---
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
