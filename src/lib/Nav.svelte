@@ -285,6 +285,7 @@
 						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 						{ href: '/nta/semester', label: '♿ NTA' },
 						{ href: '/download', label: '⬇️ Downloads & Exporte' },
+						{ href: '/jira', label: '🎫 Jira' },
 						{ href: '/log', label: '🧾 Mutations-Log' },
 						{ section: 'Konfiguration' },
 						{ href: '/config', label: '⚙️ Semester-Konfiguration' },
