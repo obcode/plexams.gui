@@ -75,22 +75,22 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 Alle Mutationen/Proxys sind nach Domäne gruppiert (spiegelt `src/lib/`). Neue
 Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 
-| Ordner              | Endpunkte | Inhalt                                                                                                                     |
-| ------------------- | --------: | -------------------------------------------------------------------------------------------------------------------------- |
-| `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                |
-| `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                               |
-| `api/preplan/`      |        13 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung)                                               |
-| `api/semester/`     |        10 | Semester/Workspace wechseln & anlegen, Read-only-Schutz, Config, Planer, Generierungs-Config                               |
-| `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset           |
-| `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                |
-| `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                  |
-| `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                 |
-| `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                              |
-| `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                              |
-| `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                             |
-| `api/log/`          |         1 | Mutations-Log                                                                                                              |
-| `api/jira/`         |         6 | Jira: Verbindung/Issue/Transitions (Lesen), Issue anlegen/kommentieren/Status (Mutation); Anhang läuft per REST-Upload     |
-| `api/plan/`         |        11 | **Read-Lookups fürs Plan-Grid** (Slot/Raum/Aufsicht-Abfragen, interaktiv per `fetch`) — bewusst als eigene Gruppe belassen |
+| Ordner              | Endpunkte | Inhalt                                                                                                                                |
+| ------------------- | --------: | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                           |
+| `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                                          |
+| `api/preplan/`      |        13 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung)                                                          |
+| `api/semester/`     |        10 | Semester/Workspace wechseln & anlegen, Read-only-Schutz, Config, Planer, Generierungs-Config                                          |
+| `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                      |
+| `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                           |
+| `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                             |
+| `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                            |
+| `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                                         |
+| `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                                         |
+| `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                                        |
+| `api/log/`          |         1 | Mutations-Log                                                                                                                         |
+| `api/jira/`         |         7 | Jira: Verbindung/Issue-Detail/offene Issues/Transitions (Lesen), Issue anlegen/kommentieren/Status (Mutation); Anhang per REST-Upload |
+| `api/plan/`         |        11 | **Read-Lookups fürs Plan-Grid** (Slot/Raum/Aufsicht-Abfragen, interaktiv per `fetch`) — bewusst als eigene Gruppe belassen            |
 
 **Hinweis:** Einige POST-Proxys sind in Wahrheit Lese-Abfragen und dürfen auch im
 geschützten (read-only) Semester laufen — die Allowlist steht in
