@@ -479,6 +479,9 @@
 	let validationKind = $state('');
 	let validating = $state(false);
 	let generating = $state(false);
+	let resetting = $state(false);
+	// neutrale Rückmeldung des Zurücksetzens (Anzahl zurückgesetzter Prüfungen)
+	let resetInfo = $state('');
 
 	// Strukturierte Findings nach Level rendern (Fallback: flache messages als INFO).
 	/** @param {string} level */
@@ -564,6 +567,43 @@
 			listError = err instanceof Error ? err.message : String(err);
 		} finally {
 			generating = false;
+		}
+	}
+
+	// Vorplanung zurücksetzen: löscht plannedStarttime aller NICHT-fixierten
+	// Pre-Prüfungen (fixierte + die Pre-Exams selbst bleiben). Kein „alles löschen".
+	async function reset() {
+		if (validating || generating || resetting) return;
+		if (
+			!confirm(
+				'Alle nicht fixierten geplanten Zeiten der Vorplanung löschen? Fixierte Prüfungen (🔒) bleiben erhalten.'
+			)
+		)
+			return;
+		resetting = true;
+		listError = '';
+		resetInfo = '';
+		validation = null;
+		try {
+			const res = await fetch('/api/preplan/resetPreplanTimes', {
+				method: 'POST',
+				headers: jsonHeaders
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			const n = Number(result.resetPreplanTimes ?? 0);
+			resetInfo =
+				n > 0
+					? `${n} ${n === 1 ? 'Prüfung' : 'Prüfungen'} zurückgesetzt.`
+					: 'Keine nicht-fixierten Zeiten vorhanden.';
+			await invalidateAll();
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		} finally {
+			resetting = false;
 		}
 	}
 	let unplanned = $derived(
@@ -676,16 +716,28 @@
 		<span class="text-xs text-base-content/50">
 			🤖 verteilt alle <strong>nicht</strong>-fixierten Prüfungen neu; 🔒 fixierte bleiben.
 		</span>
-		<button class="btn btn-outline btn-sm" onclick={validate} disabled={validating || generating}>
+		<button
+			class="btn btn-outline btn-sm"
+			onclick={validate}
+			disabled={validating || generating || resetting}
+		>
 			{validating ? 'prüft …' : '✔ Prüfen'}
 		</button>
 		<WriteButton
 			class="btn btn-secondary btn-sm"
 			onclick={generate}
-			disabled={validating || generating}
+			disabled={validating || generating || resetting}
 			title="Verteilt alle nicht-fixierten Prüfungen neu (auch bereits gesetzte); fixierte bleiben."
 		>
 			{generating ? 'verteilt …' : '🤖 Automatisch verteilen'}
+		</WriteButton>
+		<WriteButton
+			class="btn btn-outline btn-error btn-sm"
+			onclick={reset}
+			disabled={validating || generating || resetting}
+			title="Löscht die geplanten Zeiten aller nicht-fixierten Prüfungen; fixierte (🔒) bleiben."
+		>
+			{resetting ? 'setzt zurück …' : '↺ Zeiten zurücksetzen'}
 		</WriteButton>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Prüfung</button>
 	</div>
@@ -759,6 +811,13 @@
 
 	{#if listError}
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
+	{/if}
+
+	{#if resetInfo}
+		<div class="alert alert-info py-2 text-sm">
+			<span>↺ {resetInfo}</span>
+			<button class="btn btn-ghost btn-xs" onclick={() => (resetInfo = '')}>schließen</button>
+		</div>
 	{/if}
 
 	<!-- Befunde aus Validieren / Generieren -->
@@ -846,7 +905,7 @@
 							<span title={m.connected ? 'verbunden — Constraint aktiv' : 'noch nicht verbunden'}>
 								{m.connected ? '✓' : '⏳'}
 							</span>
-							<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+							<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 								{m.examKind}
 							</span>
 							<span class={m.connected ? '' : 'text-base-content/60'}>{m.module}</span>
@@ -875,7 +934,7 @@
 						<span
 							class="flex items-center gap-1 rounded border border-base-300 bg-base-100 px-2 py-1 text-xs"
 						>
-							<span class="badge badge-xs {e.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+							<span class="badge badge-xs {e.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 								{e.examKind}
 							</span>
 							<span class="font-medium">{e.module}</span>
@@ -954,9 +1013,9 @@
 									>
 								{/if}
 								{#if e.examKind === 'SEB'}
-									<span class="badge badge-error badge-sm">SEB</span>
+									<span class="badge badge-info badge-sm">SEB</span>
 								{:else}
-									<span class="badge badge-info badge-sm">{e.examKind}</span>
+									<span class="badge badge-error badge-sm">{e.examKind}</span>
 								{/if}
 							</td>
 							<td>
@@ -1232,7 +1291,7 @@
 								<span title={m.connected ? 'verbunden — Constraint aktiv' : 'noch nicht verbunden'}>
 									{m.connected ? '✓' : '⏳'}
 								</span>
-								<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+								<span class="badge badge-xs {m.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 									{m.examKind}
 								</span>
 								<span>{m.module}</span>
@@ -1395,7 +1454,7 @@
 								checked={conForm.sameSlot.includes(o.id)}
 								onchange={() => toggleSameSlot(o.id)}
 							/>
-							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 								{o.examKind}
 							</span>
 							<span>{o.module}</span>
@@ -1424,7 +1483,7 @@
 								checked={conNotSame.includes(o.id)}
 								onchange={() => toggleNotSame(o.id)}
 							/>
-							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 								{o.examKind}
 							</span>
 							<span>{o.module}</span>
@@ -1456,7 +1515,7 @@
 								checked={conCanShare.includes(o.id)}
 								onchange={() => toggleCanShare(o.id)}
 							/>
-							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-error' : 'badge-info'}">
+							<span class="badge badge-xs {o.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
 								{o.examKind}
 							</span>
 							<span>{o.module}</span>

@@ -97,12 +97,12 @@
 		!selectedPrograms.length ||
 		(b.programs ?? []).some((/** @type {string} */ p) => selectedPrograms.includes(p));
 
-	/** @param {string} kind */
+	/** @param {string} kind — EXaHM rot, SEB blau */
 	const coreClass = (kind) =>
-		kind === 'SEB' ? 'bg-error/80 text-error-content' : 'bg-info/80 text-info-content';
+		kind === 'SEB' ? 'bg-info/80 text-info-content' : 'bg-error/80 text-error-content';
 	/** @param {string} kind Vor-/Nachlauf: schwacher Kasten in der Prüfungsfarbe */
 	const windowClass = (kind) =>
-		kind === 'SEB' ? 'border-error/40 bg-error/10' : 'border-info/40 bg-info/10';
+		kind === 'SEB' ? 'border-info/40 bg-info/10' : 'border-error/40 bg-error/10';
 
 	// Räume mit tatsächlich gezeichneten Balken (für die Legende)
 	let legendRooms = $derived(roomOrder((annyBars ?? []).map((b) => b.room)));
@@ -144,10 +144,10 @@
 	<!-- Legende -->
 	<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
 		<span class="flex items-center gap-1">
-			<span class="inline-block h-3 w-3 rounded-sm bg-info/80"></span> EXaHM
+			<span class="inline-block h-3 w-3 rounded-sm bg-error/80"></span> EXaHM
 		</span>
 		<span class="flex items-center gap-1">
-			<span class="inline-block h-3 w-3 rounded-sm bg-error/80"></span> SEB
+			<span class="inline-block h-3 w-3 rounded-sm bg-info/80"></span> SEB
 		</span>
 		<span class="flex items-center gap-1">
 			<span class="inline-block h-3 w-4 rounded-sm border border-base-content/40 bg-base-content/10"
@@ -283,7 +283,7 @@
 				<div class="flex flex-wrap items-center gap-x-2 tabular-nums">
 					<span>{o.st.dot}</span>
 					<span class="font-medium">{slotLabel(o.starttime)}</span>
-					<span class="badge badge-xs {o.kind === 'SEB' ? 'badge-error' : 'badge-info'}"
+					<span class="badge badge-xs {o.kind === 'SEB' ? 'badge-info' : 'badge-error'}"
 						>{o.kind}</span
 					>
 					<span class="text-base-content/70"
