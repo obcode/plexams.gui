@@ -16,6 +16,18 @@ export const GET: RequestHandler = async ({ url }) => {
 					status
 					issueType
 					url
+					created
+					reporter {
+						displayName
+						emailAddress
+					}
+					comments {
+						author {
+							displayName
+						}
+						body
+						created
+					}
 				}
 			}
 		`,

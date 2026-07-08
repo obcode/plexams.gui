@@ -1,6 +1,7 @@
 <script>
 	import {
 		fetchConnection,
+		fetchOpenIssues,
 		fetchIssue,
 		fetchTransitions,
 		createIssue,
@@ -8,14 +9,14 @@
 		runTransition,
 		attachToIssue
 	} from '$lib/jira/client.js';
-	import { connectionStatus, resolveIssueKey } from '$lib/jira/jira.js';
+	import { connectionStatus, groupByIssueType, formatJiraDate } from '$lib/jira/jira.js';
 
 	let { data } = $props();
 
 	/** @param {unknown} e */
 	const errMsg = (e) => (e instanceof Error ? e.message : String(e));
 
-	// ── Verbindung ────────────────────────────────────────────────────────────
+	// ── Verbindung ──────────────────────────────────────────────────────────────
 	let connection = $state(data.connection);
 	let connError = $state(data.connectionError);
 	let checking = $state(false);
@@ -34,43 +35,55 @@
 		}
 	}
 
-	// ── Neues Issue ─────────────────────────────────────────────────────────────
-	let cProject = $state('');
-	let cIssueType = $state('');
-	let cSummary = $state('');
-	let cDescription = $state('');
-	let creating = $state(false);
-	let createError = $state('');
-	/** @type {import('$lib/jira/jira.js').JiraIssue | null} */
-	let created = $state(null);
+	// ── Offene Issues + Sichten ───────────────────────────────────────────────────
+	/** @type {import('$lib/jira/jira.js').JiraIssue[]} */
+	let flat = $state(data.openIssues);
+	/** @type {import('$lib/jira/jira.js').JiraRequestTypeGroup[]} */
+	let byRequestType = $state(data.byRequestType);
+	let listLoading = $state(false);
+	let listError = $state('');
 
-	async function submitCreate() {
-		if (!cSummary.trim() || creating) return;
-		creating = true;
-		createError = '';
-		created = null;
+	// für FK07PP ist „nach Anfragetyp" die relevante Gruppierung
+	let view = $state(/** @type {'flat' | 'type' | 'requestType'} */ ('requestType'));
+	/** @type {['flat' | 'type' | 'requestType', string][]} */
+	const viewTabs = [
+		['flat', 'flach'],
+		['type', 'nach Typ'],
+		['requestType', 'nach Anfragetyp']
+	];
+	let byType = $derived(groupByIssueType(flat));
+	let anyCreated = $derived(flat.some((i) => i.created));
+	let total = $derived(flat.length);
+
+	// Alle Sichten auf ein gemeinsames { label, issues }[] normalisieren.
+	let groups = $derived(
+		view === 'flat'
+			? [{ label: '', issues: flat }]
+			: view === 'type'
+				? byType.map((g) => ({ label: g.issueType, issues: g.issues }))
+				: byRequestType.map((g) => ({ label: g.requestType || '—', issues: g.issues }))
+	);
+
+	async function refreshLists() {
+		listLoading = true;
+		listError = '';
 		try {
-			created = await createIssue({
-				project: cProject.trim(),
-				issueType: cIssueType.trim(),
-				summary: cSummary.trim(),
-				description: cDescription.trim()
-			});
-			cSummary = '';
-			cDescription = '';
+			const r = await fetchOpenIssues();
+			flat = r.openIssues;
+			byRequestType = r.byRequestType;
 		} catch (e) {
-			createError = errMsg(e);
+			listError = errMsg(e);
 		} finally {
-			creating = false;
+			listLoading = false;
 		}
 	}
 
-	// ── Issue-Editor (nachschlagen / kommentieren / Status / Anhang) ─────────────
-	let lookupKey = $state('');
+	// ── Detailpanel ───────────────────────────────────────────────────────────────
+	let selectedKey = $state('');
 	/** @type {import('$lib/jira/jira.js').JiraIssue | null} */
-	let issue = $state(null);
-	let loading = $state(false);
-	let editError = $state('');
+	let detail = $state(null);
+	let detailLoading = $state(false);
+	let detailError = $state('');
 
 	/** @type {{ id: string, name: string }[]} */
 	let transitions = $state([]);
@@ -88,51 +101,53 @@
 	let attaching = $state(false);
 	let attachMsg = $state('');
 
-	function resetEditorMessages() {
+	let showCreate = $state(false);
+
+	function resetActionMessages() {
 		commentMsg = '';
 		transitionMsg = '';
 		attachMsg = '';
+		commentBody = '';
+		selectedTransition = '';
+		attachFile = null;
 	}
 
 	/** @param {string} key */
-	async function loadIssue(key) {
-		const k = resolveIssueKey(key); // reine Nummer → FK07PP-<n>
-		if (!k) return;
-		loading = true;
-		editError = '';
-		resetEditorMessages();
+	async function selectIssue(key) {
+		showCreate = false;
+		selectedKey = key;
+		detailLoading = true;
+		detailError = '';
+		resetActionMessages();
 		try {
-			issue = await fetchIssue(k);
-			lookupKey = k;
-			if (!issue) {
-				editError = `Kein Issue „${k}“ gefunden.`;
+			detail = await fetchIssue(key);
+			if (!detail) {
+				detailError = `Kein Issue „${key}“ gefunden.`;
 				transitions = [];
 				return;
 			}
-			transitions = await fetchTransitions(k).catch(() => []);
-			selectedTransition = '';
+			transitions = await fetchTransitions(key).catch(() => []);
 		} catch (e) {
-			issue = null;
+			detail = null;
 			transitions = [];
-			editError = errMsg(e);
+			detailError = errMsg(e);
 		} finally {
-			loading = false;
+			detailLoading = false;
 		}
 	}
 
-	/** Ein soeben erstelltes Issue in den Editor übernehmen. */
-	function openCreatedInEditor() {
-		if (created?.key) loadIssue(created.key);
-	}
-
 	async function submitComment() {
-		if (!issue || !commentBody.trim() || commenting) return;
+		if (!detail || !commentBody.trim() || commenting) return;
 		commenting = true;
 		commentMsg = '';
 		try {
-			const ok = await addComment(issue.key, commentBody.trim());
-			commentMsg = ok ? '✓ Kommentar hinzugefügt.' : 'Konnte Kommentar nicht speichern.';
-			if (ok) commentBody = '';
+			const ok = await addComment(detail.key, commentBody.trim());
+			if (ok) {
+				commentBody = '';
+				await selectIssue(detail.key); // Thread neu laden
+			} else {
+				commentMsg = 'Konnte Kommentar nicht speichern.';
+			}
 		} catch (e) {
 			commentMsg = errMsg(e);
 		} finally {
@@ -141,14 +156,15 @@
 	}
 
 	async function submitTransition() {
-		if (!issue || !selectedTransition || transitioning) return;
+		if (!detail || !selectedTransition || transitioning) return;
 		transitioning = true;
 		transitionMsg = '';
+		const key = detail.key;
 		try {
-			const ok = await runTransition(issue.key, selectedTransition);
+			const ok = await runTransition(key, selectedTransition);
 			if (ok) {
 				transitionMsg = '✓ Status geändert.';
-				await loadIssue(issue.key); // Status/Übergänge frisch holen
+				await Promise.all([selectIssue(key), refreshLists()]);
 			} else {
 				transitionMsg = 'Übergang fehlgeschlagen.';
 			}
@@ -167,11 +183,11 @@
 	}
 
 	async function submitAttachment() {
-		if (!issue || !attachFile || attaching) return;
+		if (!detail || !attachFile || attaching) return;
 		attaching = true;
 		attachMsg = '';
 		try {
-			const r = await attachToIssue({ key: issue.key, file: attachFile });
+			const r = await attachToIssue({ key: detail.key, file: attachFile });
 			if (r.ok) attachMsg = `✓ „${attachFile.name}“ angehängt.`;
 			else if (r.blocked)
 				attachMsg = 'Gerade gesperrt (Validierung/Transfer läuft) — später erneut.';
@@ -182,7 +198,74 @@
 			attaching = false;
 		}
 	}
+
+	// ── Neues Issue ───────────────────────────────────────────────────────────────
+	let cSummary = $state('');
+	let cDescription = $state('');
+	let creating = $state(false);
+	let createError = $state('');
+
+	function openCreate() {
+		showCreate = true;
+		selectedKey = '';
+		detail = null;
+		createError = '';
+	}
+
+	async function submitCreate() {
+		if (!cSummary.trim() || creating) return;
+		creating = true;
+		createError = '';
+		try {
+			const issue = await createIssue({
+				summary: cSummary.trim(),
+				description: cDescription.trim()
+			});
+			cSummary = '';
+			cDescription = '';
+			await refreshLists();
+			if (issue?.key) await selectIssue(issue.key);
+			else showCreate = false;
+		} catch (e) {
+			createError = errMsg(e);
+		} finally {
+			creating = false;
+		}
+	}
 </script>
+
+{#snippet issueRow(/** @type {import('$lib/jira/jira.js').JiraIssue} */ issue)}
+	<tr
+		class="hover cursor-pointer {selectedKey === issue.key ? 'bg-primary/10' : ''}"
+		onclick={() => selectIssue(issue.key)}
+	>
+		<td class="whitespace-nowrap font-medium">
+			<span class="link link-primary">{issue.key}</span>
+			{#if issue.url}
+				<a
+					href={issue.url}
+					target="_blank"
+					rel="noreferrer"
+					class="ml-1 text-base-content/40 hover:text-primary"
+					title="in Jira öffnen"
+					onclick={(e) => e.stopPropagation()}>↗</a
+				>
+			{/if}
+		</td>
+		<td class="max-w-[24rem] truncate" title={issue.summary ?? ''}>{issue.summary}</td>
+		<td class="whitespace-nowrap">
+			{#if issue.status}<span class="badge badge-info badge-sm">{issue.status}</span>{/if}
+		</td>
+		<td class="whitespace-nowrap text-sm text-base-content/70"
+			>{issue.reporter?.displayName ?? '—'}</td
+		>
+		{#if anyCreated}
+			<td class="tabular-nums whitespace-nowrap text-sm text-base-content/60">
+				{formatJiraDate(issue.created)}
+			</td>
+		{/if}
+	</tr>
+{/snippet}
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<!-- Kopf mit Verbindungs-Badge -->
@@ -205,134 +288,172 @@
 		<div class="alert alert-warning py-2 text-sm"><span>{connError}</span></div>
 	{/if}
 
-	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-		<!-- ── Neues Issue ──────────────────────────────────────────────────── -->
-		<section class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-			<h2 class="text-lg font-semibold">Neues Issue</h2>
-			<div class="flex flex-wrap gap-3">
-				<label class="flex flex-1 flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Projekt (optional)</span>
-					<input
-						type="text"
-						class="input input-bordered input-sm w-full"
-						bind:value={cProject}
-						placeholder="Standard: FK07PP"
-					/>
-				</label>
-				<label class="flex flex-1 flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Typ (optional)</span>
-					<input
-						type="text"
-						class="input input-bordered input-sm w-full"
-						bind:value={cIssueType}
-						placeholder="Standard: Task"
-					/>
-				</label>
-			</div>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Zusammenfassung *</span>
-				<input
-					type="text"
-					class="input input-bordered input-sm w-full"
-					bind:value={cSummary}
-					placeholder="Titel des Issues"
-				/>
-			</label>
-			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Beschreibung</span>
-				<textarea
-					class="textarea textarea-bordered textarea-sm w-full"
-					rows="4"
-					bind:value={cDescription}
-					placeholder="optional"
-				></textarea>
-			</label>
-			<div class="flex items-center gap-3">
-				<button
-					class="btn btn-primary btn-sm"
-					disabled={creating || !cSummary.trim()}
-					onclick={submitCreate}
-				>
-					{creating ? 'erstelle …' : 'Issue erstellen'}
-				</button>
-			</div>
-			{#if createError}
-				<div class="alert alert-error py-2 text-sm"><span>{createError}</span></div>
-			{/if}
-			{#if created}
-				<div class="alert alert-success flex-wrap gap-2 py-2 text-sm">
-					<span>
-						Erstellt:
-						<a class="link font-semibold" href={created.url} target="_blank" rel="noreferrer">
-							{created.key}
-						</a>
-					</span>
-					<button class="btn btn-ghost btn-xs" onclick={openCreatedInEditor}>
-						im Editor öffnen →
-					</button>
+	<div class="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
+		<!-- ── Liste ──────────────────────────────────────────────────────────── -->
+		<section class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
+			<div class="flex flex-wrap items-center gap-2">
+				<h2 class="text-lg font-semibold">Offene Issues</h2>
+				<span class="badge badge-neutral badge-sm tabular-nums">{total}</span>
+				<div class="flex-1"></div>
+				<div class="tabs tabs-boxed tabs-sm">
+					{#each viewTabs as [val, label]}
+						<button class="tab {view === val ? 'tab-active' : ''}" onclick={() => (view = val)}>
+							{label}
+						</button>
+					{/each}
 				</div>
+				<button class="btn btn-ghost btn-sm" disabled={listLoading} onclick={refreshLists}>
+					{listLoading ? '↻ …' : '↻'}
+				</button>
+				<button class="btn btn-primary btn-sm" onclick={openCreate}>+ Neues Issue</button>
+			</div>
+
+			{#if listError}
+				<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
 			{/if}
+
+			<div class="overflow-x-auto">
+				{#each groups as g}
+					{#if g.label}
+						<div class="mt-3 mb-1 flex items-center gap-2 px-1 first:mt-0">
+							<span class="text-sm font-semibold text-base-content/80">{g.label}</span>
+							<span class="badge badge-ghost badge-xs tabular-nums">{g.issues.length}</span>
+						</div>
+					{/if}
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th>Key</th>
+								<th>Zusammenfassung</th>
+								<th>Status</th>
+								<th>Autor</th>
+								{#if anyCreated}<th>Erstellt</th>{/if}
+							</tr>
+						</thead>
+						<tbody>
+							{#each g.issues as issue (issue.key)}
+								{@render issueRow(issue)}
+							{:else}
+								<tr>
+									<td
+										colspan={anyCreated ? 5 : 4}
+										class="py-4 text-center text-sm text-base-content/50"
+									>
+										Keine offenen Issues.
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/each}
+			</div>
 		</section>
 
-		<!-- ── Issue bearbeiten ─────────────────────────────────────────────── -->
+		<!-- ── Detail / Neues Issue ───────────────────────────────────────────── -->
 		<section class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-			<h2 class="text-lg font-semibold">Issue bearbeiten</h2>
-			<div class="flex flex-wrap items-end gap-2">
-				<label class="flex flex-1 flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Issue-Key oder Nummer</span>
+			{#if showCreate}
+				<div class="flex items-center gap-2">
+					<h2 class="text-lg font-semibold">Neues Issue</h2>
+					<div class="flex-1"></div>
+					<button class="btn btn-ghost btn-xs" onclick={() => (showCreate = false)}>✕</button>
+				</div>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Zusammenfassung *</span>
 					<input
 						type="text"
 						class="input input-bordered input-sm w-full"
-						bind:value={lookupKey}
-						placeholder="z. B. FK07PP-12 oder 12"
-						onkeydown={(e) => e.key === 'Enter' && loadIssue(lookupKey)}
+						bind:value={cSummary}
+						placeholder="Titel des Issues"
 					/>
 				</label>
-				<button
-					class="btn btn-sm"
-					disabled={loading || !lookupKey.trim()}
-					onclick={() => loadIssue(lookupKey)}
-				>
-					{loading ? 'lädt …' : 'Laden'}
-				</button>
-			</div>
-
-			{#if editError}
-				<div class="alert alert-error py-2 text-sm"><span>{editError}</span></div>
-			{/if}
-
-			{#if issue}
-				<div class="flex flex-col gap-2 rounded-md bg-base-200 p-3">
-					<div class="flex flex-wrap items-center gap-2">
-						<a
-							class="link link-primary font-semibold"
-							href={issue.url}
-							target="_blank"
-							rel="noreferrer"
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Beschreibung</span>
+					<textarea
+						class="textarea textarea-bordered textarea-sm w-full"
+						rows="5"
+						bind:value={cDescription}
+						placeholder="optional"
+					></textarea>
+				</label>
+				<div class="text-xs text-base-content/50">
+					Projekt FK07PP, Typ „Task" (Backend-Default).
+				</div>
+				<div>
+					<button
+						class="btn btn-primary btn-sm"
+						disabled={creating || !cSummary.trim()}
+						onclick={submitCreate}
+					>
+						{creating ? 'erstelle …' : 'Issue erstellen'}
+					</button>
+				</div>
+				{#if createError}
+					<div class="alert alert-error py-2 text-sm"><span>{createError}</span></div>
+				{/if}
+			{:else if detailLoading}
+				<div class="flex items-center gap-2 text-sm text-base-content/60">
+					<span class="loading loading-spinner loading-sm"></span> lädt …
+				</div>
+			{:else if detailError}
+				<div class="alert alert-error py-2 text-sm"><span>{detailError}</span></div>
+			{:else if detail}
+				<div class="flex flex-wrap items-center gap-2">
+					<a
+						class="link link-primary text-lg font-semibold"
+						href={detail.url}
+						target="_blank"
+						rel="noreferrer"
+					>
+						{detail.key}
+					</a>
+					{#if detail.issueType}<span class="badge badge-neutral badge-sm">{detail.issueType}</span
+						>{/if}
+					{#if detail.status}<span class="badge badge-info badge-sm">{detail.status}</span>{/if}
+				</div>
+				<div class="text-sm text-base-content/60">
+					{detail.reporter?.displayName ?? '—'}{#if detail.reporter?.emailAddress}<span
+							class="text-base-content/40"
 						>
-							{issue.key}
-						</a>
-						{#if issue.issueType}
-							<span class="badge badge-neutral badge-sm">{issue.issueType}</span>
-						{/if}
-						{#if issue.status}
-							<span class="badge badge-info badge-sm">{issue.status}</span>
-						{/if}
+							· {detail.reporter.emailAddress}</span
+						>{/if}
+					{#if formatJiraDate(detail.created)}<span class="text-base-content/40">
+							· {formatJiraDate(detail.created)}</span
+						>{/if}
+				</div>
+				<div class="font-medium">{detail.summary}</div>
+				{#if detail.description}
+					<div
+						class="max-h-48 overflow-y-auto rounded-md bg-base-200 p-3 text-sm whitespace-pre-wrap"
+					>
+						{detail.description}
 					</div>
-					<div class="font-medium">{issue.summary}</div>
-					{#if issue.description}
-						<div class="whitespace-pre-wrap text-sm text-base-content/70">{issue.description}</div>
-					{/if}
+				{/if}
+
+				<!-- Kommentar-Thread (oldest-first) -->
+				<div class="flex flex-col gap-2">
+					<span class="text-xs font-medium text-base-content/60">
+						Kommentare ({detail.comments?.length ?? 0})
+					</span>
+					{#each detail.comments ?? [] as c}
+						<div class="rounded-md border border-base-300 p-2 text-sm">
+							<div class="mb-1 flex flex-wrap gap-2 text-xs text-base-content/50">
+								<span class="font-medium text-base-content/70">{c.author?.displayName ?? '—'}</span>
+								<span>{formatJiraDate(c.created)}</span>
+							</div>
+							<div class="whitespace-pre-wrap">{c.body}</div>
+						</div>
+					{:else}
+						<span class="text-sm text-base-content/40">Noch keine Kommentare.</span>
+					{/each}
 				</div>
 
-				<!-- Kommentar -->
+				<!-- Kommentar hinzufügen -->
 				<div class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Kommentar</span>
 					<textarea
 						class="textarea textarea-bordered textarea-sm w-full"
 						rows="2"
 						bind:value={commentBody}
-						placeholder="Kommentartext"
+						placeholder="Kommentar hinzufügen"
 					></textarea>
 					<div class="flex items-center gap-2">
 						<button
@@ -340,44 +461,35 @@
 							disabled={commenting || !commentBody.trim()}
 							onclick={submitComment}
 						>
-							{commenting ? 'sende …' : 'Kommentar hinzufügen'}
+							{commenting ? 'sende …' : 'Kommentar'}
 						</button>
-						{#if commentMsg}
-							<span class="text-sm text-base-content/70">{commentMsg}</span>
-						{/if}
+						{#if commentMsg}<span class="text-sm text-error">{commentMsg}</span>{/if}
 					</div>
 				</div>
 
 				<!-- Status ändern -->
-				<div class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Status ändern</span>
-					<div class="flex flex-wrap items-center gap-2">
-						<select
-							class="select select-bordered select-sm w-full sm:w-56"
-							bind:value={selectedTransition}
-							disabled={!transitions.length}
-						>
-							<option value=""
-								>{transitions.length ? 'Übergang wählen …' : 'keine Übergänge'}</option
-							>
-							{#each transitions as t}
-								<option value={t.id}>{t.name}</option>
-							{/each}
-						</select>
-						<button
-							class="btn btn-sm"
-							disabled={transitioning || !selectedTransition}
-							onclick={submitTransition}
-						>
-							{transitioning ? 'ändere …' : 'ausführen'}
-						</button>
-						{#if transitionMsg}
-							<span class="text-sm text-base-content/70">{transitionMsg}</span>
-						{/if}
-					</div>
+				<div class="flex flex-wrap items-center gap-2">
+					<select
+						class="select select-bordered select-sm w-full sm:w-52"
+						bind:value={selectedTransition}
+						disabled={!transitions.length}
+					>
+						<option value="">{transitions.length ? 'Status ändern …' : 'keine Übergänge'}</option>
+						{#each transitions as t}
+							<option value={t.id}>{t.name}</option>
+						{/each}
+					</select>
+					<button
+						class="btn btn-sm"
+						disabled={transitioning || !selectedTransition}
+						onclick={submitTransition}
+					>
+						{transitioning ? 'ändere …' : 'ausführen'}
+					</button>
+					{#if transitionMsg}<span class="text-sm text-base-content/70">{transitionMsg}</span>{/if}
 				</div>
 
-				<!-- Anhang -->
+				<!-- Datei anhängen -->
 				<div class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Datei anhängen (PDF/CSV …)</span>
 					<div class="flex flex-wrap items-center gap-2">
@@ -395,9 +507,13 @@
 							{attaching ? 'lädt …' : 'anhängen'}
 						</button>
 					</div>
-					{#if attachMsg}
-						<span class="text-sm text-base-content/70">{attachMsg}</span>
-					{/if}
+					{#if attachMsg}<span class="text-sm text-base-content/70">{attachMsg}</span>{/if}
+				</div>
+			{:else}
+				<div
+					class="flex h-full items-center justify-center py-12 text-center text-sm text-base-content/50"
+				>
+					Wähle links ein Issue — oder lege ein neues an.
 				</div>
 			{/if}
 		</section>

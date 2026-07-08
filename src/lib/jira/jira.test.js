@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { connectionStatus, normalizeIssueKey, resolveIssueKey, isValidIssueKey } from './jira.js';
+import {
+	connectionStatus,
+	normalizeIssueKey,
+	resolveIssueKey,
+	isValidIssueKey,
+	groupByIssueType,
+	formatJiraDate
+} from './jira.js';
 
 describe('connectionStatus', () => {
 	it('meldet Erfolg mit displayName', () => {
@@ -60,5 +67,50 @@ describe('isValidIssueKey', () => {
 		expect(isValidIssueKey('FK07PP')).toBe(false);
 		expect(isValidIssueKey('12-FK07PP')).toBe(false);
 		expect(isValidIssueKey('FK07PP-')).toBe(false);
+	});
+});
+
+describe('groupByIssueType', () => {
+	const mk = (/** @type {string} */ key, /** @type {string|null} */ issueType) => ({
+		key,
+		issueType
+	});
+
+	it('gruppiert nach Typ, größte Gruppe zuerst', () => {
+		const groups = groupByIssueType([
+			mk('A-1', 'Task'),
+			mk('A-2', 'Anfrage'),
+			mk('A-3', 'Task'),
+			mk('A-4', 'Task')
+		]);
+		expect(groups.map((g) => g.issueType)).toEqual(['Task', 'Anfrage']);
+		expect(groups[0].issues).toHaveLength(3);
+	});
+
+	it('sortiert bei Gleichstand alphabetisch', () => {
+		const groups = groupByIssueType([mk('A-1', 'Bug'), mk('A-2', 'Anfrage')]);
+		expect(groups.map((g) => g.issueType)).toEqual(['Anfrage', 'Bug']);
+	});
+
+	it('fehlender Typ landet unter „—"', () => {
+		expect(groupByIssueType([mk('A-1', null)])[0].issueType).toBe('—');
+	});
+
+	it('verträgt leer/undefined', () => {
+		expect(groupByIssueType([])).toEqual([]);
+		expect(groupByIssueType(/** @type {any} */ (undefined))).toEqual([]);
+	});
+});
+
+describe('formatJiraDate', () => {
+	it('formatiert einen ISO-Zeitstempel (Berlin)', () => {
+		const s = formatJiraDate('2026-07-07T20:24:56.074+02:00');
+		expect(s).toContain('07.07.2026');
+		expect(s).toContain('20:24');
+	});
+	it('leere/ungültige Werte → leerer String', () => {
+		expect(formatJiraDate(null)).toBe('');
+		expect(formatJiraDate('')).toBe('');
+		expect(formatJiraDate('kein-datum')).toBe('');
 	});
 });

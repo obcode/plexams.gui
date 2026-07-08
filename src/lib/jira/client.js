@@ -38,6 +38,16 @@ async function apiPost(path, body) {
 export const fetchConnection = () =>
 	apiGet('/api/jira/connection').then((d) => d.jiraConnection ?? null);
 
+/**
+ * Offene Issues neu laden (flache Liste + Gruppierung nach Anfragetyp).
+ * @returns {Promise<{ openIssues: import('./jira.js').JiraIssue[], byRequestType: import('./jira.js').JiraRequestTypeGroup[] }>}
+ */
+export const fetchOpenIssues = () =>
+	apiGet('/api/jira/openIssues').then((d) => ({
+		openIssues: d.jiraOpenIssues ?? [],
+		byRequestType: d.jiraOpenIssuesByRequestType ?? []
+	}));
+
 /** @param {string} key @returns {Promise<import('./jira.js').JiraIssue | null>} */
 export const fetchIssue = (key) =>
 	apiGet(`/api/jira/issue?key=${encodeURIComponent(key)}`).then((d) => d.jiraIssue ?? null);
