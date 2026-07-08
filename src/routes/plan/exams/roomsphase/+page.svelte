@@ -3,6 +3,8 @@
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -313,6 +315,24 @@
 			Derselbe Seed erzeugt bei unveränderten Daten denselben Plan.
 		</span>
 	</div>
+
+	<!-- Phase-A-Solver-Gewicht (Teil der globalen generationConfig) -->
+	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
+		<summary class="collapse-title text-sm font-medium">
+			⚙️ Solver-Gewicht (T-Bau)
+			<span class="font-normal text-base-content/50">· global · wirkt beim nächsten „Planen"</span>
+		</summary>
+		<div class="collapse-content flex flex-col gap-3">
+			<div class="max-w-3xl text-xs text-base-content/50">
+				Steuert nur die Raumphase A: wie stark ungenutzte gebuchte T-Bau-Sitze bestraft werden
+				(füllt den T-Bau dichter). Mit sinnvollem Default vorbelegt — nur bei Bedarf ändern.
+			</div>
+			<GenerationConfigFields
+				config={data.generationConfig}
+				sections={[{ cols: 'sm:grid-cols-2 xl:grid-cols-3', fields: ROOM_PHASE_A_WEIGHT_FIELDS }]}
+			/>
+		</div>
+	</details>
 
 	{#if errorMsg}
 		<div class="alert alert-error" transition:fade><span>{errorMsg}</span></div>

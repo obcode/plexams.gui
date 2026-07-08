@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -117,6 +118,9 @@ export const load: PageServerLoad = async () => {
 						connected
 						ancode
 					}
+				}
+				generationConfig {
+					${GENERATION_CONFIG_FIELDS}
 				}
 			}
 		`
@@ -289,6 +293,8 @@ export const load: PageServerLoad = async () => {
 		calendarSlots,
 		sameSlotGroups: data.preplanSameSlotGroups ?? [],
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
-		zpaPresent: (data.zpaExams ?? []).length > 0
+		zpaPresent: (data.zpaExams ?? []).length > 0,
+		// Pre-Plan-Solver-Parameter (Teil der globalen generationConfig)
+		generationConfig: data.generationConfig ?? null
 	};
 };

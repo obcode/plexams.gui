@@ -5,6 +5,8 @@
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
+	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import { PREPLAN_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -864,6 +866,27 @@
 			</span>
 		</div>
 	</div>
+
+	<!-- Pre-Plan-Solver-Parameter (Teil der globalen generationConfig) -->
+	<details class="collapse-arrow collapse w-full border border-base-300 bg-base-100">
+		<summary class="collapse-title text-sm font-medium">
+			⚙️ Pre-Plan-Parameter
+			<span class="font-normal text-base-content/50"
+				>· global · wirkt beim „Automatisch verteilen"</span
+			>
+		</summary>
+		<div class="collapse-content flex flex-col gap-3">
+			<div class="max-w-3xl text-xs text-base-content/50">
+				Steuert die automatische SEB/EXaHM-Verteilung: welcher Anteil der in Anny gebuchten
+				T-Bau-Sitze genutzt werden darf (1.0 = voll füllen). Mit sinnvollem Default vorbelegt — nur
+				bei Bedarf ändern.
+			</div>
+			<GenerationConfigFields
+				config={data.generationConfig}
+				sections={[{ cols: 'sm:grid-cols-2 xl:grid-cols-3', fields: PREPLAN_CONFIG_FIELDS }]}
+			/>
+		</div>
+	</details>
 
 	{#if listError}
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>

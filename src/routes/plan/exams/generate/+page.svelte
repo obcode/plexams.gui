@@ -6,7 +6,11 @@
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
-	import { toGenerationConfigInput } from '$lib/semester/generationConfig';
+	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import {
+		toGenerationConfigInput,
+		EXAM_SCHEDULE_WEIGHT_FIELDS
+	} from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -943,6 +947,27 @@
 			ab. Erscheint unten in „Angewandte Constraints".
 		</span>
 	</div>
+
+	<!-- Terminplan-Solver-Gewichte (Teil der globalen generationConfig) -->
+	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
+		<summary class="collapse-title text-sm font-medium">
+			⚙️ Solver-Gewichte
+			<span class="font-normal text-base-content/50"
+				>· global · wirken beim nächsten „Generieren"</span
+			>
+		</summary>
+		<div class="collapse-content flex flex-col gap-3">
+			<div class="max-w-3xl text-xs text-base-content/50">
+				Feinjustierung der Terminplan-Optimierung. Alle Werte sind mit sinnvollen Defaults vorbelegt
+				— nur bei Bedarf ändern. <strong>„ungeplante Prüfung"</strong> ist dominant und sollte hoch bleiben.
+				Die T-Bau-Gewichtung der Phase A steht auf „EXaHM/SEB in T-Bau planen".
+			</div>
+			<GenerationConfigFields
+				config={data.generationConfig}
+				sections={[{ fields: EXAM_SCHEDULE_WEIGHT_FIELDS }]}
+			/>
+		</div>
+	</details>
 
 	<!-- Angewandte Constraints (read-only) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">

@@ -2,8 +2,8 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { toGenerationConfigInput } from '$lib/semester/generationConfig';
+	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import { INVIG_METHOD_FIELDS, INVIG_WEIGHT_FIELDS } from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -183,150 +183,6 @@
 			? Math.min(100, Math.round((current.progress.iteration / current.progress.total) * 100))
 			: 0
 	);
-
-	// --- Globale Optimierer-Parameter (generationConfig) ---
-	// Die drei Solver teilen sich eine Config; hier als eigene Abschnitte editiert.
-	/** @typedef {{ key: string, label: string, int?: boolean, caution?: boolean, hint?: string }} CfgField */
-
-	// Aufsichten (invigplan) — unverändert.
-	/** @type {CfgField[]} */
-	const NUM_FIELDS = [
-		{ key: 'iterations', label: 'Iterationen', int: true },
-		{ key: 'startTemp', label: 'Start-Temperatur' },
-		{ key: 'endTemp', label: 'End-Temperatur' },
-		{ key: 'toleranceMin', label: 'Toleranz (min)', int: true },
-		{ key: 'maxSpanHours', label: 'max. Spanne (h)' }
-	];
-	/** @type {CfgField[]} */
-	const WEIGHTS = [
-		{ key: 'weightMinuteBalance', label: 'Minuten-Balance' },
-		{ key: 'weightBeyondTolerance', label: 'über Toleranz' },
-		{ key: 'weightOverTargetFactor', label: 'über Soll (Faktor)' },
-		{ key: 'weightCoverage', label: 'Abdeckung' },
-		{ key: 'weightMaxDays', label: 'max. Tage' },
-		{ key: 'weightPreferExamDays', label: 'Prüfungstage bevorzugen' },
-		{ key: 'weightDistribution', label: 'Verteilung' },
-		{ key: 'weightDaySpan', label: 'Tages-Spanne' }
-	];
-
-	// Terminplan (examplan) — Solver-Gewichte (wirken beim „Terminplan generieren").
-	/** @type {CfgField[]} */
-	const EXAM_WEIGHTS = [
-		{
-			key: 'examAdjacent',
-			label: 'direkt hintereinander',
-			hint: 'zwei Prüfungen direkt hintereinander am selben Tag (sehr schlecht)'
-		},
-		{ key: 'examSameDay', label: 'selber Tag', hint: 'selber Tag, nicht direkt hintereinander' },
-		{
-			key: 'examDayFactor',
-			label: 'Tagesabstand-Faktor',
-			hint: 'über Tage: fällt mit dem echten Stundenabstand'
-		},
-		{
-			key: 'examWorstCase',
-			label: 'Worst-Case-Schutz',
-			hint: 'schützt den am schlechtesten verteilten Studierenden'
-		},
-		{
-			key: 'examRepeatFactor',
-			label: 'Wiederholungs-Faktor',
-			hint: 'Abwertung für (wahrscheinliche) Wiederholungs-Konflikte (0..1)'
-		},
-		{
-			key: 'examAttract',
-			label: 'Zusammenziehen',
-			hint: 'zieht Parallelgruppen/kleine Prüfungen desselben Prüfers zusammen'
-		},
-		{
-			key: 'examSlotLoad',
-			label: 'Startzeit-Auslastung',
-			hint: 'Gleichverteilung über Startzeiten'
-		},
-		{
-			key: 'examLoadThreshold',
-			label: 'Auslastungs-Schwelle',
-			int: true,
-			hint: 'Schwelle für die Gleichverteilung über Startzeiten'
-		},
-		{
-			key: 'examUnplaced',
-			label: 'ungeplante Prüfung',
-			caution: true,
-			hint: 'Strafe pro ungeplanter Prüfung — dominant, hoch lassen'
-		},
-		{
-			key: 'examCrossCampus',
-			label: 'Standortwechsel',
-			hint: 'selber Tag über verschiedene Standorte (Reisezeit)'
-		},
-		{
-			key: 'examTbauFill',
-			label: 'T-Bau-Sitze',
-			hint: 'pro ungenutztem gebuchten T-Bau-Sitz (nur EXaHM/SEB-Raumphase A)'
-		},
-		{
-			key: 'examHole',
-			label: 'Startzeit-Lücke',
-			hint: 'leere Startzeit zwischen belegten am selben Tag (schlecht für Aufsichten)'
-		},
-		{
-			key: 'examClosenessFalloffMin',
-			label: 'Zeit-Falloff (min)',
-			hint: '0 = raster-äquivalent; >0 = kontinuierlicher Zeit-Falloff (Zeitkonstante in Minuten) für feinere Startzeiten'
-		}
-	];
-
-	// Pre-Plan.
-	/** @type {CfgField[]} */
-	const PREPLAN = [
-		{
-			key: 'preplanCapacityFactor',
-			label: 'Kapazitäts-Faktor',
-			hint: 'nutzbarer Anteil der gebuchten Anny-Sitze (1.0 = voll füllen)'
-		}
-	];
-
-	const ALL_PARAMS = [...NUM_FIELDS, ...WEIGHTS, ...EXAM_WEIGHTS, ...PREPLAN];
-
-	/** @type {Record<string, any>} */
-	let cfgForm = $state({});
-	for (const f of ALL_PARAMS) cfgForm[f.key] = data.config?.[f.key] ?? 0;
-
-	let cfgSaving = $state(false);
-	let cfgError = $state('');
-	let cfgSavedAt = $state('');
-
-	async function saveConfig() {
-		if (cfgSaving) return;
-		cfgSaving = true;
-		cfgError = '';
-		cfgSavedAt = '';
-		// Nur die im Formular editierten Felder überschreiben; die Tageszeiten-Felder
-		// (auf der Terminplan-Seite editiert) verbatim aus der geladenen Config
-		// durchreichen — der Input ist komplett non-null.
-		/** @type {Record<string, any>} */
-		const overrides = {};
-		for (const f of ALL_PARAMS) overrides[f.key] = cfgForm[f.key];
-		const input = toGenerationConfigInput(data.config, overrides);
-		try {
-			const res = await fetch('/api/semester/setGenerationConfig', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ input })
-			});
-			const result = await res.json().catch(() => ({}));
-			if (!res.ok || result?.error) {
-				cfgError = result?.error ?? `Fehler (HTTP ${res.status})`;
-				return;
-			}
-			cfgSavedAt = new Date().toLocaleTimeString('de-DE');
-		} catch (e) {
-			cfgError = e instanceof Error ? e.message : String(e);
-		} finally {
-			cfgSaving = false;
-		}
-	}
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
@@ -393,96 +249,30 @@
 		</div>
 	</div>
 
-	<!-- Globale Optimierer-Parameter (selten geändert, daher eingeklappt) -->
+	<!-- Aufsichten-Optimierer-Parameter (global, selten geändert → eingeklappt) -->
 	<details class="collapse collapse-arrow border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Erweiterte Parameter
-			<span class="font-normal text-base-content/50"
-				>· global · alle drei Solver (Terminplan, Pre-Plan, Aufsichten)</span
-			>
+			<span class="font-normal text-base-content/50">· global · Aufsichten-Solver</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-4">
-			{#if cfgError}
-				<div class="alert alert-error py-2 text-sm"><span>{cfgError}</span></div>
-			{/if}
-			{#if cfgSavedAt}
-				<div class="alert alert-success py-2 text-sm">
-					<span>Parameter gespeichert ({cfgSavedAt}).</span>
-				</div>
-			{/if}
-
 			<div class="text-xs text-base-content/50">
-				Diese Werte gelten global für alle Läufe und kommen mit sinnvollen Defaults vorbelegt.
-				„Iterationen" oben (Schieberegler) ist der Wert für diesen Aufsichten-Lauf.
+				Diese Werte gelten global für alle Aufsichten-Läufe und kommen mit sinnvollen Defaults
+				vorbelegt. „Iterationen" oben (Schieberegler) ist der Wert für diesen Lauf. Die
+				Terminplan-Gewichte stehen auf „Terminplan generieren", die Pre-Plan-Parameter auf der
+				Vorplanungsseite.
 			</div>
-
-			{#snippet fieldGrid(/** @type {CfgField[]} */ fields, /** @type {string} */ cols)}
-				<div class="grid grid-cols-1 gap-3 {cols}">
-					{#each fields as f}
-						<label class="flex flex-col gap-1">
-							<span
-								class="flex items-center gap-1 text-xs font-medium text-base-content/60"
-								title={f.hint ?? ''}
-							>
-								{f.label}
-								{#if f.caution}
-									<span class="badge badge-warning badge-xs" title="dominant — mit Vorsicht ändern"
-										>⚠ Vorsicht</span
-									>
-								{/if}
-							</span>
-							<input
-								type="number"
-								step={f.int ? '1' : 'any'}
-								class="input input-bordered input-sm {f.caution ? 'input-warning' : ''}"
-								bind:value={cfgForm[f.key]}
-							/>
-							{#if f.hint}
-								<span class="text-[10px] leading-tight text-base-content/40">{f.hint}</span>
-							{/if}
-						</label>
-					{/each}
-				</div>
-			{/snippet}
-
-			<!-- Terminplan (examplan) -->
-			<section class="flex flex-col gap-2 rounded-lg border border-base-200 p-3">
-				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
-					Terminplan · Solver-Gewichte
-				</div>
-				{@render fieldGrid(EXAM_WEIGHTS, 'sm:grid-cols-3 xl:grid-cols-4')}
-			</section>
-
-			<!-- Pre-Plan -->
-			<section class="flex flex-col gap-2 rounded-lg border border-base-200 p-3">
-				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
-					Pre-Plan
-				</div>
-				{@render fieldGrid(PREPLAN, 'sm:grid-cols-3 xl:grid-cols-4')}
-			</section>
-
-			<!-- Aufsichten (invigplan) -->
-			<section class="flex flex-col gap-3 rounded-lg border border-base-200 p-3">
-				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
-					Aufsichten
-				</div>
-				<div class="flex flex-col gap-2">
-					<div class="text-xs font-medium text-base-content/50">
-						Verfahren (Simulated Annealing)
-					</div>
-					{@render fieldGrid(NUM_FIELDS, 'sm:grid-cols-3 xl:grid-cols-6')}
-				</div>
-				<div class="flex flex-col gap-2">
-					<div class="text-xs font-medium text-base-content/50">Gewichte</div>
-					{@render fieldGrid(WEIGHTS, 'sm:grid-cols-4')}
-				</div>
-			</section>
-
-			<div>
-				<WriteButton class="btn btn-outline btn-sm" disabled={cfgSaving} onclick={saveConfig}>
-					{cfgSaving ? 'speichert …' : 'Parameter speichern'}
-				</WriteButton>
-			</div>
+			<GenerationConfigFields
+				config={data.config}
+				sections={[
+					{
+						label: 'Verfahren (Simulated Annealing)',
+						cols: 'sm:grid-cols-3 xl:grid-cols-6',
+						fields: INVIG_METHOD_FIELDS
+					},
+					{ label: 'Gewichte', cols: 'sm:grid-cols-4', fields: INVIG_WEIGHT_FIELDS }
+				]}
+			/>
 		</div>
 	</details>
 
