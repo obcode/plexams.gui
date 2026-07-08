@@ -6,32 +6,37 @@
 // (SlotForTime); hier reicht der lokale Vergleich für Anzeige/Gruppierung/Keys.
 import { starttimeHHMM } from '$lib/exam/setExamTime';
 
-export type DayRef = { number: number; date: string };
-export type TimeRef = { number: number; start: string };
+// ExamDay/Starttime tragen keine `number` mehr (Backend-Zeitmodell). Die frühere
+// 1-basierte Tag-/Slot-Nummer entspricht exakt der Position im (chronologisch
+// sortierten) days-/starttimes-Array — sie wird hier über den Index abgeleitet.
+export type DayRef = { date: string };
+export type TimeRef = { start: string };
 
 /** Kalendertag „yyyy-mm-dd" (Ortszeit laut ISO-Offset) einer Startzeit. */
 export function dateKey(iso: string | null | undefined): string {
 	return String(iso ?? '').slice(0, 10);
 }
 
-/** dayNumber einer Startzeit über den Kalendertag; 0, wenn kein Prüfungstag. */
+/** dayNumber (1-basierte Position im days-Array) einer Startzeit; 0, wenn kein Prüfungstag. */
 export function dayNumberForTime(
 	iso: string | null | undefined,
 	days: DayRef[] | null | undefined
 ): number {
 	const k = dateKey(iso);
 	if (!k) return 0;
-	return (days ?? []).find((d) => dateKey(d.date) === k)?.number ?? 0;
+	const i = (days ?? []).findIndex((d) => dateKey(d.date) === k);
+	return i < 0 ? 0 : i + 1;
 }
 
-/** slotNumber einer Startzeit über die Uhrzeit (HH:MM); 0, wenn keine Standard-Anfangszeit. */
+/** slotNumber (1-basierte Position im starttimes-Array) einer Startzeit; 0, wenn keine Standard-Anfangszeit. */
 export function slotNumberForTime(
 	iso: string | null | undefined,
 	starttimes: TimeRef[] | null | undefined
 ): number {
 	const hm = starttimeHHMM(iso);
 	if (!hm) return 0;
-	return (starttimes ?? []).find((t) => (t.start ?? '').slice(0, 5) === hm)?.number ?? 0;
+	const i = (starttimes ?? []).findIndex((t) => (t.start ?? '').slice(0, 5) === hm);
+	return i < 0 ? 0 : i + 1;
 }
 
 /** true, wenn die Startzeit auf einen echten Prüfungstag fällt (innerhalb des Zeitraums). */

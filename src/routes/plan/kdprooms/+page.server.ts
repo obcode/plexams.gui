@@ -21,8 +21,7 @@ export const load: PageServerLoad = async () => {
 	const query = `
 		query {
 			roomsForSlots {
-				day
-				slot
+				starttime
 				rooms {
 					name
 					seats
@@ -74,17 +73,25 @@ export const load: PageServerLoad = async () => {
 			}
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
 		}
 	`;
 	const data = await request<any>(env.PLEXAMS_SERVER, query);
+
+	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
+	const cfgDays = (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+	const cfgStarttimes = (data.semesterConfig?.starttimes ?? []).map((s: any, i: number) => ({
+		...s,
+		number: i + 1
+	}));
 
 	// Build slot map
 	const slotMap = new Map<string, any>();
@@ -95,12 +102,15 @@ export const load: PageServerLoad = async () => {
 
 	// Initialize with T rooms availability per slot
 	for (const rs of data.roomsForSlots) {
-		const key = `${rs.day}-${rs.slot}`;
+		// RoomsForSlot liefert nur noch starttime; Tag/Slot lokal ableiten (Key wie unten).
+		const rsDay = dayNumberForTime(rs.starttime, cfgDays);
+		const rsSlot = slotNumberForTime(rs.starttime, cfgStarttimes);
+		const key = `${rsDay}-${rsSlot}`;
 		const tRooms = rs.rooms
 			.filter((r: { name: string; seats: number }) => r.name.startsWith('T'))
 			.map((r: { name: string; seats: number }) => ({ name: r.name, seats: r.seats }));
 		if (!slotMap.has(key)) {
-			slotMap.set(key, { day: rs.day, slot: rs.slot, tRooms, exams: [], annyBookings: [] });
+			slotMap.set(key, { day: rsDay, slot: rsSlot, tRooms, exams: [], annyBookings: [] });
 		} else slotMap.get(key).tRooms = tRooms;
 	}
 
@@ -124,10 +134,8 @@ export const load: PageServerLoad = async () => {
 		const pe = exam.planEntry;
 		// Zeitbasiert: Tag/Slot aus starttime ableiten. Ohne Zeit (noch nicht verplant)
 		// weiter unter day/slot = -1/-1 listen, um reservierte Räume zu zeigen.
-		const dayNumber = pe?.starttime ? dayNumberForTime(pe.starttime, data.semesterConfig.days) : -1;
-		const slotNumber = pe?.starttime
-			? slotNumberForTime(pe.starttime, data.semesterConfig.starttimes)
-			: -1;
+		const dayNumber = pe?.starttime ? dayNumberForTime(pe.starttime, cfgDays) : -1;
+		const slotNumber = pe?.starttime ? slotNumberForTime(pe.starttime, cfgStarttimes) : -1;
 		const key = `${dayNumber}-${slotNumber}`;
 		if (!slotMap.has(key)) {
 			slotMap.set(key, {
@@ -173,12 +181,12 @@ export const load: PageServerLoad = async () => {
 	const starttimeMap = new Map<number, string>();
 	const sortedStarttimes: { number: number; minutes: number }[] = [];
 	if (data.semesterConfig) {
-		for (const d of data.semesterConfig.days || []) {
+		for (const d of cfgDays) {
 			dayMap.set(d.number, d.date);
 			const dateKey = String(d.date || '').slice(0, 10);
 			if (dateKey) dayByDate.set(dateKey, d.number);
 		}
-		for (const s of data.semesterConfig.starttimes || []) {
+		for (const s of cfgStarttimes) {
 			starttimeMap.set(s.number, s.start);
 			const timeMatch = String(s.start || '').match(/(\d{2}):(\d{2})/);
 			if (!timeMatch) continue;

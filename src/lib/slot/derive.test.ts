@@ -1,14 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { dateKey, dayNumberForTime, slotNumberForTime, inPeriod } from './derive';
 
-const days = [
-	{ number: 1, date: '2026-07-06T00:00:00+02:00' },
-	{ number: 2, date: '2026-07-07T00:00:00+02:00' }
-];
-const starttimes = [
-	{ number: 1, start: '08:30' },
-	{ number: 2, start: '11:00' }
-];
+// Nummern werden aus der Array-Position abgeleitet (1-basiert), ExamDay/Starttime
+// tragen kein `number`-Feld mehr.
+const days = [{ date: '2026-07-06T00:00:00+02:00' }, { date: '2026-07-07T00:00:00+02:00' }];
+const starttimes = [{ start: '08:30' }, { start: '11:00' }];
 
 describe('dateKey', () => {
 	it('liefert den Kalendertag', () => {

@@ -19,7 +19,7 @@ type PlanEntryTime = {
 // Ergebnis-Shape der Query (nur die selektierten Felder — bewusst schlanker als
 // die vollen Schema-Typen aus $lib/gql/types).
 type QueryResult = {
-	semesterConfig: { days: { number: number; date: string }[] } | null;
+	semesterConfig: { days: { date: string }[] } | null;
 	mucdaiExams: {
 		primussAncode: number;
 		module: string;
@@ -71,7 +71,6 @@ export const load: PageServerLoad = async () => {
 				query {
 					semesterConfig {
 						days {
-							number
 							date
 						}
 					}
@@ -163,7 +162,7 @@ export const load: PageServerLoad = async () => {
 	} catch (e) {
 		return {
 			items: [] as OtherFkItem[],
-			days: [] as { number: number; date: string }[],
+			days: [] as { date: string }[],
 			loadError: gqlErrorMessage(e)
 		};
 	}

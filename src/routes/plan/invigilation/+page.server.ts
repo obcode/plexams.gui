@@ -8,11 +8,9 @@ export const load: PageServerLoad = async ({ url }) => {
 		query {
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -35,6 +33,18 @@ export const load: PageServerLoad = async ({ url }) => {
 			focus: url.searchParams.get('focus')
 		};
 	}
+
+	// Backend liefert keine `number` mehr in days/starttimes — die 1-basierte
+	// Nummer entspricht der Position (Index+1) in der geordneten Liste. Rekonstruieren,
+	// damit alle nachgelagerten `.number`-Zugriffe (UI-Keys, Kind-Komponenten) weiter greifen.
+	semesterConfig.days = (semesterConfig.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+	semesterConfig.starttimes = (semesterConfig.starttimes ?? []).map((s: any, i: number) => ({
+		...s,
+		number: i + 1
+	}));
 
 	const ntaQuery = gql`
 		query {

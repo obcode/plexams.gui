@@ -3,7 +3,7 @@
 	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
 	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
 	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
-	import { combineStarttime } from '$lib/exam/setExamTime';
+	import { combineStarttime, starttimeHHMM } from '$lib/exam/setExamTime';
 	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 	import { slide } from 'svelte/transition';
@@ -317,15 +317,15 @@
 						{#each data.unplaced as n}
 							<button
 								class="badge badge-sm cursor-pointer gap-1 border-error-content/30 hover:underline"
-								title="zum Tag/Slot springen (Tag {n.day} · Slot {n.slot})"
+								title="zum Tag/Slot springen ({mkDateShort(n.starttime)} · {starttimeHHMM(
+									n.starttime
+								)})"
 								onclick={() => jumpTo(n.day, n.slot)}
 							>
 								{#if n.nta}<span class="font-semibold">NTA</span>{/if}
 								{n.ancode}
-								{n.module}{n.mainExamer ? ` · ${n.mainExamer}` : ''} · {dayDateById[n.day]
-									? mkDateShort(dayDateById[n.day])
-									: `Tag ${n.day}`}
-								{slotStartById[n.slot] ?? `Slot ${n.slot}`} · {n.count}
+								{n.module}{n.mainExamer ? ` · ${n.mainExamer}` : ''} · {mkDateShort(n.starttime)}
+								{starttimeHHMM(n.starttime)} · {n.count}
 							</button>
 						{/each}
 					</div>
@@ -403,7 +403,7 @@
 								onclick={() => (showDays[day.number] = !showDays[day.number])}
 							>
 								<span class="text-base-content/50">{showDays[day.number] ? '▾' : '▸'}</span>
-								Tag {day.number}
+								{mkDateShort(day.date)}
 								<span class="text-sm font-normal text-base-content/50">{mkDate(day.date)}</span>
 							</button>
 							{#if showDays[day.number]}
@@ -423,7 +423,7 @@
 												<div
 													class="rounded-lg border border-base-300 bg-base-200 px-3 py-2 text-sm"
 												>
-													<div class="font-semibold">Slot {time.number}</div>
+													<div class="font-semibold">{time.start.slice(0, 5)}</div>
 													<div class="text-xs text-base-content/60">{time.start}</div>
 												</div>
 												{#if showRooms === 'all'}
@@ -457,7 +457,7 @@
 										class="-mx-3 -mb-3 mt-1 flex items-center justify-center gap-2 rounded-b-lg border-t border-base-300 px-4 py-2 text-sm font-medium text-base-content/50 hover:bg-base-200"
 										onclick={() => (showDays[day.number] = false)}
 									>
-										▴ Tag {day.number} zuklappen
+										▴ {mkDateShort(day.date)} zuklappen
 									</button>
 								</div>
 							{/if}
@@ -468,7 +468,7 @@
 				<!-- ============== nach Räumen ============== -->
 			{:else}
 				<p class="text-xs text-base-content/50">
-					Übersicht, in welchen Slots ein Raum eingeplant ist (Zahl = Slot-Nummer). Klick auf eine
+					Übersicht, in welchen Slots ein Raum eingeplant ist (Uhrzeit = Startzeit). Klick auf eine
 					Zelle sperrt/entsperrt den Raum für diesen Slot (durchgestrichen = gesperrt); danach neu
 					zuordnen.
 				</p>
@@ -479,8 +479,8 @@
 								<th class="sticky left-0 bg-base-200">Raum</th>
 								{#each data.semesterConfig.days as day}
 									<th class="text-center whitespace-nowrap">
-										Tag {day.number}<br /><span class="font-normal text-base-content/50"
-											>{mkDateShort(day.date)}</span
+										{mkDateShort(day.date)}<br /><span class="font-normal text-base-content/50"
+											>{mkDate(day.date)}</span
 										>
 									</th>
 								{/each}
@@ -511,10 +511,10 @@
 																: 'bg-base-200 text-base-content/30 hover:bg-base-300'}"
 														title={isBlocked
 															? `gesperrt${blockedReason ? ': ' + blockedReason : ''} — klicken zum Entsperren`
-															: `Tag ${day.number} · Slot ${slot.number}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
+															: `${mkDateShort(day.date)} · ${slot.start.slice(0, 5)}${planned ? ' · geplant' : ''} — klicken zum Sperren`}
 														onclick={() => toggleBlock(day.number, slot.number, roomName)}
 													>
-														{slot.number}
+														{slot.start.slice(0, 2)}
 													</WriteButton>
 												{/each}
 												<WriteButton

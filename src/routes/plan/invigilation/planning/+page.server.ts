@@ -77,11 +77,9 @@ export const load: PageServerLoad = async () => {
 		query {
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -89,6 +87,21 @@ export const load: PageServerLoad = async () => {
 	`;
 
 	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
+
+	// Backend liefert keine `number` mehr — die 1-basierte Nummer entspricht der
+	// Position (Index+1). Rekonstruieren, damit `.number`-Zugriffe in InvigilatorTR/
+	// InvigilatorDays weiter funktionieren.
+	const semesterConfig = semesterData.semesterConfig;
+	if (semesterConfig) {
+		semesterConfig.days = (semesterConfig.days ?? []).map((d: any, i: number) => ({
+			...d,
+			number: i + 1
+		}));
+		semesterConfig.starttimes = (semesterConfig.starttimes ?? []).map((s: any, i: number) => ({
+			...s,
+			number: i + 1
+		}));
+	}
 
 	// Personen, die Aufsicht machen würden (factor > 0), aber per
 	// invigilatorConstraints.<id>.isNotInvigilator in der semester.yaml manuell
@@ -110,7 +123,7 @@ export const load: PageServerLoad = async () => {
 	const excludedData = await request<any>(env.PLEXAMS_SERVER, excludedQuery);
 
 	return {
-		semesterConfig: semesterData.semesterConfig,
+		semesterConfig,
 		todos: dataTodos.invigilatorTodos,
 		excludedByConfig: excludedData.invigilatorsExcludedByConfig ?? []
 	};

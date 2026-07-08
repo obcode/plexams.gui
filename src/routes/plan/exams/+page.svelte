@@ -685,7 +685,7 @@
 													<div>{WD2[wd]}</div>
 													{#if d}
 														<div class="text-xs font-normal text-base-content/60">
-															#{d.number} · {ddmm(/** @type {Date} */ (dateObj(d.date)))}
+															{ddmm(/** @type {Date} */ (dateObj(d.date)))}
 														</div>
 													{/if}
 												</th>
@@ -696,8 +696,7 @@
 										{#each data.semesterConfig.starttimes as time}
 											<tr>
 												<td class="bg-base-200 text-center align-top text-xs tabular-nums">
-													<div class="font-semibold">{time.start}</div>
-													<div class="text-base-content/50">#{time.number}</div>
+													<div class="font-semibold">{time.start.slice(0, 5)}</div>
 												</td>
 												{#each weeks.cols as wd}
 													{@const d = w.byWd.get(wd)}

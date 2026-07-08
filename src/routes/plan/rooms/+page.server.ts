@@ -8,11 +8,9 @@ export const load: PageServerLoad = async () => {
 		query {
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -56,6 +54,19 @@ export const load: PageServerLoad = async () => {
 
 	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
+	// ExamDay/Starttime tragen keine `number` mehr (Backend-Zeitmodell). Die 1-basierte
+	// Tag-/Slot-Nummer entspricht der Position im (chronologisch sortierten) Array und wird
+	// hier rekonstruiert, damit Svelte + Kindkomponenten weiterhin `.number` lesen können.
+	if (data.semesterConfig) {
+		data.semesterConfig.days = (data.semesterConfig.days ?? []).map((d: any, i: number) => ({
+			...d,
+			number: i + 1
+		}));
+		data.semesterConfig.starttimes = (data.semesterConfig.starttimes ?? []).map(
+			(s: any, i: number) => ({ ...s, number: i + 1 })
+		);
+	}
+
 	// Zeitbasiert: PlannedRoom/UnplacedExam/BlockedRoom liefern nur noch starttime.
 	// day/slot werden hier lokal aus der Startzeit + semesterConfig abgeleitet, damit
 	// die (day-slot)-Keys/Anzeigen unverändert bleiben.
@@ -76,6 +87,7 @@ export const load: PageServerLoad = async () => {
 				ancode: u.ancode,
 				module: ex?.zpaExam?.module ?? '',
 				mainExamer: ex?.zpaExam?.mainExamer ?? '',
+				starttime: u.starttime,
 				day: dayOf(u.starttime),
 				slot: slotOf(u.starttime),
 				count: (u.mtknrs ?? []).length,

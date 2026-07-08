@@ -52,11 +52,9 @@ export const load: PageServerLoad = async () => {
 			}
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -155,10 +153,17 @@ export const load: PageServerLoad = async () => {
 		}))
 	].sort((a, b) => a.ancode - b.ancode);
 
+	// Die 1-basierte Tag-/Slot-Nummer entspricht der Position (Index+1) in den
+	// geordneten Arrays; dieselbe Positionslogik nutzen dayNumberForTime/
+	// slotNumberForTime. Für die Maps im Svelte (Lookup per dayNumber/slotNumber)
+	// die Nummer hier wieder anlegen.
 	return {
 		items,
-		days: data.semesterConfig?.days ?? [],
-		starttimes: data.semesterConfig?.starttimes ?? [],
+		days: (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({ ...d, number: i + 1 })),
+		starttimes: (data.semesterConfig?.starttimes ?? []).map((s: any, i: number) => ({
+			...s,
+			number: i + 1
+		})),
 		rooms: (data.rooms ?? []).map((r: any) => r.name)
 	};
 };

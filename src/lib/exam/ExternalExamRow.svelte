@@ -9,7 +9,7 @@
 		exam,
 		days = [],
 		onsaved
-	}: { exam: any; days?: { number: number; date: string }[]; onsaved?: () => void } = $props();
+	}: { exam: any; days?: { date: string }[]; onsaved?: () => void } = $props();
 
 	/** „13.07. 08:30" (Berlin) */
 	const dateTime = (iso: string) => {

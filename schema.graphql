@@ -430,7 +430,6 @@ type EnhancedStudentReg {
 }
 
 type ExamDay {
-	number: Int!
 	date: Time!
 }
 
@@ -2606,7 +2605,6 @@ input SpecialInterestInput {
 }
 
 type Starttime {
-	number: Int!
 	start: String!
 }
 

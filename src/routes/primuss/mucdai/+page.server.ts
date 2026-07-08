@@ -11,11 +11,9 @@ export const load: PageServerLoad = async () => {
 				query {
 					semesterConfig {
 						days {
-							number
 							date
 						}
 						starttimes {
-							number
 							start
 						}
 					}

@@ -43,7 +43,7 @@
 	<div class="border-2 border-black {bgSlot} rounded-lg shadow-xl m-4 p-2 text-center">
 		<div class="flex justify-between">
 			<div class="border-2 border-black rounded-lg shadow-xl bg-green-400 m-2 p-2 text-center">
-				Slot {time.number}: {time.start} Uhr
+				{time.start.slice(0, 5)} Uhr
 			</div>
 			{#if !noRooms}
 				{#if slot.reserve}

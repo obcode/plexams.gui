@@ -8,14 +8,12 @@ export const load: PageServerLoad = async () => {
 		query {
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				mucDaiSlots {
 					starttime
 				}
 				starttimes {
-					number
 					start
 				}
 				forbiddenSlots {
@@ -23,8 +21,7 @@ export const load: PageServerLoad = async () => {
 				}
 			}
 			roomsForSlots {
-				day
-				slot
+				starttime
 				rooms {
 					name
 					seats
@@ -252,6 +249,19 @@ export const load: PageServerLoad = async () => {
 		};
 	}
 
+	// Backend liefert kein `number` mehr in days/starttimes — die 1-basierte
+	// Tag-/Slot-Nummer entspricht der Position (Index+1) im geordneten Array.
+	// Sie wird hier rekonstruiert, damit die zusammengesetzten Grid-Schlüssel
+	// (`day.number,time.number`) im Client unverändert weiterfunktionieren.
+	semesterConfig.days = (semesterConfig.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+	semesterConfig.starttimes = (semesterConfig.starttimes ?? []).map((s: any, i: number) => ({
+		...s,
+		number: i + 1
+	}));
+
 	const globalSlotStatus = new Map<string, string>();
 
 	for (const day of semesterConfig.days) {
@@ -272,7 +282,8 @@ export const load: PageServerLoad = async () => {
 	const roomForSlotsMap = new Map<string, any>();
 	if (semesterData.roomsForSlots) {
 		for (const slot of semesterData.roomsForSlots) {
-			const key = `${slot.day},${slot.slot}`;
+			// RoomsForSlot liefert nur noch starttime; Tag/Slot lokal ableiten (Key wie im Grid).
+			const key = `${dayNumberForTime(slot.starttime, semesterConfig.days)},${slotNumberForTime(slot.starttime, semesterConfig.starttimes)}`;
 			roomForSlotsMap.set(key, slot.rooms);
 		}
 	}

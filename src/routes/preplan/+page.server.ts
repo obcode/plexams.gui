@@ -61,11 +61,9 @@ export const load: PageServerLoad = async () => {
 				}
 				semesterConfig {
 					days {
-						number
 						date
 					}
 					starttimes {
-						number
 						start
 					}
 					slots {

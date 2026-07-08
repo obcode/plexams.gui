@@ -51,7 +51,7 @@
 	function slotTip(e) {
 		if (e.slot) {
 			const st = (startBySlot.get(e.slot.slotNumber) ?? '').slice(0, 5);
-			return `schon (vor)geplant: ${ddmm(dateByDay.get(e.slot.dayNumber))} ${st} (${e.slot.dayNumber}/${e.slot.slotNumber})`;
+			return `schon (vor)geplant: ${ddmm(dateByDay.get(e.slot.dayNumber))} ${st}`;
 		}
 		return 'schon (vor)geplant (Vorplanung, noch ohne Slot)';
 	}

@@ -7,6 +7,8 @@
 	import WriteButton from '$lib/WriteButton.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
+	import { mkDateShort } from '$lib/jshelper/misc';
+	import { starttimeHHMM } from '$lib/exam/setExamTime';
 
 	let { data } = $props();
 
@@ -541,7 +543,9 @@
 								<td>{fmtDate(r.from)}</td>
 								<td class="tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td>
 								<td class="font-medium">{r.room}</td>
-								<td class="text-base-content/60">Tag {r.day} · Slot {r.slot}</td>
+								<td class="text-base-content/60"
+									>{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}</td
+								>
 								<td><RoomRequestPlanned planned={r.planned} /></td>
 								<td>
 									<RoomRequestToggles
@@ -575,7 +579,7 @@
 												>{fmtTime(r.from)}–{fmtTime(r.until)}</td
 											>
 											<td class="whitespace-nowrap text-base-content/60"
-												>Tag {r.day} · Slot {r.slot}</td
+												>{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}</td
 											>
 											<td><RoomRequestPlanned planned={r.planned} /></td>
 											<td>
@@ -600,7 +604,11 @@
 				{#each bySlot as group (group.day + '-' + group.slot)}
 					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
 						<div class="mb-2 flex items-center gap-2">
-							<span class="font-semibold">Tag {group.day} · Slot {group.slot}</span>
+							<span class="font-semibold"
+								>{mkDateShort(group.reqs[0].starttime)} · {starttimeHHMM(
+									group.reqs[0].starttime
+								)}</span
+							>
 							<span class="badge badge-ghost badge-sm tabular-nums">{group.reqs.length}</span>
 							<span class="text-xs text-base-content/50">{fmtDate(group.reqs[0].from)}</span>
 						</div>

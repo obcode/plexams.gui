@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import StreamAction from '$lib/zpa/StreamAction.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { mkDateShort } from '$lib/jshelper/misc';
 
 	let { data } = $props();
 	let bookings = $derived(data.bookings || []);
@@ -426,7 +427,7 @@
 							<div class="min-w-[130px] flex-1">
 								<div class="h-6 text-center text-xs font-medium tabular-nums">
 									{day.label}
-									{#if day.dayNumber}<span class="text-base-content/40">· T{day.dayNumber}</span
+									{#if day.date}<span class="text-base-content/40">· {mkDateShort(day.date)}</span
 										>{/if}
 								</div>
 								<div
@@ -575,7 +576,11 @@
 										{fmtDate(slot.date)}
 										{slot.start || ''}
 									</div>
-									<div class="text-xs text-base-content/50">Tag/Slot {slot.day}/{slot.slot}</div>
+									<div class="text-xs text-base-content/50">
+										{slot.date ? mkDateShort(slot.date) : '—'} · {slot.start
+											? slot.start.slice(0, 5)
+											: '—'}
+									</div>
 									<div class="mt-1">
 										<span
 											class="badge badge-sm tabular-nums {Number(slot.coveredRooms) > 0

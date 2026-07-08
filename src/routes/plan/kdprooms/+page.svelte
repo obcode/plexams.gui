@@ -1,4 +1,6 @@
 <script>
+	import { mkDateShort } from '$lib/jshelper/misc';
+
 	let { data } = $props();
 	let slots = data.slots;
 	let hideEmpty = $state(true);
@@ -98,7 +100,11 @@
 					{:else}
 						Ungeplant
 					{/if}
-					<span class="text-sm text-base-content/50">(Tag {slot.day} · Slot {slot.slot})</span>
+					<span class="text-sm text-base-content/50"
+						>({slot.date ? mkDateShort(slot.date) : '—'} · {slot.start
+							? slot.start.slice(0, 5)
+							: '—'})</span
+					>
 				</div>
 				<div class="flex flex-wrap gap-1">
 					{#each roomStatuses as rs}

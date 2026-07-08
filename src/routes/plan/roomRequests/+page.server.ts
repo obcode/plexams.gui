@@ -41,11 +41,9 @@ export const load: PageServerLoad = async () => {
 			query {
 				semesterConfig {
 					days {
-						number
 						date
 					}
 					starttimes {
-						number
 						start
 					}
 				}
@@ -65,8 +63,15 @@ export const load: PageServerLoad = async () => {
 			}
 		`
 	);
-	const cfgDays = cfg.semesterConfig?.days ?? [];
-	const cfgStarts = cfg.semesterConfig?.starttimes ?? [];
+	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
+	const cfgDays = (cfg.semesterConfig?.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+	const cfgStarts = (cfg.semesterConfig?.starttimes ?? []).map((s: any, i: number) => ({
+		...s,
+		number: i + 1
+	}));
 
 	// Belegung je Startzeit einmal laden (die Anfragen tragen die starttime direkt).
 	const startKeys = [...new Set(roomRequests.map((r: any) => r.starttime))] as string[];
@@ -166,8 +171,8 @@ export const load: PageServerLoad = async () => {
 
 	return {
 		roomRequests: enriched,
-		days: cfg.semesterConfig?.days ?? [],
-		starttimes: cfg.semesterConfig?.starttimes ?? [],
+		days: cfgDays,
+		starttimes: cfgStarts,
 		managementRooms,
 		conditionsDone: conditionsDoneMap(cfg.planningState)
 	};

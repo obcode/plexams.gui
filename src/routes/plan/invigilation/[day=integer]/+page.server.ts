@@ -7,11 +7,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		query {
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -20,8 +18,23 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
 
+	// Backend liefert keine `number` mehr — die 1-basierte Nummer entspricht der
+	// Position (Index+1). Rekonstruieren, damit `.number`-Zugriffe (Tag-Auswahl,
+	// Kind-Komponenten) weiter funktionieren.
+	const semesterConfig = semesterData.semesterConfig;
+	if (semesterConfig) {
+		semesterConfig.days = (semesterConfig.days ?? []).map((d: any, i: number) => ({
+			...d,
+			number: i + 1
+		}));
+		semesterConfig.starttimes = (semesterConfig.starttimes ?? []).map((s: any, i: number) => ({
+			...s,
+			number: i + 1
+		}));
+	}
+
 	return {
-		semesterConfig: semesterData.semesterConfig,
+		semesterConfig,
 		day: params.day
 	};
 };

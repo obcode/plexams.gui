@@ -47,12 +47,12 @@
 			{#if day.number == data.day}
 				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab tab-active" href="./{day.number}">
-					Tag {day.number}: {mkDate(day.date)}
+					{mkDate(day.date)}
 				</a>
 			{:else}
 				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab" href="./{day.number}">
-					Tag {day.number}: {mkDateShort(day.date)}
+					{mkDateShort(day.date)}
 				</a>
 			{/if}
 		{/each}

@@ -453,8 +453,7 @@
 					<summary
 						class="flex cursor-pointer list-none items-center gap-3 border-l-8 border-primary bg-base-200 px-4 py-3 text-base-content"
 					>
-						<span class="text-lg font-bold">Tag {day.number}</span>
-						<span class="text-sm text-base-content/70">{mkDateShort(day.date)}</span>
+						<span class="text-lg font-bold">{mkDateShort(day.date)}</span>
 						<span class="ml-auto flex items-center gap-2 text-xs text-base-content/70">
 							{dayRoomCount(day)} Räume
 							{#if dayOpenCount(day) > 0}
@@ -479,9 +478,8 @@
 										: 'border-b border-base-300 pb-1.5'}"
 								>
 									<span class="badge {slotHi ? 'badge-neutral' : 'badge-primary'}"
-										>Slot {s.time.number}</span
+										>{s.time.start.slice(0, 5)} Uhr</span
 									>
-									<span class="font-semibold">{s.time.start} Uhr</span>
 									{#if slot}
 										{#if slot.reserve}
 											<button

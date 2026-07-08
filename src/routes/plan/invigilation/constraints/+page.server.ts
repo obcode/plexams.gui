@@ -27,7 +27,6 @@ export const load: PageServerLoad = async () => {
 			}
 			semesterConfig {
 				days {
-					number
 					date
 				}
 			}
@@ -57,10 +56,17 @@ export const load: PageServerLoad = async () => {
 		.slice()
 		.sort((a: any, b: any) => (a.name ?? '').localeCompare(b.name ?? ''));
 
+	// Backend liefert keine `number` mehr — die 1-basierte Nummer entspricht der
+	// Position (Index+1). Rekonstruieren (konsistent mit den übrigen Loads).
+	const days = (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+
 	return {
 		constraints,
 		candidates,
 		permanent,
-		days: data.semesterConfig?.days ?? []
+		days
 	};
 };

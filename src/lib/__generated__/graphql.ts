@@ -362,7 +362,6 @@ export type EnhancedStudentReg = {
 export type ExamDay = {
   __typename?: 'ExamDay';
   date: Scalars['Time']['output'];
-  number: Scalars['Int']['output'];
 };
 
 export type ExamDurationOverride = {
@@ -2723,7 +2722,6 @@ export type SpecialInterestInput = {
 
 export type Starttime = {
   __typename?: 'Starttime';
-  number: Scalars['Int']['output'];
   start: Scalars['String']['output'];
 };
 

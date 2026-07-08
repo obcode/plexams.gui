@@ -53,7 +53,6 @@ export const load: PageServerLoad = async () => {
 				query {
 					semesterConfig {
 						days {
-							number
 							date
 						}
 						maxSeatsPerSlot
@@ -61,7 +60,10 @@ export const load: PageServerLoad = async () => {
 				}
 			`
 		);
-		if (dd.semesterConfig?.days) days = dd.semesterConfig.days;
+		// Die 1-basierte Tag-Nummer entspricht der Position (Index+1) in den geordneten
+		// Tagen; das Setup-Formular (SemesterConfigForm) liest sie als d.number.
+		if (dd.semesterConfig?.days)
+			days = dd.semesterConfig.days.map((d: any, i: number) => ({ ...d, number: i + 1 }));
 		if (dd.semesterConfig) effective = { maxSeatsPerSlot: dd.semesterConfig.maxSeatsPerSlot };
 	} catch {
 		// ohne Config (frisches Semester) kann semesterConfig fehlschlagen → keine Tage

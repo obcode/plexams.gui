@@ -124,11 +124,9 @@ export async function load() {
 			}
 			semesterConfig {
 				days {
-					number
 					date
 				}
 				starttimes {
-					number
 					start
 				}
 			}
@@ -137,18 +135,28 @@ export async function load() {
 
 	const data = await request<any>(env.PLEXAMS_SERVER, query);
 
+	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
+	const cfgDays = (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({
+		...d,
+		number: i + 1
+	}));
+	const cfgStarttimes = (data.semesterConfig?.starttimes ?? []).map((s: any, i: number) => ({
+		...s,
+		number: i + 1
+	}));
+
 	const dayMap = new Map<number, string>();
 	const dayByDate = new Map<string, number>();
 	const starttimeMap = new Map<number, string>();
 	const sortedStarttimes: Array<{ number: number; minutes: number }> = [];
 
-	for (const d of data.semesterConfig?.days || []) {
+	for (const d of cfgDays) {
 		dayMap.set(d.number, d.date);
 		const dateKey = String(d.date || '').slice(0, 10);
 		if (dateKey) dayByDate.set(dateKey, d.number);
 	}
 
-	for (const s of data.semesterConfig?.starttimes || []) {
+	for (const s of cfgStarttimes) {
 		starttimeMap.set(s.number, s.start);
 		const timeMatch = String(s.start || '').match(/(\d{2}):(\d{2})/);
 		if (!timeMatch) continue;
