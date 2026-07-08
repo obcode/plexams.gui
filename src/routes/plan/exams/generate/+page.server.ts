@@ -1,6 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
+import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
 
 // Terminplan-Generierung: Gate (EXAMS in blockedAreas → Schreiben gesperrt), die
@@ -48,22 +49,7 @@ export const load: PageServerLoad = async () => {
 						tier
 					}
 					generationConfig {
-						iterations
-						startTemp
-						endTemp
-						toleranceMin
-						maxSpanHours
-						weightMinuteBalance
-						weightBeyondTolerance
-						weightOverTargetFactor
-						weightCoverage
-						weightMaxDays
-						weightPreferExamDays
-						weightDistribution
-						weightDaySpan
-						slotTimeMode
-						slotTimeWeight
-						slotTimeWinterEarliest
+						${GENERATION_CONFIG_FIELDS}
 					}
 					semesterConfigInput {
 						from

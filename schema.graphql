@@ -702,6 +702,28 @@ type GenerationConfig {
 	slotTimeMode: SlotTimeConstraintMode!
 	slotTimeWeight: Float!
 	slotTimeWinterEarliest: String!
+
+	"""
+	exam-schedule (examplan) solver weights.
+	"""
+	examAdjacent: Float!
+	examSameDay: Float!
+	examDayFactor: Float!
+	examWorstCase: Float!
+	examRepeatFactor: Float!
+	examAttract: Float!
+	examSlotLoad: Float!
+	examLoadThreshold: Int!
+	examUnplaced: Float!
+	examCrossCampus: Float!
+	examTbauFill: Float!
+	examHole: Float!
+	examClosenessFalloffMin: Float!
+
+	"""
+	pre-plan: usable fraction of the booked Anny seats (1.0 = fill completely).
+	"""
+	preplanCapacityFactor: Float!
 }
 
 input GenerationConfigInput {
@@ -721,6 +743,20 @@ input GenerationConfigInput {
 	slotTimeMode: SlotTimeConstraintMode!
 	slotTimeWeight: Float!
 	slotTimeWinterEarliest: String!
+	examAdjacent: Float!
+	examSameDay: Float!
+	examDayFactor: Float!
+	examWorstCase: Float!
+	examRepeatFactor: Float!
+	examAttract: Float!
+	examSlotLoad: Float!
+	examLoadThreshold: Int!
+	examUnplaced: Float!
+	examCrossCampus: Float!
+	examTbauFill: Float!
+	examHole: Float!
+	examClosenessFalloffMin: Float!
+	preplanCapacityFactor: Float!
 }
 
 type ImportMucDaiResult {

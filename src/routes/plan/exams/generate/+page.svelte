@@ -6,6 +6,7 @@
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { toGenerationConfigInput } from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -140,25 +141,13 @@
 		slotTimeBusy = true;
 		slotTimeInfo = '';
 		slotTimeError = '';
-		// invigilation-/SA-Felder verbatim übernehmen, nur die Tageszeiten-Felder ändern
-		const input = {
-			iterations: g.iterations,
-			startTemp: g.startTemp,
-			endTemp: g.endTemp,
-			toleranceMin: g.toleranceMin,
-			maxSpanHours: g.maxSpanHours,
-			weightMinuteBalance: g.weightMinuteBalance,
-			weightBeyondTolerance: g.weightBeyondTolerance,
-			weightOverTargetFactor: g.weightOverTargetFactor,
-			weightCoverage: g.weightCoverage,
-			weightMaxDays: g.weightMaxDays,
-			weightPreferExamDays: g.weightPreferExamDays,
-			weightDistribution: g.weightDistribution,
-			weightDaySpan: g.weightDaySpan,
+		// Alle übrigen Solver-Felder (Aufsichten, Terminplan-Gewichte, Pre-Plan)
+		// verbatim übernehmen, nur die Tageszeiten-Felder ändern.
+		const input = toGenerationConfigInput(g, {
 			slotTimeMode,
 			slotTimeWeight: slotTimeWeight === '' || slotTimeWeight == null ? 0 : Number(slotTimeWeight),
 			slotTimeWinterEarliest
-		};
+		});
 		try {
 			const res = await fetch('/api/semester/setGenerationConfig', {
 				method: 'POST',

@@ -3,6 +3,7 @@
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
 	import WriteButton from '$lib/WriteButton.svelte';
+	import { toGenerationConfigInput } from '$lib/semester/generationConfig';
 
 	let { data } = $props();
 
@@ -184,6 +185,11 @@
 	);
 
 	// --- Globale Optimierer-Parameter (generationConfig) ---
+	// Die drei Solver teilen sich eine Config; hier als eigene Abschnitte editiert.
+	/** @typedef {{ key: string, label: string, int?: boolean, caution?: boolean, hint?: string }} CfgField */
+
+	// Aufsichten (invigplan) — unverändert.
+	/** @type {CfgField[]} */
 	const NUM_FIELDS = [
 		{ key: 'iterations', label: 'Iterationen', int: true },
 		{ key: 'startTemp', label: 'Start-Temperatur' },
@@ -191,6 +197,7 @@
 		{ key: 'toleranceMin', label: 'Toleranz (min)', int: true },
 		{ key: 'maxSpanHours', label: 'max. Spanne (h)' }
 	];
+	/** @type {CfgField[]} */
 	const WEIGHTS = [
 		{ key: 'weightMinuteBalance', label: 'Minuten-Balance' },
 		{ key: 'weightBeyondTolerance', label: 'über Toleranz' },
@@ -201,7 +208,86 @@
 		{ key: 'weightDistribution', label: 'Verteilung' },
 		{ key: 'weightDaySpan', label: 'Tages-Spanne' }
 	];
-	const ALL_PARAMS = [...NUM_FIELDS, ...WEIGHTS];
+
+	// Terminplan (examplan) — Solver-Gewichte (wirken beim „Terminplan generieren").
+	/** @type {CfgField[]} */
+	const EXAM_WEIGHTS = [
+		{
+			key: 'examAdjacent',
+			label: 'direkt hintereinander',
+			hint: 'zwei Prüfungen direkt hintereinander am selben Tag (sehr schlecht)'
+		},
+		{ key: 'examSameDay', label: 'selber Tag', hint: 'selber Tag, nicht direkt hintereinander' },
+		{
+			key: 'examDayFactor',
+			label: 'Tagesabstand-Faktor',
+			hint: 'über Tage: fällt mit dem echten Stundenabstand'
+		},
+		{
+			key: 'examWorstCase',
+			label: 'Worst-Case-Schutz',
+			hint: 'schützt den am schlechtesten verteilten Studierenden'
+		},
+		{
+			key: 'examRepeatFactor',
+			label: 'Wiederholungs-Faktor',
+			hint: 'Abwertung für (wahrscheinliche) Wiederholungs-Konflikte (0..1)'
+		},
+		{
+			key: 'examAttract',
+			label: 'Zusammenziehen',
+			hint: 'zieht Parallelgruppen/kleine Prüfungen desselben Prüfers zusammen'
+		},
+		{
+			key: 'examSlotLoad',
+			label: 'Startzeit-Auslastung',
+			hint: 'Gleichverteilung über Startzeiten'
+		},
+		{
+			key: 'examLoadThreshold',
+			label: 'Auslastungs-Schwelle',
+			int: true,
+			hint: 'Schwelle für die Gleichverteilung über Startzeiten'
+		},
+		{
+			key: 'examUnplaced',
+			label: 'ungeplante Prüfung',
+			caution: true,
+			hint: 'Strafe pro ungeplanter Prüfung — dominant, hoch lassen'
+		},
+		{
+			key: 'examCrossCampus',
+			label: 'Standortwechsel',
+			hint: 'selber Tag über verschiedene Standorte (Reisezeit)'
+		},
+		{
+			key: 'examTbauFill',
+			label: 'T-Bau-Sitze',
+			hint: 'pro ungenutztem gebuchten T-Bau-Sitz (nur EXaHM/SEB-Raumphase A)'
+		},
+		{
+			key: 'examHole',
+			label: 'Startzeit-Lücke',
+			hint: 'leere Startzeit zwischen belegten am selben Tag (schlecht für Aufsichten)'
+		},
+		{
+			key: 'examClosenessFalloffMin',
+			label: 'Zeit-Falloff (min)',
+			hint: '0 = raster-äquivalent; >0 = kontinuierlicher Zeit-Falloff (Zeitkonstante in Minuten) für feinere Startzeiten'
+		}
+	];
+
+	// Pre-Plan.
+	/** @type {CfgField[]} */
+	const PREPLAN = [
+		{
+			key: 'preplanCapacityFactor',
+			label: 'Kapazitäts-Faktor',
+			hint: 'nutzbarer Anteil der gebuchten Anny-Sitze (1.0 = voll füllen)'
+		}
+	];
+
+	const ALL_PARAMS = [...NUM_FIELDS, ...WEIGHTS, ...EXAM_WEIGHTS, ...PREPLAN];
 
 	/** @type {Record<string, any>} */
 	let cfgForm = $state({});
@@ -216,9 +302,13 @@
 		cfgSaving = true;
 		cfgError = '';
 		cfgSavedAt = '';
-		/** @type {Record<string, number>} */
-		const input = {};
-		for (const f of ALL_PARAMS) input[f.key] = Number(cfgForm[f.key]) || 0;
+		// Nur die im Formular editierten Felder überschreiben; die Tageszeiten-Felder
+		// (auf der Terminplan-Seite editiert) verbatim aus der geladenen Config
+		// durchreichen — der Input ist komplett non-null.
+		/** @type {Record<string, any>} */
+		const overrides = {};
+		for (const f of ALL_PARAMS) overrides[f.key] = cfgForm[f.key];
+		const input = toGenerationConfigInput(data.config, overrides);
 		try {
 			const res = await fetch('/api/semester/setGenerationConfig', {
 				method: 'POST',
@@ -308,10 +398,10 @@
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Erweiterte Parameter
 			<span class="font-normal text-base-content/50"
-				>· global · Simulated Annealing &amp; Gewichte</span
+				>· global · alle drei Solver (Terminplan, Pre-Plan, Aufsichten)</span
 			>
 		</summary>
-		<div class="collapse-content flex flex-col gap-3">
+		<div class="collapse-content flex flex-col gap-4">
 			{#if cfgError}
 				<div class="alert alert-error py-2 text-sm"><span>{cfgError}</span></div>
 			{/if}
@@ -322,45 +412,71 @@
 			{/if}
 
 			<div class="text-xs text-base-content/50">
-				Diese Werte gelten global für alle Läufe. „Iterationen" oben (Schieberegler) ist der Wert
-				für diesen Lauf.
+				Diese Werte gelten global für alle Läufe und kommen mit sinnvollen Defaults vorbelegt.
+				„Iterationen" oben (Schieberegler) ist der Wert für diesen Aufsichten-Lauf.
 			</div>
 
-			<div class="flex flex-col gap-2">
-				<div class="text-xs font-semibold text-base-content/60">
-					Verfahren (Simulated Annealing)
-				</div>
-				<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-					{#each NUM_FIELDS as f}
+			{#snippet fieldGrid(/** @type {CfgField[]} */ fields, /** @type {string} */ cols)}
+				<div class="grid grid-cols-2 gap-3 {cols}">
+					{#each fields as f}
 						<label class="flex flex-col gap-1">
-							<span class="text-xs font-medium text-base-content/60">{f.label}</span>
+							<span
+								class="flex items-center gap-1 text-xs font-medium text-base-content/60"
+								title={f.hint ?? ''}
+							>
+								{f.label}
+								{#if f.caution}
+									<span class="badge badge-warning badge-xs" title="dominant — mit Vorsicht ändern"
+										>⚠ Vorsicht</span
+									>
+								{/if}
+							</span>
 							<input
 								type="number"
 								step={f.int ? '1' : 'any'}
-								class="input input-bordered input-sm"
+								class="input input-bordered input-sm {f.caution ? 'input-warning' : ''}"
 								bind:value={cfgForm[f.key]}
 							/>
+							{#if f.hint}
+								<span class="text-[10px] leading-tight text-base-content/40">{f.hint}</span>
+							{/if}
 						</label>
 					{/each}
 				</div>
-			</div>
+			{/snippet}
 
-			<div class="flex flex-col gap-2">
-				<div class="text-xs font-semibold text-base-content/60">Gewichte</div>
-				<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-					{#each WEIGHTS as f}
-						<label class="flex flex-col gap-1">
-							<span class="text-xs font-medium text-base-content/60">{f.label}</span>
-							<input
-								type="number"
-								step="any"
-								class="input input-bordered input-sm"
-								bind:value={cfgForm[f.key]}
-							/>
-						</label>
-					{/each}
+			<!-- Terminplan (examplan) -->
+			<section class="flex flex-col gap-2 rounded-lg border border-base-200 p-3">
+				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+					Terminplan · Solver-Gewichte
 				</div>
-			</div>
+				{@render fieldGrid(EXAM_WEIGHTS, 'sm:grid-cols-3 xl:grid-cols-4')}
+			</section>
+
+			<!-- Pre-Plan -->
+			<section class="flex flex-col gap-2 rounded-lg border border-base-200 p-3">
+				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+					Pre-Plan
+				</div>
+				{@render fieldGrid(PREPLAN, 'sm:grid-cols-3 xl:grid-cols-4')}
+			</section>
+
+			<!-- Aufsichten (invigplan) -->
+			<section class="flex flex-col gap-3 rounded-lg border border-base-200 p-3">
+				<div class="text-xs font-semibold tracking-wide text-base-content/70 uppercase">
+					Aufsichten
+				</div>
+				<div class="flex flex-col gap-2">
+					<div class="text-xs font-medium text-base-content/50">
+						Verfahren (Simulated Annealing)
+					</div>
+					{@render fieldGrid(NUM_FIELDS, 'sm:grid-cols-3 xl:grid-cols-6')}
+				</div>
+				<div class="flex flex-col gap-2">
+					<div class="text-xs font-medium text-base-content/50">Gewichte</div>
+					{@render fieldGrid(WEIGHTS, 'sm:grid-cols-4')}
+				</div>
+			</section>
 
 			<div>
 				<WriteButton class="btn btn-outline btn-sm" disabled={cfgSaving} onclick={saveConfig}>

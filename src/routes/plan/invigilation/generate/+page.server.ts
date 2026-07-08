@@ -1,22 +1,7 @@
 import { env } from '$env/dynamic/private';
 import { request, gql } from 'graphql-request';
+import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
-
-const FIELDS = `
-	iterations
-	startTemp
-	endTemp
-	toleranceMin
-	maxSpanHours
-	weightMinuteBalance
-	weightBeyondTolerance
-	weightOverTargetFactor
-	weightCoverage
-	weightMaxDays
-	weightPreferExamDays
-	weightDistribution
-	weightDaySpan
-`;
 
 export const load: PageServerLoad = async () => {
 	const data = await request<any>(
@@ -24,7 +9,7 @@ export const load: PageServerLoad = async () => {
 		gql`
 			query {
 				generationConfig {
-					${FIELDS}
+					${GENERATION_CONFIG_FIELDS}
 				}
 			}
 		`

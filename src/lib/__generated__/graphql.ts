@@ -556,8 +556,24 @@ export type GenerateStudentRegsResult = {
 export type GenerationConfig = {
   __typename?: 'GenerationConfig';
   endTemp: Scalars['Float']['output'];
+  /** exam-schedule (examplan) solver weights. */
+  examAdjacent: Scalars['Float']['output'];
+  examAttract: Scalars['Float']['output'];
+  examClosenessFalloffMin: Scalars['Float']['output'];
+  examCrossCampus: Scalars['Float']['output'];
+  examDayFactor: Scalars['Float']['output'];
+  examHole: Scalars['Float']['output'];
+  examLoadThreshold: Scalars['Int']['output'];
+  examRepeatFactor: Scalars['Float']['output'];
+  examSameDay: Scalars['Float']['output'];
+  examSlotLoad: Scalars['Float']['output'];
+  examTbauFill: Scalars['Float']['output'];
+  examUnplaced: Scalars['Float']['output'];
+  examWorstCase: Scalars['Float']['output'];
   iterations: Scalars['Int']['output'];
   maxSpanHours: Scalars['Float']['output'];
+  /** pre-plan: usable fraction of the booked Anny seats (1.0 = fill completely). */
+  preplanCapacityFactor: Scalars['Float']['output'];
   /** exam-schedule "avoid unfavourable times of day" soft constraint. */
   slotTimeMode: SlotTimeConstraintMode;
   slotTimeWeight: Scalars['Float']['output'];
@@ -577,8 +593,22 @@ export type GenerationConfig = {
 
 export type GenerationConfigInput = {
   endTemp: Scalars['Float']['input'];
+  examAdjacent: Scalars['Float']['input'];
+  examAttract: Scalars['Float']['input'];
+  examClosenessFalloffMin: Scalars['Float']['input'];
+  examCrossCampus: Scalars['Float']['input'];
+  examDayFactor: Scalars['Float']['input'];
+  examHole: Scalars['Float']['input'];
+  examLoadThreshold: Scalars['Int']['input'];
+  examRepeatFactor: Scalars['Float']['input'];
+  examSameDay: Scalars['Float']['input'];
+  examSlotLoad: Scalars['Float']['input'];
+  examTbauFill: Scalars['Float']['input'];
+  examUnplaced: Scalars['Float']['input'];
+  examWorstCase: Scalars['Float']['input'];
   iterations: Scalars['Int']['input'];
   maxSpanHours: Scalars['Float']['input'];
+  preplanCapacityFactor: Scalars['Float']['input'];
   slotTimeMode: SlotTimeConstraintMode;
   slotTimeWeight: Scalars['Float']['input'];
   slotTimeWinterEarliest: Scalars['String']['input'];
