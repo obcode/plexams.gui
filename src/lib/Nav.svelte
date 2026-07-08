@@ -423,7 +423,7 @@
 				P
 			</span>
 			<span
-				class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent"
+				class="hidden bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent sm:inline"
 			>
 				Plexams
 			</span>
@@ -529,8 +529,11 @@
 					? 'bg-primary/10 text-primary'
 					: 'text-base-content/80'}"
 				href="/validate"
+				aria-label="Validierung"
+				title="Validierung"
 			>
-				Validierung
+				<span class="hidden sm:inline">Validierung</span>
+				<span class="sm:hidden" aria-hidden="true">✓</span>
 			</a>
 			<button
 				class="btn btn-ghost btn-sm gap-1 px-2"
@@ -725,6 +728,66 @@
 				tabindex="0"
 				class="menu dropdown-content z-50 mt-3 max-h-[80vh] w-72 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
 			>
+				<!-- Semester-/Workspace-Steuerung (nur Phone; ab sm gibt es den Topbar-Umschalter) -->
+				<li class="sm:hidden">
+					<details>
+						<summary class="font-medium">
+							<span class="flex items-center gap-1.5">
+								<span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
+								Semester
+								<span class="tabular-nums opacity-70">{semester}</span>
+								{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
+							</span>
+						</summary>
+						<ul>
+							{#each allSemesters as s}
+								<li>
+									{#if !s.compatible}
+										<span class="text-base-content/30" title="inkompatibel (keine Config)">
+											<span class="font-medium tabular-nums">{s.id}</span>
+											<span class="text-warning">⚠ inkompatibel</span>
+										</span>
+									{:else}
+										<button
+											class="flex flex-col items-start gap-0 {s.id === semester
+												? 'bg-primary/15 text-primary'
+												: ''}"
+											disabled={switchingSemester}
+											onclick={() => switchSemester(s.id)}
+										>
+											<span class="flex items-center gap-1">
+												<span class="font-medium tabular-nums">{s.id}</span>
+												{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
+											</span>
+											<span class="text-xs text-base-content/50">
+												{#if s.semester}Semester {s.semester}{:else}— kein Semester{/if}
+												{#if noData(s)}· <span class="text-warning">⚠ keine Daten</span>{/if}
+											</span>
+										</button>
+									{/if}
+								</li>
+							{/each}
+							<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
+							<li>
+								{#if readOnly}
+									<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(false)}
+										>🔓 Schutz aufheben</button
+									>
+								{:else}
+									<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}
+										>🔒 Diese DB schützen</button
+									>
+								{/if}
+							</li>
+							<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
+							<li>
+								<button disabled={switchingSemester} onclick={openNewWorkspace}>
+									🧪 Neuen Workspace anlegen …
+								</button>
+							</li>
+						</ul>
+					</details>
+				</li>
 				{#each menus as menu}
 					<li>
 						<details open={menu.label === activeMenu}>

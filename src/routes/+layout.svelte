@@ -58,8 +58,8 @@
 
 <svelte:head><title>Plexams</title></svelte:head>
 
-<div class="p-8">
-	<Nav />
+<Nav />
+<div class="px-3 pb-8 sm:px-4 lg:px-8">
 	{@render children?.()}
 	<Footer guiVersion={data?.guiVersion} serverInfo={data?.serverInfo} />
 </div>
