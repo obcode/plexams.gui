@@ -497,7 +497,7 @@
 						<div class="flex items-center gap-1">
 							<input
 								type="text"
-								class="input input-bordered input-sm w-80"
+								class="input input-bordered input-sm w-full sm:w-80"
 								bind:value={form.emails.additionalExamer[i]}
 							/>
 							<button class="btn btn-ghost btn-xs text-error" onclick={() => rmExaminer(i)}

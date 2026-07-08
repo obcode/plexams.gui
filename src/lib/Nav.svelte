@@ -414,7 +414,7 @@
 <header
 	class="sticky top-0 z-50 border-b border-base-300/60 bg-base-100/80 backdrop-blur-md supports-[backdrop-filter]:bg-base-100/70"
 >
-	<div class="mx-auto flex h-16 items-center gap-2 px-3">
+	<div class="mx-auto flex h-16 items-center gap-1 px-2 sm:gap-2 sm:px-3">
 		<!-- Brand -->
 		<a href="/" class="group flex items-center gap-2 rounded-xl px-1 py-1">
 			<span
@@ -540,15 +540,26 @@
 				aria-label="Validierung jetzt prüfen"
 				onclick={runValidationCheck}
 			>
-				{#each $validationDots as d}
-					<span
-						class="inline-block h-2.5 w-2.5 rounded-full {d.running
-							? 'animate-pulse bg-info'
-							: dotClass(d.level)}"
-						class:animate-pulse={d.level === 'error'}
-						title={statusTitle(d.title, d)}
-					></span>
-				{/each}
+				<!-- Mobil: ein Sammel-Status-Punkt (die Einzelpunkte würden die Topbar sprengen) -->
+				<span
+					class="inline-block h-2.5 w-2.5 rounded-full sm:hidden {dotClass(
+						$validationSummary.level
+					)}"
+					class:animate-pulse={$validationSummary.level === 'error'}
+					title={statusTitle('Validierung', $validationSummary)}
+				></span>
+				<!-- Ab sm: alle Einzelpunkte -->
+				<span class="hidden items-center gap-1 sm:flex">
+					{#each $validationDots as d}
+						<span
+							class="inline-block h-2.5 w-2.5 rounded-full {d.running
+								? 'animate-pulse bg-info'
+								: dotClass(d.level)}"
+							class:animate-pulse={d.level === 'error'}
+							title={statusTitle(d.title, d)}
+						></span>
+					{/each}
+				</span>
 			</button>
 		</div>
 

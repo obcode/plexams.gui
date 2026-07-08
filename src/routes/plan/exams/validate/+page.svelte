@@ -47,7 +47,7 @@
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">Konflikte — Prüfung</span>
 			<select
-				class="select select-bordered select-sm w-96 max-w-full"
+				class="select select-bordered select-sm w-full sm:w-96"
 				bind:value={ancode}
 				onchange={rerunConflicts}
 			>

@@ -197,7 +197,7 @@
 				>Parameter (key = Wert, UND-verknüpft)</span
 			>
 			{#each params as p, i}
-				<div class="flex items-center gap-2">
+				<div class="flex flex-wrap items-center gap-2">
 					<input
 						type="text"
 						class="input input-bordered input-sm w-40"

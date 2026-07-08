@@ -396,7 +396,7 @@
 	</div>
 
 	<div
-		class="sticky top-0 z-10 mx-2 mt-2 flex items-center gap-3 border-b border-base-300 bg-base-100/95 py-2 backdrop-blur"
+		class="sticky top-0 z-10 mx-2 mt-2 flex flex-wrap items-center gap-3 border-b border-base-300 bg-base-100/95 py-2 backdrop-blur"
 	>
 		<input
 			class="input input-bordered input-sm flex-1"

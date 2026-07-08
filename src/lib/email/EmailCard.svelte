@@ -27,7 +27,12 @@
 	{#if email.links}
 		<div class="flex flex-wrap gap-2 px-1">
 			{#each email.links as link}
-				<a href={link.href} class="btn btn-sm gap-2 {link.primary ? 'btn-primary' : 'btn-outline'}">
+				<a
+					href={link.href}
+					class="btn btn-sm h-auto max-w-full gap-2 whitespace-normal {link.primary
+						? 'btn-primary'
+						: 'btn-outline'}"
+				>
 					{link.label}
 				</a>
 			{/each}
