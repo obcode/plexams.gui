@@ -1,7 +1,69 @@
 <script>
+	import { invalidateAll } from '$app/navigation';
+	import { checkStudentRegs } from '$lib/studentRegs/store.js';
+
 	let { data } = $props();
 
 	let exam = $derived(data.assembledExam);
+
+	// Einzelne Primuss-Anmeldungen korrigieren (add/removeStudentReg).
+	let busy = $state(false);
+	let error = $state('');
+	/** @type {Record<string, string>} Eingabe „neue mtknr" je Primuss-Prüfung */
+	let addMtknr = $state({});
+
+	/**
+	 * @param {string} path
+	 * @param {Record<string, unknown>} body
+	 * @returns {Promise<boolean>}
+	 */
+	async function postReg(path, body) {
+		busy = true;
+		error = '';
+		try {
+			const res = await fetch(path, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(body)
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				error = d?.error || `Fehler (HTTP ${res.status})`;
+				return false;
+			}
+			await invalidateAll();
+			checkStudentRegs();
+			return true;
+		} catch (e) {
+			error = e instanceof Error ? e.message : String(e);
+			return false;
+		} finally {
+			busy = false;
+		}
+	}
+
+	/** @param {any} pe */
+	async function addReg(pe) {
+		const key = `${pe.exam.program}/${pe.exam.ancode}`;
+		const mtknr = (addMtknr[key] ?? '').trim();
+		if (!mtknr) return;
+		const ok = await postReg('/api/primuss/addStudentReg', {
+			program: pe.exam.program,
+			ancode: pe.exam.ancode,
+			mtknr
+		});
+		if (ok) addMtknr[key] = '';
+	}
+
+	/** @param {any} s */
+	async function removeReg(s) {
+		if (!confirm(`Anmeldung ${s.mtknr} (${s.name}) aus ${s.program} entfernen?`)) return;
+		await postReg('/api/primuss/removeStudentReg', {
+			program: s.program,
+			ancode: s.ancode,
+			mtknr: s.mtknr
+		});
+	}
 	let studentCount = $derived(
 		exam
 			? exam.primussExams.reduce(
@@ -28,6 +90,13 @@
 		<a href="/exam/assembledExams" class="link link-hover text-sm text-base-content/50">
 			← alle aufbereiteten Prüfungen
 		</a>
+
+		{#if error}
+			<div class="alert alert-error alert-sm">
+				<span class="text-sm">{error}</span>
+				<button class="btn btn-ghost btn-xs" onclick={() => (error = '')}>✕</button>
+			</div>
+		{/if}
 
 		<!-- Kopf -->
 		<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">
@@ -131,7 +200,7 @@
 									<span class="w-6 shrink-0 text-right tabular-nums text-base-content/30">
 										{i + 1}
 									</span>
-									<span class="min-w-0">
+									<span class="min-w-0 flex-1">
 										<span>{s.name}</span>
 										{#if ntaSet.has(s.mtknr)}<span class="badge badge-info badge-xs ml-1">NTA</span
 											>{/if}
@@ -139,12 +208,32 @@
 											<span class="text-xs text-base-content/40">· {s.zpaStudent.email}</span>
 										{/if}
 									</span>
+									<button
+										class="btn btn-ghost btn-xs shrink-0 text-error"
+										title="Anmeldung entfernen"
+										disabled={busy}
+										onclick={() => removeReg(s)}
+									>
+										✕
+									</button>
 								</li>
 							{/each}
 						</ol>
 					{:else}
 						<div class="px-3 py-3 text-sm text-base-content/40">keine Anmeldungen</div>
 					{/if}
+					<div class="flex items-center gap-1.5 border-t border-base-300 px-3 py-2">
+						<input
+							class="input input-bordered input-xs w-28 font-mono tabular-nums"
+							placeholder="mtknr"
+							disabled={busy}
+							bind:value={addMtknr[`${pe.exam.program}/${pe.exam.ancode}`]}
+							onkeydown={(e) => e.key === 'Enter' && addReg(pe)}
+						/>
+						<button class="btn btn-outline btn-xs" disabled={busy} onclick={() => addReg(pe)}>
+							+ Anmeldung
+						</button>
+					</div>
 				</div>
 			{/each}
 		</div>

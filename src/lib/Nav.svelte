@@ -284,6 +284,7 @@
 						{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs (MUC.DAI & nicht von mir)' },
 						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 						{ href: '/nta/semester', label: '♿ NTA' },
+						{ href: '/download', label: '⬇️ Downloads & Exporte' },
 						{ href: '/log', label: '🧾 Mutations-Log' },
 						{ section: 'Konfiguration' },
 						{ href: '/config', label: '⚙️ Semester-Konfiguration' },

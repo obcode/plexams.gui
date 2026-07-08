@@ -141,12 +141,13 @@ export type BalanceReport = {
   withinTolerance: Scalars['Int']['output'];
 };
 
-/** A room blocked for one slot (not usable for planning there). */
+/** A room blocked at one exam time (not usable for planning there). */
 export type BlockedRoom = {
   __typename?: 'BlockedRoom';
   reason?: Maybe<Scalars['String']['output']>;
   room: Scalars['String']['output'];
-  starttime: Scalars['Time']['output'];
+  /** Absolute start time of the blocked slot. */
+  starttime?: Maybe<Scalars['Time']['output']>;
 };
 
 export type Conflict = {
@@ -277,7 +278,9 @@ export type ConstraintsInput = {
   online?: InputMaybe<Scalars['Boolean']['input']>;
   placesWithSocket?: InputMaybe<Scalars['Boolean']['input']>;
   possibleDays?: InputMaybe<Array<Scalars['Time']['input']>>;
+  /** Trailing time (Nachlauf) in minutes after the exam; total that replaces the default 15. */
   postExamMinutes?: InputMaybe<Scalars['Int']['input']>;
+  /** Lead time (Vorlauf) in minutes before the exam; total that replaces the default 15. */
   preExamMinutes?: InputMaybe<Scalars['Int']['input']>;
   sameSlot?: InputMaybe<Array<Scalars['Int']['input']>>;
   seb?: InputMaybe<Scalars['Boolean']['input']>;
@@ -310,6 +313,71 @@ export type EmailAttachmentInfo = {
   kind: Scalars['String']['output'];
   size: Scalars['Int']['output'];
   uploadedAt: Scalars['Time']['output'];
+};
+
+/**
+ * EmailTemplate is one editable email body template (a Markdown *.md.tmpl). The built-in
+ * embedded template is the default; a stored override replaces it. The layout templates
+ * (emailBaseHTML/jiraOnHTML) are not editable here.
+ */
+export type EmailTemplate = {
+  __typename?: 'EmailTemplate';
+  /** the built-in default Markdown (for preview and reset-to-default). */
+  defaultMarkdown: Scalars['String']['output'];
+  /** a short human-readable purpose of this email (for the GUI list; not part of the mail). */
+  description: Scalars['String']['output'];
+  /** true when no override is stored (the built-in default is in use). */
+  isDefault: Scalars['Boolean']['output'];
+  /** the effective Markdown: the stored override if any, otherwise the built-in default. */
+  markdown: Scalars['String']['output'];
+  /** the template's file name, e.g. "exahmEmail.md.tmpl". */
+  name: Scalars['String']['output'];
+  /** the variables (placeholders) this template may use, with a description and an example. */
+  variables: Array<EmailTemplateVariable>;
+};
+
+/**
+ * EmailTemplateFunction documents a helper function callable in every email template, e.g.
+ * `jiraURL` or `plural`. The list is global (all functions are available in all templates).
+ */
+export type EmailTemplateFunction = {
+  __typename?: 'EmailTemplateFunction';
+  /** what it does, in plain language. */
+  description: Scalars['String']['output'];
+  /** the function name, e.g. "plural". */
+  name: Scalars['String']['output'];
+  /** how to call it, e.g. "{{ plural .N \"Platz\" \"Plätze\" }}". */
+  usage: Scalars['String']['output'];
+};
+
+/**
+ * EmailTemplatePreview is the rendered result of a (possibly not-yet-saved) template against
+ * representative sample data. On a template error, `error` holds the message and html/text
+ * are empty — so the GUI can show parse/exec mistakes live while editing.
+ */
+export type EmailTemplatePreview = {
+  __typename?: 'EmailTemplatePreview';
+  /** the error message if the template does not parse/execute; null on success. */
+  error?: Maybe<Scalars['String']['output']>;
+  /** the rendered HTML part (the shared layout is applied), for an in-GUI preview. */
+  html: Scalars['String']['output'];
+  /** the rendered plain-text part. */
+  text: Scalars['String']['output'];
+};
+
+/**
+ * EmailTemplateVariable documents one placeholder available in a template, e.g.
+ * `.Teacher.Fullname`. Meant to be shown next to the editor so a non-technical user knows
+ * which values exist and how to write them.
+ */
+export type EmailTemplateVariable = {
+  __typename?: 'EmailTemplateVariable';
+  /** what the value is, in plain language. */
+  description: Scalars['String']['output'];
+  /** the value used for this placeholder in the live preview. */
+  example: Scalars['String']['output'];
+  /** how to write it in the template, e.g. "{{ .Teacher.Fullname }}". */
+  name: Scalars['String']['output'];
 };
 
 export type Emails = {
@@ -435,7 +503,7 @@ export type ExamScheduleConflict = {
   mainExamer2: Scalars['String']['output'];
   module1: Scalars['String']['output'];
   module2: Scalars['String']['output'];
-  /** worst proximity across affected students: OVERLAP | TOO_CLOSE | SAME_DAY. */
+  /** worst time proximity across affected students: OVERLAP | TOO_CLOSE | SAME_DAY. */
   proximity: Scalars['String']['output'];
   /** the planned slot of exam 1. */
   slot1: Slot;
@@ -448,17 +516,22 @@ export type ExamScheduleConflict = {
 export type ExamScheduleDiagnostics = {
   __typename?: 'ExamScheduleDiagnostics';
   further: Scalars['Int']['output'];
+  /** Peak number of exams sharing a single start time. */
   maxExamsAt: Scalars['Int']['output'];
+  /** Peak concurrent seats across all start times. */
   maxSeatsAt: Scalars['Int']['output'];
   nextDay: Scalars['Int']['output'];
+  /** Two of a student's exams overlap in time (a hard violation — should be 0). */
   overlaps: Scalars['Int']['output'];
   pairs: Scalars['Int']['output'];
   sameDay: Scalars['Int']['output'];
   slotsOverThreshold: Scalars['Int']['output'];
+  /** Distinct start times holding at least one of our exams. */
   starttimesUsed: Scalars['Int']['output'];
   students: Scalars['Int']['output'];
   studentsWithSameDay: Scalars['Int']['output'];
   studentsWithTooClose: Scalars['Int']['output'];
+  /** Two of a student's exams are directly consecutive / too close in time. */
   tooClose: Scalars['Int']['output'];
   within3: Scalars['Int']['output'];
   worstStudentPenalty: Scalars['Float']['output'];
@@ -556,27 +629,44 @@ export type GenerateStudentRegsResult = {
 export type GenerationConfig = {
   __typename?: 'GenerationConfig';
   endTemp: Scalars['Float']['output'];
-  /** exam-schedule (examplan) solver weights. */
+  /** spread: two exams of a student directly consecutive on the same day (very bad). */
   examAdjacent: Scalars['Float']['output'];
+  /** attract: pull parallel sections / small same-examer exams close together. */
   examAttract: Scalars['Float']['output'];
+  /** 0 = tiered/grid-equivalent same-day cost; >0 = continuous falloff time constant (minutes) for finer start times. */
   examClosenessFalloffMin: Scalars['Float']['output'];
+  /** extra penalty for a same-day student pair across campuses (travel gap). */
   examCrossCampus: Scalars['Float']['output'];
+  /** spread across days: DayFactor · 24 / hours between the two exams. */
   examDayFactor: Scalars['Float']['output'];
+  /** per empty start time between two occupied ones on the same day (bad for invigilation). */
   examHole: Scalars['Float']['output'];
+  /** soft seat threshold per start time for the slot-load term. */
   examLoadThreshold: Scalars['Int']['output'];
+  /** down-weight applied to (likely) repeat-exam conflict pairs (0..1). */
   examRepeatFactor: Scalars['Float']['output'];
+  /** spread: two exams of a student on the same day but not consecutive. */
   examSameDay: Scalars['Float']['output'];
+  /** even distribution: convex penalty on the seat load per start time. */
   examSlotLoad: Scalars['Float']['output'];
+  /** per unused booked T-building seat in the EXaHM/SEB room phase (phase A only). */
   examTbauFill: Scalars['Float']['output'];
+  /** penalty per unplaced exam (dominant — keep very high so all exams get placed). */
   examUnplaced: Scalars['Float']['output'];
+  /** convex term protecting the least well-spread student (+ WorstCase · P²). */
   examWorstCase: Scalars['Float']['output'];
   iterations: Scalars['Int']['output'];
   maxSpanHours: Scalars['Float']['output'];
-  /** pre-plan: usable fraction of the booked Anny seats (1.0 = fill completely). */
+  /** Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely). */
   preplanCapacityFactor: Scalars['Float']['output'];
-  /** exam-schedule "avoid unfavourable times of day" soft constraint. */
+  /** Terminplan: whether/how to weight exam start times (default AUTO by semester). */
   slotTimeMode: SlotTimeConstraintMode;
+  /** Terminplan: start-time weight (penalty per registration, per hour of badness). 0 = use default. */
   slotTimeWeight: Scalars['Float']['output'];
+  /**
+   * Terminplan (winter): avoid a start time before this (HH:MM), e.g. 10:00.
+   * Ignored in summer (there earlier is always better).
+   */
   slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
   /** allowed deviation (minutes) from an invigilator's target workload. */
@@ -860,7 +950,6 @@ export type MucDaiExam = {
 export type Mutation = {
   __typename?: 'Mutation';
   addConstraints: Constraints;
-  addExamToSlot: Scalars['Boolean']['output'];
   addNTA: Nta;
   /**
    * Accept that an NTA gives up the room-alone right for one exam (key:
@@ -876,8 +965,14 @@ export type Mutation = {
   addPrimussAncode: ConnectedExam;
   /** Create a new room (key: name). Errors if a room with that name already exists. */
   addRoom: Room;
-  /** Manually add a single room request (key: room/starttime). Errors if one already exists. Starts active and not approved. */
+  /** Manually add a single room request (key: room + starttime). Errors if one already exists. Starts active and not approved. */
   addRoomRequest: RoomRequest;
+  /**
+   * addStudentReg manually adds a single student registration (mtknr) to a Primuss exam
+   * (program + ancode), e.g. to correct a missing registration. Returns true on success.
+   * Blocked while a validation or transfer/email is running.
+   */
+  addStudentReg: Scalars['Boolean']['output'];
   addZpaExamToPlan: Scalars['Boolean']['output'];
   /**
    * Generate room requests from the current plan and REPLACE all existing ones
@@ -886,9 +981,9 @@ export type Mutation = {
    * approved flags). Returns the number written.
    */
   applyRoomRequestsPreview: Scalars['Int']['output'];
-  /** Block a room at a starttime so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
+  /** Block a room at an exam time so it is not used for planning there (e.g. otherwise occupied). reason is an optional note. */
   blockRoomAt: BlockedRoom;
-  /** Block a room at several starttimes at once (e.g. a whole day or a time range). Returns the stored blocks. */
+  /** Block a room at several times at once (e.g. a whole day or a time range). Returns the stored blocks. */
   blockRoomAtTimes: Array<BlockedRoom>;
   clearEmailAttachments: Scalars['Int']['output'];
   /**
@@ -922,7 +1017,6 @@ export type Mutation = {
   /** Remove the ZPA link from a pre-exam. */
   disconnectPreplanExam: PreplanExam;
   exahm: Scalars['Boolean']['output'];
-  excludeDays: Scalars['Boolean']['output'];
   /**
    * fixExamRoomsPhase freezes the phase-A EXaHM/SEB placement (sets PhaseFixed, distinct
    * from the manual Locked). Returns the number of exams fixed. Phase B then treats them
@@ -973,29 +1067,14 @@ export type Mutation = {
    */
   importMucDaiExams: ImportMucDaiResult;
   lab: Scalars['Boolean']['output'];
-  /**
-   * One-time migration: copy the invigilatorConstraints from the semester config
-   * (viper) into the DB. Returns the number of records written.
-   */
-  migrateInvigilatorConstraints: Scalars['Int']['output'];
-  /** One-time import of roomConstraints.<room>.reservations from the semester config into the DB. Returns the number imported. */
-  migrateRoomRequestsFromConfig: Scalars['Int']['output'];
-  /**
-   * One-time backfill: derive requestWith for all rooms (ANNY for request-rooms
-   * with a T name, MANAGEMENT for other request-rooms, NONE otherwise). Returns
-   * the number of rooms updated.
-   */
-  migrateRoomsRequestWith: Scalars['Int']['output'];
   /** Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10"). */
   notPlannedByMe: Scalars['Boolean']['output'];
   online: Scalars['Boolean']['output'];
-  placesWithSockets: Scalars['Boolean']['output'];
-  possibleDays: Scalars['Boolean']['output'];
-  /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at a starttime. */
+  /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at an exam time. */
   prePlanInvigilation: Scalars['Boolean']['output'];
   /**
-   * prePlanInvigilationAt promotes the invigilation currently planned for a
-   * room (roomName) or the reserve (roomName == null) at a starttime to a pre-planned,
+   * prePlanInvigilationAt promotes the invigilation currently planned for a room
+   * (roomName) or the reserve (roomName == null) at an exam time to a pre-planned,
    * fixed assignment, so it survives a re-run of the automatic planning.
    */
   prePlanInvigilationAt: Scalars['Boolean']['output'];
@@ -1021,6 +1100,20 @@ export type Mutation = {
   /** Remove the explicit decision (back to automatic handling). */
   removeStudentConflictDecision: Scalars['Boolean']['output'];
   /**
+   * removeStudentReg manually removes a single student registration (mtknr) from a Primuss
+   * exam (program + ancode). Returns the number of registrations removed (0 or 1). Blocked
+   * while a validation or transfer/email is running.
+   */
+  removeStudentReg: Scalars['Int']['output'];
+  /**
+   * Delete the cached assembled exams and their state, undoing a generation; they can be
+   * rebuilt with generateAssembledExams. Returns how many assembled exams were removed.
+   * Blocked while a validation or transfer/email is running.
+   */
+  resetAssembledExams: Scalars['Int']['output'];
+  /** Remove a template's override, reverting to the built-in default. False if there was none. */
+  resetEmailTemplate: Scalars['Boolean']['output'];
+  /**
    * resetExamSchedule removes the generated exam schedule (phase B): all placements that
    * are not manually locked, not external / not-planned-by-me and not frozen by the
    * EXaHM/SEB room phase (phaseFixed). Returns the number of entries removed. A full reset
@@ -1034,13 +1127,18 @@ export type Mutation = {
    */
   resetInvigilations: Scalars['Boolean']['output'];
   /**
+   * resetPrimussData deletes all imported Primuss Sammellisten collections (the
+   * per-program studentregs/exams/count/conflicts written by the ZIP import), undoing an
+   * import. The manually maintained ancode overlay is kept. Returns the programs whose
+   * data was removed. Blocked while a validation or transfer/email is running.
+   */
+  resetPrimussData: Array<Scalars['String']['output']>;
+  /**
    * Reset the assigned room plan (planned_rooms) so only the pre-planning remains;
    * re-assignment re-applies it. Blocked while the room plan is published.
    */
   resetRoomsForExams: Scalars['Boolean']['output'];
-  rmConstraints: Scalars['Boolean']['output'];
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
-  sameSlot: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
   /**
    * Seed study programs from the configured lists (fk07programs, mucdaiprograms,
@@ -1052,20 +1150,25 @@ export type Mutation = {
    * not filter; all bookings are still fetched and shown.
    */
   setAnnyPersonalizationNames: AnnyConfig;
+  /**
+   * Store a Markdown override for an email template. The Markdown is validated (must parse
+   * with the template functions) before it is saved. Returns the updated template.
+   */
+  setEmailTemplate: EmailTemplate;
   /** Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0. */
   setExamDuration: ExamDurationOverride;
   /**
-   * Manually place an exam at an absolute start time. dayNumber/slotNumber are derived
-   * from starttime (0 when outside the planning period). Any time is accepted — the GUI
-   * warns client-side when it is not one of the semester's standard start times.
+   * Place an exam at an absolute start time (the source of truth). Any time is accepted;
+   * the GUI should warn — but still allow — when the time is not one of the semester's
+   * standard start times (semesterConfig.starttimes).
    */
   setExamTime: Scalars['Boolean']['output'];
   /** Declare / undeclare that two exams may share a slot. */
   setExamsCanShareSlot: Scalars['Boolean']['output'];
   /**
    * Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
-   * faculty). The exam's plan entry stores the absolute starttime; dayNumber/slotNumber
-   * are derived (0 when outside the planning period). date: dd.mm.yyyy, time: HH:MM.
+   * faculty). The matching slot is computed and stored as the plan entry's
+   * externalTime. date: dd.mm.yyyy, time: HH:MM.
    */
   setExternalExamTime: Scalars['Boolean']['output'];
   /** Store the generation config (global). Returns the saved config. */
@@ -1114,15 +1217,15 @@ export type Mutation = {
    */
   setPreplanExamNotSameSlot: PreplanExam;
   /**
-   * Assign the pre-exam to a slot, or clear it (pass both dayNumber and slotNumber,
-   * or neither). The slot must be a real slot of this semester.
+   * Assign the pre-exam to a start time, or clear it (pass starttime or null). The time
+   * must be a real slot start of this semester.
    */
   setPreplanExamTime: PreplanExam;
   /** Activate/deactivate a room (key: name). A deactivated room is not used for planning. */
   setRoomActive: Room;
   /** Activate/deactivate a room request; inactive requests are not used for room planning. */
   setRoomRequestActive: RoomRequest;
-  /** Set the approved flag of a room request (key: room/starttime). */
+  /** Set the approved flag of a room request (key: room + starttime). */
   setRoomRequestApproved: RoomRequest;
   /**
    * Switch the running server to another database (workspace) at runtime. `name` is
@@ -1152,9 +1255,9 @@ export type Mutation = {
    * VETO forces it to count despite an automatic repeat down-weighting).
    */
   setStudentConflictDecision: Scalars['Boolean']['output'];
-  /** Remove a room block at a starttime (key: room/starttime). */
+  /** Remove a room block (key: room + starttime). */
   unblockRoomAt: Scalars['Boolean']['output'];
-  /** Remove the room blocks at several starttimes at once. Returns how many blocks were removed. */
+  /** Remove the room blocks at several times at once. Returns how many blocks were removed. */
   unblockRoomAtTimes: Scalars['Int']['output'];
   /** unfixExamRoomsPhase clears the phase-A freeze on all exams (manual Locked stays). */
   unfixExamRoomsPhase: Scalars['Boolean']['output'];
@@ -1165,7 +1268,7 @@ export type Mutation = {
   updateRoom: Room;
   /**
    * Change the time range of an existing room request, e.g. extend it for an NTA
-   * (key: room/starttime). Errors if it does not exist.
+   * (key: room + starttime). Errors if it does not exist.
    */
   updateRoomRequestTime: RoomRequest;
   /** Create or update an additional exam (key: ancode). */
@@ -1174,20 +1277,12 @@ export type Mutation = {
   upsertSpecialInterest: SpecialInterest;
   /** Create or update a study program (key: shortname/Kürzel). */
   upsertStudyProgram: StudyProgram;
-  zpaExamsToPlan: Array<ZpaExam>;
 };
 
 
 export type MutationAddConstraintsArgs = {
   ancode: Scalars['Int']['input'];
   constraints: ConstraintsInput;
-};
-
-
-export type MutationAddExamToSlotArgs = {
-  ancode: Scalars['Int']['input'];
-  day: Scalars['Int']['input'];
-  time: Scalars['Int']['input'];
 };
 
 
@@ -1225,6 +1320,13 @@ export type MutationAddRoomRequestArgs = {
   room: Scalars['String']['input'];
   starttime: Scalars['Time']['input'];
   until: Scalars['Time']['input'];
+};
+
+
+export type MutationAddStudentRegArgs = {
+  ancode: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
+  program: Scalars['String']['input'];
 };
 
 
@@ -1310,12 +1412,6 @@ export type MutationExahmArgs = {
 };
 
 
-export type MutationExcludeDaysArgs = {
-  ancode: Scalars['Int']['input'];
-  days: Array<Scalars['String']['input']>;
-};
-
-
 export type MutationFixPrimussAncodeArgs = {
   fromAncode: Scalars['Int']['input'];
   program: Scalars['String']['input'];
@@ -1347,17 +1443,6 @@ export type MutationNotPlannedByMeArgs = {
 
 export type MutationOnlineArgs = {
   ancode: Scalars['Int']['input'];
-};
-
-
-export type MutationPlacesWithSocketsArgs = {
-  ancode: Scalars['Int']['input'];
-};
-
-
-export type MutationPossibleDaysArgs = {
-  ancode: Scalars['Int']['input'];
-  days: Array<Scalars['String']['input']>;
 };
 
 
@@ -1437,19 +1522,20 @@ export type MutationRemoveStudentConflictDecisionArgs = {
 };
 
 
-export type MutationRmConstraintsArgs = {
+export type MutationRemoveStudentRegArgs = {
   ancode: Scalars['Int']['input'];
+  mtknr: Scalars['String']['input'];
+  program: Scalars['String']['input'];
+};
+
+
+export type MutationResetEmailTemplateArgs = {
+  name: Scalars['String']['input'];
 };
 
 
 export type MutationRmZpaExamFromPlanArgs = {
   ancode: Scalars['Int']['input'];
-};
-
-
-export type MutationSameSlotArgs = {
-  ancode: Scalars['Int']['input'];
-  ancodes: Array<Scalars['Int']['input']>;
 };
 
 
@@ -1460,6 +1546,12 @@ export type MutationSebArgs = {
 
 export type MutationSetAnnyPersonalizationNamesArgs = {
   names: Array<Scalars['String']['input']>;
+};
+
+
+export type MutationSetEmailTemplateArgs = {
+  markdown: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
 
 
@@ -1656,11 +1748,6 @@ export type MutationUpsertStudyProgramArgs = {
   input: StudyProgramInput;
 };
 
-
-export type MutationZpaExamsToPlanArgs = {
-  input: Array<Scalars['Int']['input']>;
-};
-
 export type MutationLogArg = {
   __typename?: 'MutationLogArg';
   key: Scalars['String']['output'];
@@ -1780,11 +1867,12 @@ export type PermanentNonInvigilator = {
 export type PlanEntry = {
   __typename?: 'PlanEntry';
   ancode: Scalars['Int']['output'];
-  /** True for exams planned by another faculty (their time still lives in starttime). */
+  /** true for an exam placed by another faculty (kept when the generated plan is reset). */
   external: Scalars['Boolean']['output'];
   locked: Scalars['Boolean']['output'];
   /** fixed by the EXaHM/SEB room phase (phase A), distinct from the manual lock. */
   phaseFixed: Scalars['Boolean']['output'];
+  /** The absolute start time — the source of truth for the placement. */
   starttime: Scalars['Time']['output'];
 };
 
@@ -1819,7 +1907,8 @@ export type PlannedRoom = {
   prePlanned: Scalars['Boolean']['output'];
   reserve: Scalars['Boolean']['output'];
   room: Room;
-  starttime: Scalars['Time']['output'];
+  /** Absolute start time of the exam using this room. */
+  starttime?: Maybe<Scalars['Time']['output']>;
   studentsInRoom: Array<Scalars['String']['output']>;
 };
 
@@ -1872,7 +1961,8 @@ export type PrePlannedInvigilation = {
   invigilatorID: Scalars['Int']['output'];
   isReserve: Scalars['Boolean']['output'];
   roomName?: Maybe<Scalars['String']['output']>;
-  starttime: Scalars['Time']['output'];
+  /** Absolute start time. */
+  starttime?: Maybe<Scalars['Time']['output']>;
 };
 
 export type PrePlannedRoom = {
@@ -1920,6 +2010,7 @@ export type PreplanExam = {
    */
   notSameSlot?: Maybe<Array<Scalars['Int']['output']>>;
   notes?: Maybe<Scalars['String']['output']>;
+  /** Absolute start time the pre-exam is assigned to (null = not yet assigned). */
   plannedStarttime?: Maybe<Scalars['Time']['output']>;
   /** StudyProgram shortnames. */
   programs: Array<Scalars['String']['output']>;
@@ -1935,7 +2026,7 @@ export type PreplanExamInput = {
   programs: Array<Scalars['String']['input']>;
 };
 
-/** PreplanFinding is a single structured finding of the pre-plan validation. */
+/** One graded finding of the pre-plan validation (same levels as ValidationFinding). */
 export type PreplanFinding = {
   __typename?: 'PreplanFinding';
   level: ValidationLevel;
@@ -2000,11 +2091,14 @@ export type PreplanSlotNeed = {
 export type PreplanValidation = {
   __typename?: 'PreplanValidation';
   assignedCount: Scalars['Int']['output'];
-  /** Structured findings, each classified by level (German messages). */
+  /**
+   * Graded findings. Small SEB exams that fit the R-building (no Anny booking needed)
+   * are warnings, real capacity shortfalls are errors.
+   */
   findings: Array<PreplanFinding>;
-  /** Human-readable findings (German). */
+  /** Human-readable findings (German), flat text at all levels (kept for backward compatibility; prefer findings). */
   messages: Array<Scalars['String']['output']>;
-  /** True when there are no findings (everything assigned, within capacity, no overlaps). */
+  /** True when there are no error-level findings; warnings and infos do not fail the validation. */
   ok: Scalars['Boolean']['output'];
   /** ids of pre-exams without a slot. */
   unassignedIDs: Array<Scalars['Int']['output']>;
@@ -2090,6 +2184,10 @@ export type Query = {
   connectedExams: Array<ConnectedExam>;
   constraintForAncode?: Maybe<Constraints>;
   emailAttachments: Array<EmailAttachmentInfo>;
+  /** The helper functions available in every email template (jiraURL, plural, …). */
+  emailTemplateFunctions: Array<EmailTemplateFunction>;
+  /** All editable email templates with their effective Markdown, description and variables. */
+  emailTemplates: Array<EmailTemplate>;
   /**
    * Per-ancode exam duration overrides. They are only applied to exams whose ZPA
    * duration is 0 (i.e. not set in the ZPA); they feed the assembled exams.
@@ -2121,9 +2219,10 @@ export type Query = {
   examsWithoutSlot: Array<PlannedExam>;
   fk07programs: Array<Fk07Program>;
   /**
-   * Global generation tuning: the room time lag and the invigilation optimizer
-   * (simulated annealing) parameters. Stored in the global plexams database; the
-   * config file is only a seed/fallback. Steers room and invigilation generation.
+   * Global generation tuning: the invigilation optimizer (simulated annealing)
+   * parameters. Stored in the global plexams database; the config file is only a
+   * seed/fallback. Steers invigilation generation. (The room/invigilation turnaround
+   * moved to the per-semester config as timelagMin.)
    */
   generationConfig: GenerationConfig;
   invigilator?: Maybe<Teacher>;
@@ -2217,6 +2316,12 @@ export type Query = {
   primussExam: PrimussExam;
   primussExams?: Maybe<Array<Maybe<PrimussExamByProgram>>>;
   primussExamsForAnCode?: Maybe<Array<PrimussExam>>;
+  /**
+   * Render the given Markdown for the named template against representative sample data and
+   * return the HTML/text preview. Does not save. Used for the live preview + validation while
+   * editing; a template error is returned in the preview's `error` field, not as a GraphQL error.
+   */
+  renderEmailTemplatePreview: EmailTemplatePreview;
   /** All building-management room requests of the semester. */
   roomRequests: Array<RoomRequest>;
   /** Dry-run: which management rooms would be requested for which exams (read-only, changes nothing). */
@@ -2225,7 +2330,7 @@ export type Query = {
   roomsAt?: Maybe<RoomsForSlot>;
   roomsForSlots: Array<RoomsForSlot>;
   /**
-   * All rooms allowed in a slot with their free seats and which exams already use
+   * All rooms allowed at a time with their free seats and which exams already use
    * them — for sharing a room (e.g. as a reserve).
    */
   roomsWithFreeSeatsAt: Array<RoomWithFreeSeats>;
@@ -2235,6 +2340,11 @@ export type Query = {
   semesterConfig?: Maybe<SemesterConfig>;
   /** The raw, editable per-semester config (source of truth for the derived semesterConfig). */
   semesterConfigInput?: Maybe<SemesterConfigInput>;
+  /**
+   * Runtime information about the running plexams.go server: its build version
+   * and the MongoDB it is connected to. Used e.g. for the GUI footer.
+   */
+  serverInfo: ServerInfo;
   /** Special-interest groups (named ancode lists) used for the Studierenden-Info PDFs. */
   specialInterests: Array<SpecialInterest>;
   studentByMtknr?: Maybe<Student>;
@@ -2273,7 +2383,6 @@ export type Query = {
   zpaExamsByType: Array<ZpaExamsForType>;
   zpaExamsNotToPlan: Array<ZpaExam>;
   zpaExamsPlaningStatusUnknown: Array<ZpaExam>;
-  zpaExamsToPlan: Array<ZpaExam>;
   zpaExamsToPlanWithConstraints: Array<ZpaExamWithConstraints>;
 };
 
@@ -2403,6 +2512,12 @@ export type QueryPrimussExamsForAnCodeArgs = {
 };
 
 
+export type QueryRenderEmailTemplatePreviewArgs = {
+  markdown: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+};
+
+
 export type QueryRoomsAtArgs = {
   starttime: Scalars['Time']['input'];
 };
@@ -2506,13 +2621,14 @@ export type RoomConstraints = {
   maxStudents?: Maybe<Scalars['Int']['output']>;
   placesWithSocket: Scalars['Boolean']['output'];
   /**
-   * total wrap-up time in minutes after the exam that replaces the default 15
-   * (null = default 15).
+   * Trailing time (Nachlauf) in minutes the rooms stay occupied AFTER this exam ends, total
+   * that REPLACES the default 15 min (null = default).
    */
   postExamMinutes?: Maybe<Scalars['Int']['output']>;
   /**
-   * total lead time in minutes before the exam that replaces the default 15
-   * (null = default 15).
+   * Lead time (Vorlauf) in minutes the rooms must be free BEFORE this exam starts, as a
+   * total that REPLACES the default 15 min (null = default). Used for setup that exceeds the
+   * ordinary turnaround, e.g. an EXaHM exam in the T-building.
    */
   preExamMinutes?: Maybe<Scalars['Int']['output']>;
   seb: Scalars['Boolean']['output'];
@@ -2548,6 +2664,7 @@ export type RoomRequest = {
   approved: Scalars['Boolean']['output'];
   from: Scalars['Time']['output'];
   room: Scalars['String']['output'];
+  /** Absolute start time of the exam the room is requested for. */
   starttime: Scalars['Time']['output'];
   until: Scalars['Time']['output'];
 };
@@ -2565,6 +2682,7 @@ export type RoomRequestPreview = {
   room: Scalars['String']['output'];
   seats: Scalars['Int']['output'];
   simultaneousExams: Array<PlannedExam>;
+  /** Absolute start time of the exam the room would be requested for. */
   starttime: Scalars['Time']['output'];
   students: Scalars['Int']['output'];
   until: Scalars['Time']['output'];
@@ -2610,9 +2728,7 @@ export type RoomWithInvigilator = {
 
 export type RoomsForSlot = {
   __typename?: 'RoomsForSlot';
-  day: Scalars['Int']['output'];
   rooms: Array<Room>;
-  slot: Scalars['Int']['output'];
   starttime: Scalars['Time']['output'];
 };
 
@@ -2648,16 +2764,16 @@ export type SemesterConfig = {
   examGapMinutes: Scalars['Int']['output'];
   forbiddenSlots?: Maybe<Array<Slot>>;
   from: Scalars['Time']['output'];
-  /** Effective cap on how many students may be examined at the same start time (0 = unlimited). */
+  /** Effective max students examined at the same start time (0 = no limit). */
   maxSeatsPerSlot: Scalars['Int']['output'];
-  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  /** Absolute start times allowed for MUC.DAI exams (echo of the raw config). */
   mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
   mucDaiSlots: Array<Slot>;
-  /** Minimum spacing (minutes) below which two of a student's exams count as "too close". */
+  /** Effective "too close" threshold (minutes, same day) for a student's two exams. */
   notTooCloseMinutes: Scalars['Int']['output'];
   slots: Array<Slot>;
   starttimes: Array<Starttime>;
-  /** Turnaround buffer (minutes) between two uses of a room / between invigilations. */
+  /** Effective turnaround (minutes) between two uses of a room / between two invigilations. */
   timelagMin: Scalars['Int']['output'];
   until: Scalars['Time']['output'];
 };
@@ -2675,15 +2791,18 @@ export type SemesterConfigInput = {
   forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
   /** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
   from: Scalars['Time']['output'];
-  /** Cap on how many students may be examined at the same start time (null/0 = unlimited). */
+  /**
+   * Max students examined at the same start time (configurable per-time capacity
+   * for the Terminplan solver; null/0 = no limit).
+   */
   maxSeatsPerSlot?: Maybe<Scalars['Int']['output']>;
-  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  /** Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times). */
   mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
-  /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */
+  /** Two exams of a student closer than this (minutes, same day) are flagged as "too close" (null = default 120). */
   notTooCloseMinutes?: Maybe<Scalars['Int']['output']>;
-  /** Daily slot start times as "HH:MM". */
+  /** Allowed daily exam start times as "HH:MM". */
   startTimes: Array<Scalars['String']['output']>;
-  /** Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15). */
+  /** Minimum turnaround (minutes) between two uses of a room / between two invigilations (null = default). */
   timelagMin?: Maybe<Scalars['Int']['output']>;
   until: Scalars['Time']['output'];
 };
@@ -2694,16 +2813,40 @@ export type SemesterConfigInputData = {
   examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
   forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
   from: Scalars['Time']['input'];
-  /** Cap on how many students may be examined at the same start time (null/0 = unlimited). */
+  /**
+   * Max students examined at the same start time (configurable per-time capacity
+   * for the Terminplan solver; null/0 = no limit).
+   */
   maxSeatsPerSlot?: InputMaybe<Scalars['Int']['input']>;
-  /** Allowed absolute start times for MUC.DAI exams (currently effectively morning/afternoon). */
+  /** Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times). */
   mucDaiAllowedTimes?: InputMaybe<Array<Scalars['Time']['input']>>;
-  /** Minimum spacing (minutes) below which two of a student's exams count as "too close" (null = default 120). */
+  /** Two exams of a student closer than this (minutes, same day) are flagged as "too close" (null = default 120). */
   notTooCloseMinutes?: InputMaybe<Scalars['Int']['input']>;
   startTimes: Array<Scalars['String']['input']>;
-  /** Turnaround buffer (minutes) between two uses of a room / between invigilations (null = default 15). */
+  /** Minimum turnaround (minutes) between two uses of a room / between two invigilations (null = default). */
   timelagMin?: InputMaybe<Scalars['Int']['input']>;
   until: Scalars['Time']['input'];
+};
+
+export type ServerInfo = {
+  __typename?: 'ServerInfo';
+  /** Who built the binary ("unknown" if not set). */
+  builtBy: Scalars['String']['output'];
+  /** Git commit the binary was built from ("none" if unknown). */
+  commit: Scalars['String']['output'];
+  /** Build date ("unknown" if not set). */
+  date: Scalars['String']['output'];
+  /** The MongoDB database (workspace) currently in use, e.g. "2026-SS". */
+  mongoDatabase: Scalars['String']['output'];
+  /** The MongoDB host:port the server is connected to (credentials redacted). */
+  mongoHost: Scalars['String']['output'];
+  /**
+   * Link to the GitHub release for this version, or null for dev/unreleased
+   * builds where no matching release exists.
+   */
+  releaseURL?: Maybe<Scalars['String']['output']>;
+  /** plexams.go build version, e.g. "1.99.0" or "dev" for local builds. */
+  version: Scalars['String']['output'];
 };
 
 export type Slot = {
@@ -2712,9 +2855,10 @@ export type Slot = {
 };
 
 /**
- * Steers the exam-schedule "avoid unfavourable times of day" soft constraint.
- * AUTO picks the rule from the semester (WS avoids early slots, SS avoids late
- * slots); WINTER/SUMMER force a variant; OFF disables it.
+ * When the exam-schedule generator (Terminplan) applies the start-time soft constraint, and
+ * which way. AUTO follows the semester (winter → avoid early starts before the morning limit;
+ * summer → prefer early starts, the later the worse, weighted by registrations so large exams
+ * go first); WINTER/SUMMER force one variant (for testing); OFF disables it. Default AUTO.
  */
 export enum SlotTimeConstraintMode {
   Auto = 'AUTO',
@@ -3197,7 +3341,8 @@ export type UnplacedExam = {
   mtknrs: Array<Scalars['String']['output']>;
   /** set if these are NTA students (then mtknrs has exactly one entry). */
   ntaMtknr?: Maybe<Scalars['String']['output']>;
-  starttime: Scalars['Time']['output'];
+  /** Absolute start time of the exam. */
+  starttime?: Maybe<Scalars['Time']['output']>;
 };
 
 /**
@@ -3213,6 +3358,7 @@ export type ValidationFinding = {
   message: Scalars['String']['output'];
   relatedAncodes?: Maybe<Array<Scalars['Int']['output']>>;
   room?: Maybe<Scalars['String']['output']>;
+  /** Absolute start time of the affected slot (derived; null when not slot-related). */
   starttime?: Maybe<Scalars['Time']['output']>;
   studentMtknr?: Maybe<Scalars['String']['output']>;
 };
@@ -3236,12 +3382,12 @@ export type ValidationReport = {
   infoCount: Scalars['Int']['output'];
   name: Scalars['String']['output'];
   ok: Scalars['Boolean']['output'];
-  /** Human-readable reason why the validator was skipped (German), if skipped. */
+  /** Why the validator was skipped, if skipped. */
   skipReason?: Maybe<Scalars['String']['output']>;
   /**
-   * True when the validator did not actually run (e.g. a precondition was not met).
-   * When skipped, ok=true / errorCount=0 / findings=[] and must not be shown as a
-   * passing check.
+   * True when the validator did not run because the data it checks does not exist yet
+   * (e.g. no exam plan, no rooms, no invigilations). Not a failure — render neutrally
+   * ("übersprungen"), not as a green pass.
    */
   skipped: Scalars['Boolean']['output'];
   warningCount: Scalars['Int']['output'];
