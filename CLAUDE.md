@@ -79,6 +79,7 @@ Route folders mirror the planning workflow. Key domain terms:
 - Styling is **Tailwind v4 + daisyUI**; theme switching uses `theme-change` (see the theme list in `Nav.svelte`).
 - Prettier: tabs, single quotes, no trailing commas, printWidth 100. Run `pnpm format` before committing.
 - Route param matchers live in `src/params/` (`string`, `integer`), used as `[mtknr=string]`.
+- **Responsive (Tablet-first, Phone-Ansicht)** — the app targets full usability on tablet (≥ 768px) and clean viewing on phone (~375px). The horizontal page padding comes from the layout wrapper in `+layout.svelte` (`px-3 sm:px-4 lg:px-8`); **new pages don't add their own `p-8`**. Rules of thumb: multi-column grids always carry a mobile fallback (`grid-cols-1 sm:grid-cols-N`, never a bare `grid-cols-N ≥ 2`); wide tables and dense plan grids live in an `overflow-x-auto` container (they scroll rather than reflow); toolbars/filter rows use `flex-wrap`; fixed-width form controls go `w-full sm:w-<n>`. The dense planning grids (`plan/exams`, `plan/rooms`) deliberately scroll horizontally on small screens — don't rebuild them into card lists. When touching layout, sanity-check at 375px (DevTools device toolbar or a throwaway Playwright script checking `documentElement.scrollWidth > clientWidth`).
 
 ## Tests
 
