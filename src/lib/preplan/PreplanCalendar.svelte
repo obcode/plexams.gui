@@ -202,6 +202,8 @@
 								PX_PER_MIN}px; left:calc({(b.lane / d.lanes) * 100}% + 1px); width:calc({100 /
 								d.lanes}% - 2px)"
 							title={`${b.examKind} · ${b.module} · ${b.expectedStudents} Studis${
+								b.programs?.length ? ' · ' + b.programs.join(', ') : ''
+							}${
 								b.examerName ? ' · ' + b.examerName : ''
 							}\n${hhmm(b.examStart)}–${hhmm(b.examEnd)}${b.durKnown ? '' : ' (Dauer geschätzt)'} · Vorlauf ${b.pre}/Nachlauf ${b.post} Min${
 								stt ? '\nRäume: ' + stt.text : ''
@@ -224,6 +226,13 @@
 									<div class="truncate opacity-80 tabular-nums">
 										{hhmm(b.examStart)}{#if !b.durKnown}
 											~{/if}
+									</div>
+								{/if}
+								{#if b.programs?.length && b.dur * PX_PER_MIN > 38}
+									<div class="truncate opacity-90">
+										{#each b.programs as p, i}{i ? ', ' : ''}<span
+												class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}>{p}</span
+											>{/each}
 									</div>
 								{/if}
 							</div>
