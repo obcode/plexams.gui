@@ -7,6 +7,8 @@ export const POST: RequestHandler = async () => {
 		query {
 			validatePreplanAssignment {
 				ok
+				skipped
+				skipReason
 				assignedCount
 				unassignedIDs
 				messages

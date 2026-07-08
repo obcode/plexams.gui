@@ -131,7 +131,7 @@ export async function runZpaCheck() {
  * @param {import('$lib/validation/validators').ValidatorGroup} group
  */
 function runGroupCheck(client, group) {
-	/** @type {Record<string, { ok: boolean, errorCount: number, warningCount: number, skipped?: boolean }>} */
+	/** @type {Record<string, { ok: boolean, errorCount: number, warningCount: number, skipped?: boolean, skipReason?: string }>} */
 	const reports = {};
 	let remaining = group.validators.length;
 
@@ -177,6 +177,8 @@ function runGroupCheck(client, group) {
 					const errorCount = findings.filter((f) => f.level === 'ERROR').length;
 					reports[v.key] = {
 						ok: errorCount === 0,
+						skipped: !!raw.skipped,
+						skipReason: raw.skipReason,
 						errorCount,
 						warningCount: findings.filter((f) => f.level === 'WARNING').length
 					};

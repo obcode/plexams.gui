@@ -9,6 +9,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		mutation ($keepAssigned: Boolean!) {
 			generatePreplanAssignment(keepAssigned: $keepAssigned) {
 				ok
+				skipped
+				skipReason
 				assignedCount
 				unassignedIDs
 				messages

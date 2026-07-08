@@ -566,7 +566,7 @@
 	}
 
 	// Zuordnung generieren & validieren
-	/** @type {{ok:boolean, assignedCount:number, unassignedIDs:number[], messages:string[], findings?:{level:string, message:string}[]}|null} */
+	/** @type {{ok:boolean, skipped?:boolean, skipReason?:string, assignedCount:number, unassignedIDs:number[], messages:string[], findings?:{level:string, message:string}[]}|null} */
 	let validation = $state(/** @type {any} */ (null));
 	let validationKind = $state('');
 	let validating = $state(false);
@@ -870,7 +870,22 @@
 	{/if}
 
 	<!-- Befunde aus Validieren / Generieren -->
-	{#if validation}
+	{#if validation && validation.skipped}
+		<!-- übersprungen: keine SEB/EXaHM-Pre-Prüfungen — neutral (wie ValidationReport.skipped) -->
+		<div class="flex flex-col items-start gap-2 rounded-lg border border-base-300 p-3">
+			<div class="flex w-full items-center gap-2">
+				<span class="font-medium">
+					{validationKind === 'generate' ? 'Zuordnung generieren' : 'Validierung'}
+				</span>
+				<span class="badge badge-ghost badge-sm text-base-content/60">übersprungen</span>
+				<div class="flex-1"></div>
+				<button class="btn btn-ghost btn-xs" onclick={() => (validation = null)}>schließen</button>
+			</div>
+			<div class="text-sm text-base-content/60">
+				übersprungen{#if validation.skipReason}: {validation.skipReason}{/if}
+			</div>
+		</div>
+	{:else if validation}
 		{@const head =
 			validationKind === 'generate'
 				? `Zuordnung generiert: ${validation.assignedCount} Prüfung(en) platziert`

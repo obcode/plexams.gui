@@ -94,7 +94,8 @@
 			warningCount,
 			infoCount,
 			findings,
-			skipped: false
+			skipped: !!raw?.skipped,
+			skipReason: raw?.skipReason
 		};
 	}
 
