@@ -15,6 +15,7 @@
 
 	// Filter
 	let name = $state('');
+	let user = $state('');
 	let ancode = $state('');
 	/** @type {{key:string, value:string}[]} mehrere Parameter-Paare (UND) */
 	let params = $state([{ key: '', value: '' }]);
@@ -50,6 +51,7 @@
 				body: JSON.stringify({
 					name,
 					type: typeFilter === 'alle' ? '' : typeFilter,
+					user,
 					ancode,
 					args: params.filter((p) => p.key.trim() || p.value.trim()),
 					since: toISO(since),
@@ -73,6 +75,7 @@
 	function reset() {
 		name = '';
 		typeFilter = 'alle';
+		user = '';
 		ancode = '';
 		params = [{ key: '', value: '' }];
 		since = '';
@@ -85,6 +88,7 @@
 		!!(
 			name ||
 			typeFilter !== 'alle' ||
+			user ||
 			ancode ||
 			since ||
 			until ||
@@ -92,10 +96,22 @@
 		)
 	);
 
+	// Bekannte Bearbeiter (aus den geladenen Einträgen) für das Freitext-Dropdown
+	let knownUsers = $derived(
+		[
+			...new Set(logs.map((/** @type {any} */ l) => l.user).filter((/** @type {any} */ u) => u))
+		].sort()
+	);
+
 	// Klick-Filter aus der Tabelle
 	/** @param {number} a */
 	function filterByAncode(a) {
 		ancode = String(a);
+		apply();
+	}
+	/** @param {string} u */
+	function filterByUser(u) {
+		user = u;
 		apply();
 	}
 	/** @param {string} key @param {string} value */
@@ -138,7 +154,7 @@
 		<div class="flex-1"></div>
 		<!-- Quelle als Tabs (serverseitig gefiltert) -->
 		<div class="tabs tabs-boxed tabs-sm">
-			{#each [['alle', 'alle'], ['mutation', 'Mutation'], ['subscription', 'Subscription'], ['cli', 'CLI']] as [val, label]}
+			{#each [['alle', 'alle'], ['mutation', 'Mutation'], ['upload', 'Upload'], ['subscription', 'Subscription'], ['cli', 'CLI']] as [val, label]}
 				<button
 					class="tab {typeFilter === val ? 'tab-active' : ''}"
 					onclick={() => setType(val)}
@@ -161,6 +177,22 @@
 						<option value={n}>{n}</option>
 					{/each}
 				</select>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Bearbeiter</span>
+				<input
+					type="text"
+					class="input input-bordered input-sm w-56"
+					list="log-users"
+					bind:value={user}
+					onkeydown={onEnter}
+					placeholder="E-Mail / Name"
+				/>
+				<datalist id="log-users">
+					{#each knownUsers as u}
+						<option value={u}></option>
+					{/each}
+				</datalist>
 			</label>
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Ancode</span>
@@ -245,6 +277,7 @@
 					<th>Zeit</th>
 					<th>Operation</th>
 					<th>Typ</th>
+					<th>Planer/Bearbeiter</th>
 					<th>Argumente</th>
 					<th>Ancodes</th>
 					<th class="text-right">Dauer</th>
@@ -260,8 +293,23 @@
 								<span class="badge badge-secondary badge-sm">CLI</span>
 							{:else if l.type === 'subscription'}
 								<span class="badge badge-info badge-sm">Subscription</span>
+							{:else if l.type === 'upload'}
+								<span class="badge badge-accent badge-sm">Upload</span>
 							{:else}
 								<span class="badge badge-neutral badge-sm">Mutation</span>
+							{/if}
+						</td>
+						<td>
+							{#if l.user}
+								<button
+									class="badge badge-ghost badge-sm hover:badge-primary"
+									title="nach Bearbeiter „{l.user}“ filtern"
+									onclick={() => filterByUser(l.user)}
+								>
+									{l.user}
+								</button>
+							{:else}
+								<span class="text-base-content/30">—</span>
 							{/if}
 						</td>
 						<td>
@@ -299,7 +347,7 @@
 					</tr>
 				{:else}
 					<tr>
-						<td colspan="6" class="py-8 text-center text-sm text-base-content/50">
+						<td colspan="7" class="py-8 text-center text-sm text-base-content/50">
 							Keine Log-Einträge für diesen Filter.
 						</td>
 					</tr>

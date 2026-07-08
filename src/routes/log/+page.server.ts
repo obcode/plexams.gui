@@ -6,6 +6,7 @@ type MutationLogEntry = {
 	time: string;
 	name: string;
 	type: string;
+	user: string | null;
 	args: { key: string; value: string }[];
 	ancodes: number[];
 	error: string | null;
@@ -22,6 +23,7 @@ export const load: PageServerLoad = async () => {
 					time
 					name
 					type
+					user
 					args {
 						key
 						value
