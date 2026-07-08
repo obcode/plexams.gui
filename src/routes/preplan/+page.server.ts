@@ -47,7 +47,7 @@ export const load: PageServerLoad = async () => {
 						}
 					}
 				}
-				teachers(fromZPA: false) {
+				teachers(fromZPA: true) {
 					id
 					shortname
 				}
