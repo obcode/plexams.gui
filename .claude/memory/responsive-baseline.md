@@ -32,4 +32,12 @@ Vorfahren mit `overflow-x: auto/scroll/hidden` liegen (legitimer interner Scroll
 laufenden Dev/Preview + Backend. **Wichtig**: `pnpm preview`/`dev` NUR über den Tool-
 Hintergrundmodus (`run_in_background`) starten — `&`/`nohup` werden beim Bash-Call-Ende
 gekillt. Voller `pnpm build` wird bei wenig freiem RAM OOM-gekillt (137); dann `dev` nutzen.
-Nach diesem Durchlauf: 0 Seiten mit echtem Overflow bei 375px.
+**Immer bei 375 UND 768 UND 1024 prüfen** — ein reiner 375px-Sweep übersieht
+Tablet-/Zwischenbreiten: die Topbar (festes h-16, kein Umbruch) lief bei 640–1439px
+über, weil ab lg das ~691px-Desktop-Mega-Menü zusätzlich zu Pillen+Semester erscheint.
+Behoben durch Neustaffelung der Nav-Breakpoints (Desktop-Menü erst ab xl, Pillen bis 2xl
+kompakt, Wortmarke/Theme-Name nur wo Platz). Karten-Raster (Dashboard-Phasen) nutzen ein
+container-basiertes Auto-Fit-Grid `grid-cols-[repeat(auto-fit,minmax(min(14rem,100%),1fr))]`
+statt fester `md:/xl:`-Breakpoints — reflowt kontinuierlich beim Resizen (auch Safari),
+robust gegen wechselnde Kartenzahl, kein 4+1-Waisenkind. Stand: 0 Overflow über 320–1920px
+und alle 39 Routen bei 375/768/1024.
