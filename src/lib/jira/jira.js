@@ -21,8 +21,12 @@ export function connectionStatus(conn, error) {
 	return { ok: false, text: 'nicht verbunden' };
 }
 
+// Die Prüfungsplanung nutzt genau ein Jira-Projekt; alle Keys sind FK07PP-<n>.
+// Deshalb reicht im Editor die reine Nummer als Eingabe.
+export const DEFAULT_JIRA_PROJECT = 'FK07PP';
+
 /**
- * Issue-Key normalisieren (Jira-Keys sind großgeschrieben, z. B. „PLEX-12").
+ * Issue-Key normalisieren (Jira-Keys sind großgeschrieben, z. B. „FK07PP-12").
  * @param {string} key
  * @returns {string}
  */
@@ -30,6 +34,19 @@ export function normalizeIssueKey(key) {
 	return String(key ?? '')
 		.trim()
 		.toUpperCase();
+}
+
+/**
+ * Eingabe zu einem vollständigen Issue-Key machen: eine reine Zahl wird als
+ * Nummer im Standard-Projekt gedeutet („123" → „FK07PP-123"); ein bereits
+ * vollständiger Key (mit Projekt-Präfix) bleibt unverändert.
+ * @param {string} input
+ * @param {string} [project]
+ * @returns {string}
+ */
+export function resolveIssueKey(input, project = DEFAULT_JIRA_PROJECT) {
+	const norm = normalizeIssueKey(input);
+	return /^\d+$/.test(norm) ? `${project}-${norm}` : norm;
 }
 
 /**

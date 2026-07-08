@@ -8,7 +8,7 @@
 		runTransition,
 		attachToIssue
 	} from '$lib/jira/client.js';
-	import { connectionStatus, normalizeIssueKey } from '$lib/jira/jira.js';
+	import { connectionStatus, resolveIssueKey } from '$lib/jira/jira.js';
 
 	let { data } = $props();
 
@@ -96,7 +96,7 @@
 
 	/** @param {string} key */
 	async function loadIssue(key) {
-		const k = normalizeIssueKey(key);
+		const k = resolveIssueKey(key); // reine Nummer → FK07PP-<n>
 		if (!k) return;
 		loading = true;
 		editError = '';
@@ -216,7 +216,7 @@
 						type="text"
 						class="input input-bordered input-sm w-full"
 						bind:value={cProject}
-						placeholder="Standard: jira.project"
+						placeholder="Standard: FK07PP"
 					/>
 				</label>
 				<label class="flex flex-1 flex-col gap-1">
@@ -279,12 +279,12 @@
 			<h2 class="text-lg font-semibold">Issue bearbeiten</h2>
 			<div class="flex flex-wrap items-end gap-2">
 				<label class="flex flex-1 flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Issue-Key</span>
+					<span class="text-xs font-medium text-base-content/60">Issue-Key oder Nummer</span>
 					<input
 						type="text"
 						class="input input-bordered input-sm w-full"
 						bind:value={lookupKey}
-						placeholder="z. B. PLEX-12"
+						placeholder="z. B. FK07PP-12 oder 12"
 						onkeydown={(e) => e.key === 'Enter' && loadIssue(lookupKey)}
 					/>
 				</label>
