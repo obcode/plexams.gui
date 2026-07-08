@@ -127,7 +127,7 @@
 			</div>
 			<div class="collapse-content">
 				<div class="grid gap-3 md:grid-cols-4">
-					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+					<div class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-3">
 						<div class="mb-2 font-medium">Anny-Buchungen</div>
 						{#if !slot.annyBookings || slot.annyBookings.length === 0}
 							<div class="text-sm text-base-content/50">Keine Buchungen</div>
@@ -156,7 +156,7 @@
 						{/if}
 					</div>
 
-					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
+					<div class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-3">
 						<div class="mb-2 font-medium">Verfügbare T-Räume</div>
 						{#if slot.tRooms.length === 0}
 							<div class="text-sm text-base-content/50">Keine T-Räume</div>
@@ -172,7 +172,9 @@
 						{/if}
 					</div>
 
-					<div class="rounded-lg border border-base-300 bg-base-100 p-3 md:col-span-2">
+					<div
+						class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-3 md:col-span-2"
+					>
 						<div class="mb-2 font-medium">Prüfungen mit EXaHM / SEB-Bedarf</div>
 						{#if slot.exams.length === 0}
 							<div class="text-sm text-base-content/50">Keine Prüfungen mit Bedarf</div>

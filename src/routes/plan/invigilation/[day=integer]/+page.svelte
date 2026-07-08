@@ -58,8 +58,8 @@
 		{/each}
 	</div>
 
-	<div class="grid grid-cols-12 gap-4">
-		<div class="col-span-2">
+	<div class="grid grid-cols-1 gap-4 lg:grid-cols-12">
+		<div class="lg:col-span-2">
 			<InvigilatorsForDay
 				date={dayDate}
 				{selectedInvigilator}
@@ -67,7 +67,7 @@
 				onunselected={handleUnselect}
 			/>
 		</div>
-		<div class="col-span-10">
+		<div class="lg:col-span-10">
 			<InvigilationDayPlanning
 				semesterConfig={data.semesterConfig}
 				day={data.day}

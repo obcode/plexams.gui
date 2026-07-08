@@ -59,7 +59,7 @@
 		</div>
 		{#if !noRooms}
 			<div
-				class="grid grid-cols-5 m-2 border-solid border-black border-2 bg-green-100 rounded-lg shadow-xl"
+				class="m-2 grid grid-cols-1 rounded-lg border-2 border-solid border-base-300 bg-success/10 shadow-xl sm:grid-cols-3 lg:grid-cols-5"
 			>
 				{#each slot.roomsWithInvigilators as roomsWithInvigilators}
 					<Room {roomsWithInvigilators} {details} {selectedInvigilator} />

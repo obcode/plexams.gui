@@ -660,7 +660,7 @@
 				{modalMode === 'edit' ? 'Zeit bearbeiten' : 'Anfrage hinzufügen'}
 			</h3>
 			<div class="flex flex-col gap-3">
-				<div class="grid grid-cols-2 gap-3">
+				<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Raum</span>
 						{#if modalMode === 'edit'}

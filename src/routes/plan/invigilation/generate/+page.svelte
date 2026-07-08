@@ -417,7 +417,7 @@
 			</div>
 
 			{#snippet fieldGrid(/** @type {CfgField[]} */ fields, /** @type {string} */ cols)}
-				<div class="grid grid-cols-2 gap-3 {cols}">
+				<div class="grid grid-cols-1 gap-3 {cols}">
 					{#each fields as f}
 						<label class="flex flex-col gap-1">
 							<span

@@ -110,7 +110,7 @@
 		}
 	}
 
-	const width = $derived(details || !inSlot ? 'w-96' : 'w-min');
+	const width = $derived(details || !inSlot ? 'w-full max-w-96 sm:w-96' : 'w-min');
 
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
 	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld
