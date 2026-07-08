@@ -76,7 +76,7 @@
 		<div class="alert alert-error py-2 text-sm"><span>{errorMsg}</span></div>
 	{/if}
 
-	<div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+	<div class="grid grid-cols-[repeat(auto-fit,minmax(min(14rem,100%),1fr))] gap-3">
 		{#each planningState.phases as phase}
 			{@const total = phase.conditions.length}
 			{@const done = phase.conditions.filter((/** @type {any} */ c) => c.done).length}
