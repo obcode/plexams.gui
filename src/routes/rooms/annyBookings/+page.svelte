@@ -86,6 +86,24 @@
 		const dt = new Date(Date.UTC(y, m - 1, d));
 		return `${WD[dt.getUTCDay()]} ${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.`;
 	}
+	/** @param {string} dateKey → UTC-Date */
+	const parseKey = (dateKey) => {
+		const [y, m, d] = dateKey.split('-').map(Number);
+		return new Date(Date.UTC(y, m - 1, d));
+	};
+	/** @param {Date} dt → „YYYY-MM-DD" */
+	const fmtKey = (dt) =>
+		`${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(
+			dt.getUTCDate()
+		).padStart(2, '0')}`;
+	/** @param {string} dateKey → Montag derselben Kalenderwoche (als dateKey) */
+	function mondayOf(dateKey) {
+		const dt = parseKey(dateKey);
+		const dow = dt.getUTCDay(); // 0=So … 6=Sa
+		const diff = dow === 0 ? -6 : 1 - dow;
+		dt.setUTCDate(dt.getUTCDate() + diff);
+		return fmtKey(dt);
+	}
 	/** @param {number} min */
 	const hhmm = (min) =>
 		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
@@ -173,6 +191,52 @@
 				lanes: Math.max(1, laneEnds.length)
 			};
 		})
+	);
+
+	// Kalender wochenweise (immer Mo–Fr) untereinander gruppieren.
+	let calendarWeeks = $derived(
+		(() => {
+			/** @type {Map<string, Map<string, any>>} */
+			const byMonday = new Map();
+			for (const day of calendar) {
+				const mk = mondayOf(day.date);
+				if (!byMonday.has(mk)) byMonday.set(mk, new Map());
+				byMonday.get(mk)?.set(day.date, day);
+			}
+			return [...byMonday.keys()].sort().map((mk) => {
+				const dayMap = byMonday.get(mk) ?? new Map();
+				const monday = parseKey(mk);
+				/** @param {string} dk */
+				const emptyDay = (dk) => ({
+					date: dk,
+					label: dayLabel(dk),
+					dayNumber: undefined,
+					bookings: [],
+					lanes: 1
+				});
+				/** @type {Set<string>} */
+				const seen = new Set();
+				const days = [];
+				// Immer Mo–Fr, auch ohne Buchungen.
+				for (let i = 0; i < 5; i += 1) {
+					const dt = new Date(
+						Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + i)
+					);
+					const dk = fmtKey(dt);
+					seen.add(dk);
+					days.push(dayMap.get(dk) ?? emptyDay(dk));
+				}
+				// Etwaige Buchungen am Wochenende nicht verlieren.
+				for (const [dk, day] of [...dayMap.entries()].sort()) {
+					if (!seen.has(dk)) days.push(day);
+				}
+				days.sort((a, b) => a.date.localeCompare(b.date));
+				const friday = new Date(
+					Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + 4)
+				);
+				return { monday: mk, rangeLabel: `${dayLabel(mk)} – ${dayLabel(fmtKey(friday))}`, days };
+			});
+		})()
 	);
 
 	// --- Slot-Matrix: Filter ---
@@ -405,67 +469,75 @@
 				Keine Buchungen im gewählten Zeitraum.
 			</div>
 		{:else}
-			<div class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-2">
-				<div class="flex min-w-fit">
-					<!-- Zeit-Spalte -->
-					<div class="shrink-0 pr-1" style="width:3rem">
-						<div class="h-6"></div>
-						<div class="relative" style="height:{totalHeight}px">
-							{#each hourMarks as h}
-								<div
-									class="absolute right-1 text-[10px] text-base-content/40"
-									style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN - 6}px"
-								>
-									{h}:00
-								</div>
-							{/each}
+			<div class="flex flex-col gap-4">
+				{#each calendarWeeks as week}
+					<div class="overflow-x-auto rounded-lg border border-base-300 bg-base-100 p-2">
+						<div class="mb-1 px-1 text-xs font-semibold text-base-content/60 tabular-nums">
+							{week.rangeLabel}
 						</div>
-					</div>
-					<!-- Tages-Spalten -->
-					<div class="flex flex-1 gap-1">
-						{#each calendar as day}
-							<div class="min-w-[130px] flex-1">
-								<div class="h-6 text-center text-xs font-medium tabular-nums">
-									{day.label}
-									{#if day.date}<span class="text-base-content/40">· {mkDateShort(day.date)}</span
-										>{/if}
-								</div>
-								<div
-									class="relative rounded border-l border-base-200 bg-base-200/20"
-									style="height:{totalHeight}px"
-								>
+						<div class="flex min-w-fit">
+							<!-- Zeit-Spalte -->
+							<div class="shrink-0 pr-1" style="width:3rem">
+								<div class="h-6"></div>
+								<div class="relative" style="height:{totalHeight}px">
 									{#each hourMarks as h}
 										<div
-											class="absolute inset-x-0 border-t border-base-200/60"
-											style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN}px"
-										></div>
-									{/each}
-									{#each day.bookings as b}
-										<div
-											class="absolute overflow-hidden rounded px-1 py-0.5 text-[10px] leading-tight"
-											style="top:{(b.startMin - timeRange.lo) * PX_PER_MIN}px; height:{Math.max(
-												(b.endMin - b.startMin) * PX_PER_MIN,
-												16
-											)}px; left:calc({(b.lane / day.lanes) * 100}% + 1px); width:calc({100 /
-												day.lanes}% - 2px); background:{colorOf(
-												b.room
-											)}; color:#1e1e2e; outline:{b.mine ? '2px solid currentColor' : 'none'}"
-											title={`${b.room} · ${fmtTime(b.startDate)}–${fmtTime(b.endDate)}${
-												b.personalizationName ? ' · ' + b.personalizationName : ''
-											}${b.description ? ' · ' + b.description : ''}`}
+											class="absolute right-1 text-[10px] text-base-content/40"
+											style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN - 6}px"
 										>
-											<div class="font-mono font-semibold">{b.room}</div>
-											<div class="tabular-nums">{fmtTime(b.startDate)}</div>
-											{#if (b.endMin - b.startMin) * PX_PER_MIN > 34 && b.personalizationName}
-												<div class="truncate">{b.personalizationName}</div>
-											{/if}
+											{h}:00
 										</div>
 									{/each}
 								</div>
 							</div>
-						{/each}
+							<!-- Tages-Spalten -->
+							<div class="flex flex-1 gap-1">
+								{#each week.days as day}
+									<div class="min-w-[130px] flex-1">
+										<div class="h-6 text-center text-xs font-medium tabular-nums">
+											{day.label}
+											{#if day.date}<span class="text-base-content/40"
+													>· {mkDateShort(day.date)}</span
+												>{/if}
+										</div>
+										<div
+											class="relative rounded border-l border-base-200 bg-base-200/20"
+											style="height:{totalHeight}px"
+										>
+											{#each hourMarks as h}
+												<div
+													class="absolute inset-x-0 border-t border-base-200/60"
+													style="top:{(h * 60 - timeRange.lo) * PX_PER_MIN}px"
+												></div>
+											{/each}
+											{#each day.bookings as b}
+												<div
+													class="absolute overflow-hidden rounded px-1 py-0.5 text-[10px] leading-tight"
+													style="top:{(b.startMin - timeRange.lo) * PX_PER_MIN}px; height:{Math.max(
+														(b.endMin - b.startMin) * PX_PER_MIN,
+														16
+													)}px; left:calc({(b.lane / day.lanes) * 100}% + 1px); width:calc({100 /
+														day.lanes}% - 2px); background:{colorOf(
+														b.room
+													)}; color:#1e1e2e; outline:{b.mine ? '2px solid currentColor' : 'none'}"
+													title={`${b.room} · ${fmtTime(b.startDate)}–${fmtTime(b.endDate)}${
+														b.personalizationName ? ' · ' + b.personalizationName : ''
+													}${b.description ? ' · ' + b.description : ''}`}
+												>
+													<div class="font-mono font-semibold">{b.room}</div>
+													<div class="tabular-nums">{fmtTime(b.startDate)}</div>
+													{#if (b.endMin - b.startMin) * PX_PER_MIN > 34 && b.personalizationName}
+														<div class="truncate">{b.personalizationName}</div>
+													{/if}
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
 					</div>
-				</div>
+				{/each}
 			</div>
 		{/if}
 	{:else if view === 'list'}
