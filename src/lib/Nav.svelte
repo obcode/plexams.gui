@@ -424,14 +424,14 @@
 				P
 			</span>
 			<span
-				class="hidden bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent sm:inline"
+				class="hidden bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent sm:inline xl:hidden 2xl:inline"
 			>
 				Plexams
 			</span>
 		</a>
 
 		<!-- Hauptmenü (Desktop) -->
-		<nav class="ml-2 hidden items-center gap-0.5 lg:flex">
+		<nav class="ml-2 hidden items-center gap-0.5 xl:flex">
 			{#each menus as menu}
 				<div class="dropdown dropdown-bottom">
 					<div
@@ -533,8 +533,8 @@
 				aria-label="Validierung"
 				title="Validierung"
 			>
-				<span class="hidden sm:inline">Validierung</span>
-				<span class="sm:hidden" aria-hidden="true">✓</span>
+				<span class="hidden 2xl:inline">Validierung</span>
+				<span class="2xl:hidden" aria-hidden="true">✓</span>
 			</a>
 			<button
 				class="btn btn-ghost btn-sm gap-1 px-2"
@@ -543,14 +543,14 @@
 			>
 				<!-- Mobil: ein Sammel-Status-Punkt (die Einzelpunkte würden die Topbar sprengen) -->
 				<span
-					class="inline-block h-2.5 w-2.5 rounded-full sm:hidden {dotClass(
+					class="inline-block h-2.5 w-2.5 rounded-full 2xl:hidden {dotClass(
 						$validationSummary.level
 					)}"
 					class:animate-pulse={$validationSummary.level === 'error'}
 					title={statusTitle('Validierung', $validationSummary)}
 				></span>
 				<!-- Ab sm: alle Einzelpunkte -->
-				<span class="hidden items-center gap-1 sm:flex">
+				<span class="hidden items-center gap-1 2xl:flex">
 					{#each $validationDots as d}
 						<span
 							class="inline-block h-2.5 w-2.5 rounded-full {d.running
@@ -618,7 +618,7 @@
 						d="M9.53 16.12a3 3 0 0 0-5.78 1.13 2.25 2.25 0 0 1-2.4 2.24 4.5 4.5 0 0 0 8.4-2.24c0-.4-.08-.78-.22-1.13Zm0 0a16 16 0 0 0 3.39-1.62m-5.04-.03a16 16 0 0 1 1.62-3.39m3.42 3.42a16 16 0 0 0 4.76-4.65l3.88-5.81a1.15 1.15 0 0 0-1.6-1.6l-5.81 3.88a16 16 0 0 0-4.65 4.76m3.42 3.42a6.78 6.78 0 0 0-3.42-3.42"
 					/>
 				</svg>
-				<span class="hidden capitalize md:inline">{currentTheme}</span>
+				<span class="hidden capitalize 2xl:inline">{currentTheme}</span>
 			</div>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
@@ -729,7 +729,7 @@
 		</div>
 
 		<!-- Hamburger (Mobile/Tablet) -->
-		<div class="dropdown dropdown-end lg:hidden">
+		<div class="dropdown dropdown-end xl:hidden">
 			<div tabindex="0" role="button" class="btn btn-ghost btn-sm btn-circle" aria-label="Menü">
 				<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
 					<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
