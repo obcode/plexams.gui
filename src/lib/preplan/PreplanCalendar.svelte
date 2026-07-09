@@ -3,11 +3,22 @@
 		roomColorMap,
 		roomOrder,
 		examBlocks,
-		packLanes,
+		packByCapacity,
 		weekGroups,
 		timeRange,
-		hhmm
+		hhmm,
+		minutesOfIso,
+		dateKeyOfIso
 	} from './calendar.js';
+
+	/** Slot-Zeit → einheitlicher Key „YYYY-MM-DDTHH:MM" (Backend liefert Sekunden +
+	 * Zeitzone; die Prüfungsblöcke rechnen in reinen hh:mm — beide Seiten hier
+	 * über dieselben Helfer normalisieren). @param {string | null | undefined} iso */
+	const slotKey = (iso) => {
+		const dk = dateKeyOfIso(iso);
+		const min = minutesOfIso(iso);
+		return dk != null && min != null ? `${dk}T${hhmm(min)}` : String(iso ?? '');
+	};
 
 	let {
 		/** @type {any[]} */ exams = [],
@@ -27,9 +38,9 @@
 
 	let blocks = $derived(examBlocks(exams));
 
-	// Raum-Bedarf je Slot (starttime) für Status-Punkt/Detail an der Prüfung.
+	// Raum-Bedarf je Slot (normalisierte Startzeit) für Status-Punkt/Kapazität.
 	let slotByStart = $derived(
-		new Map((calendarSlots ?? []).map((/** @type {any} */ s) => [s.starttime, s]))
+		new Map((calendarSlots ?? []).map((/** @type {any} */ s) => [slotKey(s.starttime), s]))
 	);
 	/** Ampel wie in der Vorplanung. @param {any} n */
 	function roomStatus(n) {
@@ -78,18 +89,46 @@
 		])
 	);
 
-	// pro Tag: Prüfungsblöcke in Spuren + Raum-Balken in Raum-Spalten
+	/**
+	 * Kapazitätsanteil einer Prüfung: erwartete Studis / verfügbare Plätze des Slots
+	 * (je Art). Sind keine verfügbaren Plätze bekannt (noch nichts gebucht), wird
+	 * gegen den Bedarf normiert → die gleichzeitigen Prüfungen füllen die Zeile
+	 * (signalisiert „Kapazität unbekannt/knapp"). @param {any} b
+	 */
+	function capacityOf(b) {
+		const s = slotByStart.get(`${b.dateKey}T${hhmm(b.examStart)}`);
+		const need = s ? (b.examKind === 'SEB' ? s.seb : s.exahm) : null;
+		const avail = need?.seatsAvailable ?? 0;
+		const denom = avail > 0 ? avail : need?.seatsNeeded || b.expectedStudents || 1;
+		return {
+			avail,
+			frac: b.expectedStudents / denom,
+			pct: Math.round((b.expectedStudents / denom) * 100)
+		};
+	}
+
+	// pro Tag: Prüfungsblöcke nach Kapazitätsanteil nebeneinander + Raum-Balken je Raum
 	/** @param {string} dateKey */
 	function dayData(dateKey) {
 		const dayBlocks = blocks.filter((/** @type {any} */ b) => b.dateKey === dateKey);
-		const { placed, lanes } = packLanes(
-			dayBlocks.map((/** @type {any} */ b) => ({ ...b, start: b.winStart, end: b.winEnd }))
+		const placed = packByCapacity(
+			dayBlocks.map((/** @type {any} */ b) => {
+				const cap = capacityOf(b);
+				return {
+					...b,
+					start: b.winStart,
+					end: b.winEnd,
+					frac: cap.frac,
+					capAvail: cap.avail,
+					capPct: cap.pct
+				};
+			})
 		);
 		const bars = (annyBars ?? []).filter((b) => b.dateKey === dateKey);
 		const rooms = roomOrder(bars.map((b) => b.room));
 		/** @type {Map<string, number>} */
 		const roomCol = new Map(rooms.map((r, i) => [r, i]));
-		return { blocks: placed, lanes, bars, rooms, roomCol };
+		return { blocks: placed, bars, rooms, roomCol };
 	}
 
 	/** @param {any} b passt die Prüfung zum aktiven Studiengang-Filter? */
@@ -153,6 +192,9 @@
 			<span class="inline-block h-3 w-4 rounded-sm border border-base-content/40 bg-base-content/10"
 			></span> Vor-/Nachlauf
 		</span>
+		<span class="text-base-content/50"
+			>↔ Breite = Anteil an den verfügbaren Plätzen (freie Breite = frei)</span
+		>
 		<span class="text-base-content/30">|</span>
 		<span class="text-base-content/50">gebuchte Räume:</span>
 		{#each legendRooms as r}
@@ -182,8 +224,10 @@
 						</div>
 					{/each}
 				</div>
-				<!-- Prüfungen (Fenster + Kern) -->
-				<div class="relative flex-1 rounded-l border-l border-base-200 bg-base-200/20">
+				<!-- Prüfungen (Fenster + Kern); Breite = Kapazitätsanteil, Rest bleibt frei -->
+				<div
+					class="relative flex-1 overflow-hidden rounded-l border-l border-base-200 bg-base-200/20"
+				>
 					{#each hourMarks as h}
 						<div
 							class="absolute inset-x-0 border-t border-base-200/60"
@@ -199,11 +243,10 @@
 									? 'z-10 ring-2 ring-primary'
 									: 'opacity-20 grayscale'}"
 							style="top:{top(b.winStart)}px; height:{(b.winEnd - b.winStart) *
-								PX_PER_MIN}px; left:calc({(b.lane / d.lanes) * 100}% + 1px); width:calc({100 /
-								d.lanes}% - 2px)"
+								PX_PER_MIN}px; left:calc({b.left * 100}% + 1px); width:calc({b.width * 100}% - 2px)"
 							title={`${b.examKind} · ${b.module} · ${b.expectedStudents} Studis${
-								b.programs?.length ? ' · ' + b.programs.join(', ') : ''
-							}${
+								b.capAvail ? ` (${b.capPct}% von ${b.capAvail} Plätzen)` : ''
+							}${b.programs?.length ? ' · ' + b.programs.join(', ') : ''}${
 								b.examerName ? ' · ' + b.examerName : ''
 							}\n${hhmm(b.examStart)}–${hhmm(b.examEnd)}${b.durKnown ? '' : ' (Dauer geschätzt)'} · Vorlauf ${b.pre}/Nachlauf ${b.post} Min${
 								stt ? '\nRäume: ' + stt.text : ''
@@ -221,6 +264,9 @@
 									{#if b.isFixed}<span title="fixiert">🔒</span>{/if}
 									<span class="truncate font-semibold">{b.module}</span>
 									<span class="opacity-70 tabular-nums">{b.expectedStudents}</span>
+									{#if b.capAvail && b.dur * PX_PER_MIN > 26}
+										<span class="opacity-60 tabular-nums">· {b.capPct}%</span>
+									{/if}
 								</div>
 								{#if b.dur * PX_PER_MIN > 26}
 									<div class="truncate opacity-80 tabular-nums">

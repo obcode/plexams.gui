@@ -7,6 +7,7 @@ import {
 	dateKeyOfIso,
 	examBlocks,
 	packLanes,
+	packByCapacity,
 	weekGroups,
 	mondayKeyOf,
 	dayLabel,
@@ -127,6 +128,45 @@ describe('packLanes', () => {
 	});
 	it('liefert mindestens eine Spur bei leerer Eingabe', () => {
 		expect(packLanes([]).lanes).toBe(1);
+	});
+});
+
+describe('packByCapacity', () => {
+	it('macht die Breite = Kapazitätsanteil und lässt Rest frei', () => {
+		const [a, b] = packByCapacity([
+			{ start: 0, end: 60, frac: 0.5 },
+			{ start: 0, end: 60, frac: 0.3 }
+		]);
+		expect(a.left).toBe(0);
+		expect(a.width).toBeCloseTo(0.5);
+		// zweite Prüfung schließt rechts an → 20 % bleiben frei
+		expect(b.left).toBeCloseTo(0.5);
+		expect(b.width).toBeCloseTo(0.3);
+		expect(b.left + b.width).toBeCloseTo(0.8);
+	});
+	it('erzwingt eine Mindestbreite für Lesbarkeit', () => {
+		const [a] = packByCapacity([{ start: 0, end: 60, frac: 0.01 }], 0.08);
+		expect(a.width).toBeCloseTo(0.08);
+	});
+	it('deckelt die Breite bei 1 (Über-Kapazität)', () => {
+		const [a] = packByCapacity([{ start: 0, end: 60, frac: 1.5 }]);
+		expect(a.width).toBe(1);
+	});
+	it('legt zeitlich disjunkte Items beide nach links', () => {
+		const placed = packByCapacity([
+			{ start: 0, end: 60, frac: 0.5 },
+			{ start: 60, end: 120, frac: 0.5 }
+		]);
+		expect(placed[0].left).toBe(0);
+		expect(placed[1].left).toBe(0);
+	});
+	it('stapelt drei gleichzeitige Prüfungen lückenlos nebeneinander', () => {
+		const placed = packByCapacity([
+			{ start: 0, end: 60, frac: 0.2 },
+			{ start: 0, end: 60, frac: 0.2 },
+			{ start: 0, end: 60, frac: 0.2 }
+		]);
+		expect(placed.map((p) => p.left)).toEqual([0, 0.2, 0.4]);
 	});
 });
 

@@ -141,6 +141,42 @@ export function packLanes(items) {
 	return { placed, lanes: Math.max(1, laneEnds.length) };
 }
 
+/**
+ * Wie packLanes, aber die Breite jedes Items ist sein Kapazitätsanteil (`frac`,
+ * 0..1 = Anteil der verfügbaren Raumplätze) statt einer gleich breiten Spur.
+ * Zeitlich überlappende Items werden greedy horizontal nebeneinander gestapelt;
+ * die freie Restbreite (bis 1) zeigt die ungenutzte Kapazität. `minFrac` ist eine
+ * Mindestbreite, damit auch kleine Prüfungen noch beschriftbar bleiben.
+ * @template {{ start: number, end: number, frac?: number }} T
+ * @param {T[]} items
+ * @param {number} [minFrac]
+ * @returns {(T & { left: number, width: number })[]}
+ */
+export function packByCapacity(items, minFrac = 0.08) {
+	const sorted = [...items].sort((a, b) => a.start - b.start || a.end - b.end);
+	/** @type {(T & { left: number, width: number })[]} */
+	const placed = [];
+	for (const it of sorted) {
+		const width = Math.min(Math.max(it.frac || 0, minFrac), 1);
+		const overlapping = placed.filter((p) => p.start < it.end && p.end > it.start);
+		// Kandidaten-Offsets: ganz links + rechte Kanten aller zeitlich überlappenden
+		// Blöcke. Der größte davon liegt garantiert kollisionsfrei rechts von allen.
+		const candidates = [0, ...overlapping.map((p) => p.left + p.width)].sort((a, b) => a - b);
+		let left = candidates[candidates.length - 1];
+		for (const c of candidates) {
+			const clashes = overlapping.some(
+				(p) => c < p.left + p.width - 1e-9 && c + width > p.left + 1e-9
+			);
+			if (!clashes) {
+				left = c;
+				break;
+			}
+		}
+		placed.push({ ...it, left, width });
+	}
+	return placed;
+}
+
 const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 /** @param {string} dateKey → UTC-Date */
