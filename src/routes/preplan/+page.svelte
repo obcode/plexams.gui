@@ -999,13 +999,26 @@
 			</div>
 		{/if}
 
-		<PreplanCalendar
-			exams={calendarExams}
-			calendarSlots={data.calendarSlots}
-			annyBars={data.annyBars}
-			bookingRooms={data.bookingRooms}
-			{selectedPrograms}
-		/>
+		{#await data.calendar}
+			<div
+				class="flex items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-6 text-sm text-base-content/60"
+			>
+				<span class="loading loading-spinner loading-sm"></span>
+				Kalender wird geladen (Übersicht &amp; Anny-Buchungen) …
+			</div>
+		{:then cal}
+			<PreplanCalendar
+				exams={calendarExams}
+				calendarSlots={cal.calendarSlots}
+				annyBars={cal.annyBars}
+				bookingRooms={cal.bookingRooms}
+				{selectedPrograms}
+			/>
+		{:catch err}
+			<div class="alert alert-error py-2 text-sm">
+				<span>Kalender konnte nicht geladen werden: {err?.message ?? err}</span>
+			</div>
+		{/await}
 	</div>
 
 	{#if data.exams.length === 0}
