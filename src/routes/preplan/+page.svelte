@@ -793,6 +793,52 @@
 		</div>
 	</div>
 
+	<!-- Solver-Regeln (read-only; Inhalt kommt komplett vom Backend) -->
+	{#if data.hardRules.length || data.softRules.length}
+		<details class="collapse-arrow collapse w-full border border-base-300 bg-base-100">
+			<summary class="collapse-title text-sm font-medium">
+				📏 Regeln der automatischen Verteilung
+				<span class="font-normal text-base-content/50">
+					· {data.hardRules.length} hart · {data.softRules.length} weich · read-only
+				</span>
+			</summary>
+			<div class="collapse-content flex flex-col gap-4">
+				{#if data.hardRules.length}
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-2">
+							<span class="badge badge-error badge-sm">HART</span>
+							<span class="text-sm font-medium">Harte Regeln — werden immer eingehalten</span>
+						</div>
+						<ul class="flex flex-col gap-1.5">
+							{#each data.hardRules as r}
+								<li class="rounded border border-error/30 bg-error/5 px-3 py-2 text-sm">
+									<div class="font-semibold">{r.title}</div>
+									<div class="text-base-content/70">{r.description}</div>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+				{#if data.softRules.length}
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-2">
+							<span class="badge badge-warning badge-sm">WEICH</span>
+							<span class="text-sm font-medium">Weiche Ziele — werden möglichst gut erfüllt</span>
+						</div>
+						<ul class="flex flex-col gap-1.5">
+							{#each data.softRules as r}
+								<li class="rounded border border-warning/30 bg-warning/5 px-3 py-2 text-sm">
+									<div class="font-semibold">{r.title}</div>
+									<div class="text-base-content/70">{r.description}</div>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+			</div>
+		</details>
+	{/if}
+
 	<!-- Pre-Plan-Solver-Parameter (Teil der globalen generationConfig) -->
 	<details class="collapse-arrow collapse w-full border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">

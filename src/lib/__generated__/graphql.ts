@@ -880,6 +880,62 @@ export type InvigilatorsForDay = {
   want: Array<Invigilator>;
 };
 
+/** A single comment on a Jira issue. */
+export type JiraComment = {
+  __typename?: 'JiraComment';
+  author?: Maybe<JiraUser>;
+  body: Scalars['String']['output'];
+  created?: Maybe<Scalars['Time']['output']>;
+};
+
+/** A Jira issue (the subset plexams reads/writes). */
+export type JiraIssue = {
+  __typename?: 'JiraIssue';
+  /** The issue's comments, oldest first. Only populated by jiraIssue(key); empty in list views. */
+  comments: Array<JiraComment>;
+  /** Creation time, when known. */
+  created?: Maybe<Scalars['Time']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  issueType?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  /** The reporter/author. Populated in list and detail views. */
+  reporter?: Maybe<JiraUser>;
+  status?: Maybe<Scalars['String']['output']>;
+  summary: Scalars['String']['output'];
+  /** Browse URL, e.g. https://jira.cc.hm.edu/browse/PLEX-42. */
+  url: Scalars['String']['output'];
+};
+
+/** Open issues of one issue type — the grouping returned by jiraOpenIssuesByType. */
+export type JiraIssueGroup = {
+  __typename?: 'JiraIssueGroup';
+  issueType: Scalars['String']['output'];
+  issues: Array<JiraIssue>;
+};
+
+/** Open issues of one JSM customer request type — returned by jiraOpenIssuesByRequestType (FK07PP is a service desk project). */
+export type JiraRequestTypeGroup = {
+  __typename?: 'JiraRequestTypeGroup';
+  issues: Array<JiraIssue>;
+  /** Customer request type name, or "(kein Anfragetyp)" for issues raised without one. */
+  requestType: Scalars['String']['output'];
+};
+
+/** A workflow transition currently available on an issue; ids are workflow- and status-specific. */
+export type JiraTransition = {
+  __typename?: 'JiraTransition';
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+/** Authenticated Jira user — returned by jiraConnection to verify the configured PAT. */
+export type JiraUser = {
+  __typename?: 'JiraUser';
+  displayName: Scalars['String']['output'];
+  emailAddress: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
 /**
  * LogLevel classifies a streamed LogLine. PROGRESS lines are throttled optimizer
  * snapshots and should be rendered in-place (like a spinner) instead of appended.
@@ -950,6 +1006,8 @@ export type MucDaiExam = {
 export type Mutation = {
   __typename?: 'Mutation';
   addConstraints: Constraints;
+  /** Add a plain-text comment to an issue. Returns true on success. */
+  addJiraComment: Scalars['Boolean']['output'];
   addNTA: Nta;
   /**
    * Accept that an NTA gives up the room-alone right for one exam (key:
@@ -991,6 +1049,11 @@ export type Mutation = {
    * must not already be linked by another pre-exam.
    */
   connectPreplanExamToAncode: PreplanExam;
+  /**
+   * Create a Jira issue. project/issueType fall back to the jira.project config /
+   * "Task" when omitted. Returns the created issue.
+   */
+  createJiraIssue: JiraIssue;
   /**
    * Create a new semester (in its own database) with the given config. The
    * semester must match YYYY-SS / YYYY-WS and must not already have a config.
@@ -1127,6 +1190,11 @@ export type Mutation = {
    */
   resetInvigilations: Scalars['Boolean']['output'];
   /**
+   * Reset the Vorplanung: clear the planned time of every NON-fixed pre-exam
+   * (fixed ones and the pre-exams themselves are kept). Returns how many were reset.
+   */
+  resetPreplanTimes: Scalars['Int']['output'];
+  /**
    * resetPrimussData deletes all imported Primuss Sammellisten collections (the
    * per-program studentregs/exams/count/conflicts written by the ZIP import), undoing an
    * import. The manually maintained ancode overlay is kept. Returns the programs whose
@@ -1255,6 +1323,8 @@ export type Mutation = {
    * VETO forces it to count despite an automatic repeat down-weighting).
    */
   setStudentConflictDecision: Scalars['Boolean']['output'];
+  /** Move an issue through a workflow transition (id from jiraTransitions). Returns true on success. */
+  transitionJiraIssue: Scalars['Boolean']['output'];
   /** Remove a room block (key: room + starttime). */
   unblockRoomAt: Scalars['Boolean']['output'];
   /** Remove the room blocks at several times at once. Returns how many blocks were removed. */
@@ -1283,6 +1353,12 @@ export type Mutation = {
 export type MutationAddConstraintsArgs = {
   ancode: Scalars['Int']['input'];
   constraints: ConstraintsInput;
+};
+
+
+export type MutationAddJiraCommentArgs = {
+  body: Scalars['String']['input'];
+  key: Scalars['String']['input'];
 };
 
 
@@ -1362,6 +1438,14 @@ export type MutationClearEmailAttachmentsArgs = {
 export type MutationConnectPreplanExamToAncodeArgs = {
   ancode: Scalars['Int']['input'];
   id: Scalars['Int']['input'];
+};
+
+
+export type MutationCreateJiraIssueArgs = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  issueType?: InputMaybe<Scalars['String']['input']>;
+  project?: InputMaybe<Scalars['String']['input']>;
+  summary: Scalars['String']['input'];
 };
 
 
@@ -1698,6 +1782,12 @@ export type MutationSetStudentConflictDecisionArgs = {
 };
 
 
+export type MutationTransitionJiraIssueArgs = {
+  key: Scalars['String']['input'];
+  transitionId: Scalars['String']['input'];
+};
+
+
 export type MutationUnblockRoomAtArgs = {
   room: Scalars['String']['input'];
   starttime: Scalars['Time']['input'];
@@ -1766,8 +1856,13 @@ export type MutationLogEntry = {
   /** GraphQL operation/field name, e.g. addPreplanExam. */
   name: Scalars['String']['output'];
   time: Scalars['Time']['output'];
-  /** mutation | subscription */
+  /** mutation | subscription | upload */
   type: Scalars['String']['output'];
+  /**
+   * The operator (Prüfungsplaner) who triggered the operation; from the local
+   * operator.* config (empty for entries written before this was configured).
+   */
+  user?: Maybe<Scalars['String']['output']>;
 };
 
 export type Nta = {
@@ -2061,6 +2156,22 @@ export type PreplanProgramConflict = {
   program: Scalars['String']['output'];
 };
 
+export type PreplanRule = {
+  __typename?: 'PreplanRule';
+  /** One- or two-sentence German explanation, including the relevant values. */
+  description: Scalars['String']['output'];
+  kind: PreplanRuleKind;
+  /** Short German title. */
+  title: Scalars['String']['output'];
+};
+
+export enum PreplanRuleKind {
+  /** Must always hold; a plan violating it is invalid. */
+  Hard = 'HARD',
+  /** Optimization goal; the solver trades these off (weighted). */
+  Soft = 'SOFT'
+}
+
 export type PreplanSameSlotGroup = {
   __typename?: 'PreplanSameSlotGroup';
   /** true when every member is connected (the same-slot is fully carried over to the ZPA exams). */
@@ -2100,6 +2211,13 @@ export type PreplanValidation = {
   messages: Array<Scalars['String']['output']>;
   /** True when there are no error-level findings; warnings and infos do not fail the validation. */
   ok: Scalars['Boolean']['output'];
+  /** Why the validation was skipped, if skipped. */
+  skipReason?: Maybe<Scalars['String']['output']>;
+  /**
+   * True when the validation did not run because there are no SEB/EXaHM pre-exams yet.
+   * Not a failure — render neutrally ("übersprungen"), not as a green pass.
+   */
+  skipped: Scalars['Boolean']['output'];
   /** ids of pre-exams without a slot. */
   unassignedIDs: Array<Scalars['Int']['output']>;
 };
@@ -2249,6 +2367,24 @@ export type Query = {
   invigilatorsExcludedByConfig: Array<Invigilator>;
   invigilatorsForDay?: Maybe<InvigilatorsForDay>;
   invigilatorsWithReq: Array<Invigilator>;
+  /** Verify the configured Jira connection (GET /rest/api/2/myself). */
+  jiraConnection: JiraUser;
+  /** Fetch a single Jira issue by key (e.g. "PLEX-42"). */
+  jiraIssue: JiraIssue;
+  /**
+   * All open (not-done) issues, newest first. project falls back to the
+   * jira.project config; omit both to span all visible projects.
+   */
+  jiraOpenIssues: Array<JiraIssue>;
+  /**
+   * The open issues grouped by JSM customer request type (Anfragetyp), groups
+   * sorted by name. Only for service desk projects like FK07PP.
+   */
+  jiraOpenIssuesByRequestType: Array<JiraRequestTypeGroup>;
+  /** The open issues grouped by issue type (groups sorted by type, empty groups omitted). */
+  jiraOpenIssuesByType: Array<JiraIssueGroup>;
+  /** List the workflow transitions currently available for an issue in its current status. */
+  jiraTransitions: Array<JiraTransition>;
   /**
    * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
    * carry the program with a missing number (0/-1) first, then same-examer + similar
@@ -2293,6 +2429,11 @@ export type Query = {
   preExamsAt?: Maybe<Array<PreExam>>;
   prePlannedInvigilations: Array<PrePlannedInvigilation>;
   prePlannedRooms: Array<PrePlannedRoom>;
+  /**
+   * The hard and soft rules the SEB/EXaHM pre-planning uses, as a human-readable list
+   * for a read-only display in the GUI. Derived from the solver so it stays in sync.
+   */
+  preplanConstraints: Array<PreplanRule>;
   preplanExam?: Maybe<PreplanExam>;
   /**
    * Candidate ZPA exams for linking the given pre-exam, ranked by examer (same
@@ -2443,6 +2584,31 @@ export type QueryInvigilatorsForDayArgs = {
 };
 
 
+export type QueryJiraIssueArgs = {
+  key: Scalars['String']['input'];
+};
+
+
+export type QueryJiraOpenIssuesArgs = {
+  project?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryJiraOpenIssuesByRequestTypeArgs = {
+  project?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryJiraOpenIssuesByTypeArgs = {
+  project?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryJiraTransitionsArgs = {
+  key: Scalars['String']['input'];
+};
+
+
 export type QueryMucDaiZpaCandidatesArgs = {
   primussAncode: Scalars['Int']['input'];
   program: Scalars['String']['input'];
@@ -2457,6 +2623,7 @@ export type QueryMutationLogArgs = {
   since?: InputMaybe<Scalars['Time']['input']>;
   type?: InputMaybe<Scalars['String']['input']>;
   until?: InputMaybe<Scalars['Time']['input']>;
+  user?: InputMaybe<Scalars['String']['input']>;
 };
 
 

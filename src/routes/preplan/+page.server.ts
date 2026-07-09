@@ -122,6 +122,11 @@ export const load: PageServerLoad = async () => {
 				generationConfig {
 					${GENERATION_CONFIG_FIELDS}
 				}
+				preplanConstraints {
+					kind
+					title
+					description
+				}
 			}
 		`
 	);
@@ -335,6 +340,9 @@ export const load: PageServerLoad = async () => {
 		// ZPA-Prüfungsliste importiert? → dann unverbundene Ancodes hervorheben
 		zpaPresent: (data.zpaExams ?? []).length > 0,
 		// Pre-Plan-Solver-Parameter (Teil der globalen generationConfig)
-		generationConfig: data.generationConfig ?? null
+		generationConfig: data.generationConfig ?? null,
+		// Read-only Solver-Regeln (kommen komplett vom Backend, bleiben synchron zum Solver)
+		hardRules: (data.preplanConstraints ?? []).filter((r: any) => r.kind === 'HARD'),
+		softRules: (data.preplanConstraints ?? []).filter((r: any) => r.kind === 'SOFT')
 	};
 };
