@@ -90,18 +90,19 @@
 	);
 
 	/**
-	 * Kapazitätsanteil einer Prüfung: erwartete Studis / verfügbare Plätze des Slots
-	 * (je Art). Sind keine verfügbaren Plätze bekannt (noch nichts gebucht), wird
-	 * gegen den Bedarf normiert → die gleichzeitigen Prüfungen füllen die Zeile
-	 * (signalisiert „Kapazität unbekannt/knapp"). @param {any} b
+	 * Kapazitätsanteil einer Prüfung: erwartete Studis / Plätze der tatsächlich
+	 * gebuchten Räume des Slots (seatsBooked, je Art). 100 % = die gebuchten Räume
+	 * sind voll — >100 % (gedeckelt) heißt zu wenig gebucht. Ist noch nichts gebucht,
+	 * wird gegen den Bedarf normiert → die gleichzeitigen Prüfungen füllen die Zeile
+	 * (Signal „Räume noch buchen"). @param {any} b
 	 */
 	function capacityOf(b) {
 		const s = slotByStart.get(`${b.dateKey}T${hhmm(b.examStart)}`);
 		const need = s ? (b.examKind === 'SEB' ? s.seb : s.exahm) : null;
-		const avail = need?.seatsAvailable ?? 0;
-		const denom = avail > 0 ? avail : need?.seatsNeeded || b.expectedStudents || 1;
+		const booked = need?.seatsBooked ?? 0;
+		const denom = booked > 0 ? booked : need?.seatsNeeded || b.expectedStudents || 1;
 		return {
-			avail,
+			booked,
 			frac: b.expectedStudents / denom,
 			pct: Math.round((b.expectedStudents / denom) * 100)
 		};
@@ -119,7 +120,7 @@
 					start: b.winStart,
 					end: b.winEnd,
 					frac: cap.frac,
-					capAvail: cap.avail,
+					capBooked: cap.booked,
 					capPct: cap.pct
 				};
 			})
@@ -193,7 +194,7 @@
 			></span> Vor-/Nachlauf
 		</span>
 		<span class="text-base-content/50"
-			>↔ Breite = Anteil an den verfügbaren Plätzen (freie Breite = frei)</span
+			>↔ Breite = Anteil an den gebuchten Plätzen (freie Breite = frei)</span
 		>
 		<span class="text-base-content/30">|</span>
 		<span class="text-base-content/50">gebuchte Räume:</span>
@@ -245,7 +246,7 @@
 							style="top:{top(b.winStart)}px; height:{(b.winEnd - b.winStart) *
 								PX_PER_MIN}px; left:calc({b.left * 100}% + 1px); width:calc({b.width * 100}% - 2px)"
 							title={`${b.examKind} · ${b.module} · ${b.expectedStudents} Studis${
-								b.capAvail ? ` (${b.capPct}% von ${b.capAvail} Plätzen)` : ''
+								b.capBooked ? ` (${b.capPct}% von ${b.capBooked} gebuchten Plätzen)` : ''
 							}${b.programs?.length ? ' · ' + b.programs.join(', ') : ''}${
 								b.examerName ? ' · ' + b.examerName : ''
 							}\n${hhmm(b.examStart)}–${hhmm(b.examEnd)}${b.durKnown ? '' : ' (Dauer geschätzt)'} · Vorlauf ${b.pre}/Nachlauf ${b.post} Min${
@@ -264,7 +265,7 @@
 									{#if b.isFixed}<span title="fixiert">🔒</span>{/if}
 									<span class="truncate font-semibold">{b.module}</span>
 									<span class="opacity-70 tabular-nums">{b.expectedStudents}</span>
-									{#if b.capAvail && b.dur * PX_PER_MIN > 26}
+									{#if b.capBooked && b.dur * PX_PER_MIN > 26}
 										<span class="opacity-60 tabular-nums">· {b.capPct}%</span>
 									{/if}
 								</div>
