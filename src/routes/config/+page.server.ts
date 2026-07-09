@@ -13,6 +13,15 @@ export const load: PageServerLoad = async () => {
 				planer {
 					name
 					email
+					testMail
+					cc
+					noreplyMail
+					noreplyName
+					defaultMail
+					effectiveTestMail
+					effectiveCc
+					effectiveNoreplyMail
+					effectiveNoreplyName
 				}
 				semesterConfigInput {
 					from

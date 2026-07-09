@@ -18,6 +18,13 @@
 	// Planer (global, semesterübergreifend in der DB)
 	let planerName = $state(data.planer?.name ?? '');
 	let planerEmail = $state(data.planer?.email ?? '');
+	// Optionale Sender-Identität-Overrides: leer = Default (Backend leitet ab).
+	// Vorbelegt mit dem gesetzten Override (nicht dem Effektivwert) — der
+	// Effektivwert steht als Platzhalter darunter.
+	let planerTestMail = $state(data.planer?.testMail ?? '');
+	let planerCc = $state(data.planer?.cc ?? '');
+	let planerNoreplyMail = $state(data.planer?.noreplyMail ?? '');
+	let planerNoreplyName = $state(data.planer?.noreplyName ?? '');
 	let planerSaving = $state(false);
 	let planerError = $state('');
 	let planerSavedAt = $state('');
@@ -31,7 +38,14 @@
 			const res = await fetch('/api/semester/setPlaner', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name: planerName.trim(), email: planerEmail.trim() })
+				body: JSON.stringify({
+					name: planerName.trim(),
+					email: planerEmail.trim(),
+					testMail: planerTestMail.trim(),
+					cc: planerCc.trim(),
+					noreplyMail: planerNoreplyMail.trim(),
+					noreplyName: planerNoreplyName.trim()
+				})
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -39,6 +53,8 @@
 				return;
 			}
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
+			// Effektivwerte/Platzhalter neu laden (können sich durch die Overrides ändern)
+			await invalidateAll();
 		} catch (e) {
 			planerError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -107,6 +123,55 @@
 				<span class="text-xs font-medium text-base-content/60">E-Mail</span>
 				<input type="email" class="input input-bordered input-sm w-72" bind:value={planerEmail} />
 			</label>
+		</div>
+
+		<!-- Optionale Sender-Identität-Overrides: leer = Default. Der Platzhalter
+		     zeigt jeweils den aktuell effektiven Wert (das, was bei leer benutzt wird). -->
+		<div class="flex flex-col gap-2">
+			<span class="text-xs font-medium text-base-content/50">
+				Sender-Identität (optional) — leer lassen für den Default in Klammern
+			</span>
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Testadresse (Probeläufe)</span>
+					<input
+						type="email"
+						class="input input-bordered input-sm w-full sm:w-72"
+						placeholder={data.planer?.effectiveTestMail ?? data.planer?.defaultMail ?? ''}
+						bind:value={planerTestMail}
+					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Cc (echter Versand)</span>
+					<input
+						type="email"
+						class="input input-bordered input-sm w-full sm:w-72"
+						placeholder={data.planer?.effectiveCc ?? data.planer?.defaultMail ?? ''}
+						bind:value={planerCc}
+					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Noreply-Adresse</span>
+					<input
+						type="email"
+						class="input input-bordered input-sm w-full sm:w-72"
+						placeholder={data.planer?.effectiveNoreplyMail ?? ''}
+						bind:value={planerNoreplyMail}
+					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">Noreply-Anzeigename</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm w-full sm:w-72"
+						placeholder={data.planer?.effectiveNoreplyName ?? ''}
+						bind:value={planerNoreplyName}
+					/>
+				</label>
+			</div>
+		</div>
+
+		<div class="flex flex-wrap items-center gap-3">
 			<WriteButton class="btn btn-primary btn-sm" disabled={planerSaving} onclick={savePlaner}>
 				{planerSaving ? 'speichert …' : 'Planer speichern'}
 			</WriteButton>

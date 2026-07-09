@@ -299,6 +299,19 @@ export type DistributionBucket = {
   invigilators: Scalars['Int']['output'];
 };
 
+/** Status of the per-session dry-run recipient override shown on the Probeläufe page. */
+export type DryRunTestMailStatus = {
+  __typename?: 'DryRunTestMailStatus';
+  /** The address dry-run mails currently go to (override, or the configured default). */
+  current: Scalars['String']['output'];
+  /** The configured default (effective testMail) that a reset falls back to. */
+  default: Scalars['String']['output'];
+  /** True when an override is active and deviates from the default — the GUI should show a warning banner. */
+  overridden: Scalars['Boolean']['output'];
+  /** The active session override, or null when none is set (the configured default is used). */
+  override?: Maybe<Scalars['String']['output']>;
+};
+
 /**
  * EmailAttachmentInfo describes one uploaded attachment (without its binary data).
  * kind is e.g. "cover-page" or "invigilation-image"; key is the teacher /
@@ -1174,6 +1187,8 @@ export type Mutation = {
    * Blocked while a validation or transfer/email is running.
    */
   resetAssembledExams: Scalars['Int']['output'];
+  /** Reset the session dry-run recipient override back to the configured default. */
+  resetDryRunTestMail: DryRunTestMailStatus;
   /** Remove a template's override, reverting to the built-in default. False if there was none. */
   resetEmailTemplate: Scalars['Boolean']['output'];
   /**
@@ -1218,6 +1233,8 @@ export type Mutation = {
    * not filter; all bookings are still fetched and shown.
    */
   setAnnyPersonalizationNames: AnnyConfig;
+  /** Override the dry-run recipient for this session only (Probeläufe page). Empty string resets to the default. */
+  setDryRunTestMail: DryRunTestMailStatus;
   /**
    * Store a Markdown override for an email template. The Markdown is validated (must parse
    * with the template functions) before it is saved. Returns the updated template.
@@ -1256,7 +1273,12 @@ export type Mutation = {
    * empty the backend tries to resolve it).
    */
   setPermanentNonInvigilator: PermanentNonInvigilator;
-  /** Set the planner (name + email), stored in the global DB. */
+  /**
+   * Set the planner, stored in the global DB. name + email are required; the remaining
+   * fields are optional sender-identity overrides — pass null/empty to fall back to the
+   * derived default (testMail/cc = email with +plexams, noreplyMail = noreply+plexams@hm.edu,
+   * noreplyName = "Prüfungsplanung FK07 (NOREPLY)").
+   */
   setPlaner: Planer;
   /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
   setPlanningCondition: PlanningState;
@@ -1633,6 +1655,11 @@ export type MutationSetAnnyPersonalizationNamesArgs = {
 };
 
 
+export type MutationSetDryRunTestMailArgs = {
+  email: Scalars['String']['input'];
+};
+
+
 export type MutationSetEmailTemplateArgs = {
   markdown: Scalars['String']['input'];
   name: Scalars['String']['input'];
@@ -1695,8 +1722,12 @@ export type MutationSetPermanentNonInvigilatorArgs = {
 
 
 export type MutationSetPlanerArgs = {
+  cc?: InputMaybe<Scalars['String']['input']>;
   email: Scalars['String']['input'];
   name: Scalars['String']['input'];
+  noreplyMail?: InputMaybe<Scalars['String']['input']>;
+  noreplyName?: InputMaybe<Scalars['String']['input']>;
+  testMail?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1973,8 +2004,26 @@ export type PlanEntry = {
 
 export type Planer = {
   __typename?: 'Planer';
+  /** Override for the Cc added to every real send; null/empty => defaultMail. */
+  cc?: Maybe<Scalars['String']['output']>;
+  /** Derived default for testMail/cc: the planner email with +plexams (e.g. x+plexams@hm.edu). */
+  defaultMail: Scalars['String']['output'];
+  /** The Cc actually added to real sends (override → config → defaultMail). */
+  effectiveCc: Scalars['String']['output'];
+  /** The noreply address actually used (override → config → noreply+plexams@hm.edu). */
+  effectiveNoreplyMail: Scalars['String']['output'];
+  /** The noreply display name actually used (override → config → default). */
+  effectiveNoreplyName: Scalars['String']['output'];
+  /** The address dry-run mails actually go to (override → config → defaultMail). */
+  effectiveTestMail: Scalars['String']['output'];
   email: Scalars['String']['output'];
   name: Scalars['String']['output'];
+  /** Override for the noreply From/Reply-To address of JIRA-answered mails; null/empty => noreply+plexams@hm.edu. */
+  noreplyMail?: Maybe<Scalars['String']['output']>;
+  /** Override for the noreply display name; null/empty => "Prüfungsplanung FK07 (NOREPLY)". */
+  noreplyName?: Maybe<Scalars['String']['output']>;
+  /** Override for the dry-run recipient; null/empty => defaultMail. */
+  testMail?: Maybe<Scalars['String']['output']>;
 };
 
 export type PlannedExam = {
@@ -2301,6 +2350,8 @@ export type Query = {
   connectedExam?: Maybe<ConnectedExam>;
   connectedExams: Array<ConnectedExam>;
   constraintForAncode?: Maybe<Constraints>;
+  /** The current dry-run recipient status (session override vs. configured default) for the Probeläufe page. */
+  dryRunTestMail: DryRunTestMailStatus;
   emailAttachments: Array<EmailAttachmentInfo>;
   /** The helper functions available in every email template (jiraURL, plural, …). */
   emailTemplateFunctions: Array<EmailTemplateFunction>;
@@ -2415,7 +2466,7 @@ export type Query = {
    * DB), carries over between semesters; always implies isNotInvigilator.
    */
   permanentNonInvigilators: Array<PermanentNonInvigilator>;
-  /** The planner (name + email). Stored globally in the DB; the config is only a fallback. */
+  /** The planner (name + email + sender-identity overrides). Stored globally in the DB; the config is only a fallback. */
   planer: Planer;
   plannedExam?: Maybe<PlannedExam>;
   plannedExams: Array<PlannedExam>;

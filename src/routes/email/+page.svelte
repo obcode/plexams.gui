@@ -2,6 +2,7 @@
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import EmailCard from '$lib/email/EmailCard.svelte';
 	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
+	import DryRunTestMailPanel from '$lib/email/DryRunTestMailPanel.svelte';
 	import { emailGroups } from '$lib/email/emails';
 	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
 
@@ -56,6 +57,8 @@
 			Server den Versand ab; das wird hier nur als Hinweis angezeigt.
 		</p>
 	</div>
+
+	<DryRunTestMailPanel />
 
 	{#each emailGroups as group}
 		{@const open = group.emails.filter((e) => !isSent(e))}

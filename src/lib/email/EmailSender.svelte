@@ -1,8 +1,9 @@
 <script>
-	import { onDestroy, tick } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '$lib/validation/wsClient';
 	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
+	import { dryRunTestMail, ensureDryRunTestMail } from '$lib/email/dryRunTestMail';
 
 	// Wiederverwendbare Komponente für genau EINEN E-Mail-Versand-Typ. Kann auf
 	// der Übersichtsseite /email oder einzeln auf anderen Seiten eingebunden
@@ -193,6 +194,17 @@ versenden ist; optionaler Hinweistext dazu
 	// echte Fehler (Verbindung etc.) — die Server-Ablehnung „läuft schon etwas"
 	// ist KEIN harter Fehler, sondern ein Hinweis.
 	let hardError = $derived(!!errorMsg);
+
+	// Probelauf-Empfänger einmalig laden, damit der Button die tatsächliche
+	// Adresse statt „mich" zeigt (global via Store, auf jeder Seite konsistent).
+	onMount(() => {
+		ensureDryRunTestMail();
+	});
+	let dryRunLabel = $derived(
+		$dryRunTestMail?.current
+			? `Probelauf (nur an ${$dryRunTestMail.current})`
+			: 'Probelauf (nur an mich)'
+	);
 </script>
 
 <div
@@ -237,7 +249,7 @@ versenden ist; optionaler Hinweistext dazu
 			{#if running && !lastReal}
 				<span class="loading loading-spinner loading-xs"></span>
 			{/if}
-			Probelauf (nur an mich)
+			{dryRunLabel}
 		</button>
 
 		<div class="mx-1 h-6 w-px bg-base-300"></div>
