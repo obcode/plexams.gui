@@ -60,7 +60,7 @@
 		if (!confirm(`Anmeldung ${s.mtknr} (${s.name}) aus ${s.program} entfernen?`)) return;
 		await postReg('/api/primuss/removeStudentReg', {
 			program: s.program,
-			ancode: s.ancode,
+			ancode: s.primussAncode,
 			mtknr: s.mtknr
 		});
 	}

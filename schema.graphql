@@ -57,7 +57,17 @@ input AdditionalExamRoomInput {
 }
 
 type AnCode {
-  ancode: Int!
+  zpaAncode: Int!
+}
+
+"""
+Ancodes bundles an exam's internal (ZPA) ancode with its external Primuss identities.
+Internal use → zpaAncode; external communication (Primuss/MUC.DAI) → primussAncodes.
+For FK07 exams they are normally equal; for MUC.DAI/external exams they differ.
+"""
+type Ancodes {
+  zpaAncode: Int!
+  primussAncodes: [ZPAPrimussAncodes!]!
 }
 
 type AnnyBooking {
@@ -102,6 +112,11 @@ input ArgFilterInput {
 
 type AssembledExam {
   ancode: Int!
+
+  """
+  internal/external ancode identity of the exam (zpaAncode + program-scoped primussAncodes)
+  """
+  ancodes: Ancodes!
   zpaExam: ZPAExam!
   mainExamer: Teacher!
   primussExams: [EnhancedPrimussExam!]!
@@ -487,7 +502,11 @@ type EnhancedPrimussExam {
 
 type EnhancedStudentReg {
   mtknr: String!
-  ancode: Int!
+
+  """
+  Primuss ancode (per-program namespace); == the ZPA ancode only for FK07 exams
+  """
+  primussAncode: Int!
   program: String!
   group: String!
   name: String!
@@ -1850,6 +1869,11 @@ type Planer {
 
 type PlannedExam {
   ancode: Int!
+
+  """
+  internal/external ancode identity of the exam (zpaAncode + program-scoped primussAncodes)
+  """
+  ancodes: Ancodes!
   zpaExam: ZPAExam!
   mainExamer: Teacher!
   primussExams: [EnhancedPrimussExam!]!
@@ -2540,9 +2564,15 @@ type RegWithError {
   error: ZPAStudentRegError!
 }
 
+"""
+RegWithProgram is one student's registration for one exam in one study program — the
+per-program projection of an exam's Ancodes: the external primussAncode plus the
+internal zpaAncode (equal for FK07, different for MUC.DAI/external exams).
+"""
 type RegWithProgram {
   program: String!
-  reg: Int!
+  primussAncode: Int!
+  zpaAncode: Int!
 }
 
 type Room {
@@ -2935,7 +2965,11 @@ type Student {
   program: String!
   group: String!
   name: String!
-  regs: [Int!]!
+
+  """
+  internal ZPA ancodes the student is registered for (the conflict/plan key)
+  """
+  zpaAncodes: [Int!]!
   regsWithProgram: [RegWithProgram!]!
   zpaStudent: ZPAStudent
   nta: NTA
@@ -2953,7 +2987,11 @@ type StudentConflictDecision {
 
 type StudentReg {
   mtknr: String!
-  ancode: Int!
+
+  """
+  Primuss ancode (per-program namespace); == the ZPA ancode only for FK07 exams
+  """
+  primussAncode: Int!
   program: String!
   group: String!
   name: String!
@@ -2967,7 +3005,14 @@ type StudentRegsPerAncode {
 
 type StudentRegsPerAncodeAndProgram {
   program: String!
-  ancode: Int!
+
+  """internal ZPA ancode of the exam"""
+  zpaAncode: Int!
+
+  """
+  external (Primuss/MUC.DAI) ancode of the exam in this program; == zpaAncode for FK07
+  """
+  primussAncode: Int!
   studentRegs: [StudentReg!]!
 }
 

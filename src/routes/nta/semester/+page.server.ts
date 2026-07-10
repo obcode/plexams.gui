@@ -66,7 +66,7 @@ async function loadStudents() {
 				mtknr
 				program
 				group
-				regs
+				zpaAncodes
 				nta {
 					name
 					email
@@ -90,7 +90,7 @@ async function loadStudents() {
 	if (ntasWithRegs != null) {
 		for (const nta of ntasWithRegs) {
 			const exams = [];
-			for (const ancode of nta.regs) {
+			for (const ancode of nta.zpaAncodes) {
 				const examQuery = gql`
 					query {
 						assembledExam(ancode: ${ancode}) {

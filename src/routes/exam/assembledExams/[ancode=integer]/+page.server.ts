@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ params }) => {
 					}
 					studentRegs {
 						mtknr
-						ancode
+						primussAncode
 						program
 						group
 						name

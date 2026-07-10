@@ -53,7 +53,18 @@ export type AdditionalExamRoomInput = {
 
 export type AnCode = {
   __typename?: 'AnCode';
-  ancode: Scalars['Int']['output'];
+  zpaAncode: Scalars['Int']['output'];
+};
+
+/**
+ * Ancodes bundles an exam's internal (ZPA) ancode with its external Primuss identities.
+ * Internal use → zpaAncode; external communication (Primuss/MUC.DAI) → primussAncodes.
+ * For FK07 exams they are normally equal; for MUC.DAI/external exams they differ.
+ */
+export type Ancodes = {
+  __typename?: 'Ancodes';
+  primussAncodes: Array<ZpaPrimussAncodes>;
+  zpaAncode: Scalars['Int']['output'];
 };
 
 export type AnnyBooking = {
@@ -98,6 +109,8 @@ export type ArgFilterInput = {
 export type AssembledExam = {
   __typename?: 'AssembledExam';
   ancode: Scalars['Int']['output'];
+  /** internal/external ancode identity of the exam (zpaAncode + program-scoped primussAncodes) */
+  ancodes: Ancodes;
   conflicts: Array<ZpaConflict>;
   constraints?: Maybe<Constraints>;
   mainExamer: Teacher;
@@ -431,11 +444,12 @@ export type EnhancedPrimussExam = {
 
 export type EnhancedStudentReg = {
   __typename?: 'EnhancedStudentReg';
-  ancode: Scalars['Int']['output'];
   group: Scalars['String']['output'];
   mtknr: Scalars['String']['output'];
   name: Scalars['String']['output'];
   presence: Scalars['String']['output'];
+  /** Primuss ancode (per-program namespace); == the ZPA ancode only for FK07 exams */
+  primussAncode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
   zpaStudent?: Maybe<ZpaStudent>;
 };
@@ -2029,6 +2043,8 @@ export type Planer = {
 export type PlannedExam = {
   __typename?: 'PlannedExam';
   ancode: Scalars['Int']['output'];
+  /** internal/external ancode identity of the exam (zpaAncode + program-scoped primussAncodes) */
+  ancodes: Ancodes;
   conflicts: Array<ZpaConflict>;
   constraints?: Maybe<Constraints>;
   mainExamer: Teacher;
@@ -2796,10 +2812,16 @@ export type RegWithError = {
   registration: ZpaStudentReg;
 };
 
+/**
+ * RegWithProgram is one student's registration for one exam in one study program — the
+ * per-program projection of an exam's Ancodes: the external primussAncode plus the
+ * internal zpaAncode (equal for FK07, different for MUC.DAI/external exams).
+ */
 export type RegWithProgram = {
   __typename?: 'RegWithProgram';
+  primussAncode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
-  reg: Scalars['Int']['output'];
+  zpaAncode: Scalars['Int']['output'];
 };
 
 export type Room = {
@@ -3124,8 +3146,9 @@ export type Student = {
   name: Scalars['String']['output'];
   nta?: Maybe<Nta>;
   program: Scalars['String']['output'];
-  regs: Array<Scalars['Int']['output']>;
   regsWithProgram: Array<RegWithProgram>;
+  /** internal ZPA ancodes the student is registered for (the conflict/plan key) */
+  zpaAncodes: Array<Scalars['Int']['output']>;
   zpaStudent?: Maybe<ZpaStudent>;
 };
 
@@ -3140,11 +3163,12 @@ export type StudentConflictDecision = {
 
 export type StudentReg = {
   __typename?: 'StudentReg';
-  ancode: Scalars['Int']['output'];
   group: Scalars['String']['output'];
   mtknr: Scalars['String']['output'];
   name: Scalars['String']['output'];
   presence: Scalars['String']['output'];
+  /** Primuss ancode (per-program namespace); == the ZPA ancode only for FK07 exams */
+  primussAncode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
 };
 
@@ -3156,9 +3180,12 @@ export type StudentRegsPerAncode = {
 
 export type StudentRegsPerAncodeAndProgram = {
   __typename?: 'StudentRegsPerAncodeAndProgram';
-  ancode: Scalars['Int']['output'];
+  /** external (Primuss/MUC.DAI) ancode of the exam in this program; == zpaAncode for FK07 */
+  primussAncode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
   studentRegs: Array<StudentReg>;
+  /** internal ZPA ancode of the exam */
+  zpaAncode: Scalars['Int']['output'];
 };
 
 export type StudentRegsPerStudent = {

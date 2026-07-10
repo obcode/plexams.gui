@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request }) => {
 							program
 							studentRegs {
 								mtknr
-								ancode
+								primussAncode
 								program
 								presence
 								group

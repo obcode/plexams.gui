@@ -9,10 +9,11 @@ const FIELDS = `
 	name
 	program
 	group
-	regs
+	zpaAncodes
 	regsWithProgram {
 		program
-		reg
+		primussAncode
+		zpaAncode
 	}
 	nta {
 		name

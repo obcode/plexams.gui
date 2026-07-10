@@ -1,7 +1,7 @@
 <script>
 	let { data } = $props();
-	/** @param {string} program @param {number} reg */
-	const examInfo = (program, reg) => data.examByKey?.[`${program}/${reg}`];
+	/** @param {string} program @param {number} primussAncode */
+	const examInfo = (program, primussAncode) => data.examByKey?.[`${program}/${primussAncode}`];
 
 	let q = $state('');
 	/** @type {any[]} */
@@ -107,14 +107,22 @@
 				<!-- Anmeldungen -->
 				<div class="min-w-0 flex-1">
 					<div class="mb-1 text-xs font-medium text-base-content/50">
-						Anmeldungen ({(s.regsWithProgram ?? s.regs ?? []).length})
+						Anmeldungen ({(s.regsWithProgram ?? s.zpaAncodes ?? []).length})
 					</div>
 					{#if (s.regsWithProgram ?? []).length}
 						<div class="flex flex-col gap-0.5">
 							{#each s.regsWithProgram as r}
-								{@const info = examInfo(r.program, r.reg)}
+								{@const info = examInfo(r.program, r.primussAncode)}
 								<div class="flex flex-wrap items-baseline gap-x-2 text-sm">
-									<span class="badge badge-ghost badge-sm tabular-nums">{r.program}/{r.reg}</span>
+									<span class="badge badge-ghost badge-sm tabular-nums"
+										>{r.program}/{r.primussAncode}</span
+									>
+									{#if r.zpaAncode != null && r.zpaAncode !== r.primussAncode}
+										<span
+											class="badge badge-outline badge-sm tabular-nums"
+											title="interner ZPA-Ancode">ZPA {r.zpaAncode}</span
+										>
+									{/if}
 									{#if info}
 										<span>{info.module}</span>
 										<span class="text-base-content/50">· {info.mainExamer}</span>
@@ -126,7 +134,7 @@
 						</div>
 					{:else}
 						<div class="flex flex-wrap gap-1">
-							{#each s.regs ?? [] as a}
+							{#each s.zpaAncodes ?? [] as a}
 								<span class="badge badge-ghost badge-sm tabular-nums">{a}</span>
 							{:else}
 								<span class="text-base-content/40">—</span>
