@@ -16,6 +16,10 @@ const READ_POST_PATHS = new Set([
 	'/api/semester/setSemester',
 	'/api/semester/setSemesterReadOnly',
 	'/api/semester/createWorkspace',
+	// Benutzerverwaltung ist global (OIDC-Auth), nicht semesterbezogen — der
+	// Semester-Schutz darf sie nicht blockieren. Zugriff regelt das Backend (ADMIN).
+	'/api/admin/setUser',
+	'/api/admin/removeUser',
 	// reine Lese-Abfragen:
 	'/api/email/renderEmailTemplatePreview',
 	'/api/exam/conflictingAncodes',

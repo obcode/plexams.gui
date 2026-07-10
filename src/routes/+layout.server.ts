@@ -32,6 +32,28 @@ export const load: LayoutServerLoad = async () => {
 		// z. B. älteres Backend ohne serverInfo → Footer zeigt nur GUI-Version.
 	}
 
+	// Angemeldete Identität + Rolle (Backend feat/oidc-auth). Eigener try/catch,
+	// damit ein Backend ohne `me` (z. B. lokal/Dev) den Semester-Status nicht
+	// mitreißt → me bleibt null = voller Zugriff, es wird nichts ausgeblendet.
+	let me = null;
+	try {
+		const info = await request<any>(
+			env.PLEXAMS_SERVER,
+			gql`
+				query Me {
+					me {
+						email
+						name
+						role
+					}
+				}
+			`
+		);
+		me = info?.me ?? null;
+	} catch {
+		// Älteres Backend ohne Auth → keine Rolle, GUI verhält sich wie bisher.
+	}
+
 	try {
 		const data = await request<any>(
 			env.PLEXAMS_SERVER,
@@ -50,11 +72,12 @@ export const load: LayoutServerLoad = async () => {
 		return {
 			semesterStatus: s,
 			readOnly: !!s?.readOnly,
+			me,
 			serverInfo,
 			guiVersion: __APP_VERSION__
 		};
 	} catch {
 		// Backend nicht erreichbar → keine Annahme über Schutz treffen.
-		return { semesterStatus: null, readOnly: false, serverInfo, guiVersion: __APP_VERSION__ };
+		return { semesterStatus: null, readOnly: false, me, serverInfo, guiVersion: __APP_VERSION__ };
 	}
 };

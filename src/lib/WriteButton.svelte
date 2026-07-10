@@ -3,6 +3,10 @@
 	automatisch deaktiviert wird. Korrektheit liegt am Backend + hooks.server.js;
 	diese Komponente ist die UI-Politur (sichtbar deaktiviert + Tooltip).
 
+	Zusätzlich wird der Button für die VIEWER-Rolle (OIDC-Auth, nur lesen) komplett
+	ausgeblendet — kosmetisch. Enforcement macht auch hier das Backend (es lehnt
+	VIEWER-Schreibvorgänge mit „forbidden: your role is read-only" ab).
+
 	Nutzung wie ein normaler Button:
 	  <WriteButton class="btn btn-primary btn-sm" disabled={loading} onclick={save}>
 	    Speichern
@@ -10,6 +14,7 @@
 -->
 <script>
 	import { page } from '$app/stores';
+	import { isViewer } from '$lib/auth';
 
 	/**
 	 * @typedef {Object} Props
@@ -23,11 +28,15 @@
 	/** @type {Props & Record<string, any>} */
 	let { class: cls = '', disabled = false, title = '', onclick, children, ...rest } = $props();
 
+	// VIEWER = nur lesen → Schreib-Button komplett ausblenden.
+	let viewer = $derived(isViewer($page.data?.me));
 	let readOnly = $derived($page.data?.readOnly ?? false);
 	let isDisabled = $derived(disabled || readOnly);
 	let tip = $derived(readOnly ? 'Semester ist geschützt (nur lesen)' : title);
 </script>
 
-<button class={cls} disabled={isDisabled} title={tip || undefined} {onclick} {...rest}>
-	{@render children?.()}
-</button>
+{#if !viewer}
+	<button class={cls} disabled={isDisabled} title={tip || undefined} {onclick} {...rest}>
+		{@render children?.()}
+	</button>
+{/if}

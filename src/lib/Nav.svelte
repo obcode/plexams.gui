@@ -10,6 +10,15 @@
 	} from '$lib/validation/store';
 	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
 	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
+	import { isViewer, isAdmin, displayName, roleOf } from '$lib/auth';
+
+	// Angemeldete Identität + Rolle (SSR aus dem Layout-Load; kein Flackern).
+	// null = kein Auth-Backend (lokal/Dev) → voller Zugriff.
+	let me = $derived(page.data?.me ?? null);
+	let viewer = $derived(isViewer(me));
+	let admin = $derived(isAdmin(me));
+	let meName = $derived(displayName(me));
+	let meRole = $derived(roleOf(me));
 
 	/** @param {string | null} iso */
 	function fmtChangedAt(iso: string | null) {
@@ -642,6 +651,71 @@
 			</ul>
 		</div>
 
+		<!-- Angemeldete Identität + Rolle (nur wenn Auth-Backend vorhanden) -->
+		{#if me}
+			<div class="dropdown dropdown-end">
+				<div
+					tabindex="0"
+					role="button"
+					class="inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-sm font-medium hover:bg-base-200 {viewer
+						? 'border-warning/40 text-warning'
+						: 'border-base-300 text-base-content/80'}"
+					title="Angemeldet als {meName}{meRole ? ` · ${meRole}` : ''}"
+					aria-label="Angemeldet als {meName}"
+				>
+					<span
+						class="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary uppercase"
+					>
+						{(meName || '?').charAt(0)}
+					</span>
+					<span class="hidden max-w-32 truncate lg:inline">{meName}</span>
+					{#if viewer}<span class="badge badge-warning badge-xs">nur lesen</span>{/if}
+					<svg
+						class="h-3 w-3 opacity-60"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor"
+						stroke-width="2.5"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+					</svg>
+				</div>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<ul
+					tabindex="0"
+					class="menu dropdown-content z-50 mt-3 w-60 gap-0.5 rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+				>
+					<li class="menu-title px-2 pt-1 pb-0.5">
+						<span class="flex flex-col gap-0.5">
+							<span class="text-sm font-semibold text-base-content">{meName}</span>
+							{#if me.email && me.email !== meName}
+								<span class="text-xs font-normal break-all text-base-content/50">{me.email}</span>
+							{/if}
+						</span>
+					</li>
+					<li class="px-2 pb-1">
+						<span class="pointer-events-none flex items-center gap-2 text-xs">
+							Rolle:
+							<span class="badge badge-sm {viewer ? 'badge-warning' : 'badge-ghost'}"
+								>{meRole || '—'}</span
+							>
+						</span>
+					</li>
+					{#if admin}
+						<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Administration</li>
+						<li>
+							<a
+								class="rounded-lg {activeHref === '/admin/users'
+									? 'bg-primary/15 font-medium text-primary'
+									: ''}"
+								href="/admin/users">👥 Benutzerverwaltung</a
+							>
+						</li>
+					{/if}
+				</ul>
+			</div>
+		{/if}
+
 		<!-- Semester-Umschalter -->
 		<div class="dropdown dropdown-end hidden sm:block">
 			<div
@@ -686,7 +760,7 @@
 								class="flex flex-col items-start gap-0 rounded-lg {s.id === semester
 									? 'bg-primary/15 text-primary'
 									: ''}"
-								disabled={switchingSemester}
+								disabled={switchingSemester || viewer}
 								onclick={() => switchSemester(s.id)}
 							>
 								<span class="flex items-center gap-1">
@@ -702,29 +776,31 @@
 					</li>
 				{/each}
 
-				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
-				<li>
-					{#if readOnly}
-						<button
-							class="rounded-lg"
-							disabled={togglingReadOnly}
-							onclick={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
-						>
-					{:else}
-						<button
-							class="rounded-lg"
-							disabled={togglingReadOnly}
-							onclick={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
-						>
-					{/if}
-				</li>
+				{#if !viewer}
+					<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
+					<li>
+						{#if readOnly}
+							<button
+								class="rounded-lg"
+								disabled={togglingReadOnly}
+								onclick={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
+							>
+						{:else}
+							<button
+								class="rounded-lg"
+								disabled={togglingReadOnly}
+								onclick={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
+							>
+						{/if}
+					</li>
 
-				<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
-				<li>
-					<button class="rounded-lg" disabled={switchingSemester} onclick={openNewWorkspace}>
-						🧪 Neuen Workspace anlegen …
-					</button>
-				</li>
+					<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
+					<li>
+						<button class="rounded-lg" disabled={switchingSemester} onclick={openNewWorkspace}>
+							🧪 Neuen Workspace anlegen …
+						</button>
+					</li>
+				{/if}
 			</ul>
 		</div>
 
@@ -764,7 +840,7 @@
 											class="flex flex-col items-start gap-0 {s.id === semester
 												? 'bg-primary/15 text-primary'
 												: ''}"
-											disabled={switchingSemester}
+											disabled={switchingSemester || viewer}
 											onclick={() => switchSemester(s.id)}
 										>
 											<span class="flex items-center gap-1">
@@ -779,24 +855,26 @@
 									{/if}
 								</li>
 							{/each}
-							<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
-							<li>
-								{#if readOnly}
-									<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(false)}
-										>🔓 Schutz aufheben</button
-									>
-								{:else}
-									<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}
-										>🔒 Diese DB schützen</button
-									>
-								{/if}
-							</li>
-							<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
-							<li>
-								<button disabled={switchingSemester} onclick={openNewWorkspace}>
-									🧪 Neuen Workspace anlegen …
-								</button>
-							</li>
+							{#if !viewer}
+								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
+								<li>
+									{#if readOnly}
+										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(false)}
+											>🔓 Schutz aufheben</button
+										>
+									{:else}
+										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}
+											>🔒 Diese DB schützen</button
+										>
+									{/if}
+								</li>
+								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
+								<li>
+									<button disabled={switchingSemester} onclick={openNewWorkspace}>
+										🧪 Neuen Workspace anlegen …
+									</button>
+								</li>
+							{/if}
 						</ul>
 					</details>
 				</li>
@@ -900,6 +978,17 @@
 			>
 				{togglingReadOnly ? '…' : 'Schutz aufheben'}
 			</button>
+		</div>
+	{/if}
+
+	<!-- Banner: nur-Lese-Zugang (VIEWER-Rolle) -->
+	{#if viewer}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm text-warning-content"
+		>
+			<span>👁️</span>
+			<span class="font-medium">Nur-Lese-Zugang (Rolle VIEWER)</span>
+			<span class="opacity-70">— Schreib-Bedienelemente sind ausgeblendet.</span>
 		</div>
 	{/if}
 </header>
