@@ -1,9 +1,11 @@
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
+	import { invalidateAll } from '$app/navigation';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
+	import StreamAction from '$lib/zpa/StreamAction.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 
 	let { data } = $props();
@@ -442,6 +444,22 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{filtered.length} / {counts.total}</span
 		>
 	</div>
+
+	<details class="w-full sm:w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			🔄 Prüfungen aus dem ZPA ziehen
+		</summary>
+		<div class="mt-2 sm:w-[28rem]">
+			<StreamAction
+				field="importExamsFromZPA"
+				title="Prüfungen"
+				description="Prüfungen aus dem ZPA holen und cachen — danach wird die Liste neu geladen."
+				accent="info"
+				actionLabel="Laden"
+				ondone={() => invalidateAll()}
+			/>
+		</div>
+	</details>
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
