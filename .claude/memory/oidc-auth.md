@@ -7,7 +7,7 @@ metadata:
   originSessionId: cc7faf72-0766-40ec-a16b-52424f177892
 ---
 
-Anbindung an Backend `feat/oidc-auth`. Liegt auf GUI-Branch **feat/oidc-auth**, bewusst **nicht auf main gemergt** (Stand 2026-07-10).
+Anbindung an Backend `feat/oidc-auth`. Am 2026-07-11 nach **main gemergt & gepusht** (Commit 27adf69 + Doku-Commit ab97086).
 
 - `+layout.server.ts` fragt `me { email name role }` in eigenem try/catch → landet in `page.data.me`. Backend ohne Auth (lokal/Dev) → `me = null` = voller Zugriff, GUI unverändert.
 - `src/lib/auth.js`: Rollen-Helfer `isViewer/isAdmin/roleOf/displayName`, `ROLES`-Konstante. + `auth.test.js`.
