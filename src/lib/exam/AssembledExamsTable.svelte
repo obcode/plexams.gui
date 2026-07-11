@@ -174,10 +174,10 @@
 						</td>
 						<td>{exam.zpaExam.module}</td>
 						<td class="whitespace-nowrap">
-							{exam.mainExamer.shortname}
+							{exam.mainExamer.shortname || exam.zpaExam.mainExamer}
 							{#if exam.mainExamer.isLBA}<span class="badge badge-secondary badge-sm">LBA</span
 								>{/if}
-							{#if exam.mainExamer.fk != 'FK07'}
+							{#if exam.mainExamer.fk && exam.mainExamer.fk != 'FK07'}
 								<span class="badge badge-outline badge-sm">{exam.mainExamer.fk}</span>
 							{/if}
 						</td>
