@@ -42,7 +42,7 @@
 		busy = true;
 		actionError = '';
 		try {
-			const res = await fetch(`/api/${path}`, {
+			const res = await fetch(`/api/primuss/${path}`, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ zpaAncode: exam.zpaExam.ancode, ...body })

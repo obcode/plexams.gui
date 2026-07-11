@@ -199,7 +199,7 @@
 		fixError = '';
 		fixInfo = '';
 		try {
-			const res = await fetch(`/api/${path}`, { method: 'POST' });
+			const res = await fetch(`/api/room/${path}`, { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				fixError = d?.error || `Fehler (HTTP ${res.status})`;
