@@ -169,8 +169,11 @@
 	// Reuse der bestehenden Mutation von /exam/connected: eine Primuss-Anmeldung
 	// (program/ancode) an eine ZPA-Prüfung hängen. Ziel-Ancode vorbelegt mit dem
 	// Primuss-Ancode (Normalfall), Vorschau aus data.zpaByAncode.
+	// $state.raw: keine Proxy-Umhüllung, damit die Objekt-Identität aus `data`
+	// erhalten bleibt — sonst schlägt der Vergleich `connectExam === exam` unten
+	// immer fehl (Proxy !== rohes Objekt) und die Inline-Zeile öffnet nie.
 	/** @type {any} */
-	let connectExam = $state(null);
+	let connectExam = $state.raw(null);
 	/** @type {number | string} */
 	let connectTarget = $state('');
 	let connectBusy = $state(false);
