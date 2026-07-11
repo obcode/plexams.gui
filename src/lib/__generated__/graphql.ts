@@ -574,6 +574,12 @@ export type ExamScheduleReport = {
   cost: Scalars['Float']['output'];
   costByConstraint: Array<ConstraintCost>;
   diagnostics: ExamScheduleDiagnostics;
+  /**
+   * EXaHM/SEB exams (ancodes) that carry an NTA. Their NTA time extension is not
+   * gated against the Anny booking window (the NTA student is seated in a separate
+   * NTA room booked later at room planning) — this is the reminder to book that room.
+   */
+  exahmNtaAncodes: Array<Scalars['Int']['output']>;
   fixed: Scalars['Int']['output'];
   hardViolations: Array<Scalars['String']['output']>;
   iterations: Scalars['Int']['output'];
@@ -586,6 +592,8 @@ export type ExamScheduleReport = {
   units: Scalars['Int']['output'];
   unplaced: Scalars['Int']['output'];
   unplacedAncodes: Array<Scalars['Int']['output']>;
+  /** why each unplaced exam could not be scheduled (empty when everything was placed). */
+  unplacedReasons: Array<UnplacedExamReason>;
   written: Scalars['Boolean']['output'];
 };
 
@@ -3588,6 +3596,13 @@ export type UnplacedExam = {
   ntaMtknr?: Maybe<Scalars['String']['output']>;
   /** Absolute start time of the exam. */
   starttime?: Maybe<Scalars['Time']['output']>;
+};
+
+/** UnplacedExamReason is the reason a single exam ended up unplaced in a generation run. */
+export type UnplacedExamReason = {
+  __typename?: 'UnplacedExamReason';
+  ancode: Scalars['Int']['output'];
+  reason: Scalars['String']['output'];
 };
 
 /**

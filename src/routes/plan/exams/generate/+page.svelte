@@ -4,6 +4,7 @@
 	import { env } from '$env/dynamic/public';
 	import { invalidateAll } from '$app/navigation';
 	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
+	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
@@ -211,6 +212,11 @@
 					placed
 					unplaced
 					unplacedAncodes
+					exahmNtaAncodes
+					unplacedReasons {
+						ancode
+						reason
+					}
 					hardViolations
 					cost
 					costByConstraint {
@@ -703,6 +709,12 @@
 	{#if examReport}
 		{@const r = examReport}
 		{@const d = r.diagnostics ?? {}}
+		{@const infoByAncode = Object.fromEntries(
+			(r.conflicts ?? []).flatMap((/** @type {any} */ c) => [
+				[c.ancode1, { module: c.module1, mainExamer: c.mainExamer1 }],
+				[c.ancode2, { module: c.module2, mainExamer: c.mainExamer2 }]
+			])
+		)}
 		<div class="flex flex-col gap-4" transition:fade>
 			<div class="flex flex-wrap items-center gap-3">
 				<h2 class="text-xl font-semibold">Ergebnis-Report</h2>
@@ -740,8 +752,15 @@
 				</div>
 			{/if}
 
-			<!-- ungeplante Prüfungen -->
-			{#if (r.unplacedAncodes ?? []).length}
+			<!-- NTA-Raum-Hinweis + Gründe für nicht geplante Prüfungen -->
+			<ExamScheduleReportExtras
+				exahmNtaAncodes={r.exahmNtaAncodes ?? []}
+				unplacedReasons={r.unplacedReasons ?? []}
+				{infoByAncode}
+			/>
+
+			<!-- ungeplante Prüfungen (Fallback ohne strukturierte Gründe) -->
+			{#if !(r.unplacedReasons ?? []).length && (r.unplacedAncodes ?? []).length}
 				<div class="flex flex-col gap-1 rounded-lg border border-warning/40 bg-warning/10 p-3">
 					<span class="text-sm font-medium">Ungeplante Prüfungen ({r.unplacedAncodes.length})</span>
 					<div class="flex flex-wrap gap-1">

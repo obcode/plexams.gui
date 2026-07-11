@@ -5,6 +5,7 @@
 	import WriteButton from '$lib/WriteButton.svelte';
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
 	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '$lib/semester/generationConfig';
+	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
 
 	let { data } = $props();
 
@@ -53,6 +54,11 @@
 					placed
 					unplaced
 					unplacedAncodes
+					exahmNtaAncodes
+					unplacedReasons {
+						ancode
+						reason
+					}
 					hardViolations
 					cost
 					iterations
@@ -392,7 +398,15 @@
 				</div>
 			{/if}
 
-			{#if (r.unplacedAncodes ?? []).length}
+			<!-- NTA-Raum-Hinweis + Gründe für nicht geplante Prüfungen -->
+			<ExamScheduleReportExtras
+				exahmNtaAncodes={r.exahmNtaAncodes ?? []}
+				unplacedReasons={r.unplacedReasons ?? []}
+			/>
+
+			{#if (r.unplacedReasons ?? []).length}
+				<!-- Gründe deckt die Liste bereits ab -->
+			{:else if (r.unplacedAncodes ?? []).length}
 				<div class="flex flex-col gap-1 rounded-lg border border-warning/40 bg-warning/10 p-3">
 					<span class="text-sm font-medium">
 						Übrige SEB-Prüfungen — passten nicht in den T-Bau ({r.unplacedAncodes.length})
