@@ -25,8 +25,11 @@ export const GENERATION_CONFIG_FIELDS = `
 	weightDistribution
 	weightDaySpan
 	slotTimeMode
+	slotTimeEnforcement
 	slotTimeWeight
 	slotTimeWinterEarliest
+	slotTimeSummerLatest
+	slotTimeGradientWeight
 	examAdjacent
 	examSameDay
 	examDayFactor
@@ -201,10 +204,13 @@ export function toGenerationConfigInput(config: AnyConfig | null, overrides: Any
 		weightPreferExamDays: num(c.weightPreferExamDays),
 		weightDistribution: num(c.weightDistribution),
 		weightDaySpan: num(c.weightDaySpan),
-		// Terminplan: ungünstige Tageszeiten meiden (auf der Terminplan-Seite editiert)
+		// Terminplan: Tageszeit-Fenster (auf der Terminplan-Seite editiert)
 		slotTimeMode: (c.slotTimeMode as string) ?? 'AUTO',
+		slotTimeEnforcement: (c.slotTimeEnforcement as string) ?? 'HARD',
 		slotTimeWeight: num(c.slotTimeWeight),
 		slotTimeWinterEarliest: (c.slotTimeWinterEarliest as string) ?? '10:00',
+		slotTimeSummerLatest: (c.slotTimeSummerLatest as string) ?? '14:00',
+		slotTimeGradientWeight: num(c.slotTimeGradientWeight),
 		// Terminplan: Solver-Gewichte
 		examAdjacent: num(c.examAdjacent),
 		examSameDay: num(c.examSameDay),

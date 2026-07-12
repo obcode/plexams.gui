@@ -496,6 +496,20 @@ export type ExamPlanningMailRecipient = {
 };
 
 /**
+ * Snapshot of the EXaHM/SEB room phase (phase A) fixation state — how many of the
+ * planned EXaHM/SEB exams are currently frozen (survive phase B).
+ */
+export type ExamRoomsPhaseState = {
+  __typename?: 'ExamRoomsPhaseState';
+  /** true when every planned EXaHM/SEB exam is fixed (planned == fixed). */
+  allFixed: Scalars['Boolean']['output'];
+  /** number of those currently fixed (frozen for phase B). */
+  fixed: Scalars['Int']['output'];
+  /** number of planned EXaHM/SEB exams. */
+  planned: Scalars['Int']['output'];
+};
+
+/**
  * ExamScheduleConflict is a conflict in the CURRENT plan: two exams a student is
  * registered in that ended up close in time, aggregated over all affected students. A
  * conflict is only meaningful per student — the per-student acceptance lives on
@@ -694,14 +708,29 @@ export type GenerationConfig = {
   maxSpanHours: Scalars['Float']['output'];
   /** Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely). */
   preplanCapacityFactor: Scalars['Float']['output'];
+  /**
+   * Terminplan: whether the start-time window is enforced hard (exam left unplaced)
+   * or soft (deviation allowed, penalised & reported). Default HARD.
+   */
+  slotTimeEnforcement: SlotTimeConstraintEnforcement;
+  /**
+   * Terminplan (summer): mild early-pull gradient inside the window — pulls large
+   * exams towards earlier start times. Default 2.0.
+   */
+  slotTimeGradientWeight: Scalars['Float']['output'];
   /** Terminplan: whether/how to weight exam start times (default AUTO by semester). */
   slotTimeMode: SlotTimeConstraintMode;
-  /** Terminplan: start-time weight (penalty per registration, per hour of badness). 0 = use default. */
-  slotTimeWeight: Scalars['Float']['output'];
   /**
-   * Terminplan (winter): avoid a start time before this (HH:MM), e.g. 10:00.
-   * Ignored in summer (there earlier is always better).
+   * Terminplan (summer): latest allowed start time (HH:MM), e.g. 14:00. Booked,
+   * air-conditioned T-building rooms (EXaHM/SEB) are exempt.
    */
+  slotTimeSummerLatest: Scalars['String']['output'];
+  /**
+   * Terminplan: start-time weight (penalty per registration, per hour of badness). 0 = use default.
+   * Only effective in SOFT enforcement.
+   */
+  slotTimeWeight: Scalars['Float']['output'];
+  /** Terminplan (winter): avoid a start time before this (HH:MM), e.g. 10:00. */
   slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
   /** allowed deviation (minutes) from an invigilator's target workload. */
@@ -734,7 +763,10 @@ export type GenerationConfigInput = {
   iterations: Scalars['Int']['input'];
   maxSpanHours: Scalars['Float']['input'];
   preplanCapacityFactor: Scalars['Float']['input'];
+  slotTimeEnforcement: SlotTimeConstraintEnforcement;
+  slotTimeGradientWeight: Scalars['Float']['input'];
   slotTimeMode: SlotTimeConstraintMode;
+  slotTimeSummerLatest: Scalars['String']['input'];
   slotTimeWeight: Scalars['Float']['input'];
   slotTimeWinterEarliest: Scalars['String']['input'];
   startTemp: Scalars['Float']['input'];
@@ -2395,6 +2427,12 @@ export type Query = {
    * recipients before sending. No slot/date is included.
    */
   examPlanningMailRecipients: Array<ExamPlanningMailRecipient>;
+  /**
+   * Fixation state of the EXaHM/SEB room phase (phase A): how many planned EXaHM/SEB
+   * exams exist and how many are currently fixed. Use before phase B to warn about
+   * unfixed exams that could still move.
+   */
+  examRoomsPhaseState: ExamRoomsPhaseState;
   /** Conflicts of the current plan, to review (accept per student). */
   examScheduleConflicts: Array<ExamScheduleConflict>;
   /** The read-only list of hard/soft constraints the exam-schedule generator applies. */
@@ -3101,6 +3139,14 @@ export type Slot = {
   __typename?: 'Slot';
   starttime: Scalars['Time']['output'];
 };
+
+/** How the Terminplan start-time window is enforced. */
+export enum SlotTimeConstraintEnforcement {
+  /** exam is left unplaced (with a reason) if it cannot start inside the window. */
+  Hard = 'HARD',
+  /** deviation from the window is allowed but penalised (slotTimeWeight) and reported. */
+  Soft = 'SOFT'
+}
 
 /**
  * When the exam-schedule generator (Terminplan) applies the start-time soft constraint, and

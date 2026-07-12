@@ -6,8 +6,23 @@
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
 	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '$lib/semester/generationConfig';
 	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
+	import ExamRoomsPhaseBadge from '$lib/exam/ExamRoomsPhaseBadge.svelte';
 
 	let { data } = $props();
+
+	// Fixierungs-Stand (EXaHM/SEB). Initial aus dem Load, danach nach jeder Aktion
+	// (Phase-A-Schreiblauf, Fixieren, Aufheben) client-seitig nachladen.
+	/** @type {{ planned: number, fixed: number, allFixed: boolean } | null} */
+	let phaseState = $state(data.examRoomsPhaseState ?? null);
+	async function refreshPhaseState() {
+		try {
+			const res = await fetch('/api/room/examRoomsPhaseState');
+			const d = await res.json().catch(() => ({}));
+			if (res.ok && d?.examRoomsPhaseState) phaseState = d.examRoomsPhaseState;
+		} catch {
+			// Statusanzeige ist unkritisch — bei Fehler alten Stand behalten.
+		}
+	}
 
 	// EXAMS gesperrt → nur Probelauf; Schreiben/Fixieren deaktiviert.
 	let examsBlocked = $derived((data.blockedAreas ?? []).includes('EXAMS'));
@@ -172,6 +187,8 @@
 					}
 					running = false;
 					done = true;
+					// Schreiblauf ändert die Platzierung → Fixierungs-Stand nachladen.
+					if (writeRun) refreshPhaseState();
 				}
 			}
 		);
@@ -212,6 +229,7 @@
 				return;
 			}
 			fixInfo = msg(d);
+			await refreshPhaseState();
 		} catch (e) {
 			fixError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -445,6 +463,7 @@
 				Fixierung aufheben
 			</WriteButton>
 			{#if fixBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
+			<ExamRoomsPhaseBadge state={phaseState} />
 		</div>
 		<span class="text-xs text-base-content/50">
 			Nach zufriedenstellender Phase A fixieren — die fixierten Prüfungen überleben Phase B

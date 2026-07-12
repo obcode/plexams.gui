@@ -20,18 +20,25 @@ export const load: PageServerLoad = async () => {
 					generationConfig {
 						${GENERATION_CONFIG_FIELDS}
 					}
+					examRoomsPhaseState {
+						planned
+						fixed
+						allFixed
+					}
 				}
 			`
 		);
 		return {
 			blockedAreas: data.planningState?.blockedAreas ?? [],
 			generationConfig: data.generationConfig ?? null,
+			examRoomsPhaseState: data.examRoomsPhaseState ?? null,
 			loadError: ''
 		};
 	} catch (e) {
 		return {
 			blockedAreas: [] as string[],
 			generationConfig: null as any,
+			examRoomsPhaseState: null as any,
 			loadError: gqlErrorMessage(e)
 		};
 	}

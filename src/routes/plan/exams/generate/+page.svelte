@@ -130,9 +130,13 @@
 	// ist komplett non-null, daher beim Speichern die volle Config zurückschreiben
 	// (Round-Trip über data.generationConfig, wie bei examGap/semesterConfigInput).
 	let slotTimeMode = $state(data.generationConfig?.slotTimeMode ?? 'AUTO');
+	let slotTimeEnforcement = $state(data.generationConfig?.slotTimeEnforcement ?? 'HARD');
 	/** @type {number | ''} */
-	let slotTimeWeight = $state(data.generationConfig?.slotTimeWeight ?? 5);
+	let slotTimeWeight = $state(data.generationConfig?.slotTimeWeight ?? 20000);
 	let slotTimeWinterEarliest = $state(data.generationConfig?.slotTimeWinterEarliest ?? '10:00');
+	let slotTimeSummerLatest = $state(data.generationConfig?.slotTimeSummerLatest ?? '14:00');
+	/** @type {number | ''} */
+	let slotTimeGradientWeight = $state(data.generationConfig?.slotTimeGradientWeight ?? 2.0);
 	let slotTimeBusy = $state(false);
 	let slotTimeInfo = $state('');
 	let slotTimeError = $state('');
@@ -150,8 +154,14 @@
 		// verbatim übernehmen, nur die Tageszeiten-Felder ändern.
 		const input = toGenerationConfigInput(g, {
 			slotTimeMode,
+			slotTimeEnforcement,
 			slotTimeWeight: slotTimeWeight === '' || slotTimeWeight == null ? 0 : Number(slotTimeWeight),
-			slotTimeWinterEarliest
+			slotTimeWinterEarliest,
+			slotTimeSummerLatest,
+			slotTimeGradientWeight:
+				slotTimeGradientWeight === '' || slotTimeGradientWeight == null
+					? 0
+					: Number(slotTimeGradientWeight)
 		});
 		try {
 			const res = await fetch('/api/semester/setGenerationConfig', {
@@ -419,6 +429,54 @@
 		running = false;
 	}
 
+	// --- Phase-B-Warnung ---
+	// Vor einem Schreiblauf prüfen, ob alle geplanten EXaHM/SEB-Prüfungen (Phase A)
+	// fixiert sind. Unfixierte werden in Phase B neu platziert (können den Slot
+	// wechseln). examRoomsPhaseState.allFixed ist die verlässliche Grundlage
+	// (deckt auch nachträglich importierte, unfixierte Prüfungen ab). Ein Probelauf
+	// (dryRun) schreibt nichts → keine Warnung.
+	/** @type {{ dryRun: boolean, ignoreRatings: boolean } | null} */
+	let pendingGen = $state(null);
+	/** @type {{ planned: number, fixed: number, allFixed: boolean } | null} */
+	let phaseWarnState = $state(null);
+	let phaseCheckBusy = $state(false);
+
+	/** @param {boolean} dryRun @param {boolean} [ignoreRatings] */
+	async function requestStart(dryRun, ignoreRatings = false) {
+		if (running) return;
+		if (dryRun) return start(true, ignoreRatings); // Probelauf: keine Warnung
+		if (examsBlocked) return;
+		phaseCheckBusy = true;
+		/** @type {{ planned: number, fixed: number, allFixed: boolean } | null} */
+		let st = null;
+		try {
+			const res = await fetch('/api/room/examRoomsPhaseState');
+			const d = await res.json().catch(() => ({}));
+			if (res.ok && d?.examRoomsPhaseState) st = d.examRoomsPhaseState;
+		} catch {
+			// Prüfung fehlgeschlagen → nicht blockieren, direkt generieren.
+		} finally {
+			phaseCheckBusy = false;
+		}
+		if (st && st.planned > 0 && !st.allFixed) {
+			phaseWarnState = st;
+			pendingGen = { dryRun, ignoreRatings };
+			return;
+		}
+		start(false, ignoreRatings);
+	}
+
+	function confirmGen() {
+		const p = pendingGen;
+		phaseWarnState = null;
+		pendingGen = null;
+		if (p) start(p.dryRun, p.ignoreRatings);
+	}
+	function cancelGen() {
+		phaseWarnState = null;
+		pendingGen = null;
+	}
+
 	// anderen Seed probieren → anderer Plan (Probelauf); den neuen Seed ins Feld
 	// übernehmen, damit man ihn anschließend so schreiben kann.
 	function newSuggestion() {
@@ -620,8 +678,8 @@
 			<button class="btn btn-outline btn-sm" onclick={() => start(true)}>▷ Probelauf</button>
 			<button
 				class="btn btn-primary btn-sm"
-				disabled={examsBlocked}
-				onclick={() => start(false)}
+				disabled={examsBlocked || phaseCheckBusy}
+				onclick={() => requestStart(false)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
 					: 'schreibt den Plan mit dem aktuellen Seed — identisch zum Probelauf mit demselben Seed'}
@@ -637,14 +695,15 @@
 			</button>
 			<button
 				class="btn btn-ghost btn-sm"
-				disabled={examsBlocked}
-				onclick={() => start(false, true)}
+				disabled={examsBlocked || phaseCheckBusy}
+				onclick={() => requestStart(false, true)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
 					: 'ignoriert alle Bewertungen & „darf zeitgleich" für diesen Lauf (gespeichert bleiben sie)'}
 			>
 				↺ Neu generieren ohne Bewertungen
 			</button>
+			{#if phaseCheckBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
 		{/if}
 		<span class="text-xs text-base-content/50">
 			Probelauf schreibt nichts. Derselbe Seed erzeugt bei unveränderten Daten &amp; Bewertungen
@@ -907,44 +966,88 @@
 		loadError={data.conflictsError}
 	/>
 
-	<!-- Ungünstige Tageszeiten meiden (Teil der globalen generationConfig) -->
+	<!-- Tageszeit-Fenster (Teil der globalen generationConfig) -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex items-baseline gap-2">
-			<span class="font-medium">Ungünstige Tageszeiten meiden</span>
+			<span class="font-medium">Tageszeit-Fenster</span>
 			<span class="text-xs text-base-content/50">· global · wirkt beim nächsten „Generieren"</span>
 		</div>
 		<div class="flex flex-wrap items-end gap-4">
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Tageszeiten meiden</span>
+				<span class="text-xs font-medium text-base-content/60">Tageszeit-Fenster</span>
 				<select
-					class="select select-bordered select-sm w-44"
+					class="select select-bordered select-sm w-52"
 					bind:value={slotTimeMode}
 					disabled={slotTimeBusy || !data.generationConfig}
+					title="AUTO folgt dem Semester (Winter: nicht zu früh; Sommer: nicht zu spät)."
 				>
 					<option value="AUTO">Automatik (nach Semester)</option>
-					<option value="WINTER">Winter (frühe meiden)</option>
-					<option value="SUMMER">Sommer (späte meiden)</option>
+					<option value="WINTER">Winter (nicht zu früh)</option>
+					<option value="SUMMER">Sommer (nicht zu spät)</option>
 					<option value="OFF">Aus</option>
 				</select>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Gewicht (pro Anmeldung/Stunde)</span>
+				<span class="text-xs font-medium text-base-content/60">Zeitfenster erzwingen</span>
+				<select
+					class="select select-bordered select-sm w-64"
+					bind:value={slotTimeEnforcement}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+					title="HARD: außerhalb des Fensters gezwungene Prüfungen bleiben ungeplant (mit Begründung im Report). SOFT: Abweichung möglich, wird über die Fenster-Strafe bewertet."
+				>
+					<option value="HARD">hart (Prüfung sonst ungeplant)</option>
+					<option value="SOFT">weich (Abweichung möglich, wird gemeldet)</option>
+				</select>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Winter: frühester Beginn</span>
+				<input
+					type="time"
+					class="input input-bordered input-sm w-28"
+					bind:value={slotTimeWinterEarliest}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+				/>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Sommer: spätester Beginn</span>
+				<input
+					type="time"
+					class="input input-bordered input-sm w-28"
+					bind:value={slotTimeSummerLatest}
+					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+					title="Gebuchte, klimatisierte T-Bau-Räume (EXaHM/SEB) sind ausgenommen."
+				/>
+			</label>
+			<label class="flex flex-col gap-1">
+				<span
+					class="text-xs font-medium text-base-content/60"
+					class:opacity-40={slotTimeEnforcement === 'HARD'}
+				>
+					Fenster-Strafe (nur im SOFT-Modus)
+				</span>
 				<input
 					type="number"
 					step="any"
 					min="0"
 					class="input input-bordered input-sm w-32"
 					bind:value={slotTimeWeight}
-					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+					disabled={slotTimeBusy ||
+						!data.generationConfig ||
+						slotTimeMode === 'OFF' ||
+						slotTimeEnforcement === 'HARD'}
+					title="Strafgewicht bei Abweichung vom Fenster. Nur im SOFT-Modus wirksam; im HARD-Modus wirkungslos."
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Winter: nicht vor</span>
+				<span class="text-xs font-medium text-base-content/60">Sommer: milder Früh-Sog</span>
 				<input
-					type="time"
-					class="input input-bordered input-sm w-28"
-					bind:value={slotTimeWinterEarliest}
+					type="number"
+					step="any"
+					min="0"
+					class="input input-bordered input-sm w-32"
+					bind:value={slotTimeGradientWeight}
 					disabled={slotTimeBusy || !data.generationConfig || slotTimeMode === 'OFF'}
+					title="Zieht große Prüfungen innerhalb des Fensters nach vorn. Nur im Sommer relevant."
 				/>
 			</label>
 			<button
@@ -958,12 +1061,17 @@
 			{#if slotTimeError}<span class="text-xs text-error">{slotTimeError}</span>{/if}
 		</div>
 		<span class="max-w-3xl text-xs text-base-content/50">
-			Bestraft Prüfungen zu ungünstigen Beginn-Uhrzeiten graduell, skaliert mit der Anmeldezahl.
-			<strong>Automatik</strong> richtet sich nach dem Semester: im Wintersemester werden frühe Slots
-			(Beginn vor „Winter: nicht vor") gemieden. Im Sommersemester werden generell frühe Slots bevorzugt
-			(die Strafe steigt monoton mit der Uhrzeit, große Prüfungen werden dadurch nach vorne gezogen)
-			– ohne konfigurierbare Obergrenze. Winter/Sommer erzwingen eine Variante, Aus schaltet den Constraint
-			ab. Erscheint unten in „Angewandte Constraints".
+			Begrenzt die Beginn-Uhrzeit der Prüfungen auf ein Tageszeit-Fenster. <strong>Automatik</strong
+			>
+			folgt dem Semester: im Wintersemester wird ein früher Beginn (vor „Winter: frühester Beginn") vermieden,
+			im Sommersemester ein später Beginn (nach „Sommer: spätester Beginn"). Der Sommer ist jetzt ein
+			<strong>fester Cutoff</strong> auf die Startzeit (nicht mehr „je später desto schlechter");
+			der milde Früh-Sog zieht große Prüfungen innerhalb des Fensters nach vorn. Im
+			<strong>HARD-Modus</strong>
+			landen zu spät/früh gezwungene Prüfungen als „ungeplant" mit Begründung im Terminplan-Report (statt
+			einer harten Verletzung); im <strong>SOFT-Modus</strong> ist eine Abweichung erlaubt, wird aber
+			über die Fenster-Strafe bewertet und gemeldet. Gebuchte, klimatisierte T-Bau-Räume (EXaHM/SEB)
+			sind vom Sommer-Cutoff ausgenommen. Erscheint unten in „Angewandte Constraints".
 		</span>
 	</div>
 
@@ -1026,3 +1134,28 @@
 		</div>
 	</details>
 </div>
+
+<!-- Phase-B-Warnung: unfixierte EXaHM/SEB-Prüfungen können den Slot wechseln -->
+{#if phaseWarnState}
+	<div class="modal modal-open" role="dialog">
+		<div class="modal-box">
+			<h3 class="flex items-center gap-2 text-lg font-semibold">
+				<span class="text-warning">⚠️</span> EXaHM/SEB nicht vollständig fixiert
+			</h3>
+			<p class="py-3 text-sm">
+				Es sind erst <strong class="tabular-nums">{phaseWarnState.fixed}</strong> von
+				<strong class="tabular-nums">{phaseWarnState.planned}</strong>
+				EXaHM/SEB-Prüfungen fixiert. Nicht fixierte EXaHM/SEB-Prüfungen werden in Phase B neu platziert
+				(können den Slot wechseln). Trotzdem neu generieren?
+			</p>
+			<p class="pb-2 text-xs text-base-content/50">
+				Tipp: Auf der Seite „EXaHM/SEB in T-Bau planen" (Phase A) zuerst „EXaHM/SEB fixieren".
+			</p>
+			<div class="modal-action">
+				<button class="btn btn-ghost btn-sm" onclick={cancelGen}>Abbrechen</button>
+				<button class="btn btn-warning btn-sm" onclick={confirmGen}>Trotzdem generieren</button>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="Abbrechen" onclick={cancelGen}></button>
+	</div>
+{/if}
