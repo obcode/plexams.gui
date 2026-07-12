@@ -201,6 +201,15 @@
 	/** @type {any} */
 	let examReport = $state(null);
 
+	// Zeilen nach Level farblich hervorheben (Catppuccin-Palette passend zum
+	// Terminal-Hintergrund). Die Terminplan-Generierung kann eine WARN-Zeile
+	// (Warnf) über denselben Stream schicken — die soll sich deutlich von
+	// normalen Println-Zeilen abheben.
+	/** @param {string} level */
+	const lineColor = (level) => (level === 'ERROR' ? '#f38ba8' : level === 'WARN' ? '#f9e2af' : '');
+	/** @param {string} level */
+	const linePrefix = (level) => (level === 'ERROR' ? '✖ ' : level === 'WARN' ? '⚠ ' : '');
+
 	/** @type {HTMLDivElement | undefined} */
 	let termEl = $state();
 
@@ -754,7 +763,14 @@
 			</div>
 		{/if}
 		{#each lines as line}
-			<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
+			<div
+				class="whitespace-pre-wrap break-words {line.level === 'WARN' || line.level === 'ERROR'
+					? 'font-semibold'
+					: ''}"
+				style={lineColor(line.level) ? `color:${lineColor(line.level)}` : ''}
+			>
+				{linePrefix(line.level)}{@html line.html}
+			</div>
 		{/each}
 		{#if current}
 			<div class="flex items-start gap-2 whitespace-pre-wrap break-words" style="color:#f9e2af">

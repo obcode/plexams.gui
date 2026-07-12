@@ -33,6 +33,14 @@
 	/** ANSI-Codes entfernen, damit die Klartext-Meldung lesbar ist. */
 	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
+	// Zeilen nach Level farblich hervorheben (Catppuccin-Palette passend zum
+	// Terminal-Hintergrund). WARN-Zeilen — z. B. die Warnf-Warnung der
+	// Terminplan-Generierung — sollen sich deutlich von normalen Zeilen abheben.
+	/** @param {string} level */
+	const lineColor = (level) => (level === 'ERROR' ? '#f38ba8' : level === 'WARN' ? '#f9e2af' : '');
+	/** @param {string} level */
+	const linePrefix = (level) => (level === 'ERROR' ? '✖ ' : level === 'WARN' ? '⚠ ' : '');
+
 	/** @type {{ level: string, html: string }[]} */
 	let lines = $state([]);
 	/** @type {{ html: string } | null} */
@@ -202,7 +210,14 @@
 			style="background:#1e1e2e; color:#d4d4d4"
 		>
 			{#each lines as line}
-				<div class="whitespace-pre-wrap break-words">{@html line.html}</div>
+				<div
+					class="whitespace-pre-wrap break-words {line.level === 'WARN' || line.level === 'ERROR'
+						? 'font-semibold'
+						: ''}"
+					style={lineColor(line.level) ? `color:${lineColor(line.level)}` : ''}
+				>
+					{linePrefix(line.level)}{@html line.html}
+				</div>
 			{/each}
 			{#if current}
 				<div class="flex items-start gap-2 whitespace-pre-wrap break-words" style="color:#f9e2af">

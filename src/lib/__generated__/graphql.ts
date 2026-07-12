@@ -2114,6 +2114,11 @@ export type PlannedRoom = {
 
 export type PlanningCondition = {
   __typename?: 'PlanningCondition';
+  /**
+   * true when this condition is set automatically by the backend and cannot be
+   * toggled manually (setPlanningCondition returns an error for it).
+   */
+  auto: Scalars['Boolean']['output'];
   /** true when the condition (milestone) is reached. */
   done: Scalars['Boolean']['output'];
   /** If set, the area this condition gates while done (e.g. ROOMS, INVIGILATIONS); null if it is not a gate. */
