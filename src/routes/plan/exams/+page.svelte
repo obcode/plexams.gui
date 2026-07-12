@@ -167,10 +167,12 @@
 		resetPlaceInputs();
 	}
 
-	// Off-grid-Karte im Raster anzeigen? Bei aktiver Auswahl + „nur Konflikte" nur die,
-	// die mit der gewählten Prüfung kollidieren — analog zu den Slot-Karten (SlotExam).
+	// Off-grid-Karte im Raster anzeigen? Wie bei den Slot-Karten (SlotExam): „nur eigene"
+	// blendet fremd-/notPlannedByMe-Prüfungen aus; bei aktiver Auswahl + „nur Konflikte"
+	// bleiben nur die, die mit der gewählten Prüfung kollidieren.
 	/** @param {any} e */
 	function showOffGrid(e) {
+		if (onlyPlannedByMe && e.constraints?.notPlannedByMe) return false;
 		if (selectedExam !== -1 && onlyConflicts) return conflictingAncodes.includes(e.ancode);
 		return true;
 	}
@@ -706,31 +708,47 @@
 					e.planEntry?.starttime
 				)}, nicht auf dem Slot-Raster"
 			>
-				<div class="flex items-center gap-1">
-					<span class="badge badge-warning badge-sm gap-1 tabular-nums" title="echte Startzeit">
-						⏱ {offGridTime(e.planEntry?.starttime)}
-					</span>
-					{#if conflictCountFor(e) != null}
-						<span
-							class="badge badge-error badge-sm gap-1 tabular-nums"
-							title="Konflikt mit gewählter Prüfung (gemeinsame Studierende)"
-						>
-							⚠️ {conflictCountFor(e)}
-						</span>
-					{/if}
-					{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span>{/if}
-				</div>
-				<div class="mt-1 flex items-center gap-1 font-semibold">
-					<span class="font-mono">{otherFkAncode(e)}</span>
-					<span class="text-base-content/50">&sum;{e.studentRegsCount}</span>
-				</div>
-				<div class="truncate text-base-content/70">{e.zpaExam?.module}</div>
-				{#if e.constraints?.notPlannedByMe}
-					<div class="mt-1">
-						<span class="badge badge-outline badge-sm">
-							nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
-						</span>
+				{#if !details}
+					<!-- kompakt: nur Ancode (+ Konflikt-Badge/Wiederholung); Rest im Tooltip -->
+					<div class="flex items-center gap-1 whitespace-nowrap font-semibold">
+						<span class="font-mono">{otherFkAncode(e)}</span>
+						{#if conflictCountFor(e) != null}
+							<span
+								class="badge badge-error badge-sm gap-1 tabular-nums"
+								title="Konflikt mit gewählter Prüfung (gemeinsame Studierende)"
+							>
+								⚠️ {conflictCountFor(e)}
+							</span>
+						{/if}
+						{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span>{/if}
 					</div>
+				{:else}
+					<div class="flex items-center gap-1">
+						<span class="badge badge-warning badge-sm gap-1 tabular-nums" title="echte Startzeit">
+							⏱ {offGridTime(e.planEntry?.starttime)}
+						</span>
+						{#if conflictCountFor(e) != null}
+							<span
+								class="badge badge-error badge-sm gap-1 tabular-nums"
+								title="Konflikt mit gewählter Prüfung (gemeinsame Studierende)"
+							>
+								⚠️ {conflictCountFor(e)}
+							</span>
+						{/if}
+						{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span>{/if}
+					</div>
+					<div class="mt-1 flex items-center gap-1 font-semibold">
+						<span class="font-mono">{otherFkAncode(e)}</span>
+						<span class="text-base-content/50">&sum;{e.studentRegsCount}</span>
+					</div>
+					<div class="truncate text-base-content/70">{e.zpaExam?.module}</div>
+					{#if e.constraints?.notPlannedByMe}
+						<div class="mt-1">
+							<span class="badge badge-outline badge-sm">
+								nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
+							</span>
+						</div>
+					{/if}
 				{/if}
 			</div>
 		{/snippet}
