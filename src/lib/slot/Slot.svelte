@@ -32,11 +32,16 @@
 
 	let exams = $state<any[]>([]);
 
-	// Leerer (freier) Slot: keine Prüfung platziert und nicht global gesperrt. Wird
-	// dezent hervorgehoben, damit freie Slots im Raster auf einen Blick sichtbar sind.
+	// Leerer (freier) Slot: keine von mir zu planende Prüfung platziert und nicht global
+	// gesperrt. Prüfungen anderer FKs / notPlannedByMe (auch external) zählen NICHT als
+	// belegt — für sie wird ohnehin kein Sitzplatz-Count angezeigt. So gelten auch Slots,
+	// die nur solche Prüfungen enthalten, als frei und werden dezent hervorgehoben.
 	// Erst nach dem ersten Laden (loaded) werten, sonst blitzt jeder Slot kurz „leer".
 	let loaded = $state(false);
-	let isEmpty = $derived(loaded && exams.length === 0 && !forbiddenSlot);
+	let myExamsCount = $derived(
+		exams.filter((exam: any) => !exam.constraints || !exam.constraints.notPlannedByMe).length
+	);
+	let isEmpty = $derived(loaded && myExamsCount === 0 && !forbiddenSlot);
 
 	async function fetchExams() {
 		const response = await fetch('/api/slot/examsAt', {
