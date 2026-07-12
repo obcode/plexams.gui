@@ -131,6 +131,10 @@
 
 	let selectedExam = $state(-1);
 	let conflictingAncodes = $state(/** @type {any[]} */ ([]));
+	// Konflikt-Studierendenzahl je Ancode gegenüber der gewählten Prüfung. Aus der
+	// gleichen conflictingAncodes-Antwort — so bekommen auch Off-Grid-Karten (die kein
+	// eigenes `conflicts` laden) ihre Konflikt-Anzahl, ohne Extra-Query.
+	let conflictStuds = $state(/** @type {Record<number, number>} */ ({}));
 	let selectedExamerID = $state(-1);
 
 	async function handleSelect(/** @type {any} */ payload) {
@@ -149,6 +153,9 @@
 		}
 		let res = await fetchconflictingAncodes(payload.ancode);
 		conflictingAncodes = res.map((/** @type {any} */ conflict) => conflict.ancode);
+		conflictStuds = Object.fromEntries(
+			res.map((/** @type {any} */ c) => [c.ancode, c.numberOfStuds])
+		);
 	}
 
 	function handleUnselect() {
@@ -156,8 +163,22 @@
 		selectedExam = -1;
 		selectedExamerID = -1;
 		conflictingAncodes = [];
+		conflictStuds = {};
 		resetPlaceInputs();
 	}
+
+	// Off-grid-Karte im Raster anzeigen? Bei aktiver Auswahl + „nur Konflikte" nur die,
+	// die mit der gewählten Prüfung kollidieren — analog zu den Slot-Karten (SlotExam).
+	/** @param {any} e */
+	function showOffGrid(e) {
+		if (selectedExam !== -1 && onlyConflicts) return conflictingAncodes.includes(e.ancode);
+		return true;
+	}
+
+	// Konflikt-Anzahl (gemeinsame Studierende) einer Prüfung ggü. der gewählten;
+	// undefined, wenn nichts gewählt ist oder kein Konflikt besteht.
+	/** @param {any} e */
+	const conflictCountFor = (e) => (selectedExam !== -1 ? conflictStuds[e.ancode] : undefined);
 
 	// ---- Manuelle Platzierung (setExamTime) ----
 	// Das Backend speichert die absolute Startzeit und leitet Tag/Slot ab; es akzeptiert
@@ -689,6 +710,14 @@
 					<span class="badge badge-warning badge-sm gap-1 tabular-nums" title="echte Startzeit">
 						⏱ {offGridTime(e.planEntry?.starttime)}
 					</span>
+					{#if conflictCountFor(e) != null}
+						<span
+							class="badge badge-error badge-sm gap-1 tabular-nums"
+							title="Konflikt mit gewählter Prüfung (gemeinsame Studierende)"
+						>
+							⚠️ {conflictCountFor(e)}
+						</span>
+					{/if}
 					{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span>{/if}
 				</div>
 				<div class="mt-1 flex items-center gap-1 font-semibold">
@@ -743,7 +772,7 @@
 					onplace={handlePlace}
 				/>
 				{#each offGridBySlot[`${day.number},${time.number}`] ?? [] as e (e.ancode)}
-					{@render offGridCard(e)}
+					{#if showOffGrid(e)}{@render offGridCard(e)}{/if}
 				{/each}
 			</div>
 		{/snippet}
