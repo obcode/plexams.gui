@@ -93,60 +93,67 @@
 	});
 </script>
 
-<div
-	class="h-full rounded {isEmpty
-		? 'bg-base-300/70 outline-2 outline-dashed outline-base-content/25'
-		: ''}"
->
-	<div class="flex justify-between">
-		{#if !forbiddenSlot}
-			<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
-		{/if}
-		{#if selectedExam != null && selectedExam !== -1 && !forbiddenSlot}
-			<button
-				class="btn btn-primary btn-xs m-1"
-				title="gewählte Prüfung auf {time.start} ({mkDateShort(day.date)}) setzen"
-				onclick={() => onplace?.({ day, time })}
-			>
-				＋ hier
-			</button>
-		{/if}
-		{#if exams.length > 0}
-			<div class="flex justify-end">
-				{#if count > 0}
-					<div class="badge {badgeColor(count)} gap-2 m-1 rounded-lg border-black">{count}</div>
-				{/if}
+<div class="h-full rounded">
+	<!-- Dezente „leer"-Markierung als absolute Ebene: füllt die volle Zellenhöhe (die
+	     Tabellenzeile wird durch belegte Nachbarzellen höher), während der Inhalt selbst
+	     einzeilig bleibt. h-full/Prozenthöhe greift in Tabellenzellen nicht — daher der
+	     inset-0-Layer gegen die relative <td>. -->
+	{#if isEmpty}
+		<div
+			class="pointer-events-none absolute inset-0 rounded bg-base-300/70 outline-2 outline-dashed outline-base-content/25"
+		></div>
+	{/if}
+	<div class="relative z-10">
+		<div class="flex justify-between">
+			{#if !forbiddenSlot}
+				<div class="badge gap-2 m-1">{mkDateShort(day.date)}, {time.start}</div>
+			{/if}
+			{#if selectedExam != null && selectedExam !== -1 && !forbiddenSlot}
+				<button
+					class="btn btn-primary btn-xs m-1"
+					title="gewählte Prüfung auf {time.start} ({mkDateShort(day.date)}) setzen"
+					onclick={() => onplace?.({ day, time })}
+				>
+					＋ hier
+				</button>
+			{/if}
+			{#if exams.length > 0}
+				<div class="flex justify-end">
+					{#if count > 0}
+						<div class="badge {badgeColor(count)} gap-2 m-1 rounded-lg border-black">{count}</div>
+					{/if}
+				</div>
+			{/if}
+		</div>
+		{#if showOnlyEXaHMRooms}
+			<div>
+				{#each exahm as room}
+					<div class="badge badge-warning m-1 rounded-lg border-black">{room.name}</div>
+				{/each}
 			</div>
 		{/if}
-	</div>
-	{#if showOnlyEXaHMRooms}
-		<div>
-			{#each exahm as room}
-				<div class="badge badge-warning m-1 rounded-lg border-black">{room.name}</div>
-			{/each}
-		</div>
-	{/if}
 
-	{#each exams as exam}
-		<SlotExam
-			{exam}
-			{maxSlots}
-			{showExam}
-			{showAncode}
-			{showExamerID}
-			{showOnlyOnline}
-			{showOnlyExahm}
-			{showOnlySEB}
-			{selectedExam}
-			{selectedExamerID}
-			{onlyPlannedByMe}
-			{onlyConflicts}
-			{details}
-			{moveable}
-			inSlot={true}
-			{conflictingAncodes}
-			{onselected}
-			{onunselected}
-		/>
-	{/each}
+		{#each exams as exam}
+			<SlotExam
+				{exam}
+				{maxSlots}
+				{showExam}
+				{showAncode}
+				{showExamerID}
+				{showOnlyOnline}
+				{showOnlyExahm}
+				{showOnlySEB}
+				{selectedExam}
+				{selectedExamerID}
+				{onlyPlannedByMe}
+				{onlyConflicts}
+				{details}
+				{moveable}
+				inSlot={true}
+				{conflictingAncodes}
+				{onselected}
+				{onunselected}
+			/>
+		{/each}
+	</div>
 </div>

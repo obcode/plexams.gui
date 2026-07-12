@@ -700,7 +700,7 @@
 												</td>
 												{#each weeks.cols as wd}
 													{@const d = w.byWd.get(wd)}
-													<td class="align-top">
+													<td class="relative align-top">
 														{#if d}{@render slotCell(d, time)}{/if}
 													</td>
 												{/each}
