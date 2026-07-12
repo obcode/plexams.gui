@@ -804,7 +804,13 @@
 						<div class="flex flex-col gap-1">
 							<div class="text-sm font-semibold text-base-content/70">KW {w.weekNum}</div>
 							<div class="overflow-x-auto rounded-lg border border-base-300">
-								<table class="table table-sm w-full">
+								<!-- table-fixed: alle Tagesspalten gleich breit (auch über Wochen hinweg);
+								     min-width sorgt für ≥ 11rem je Tag → horizontales Scrollen auf schmalen
+								     Screens, während w-full auf breiten Screens gleichmäßig füllt. -->
+								<table
+									class="table table-sm w-full table-fixed"
+									style="min-width: calc(4rem + {weeks.cols.length} * 11rem)"
+								>
 									<thead>
 										<tr>
 											<th class="w-16 bg-base-200"></th>

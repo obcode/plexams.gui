@@ -110,7 +110,9 @@
 		}
 	}
 
-	const width = $derived(details || !inSlot ? 'w-full max-w-96 sm:w-96' : 'w-min');
+	// Kompakt im Slot füllt jetzt die (feste) Zellenbreite — wie die Off-Grid-Karten;
+	// in Details/außerhalb des Slots begrenzt auf sm:w-96.
+	const width = $derived(details || !inSlot ? 'w-full max-w-96 sm:w-96' : 'w-full');
 
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
 	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld
