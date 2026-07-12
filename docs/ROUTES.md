@@ -30,6 +30,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 | **Terminplanung**     | Terminplanung (Grid)            | `plan/exams/`                    | `slot/`, `exam/`              | `api/slot/`, `api/plan/`                       |
 |                       | EXaHM/SEB in T-Bau (Phase A)    | `plan/exams/roomsphase/`         | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
 |                       | Terminplan generieren (Phase B) | `plan/exams/generate/`           | `exam/`, `validation/`        | `api/exam/`, `api/semester/`                   |
+|                       | Prüfungsverteilung / Statistik  | `plan/exams/statistics/`         | `statistics/`                 | —                                              |
 |                       | Validierung                     | `plan/exams/validate/`           | `validation/`                 | —                                              |
 | **Raumplanung**       | Raumplanung                     | `plan/rooms/`                    | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
 |                       | Anny-Anforderungen (KDP)        | `plan/kdprooms/`                 | `room/`                       | `api/room/`                                    |

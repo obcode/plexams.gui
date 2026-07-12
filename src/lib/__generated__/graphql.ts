@@ -299,6 +299,15 @@ export type ConstraintsInput = {
   seb?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type CountBucket = {
+  __typename?: 'CountBucket';
+  /** Number of exams; the top bucket uses this as its lower bound (label carries the '+'). */
+  examCount: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
+  share: Scalars['Float']['output'];
+  students: Scalars['Int']['output'];
+};
+
 /** CoverageReport: how many positions are filled. */
 export type CoverageReport = {
   __typename?: 'CoverageReport';
@@ -495,17 +504,14 @@ export type ExamPlanningMailRecipient = {
   teacher: Teacher;
 };
 
-/**
- * Snapshot of the EXaHM/SEB room phase (phase A) fixation state — how many of the
- * planned EXaHM/SEB exams are currently frozen (survive phase B).
- */
+/** State of the EXaHM/SEB room phase (phase A) relative to phase B. */
 export type ExamRoomsPhaseState = {
   __typename?: 'ExamRoomsPhaseState';
-  /** true when every planned EXaHM/SEB exam is fixed (planned == fixed). */
+  /** planned > 0 and every planned EXaHM/SEB exam is frozen — safe to run phase B. */
   allFixed: Scalars['Boolean']['output'];
-  /** number of those currently fixed (frozen for phase B). */
+  /** of those, how many are frozen (phaseFixed) so phase B leaves them untouched. */
   fixed: Scalars['Int']['output'];
-  /** number of planned EXaHM/SEB exams. */
+  /** planned EXaHM/SEB exams (have a plan entry — the set the room phase freezes). */
   planned: Scalars['Int']['output'];
 };
 
@@ -611,6 +617,49 @@ export type ExamScheduleReport = {
   written: Scalars['Boolean']['output'];
 };
 
+export type ExamSpreadStatistics = {
+  __typename?: 'ExamSpreadStatistics';
+  /** Share (%) of multi-exam students whose tightest gap is two consecutive days (0 free days). */
+  adjacentDayShare: Scalars['Float']['output'];
+  avgExamsPerStudent: Scalars['Float']['output'];
+  /** Average, over multi-exam students, of their SMALLEST free-days-between-exams (same day = -1, overlap = -2). */
+  avgMinFreeDays: Scalars['Float']['output'];
+  /** Carter-style proximity index averaged per multi-exam student (lower = better); the objective the solver minimizes. */
+  avgProximityCost: Scalars['Float']['output'];
+  /** Per study program breakdown, most students first. */
+  byProgram: Array<ProgramSpread>;
+  /** Share (%) of multi-exam students with a real overlap/too-close conflict (should be 0). */
+  conflictShare: Scalars['Float']['output'];
+  /** Students grouped by how many exams they have. */
+  examCountBuckets: Array<CountBucket>;
+  /** The travel/break buffer (minutes) below which two exams count as an overlap. */
+  examGapMinutes: Scalars['Int']['output'];
+  /** Share (%) of multi-exam students who have >= 1 free day between ALL consecutive exams. */
+  freeDayShare: Scalars['Float']['output'];
+  maxExamsPerStudent: Scalars['Int']['output'];
+  medianMinFreeDays: Scalars['Float']['output'];
+  /** Students with at least two placed exams (only these can have a gap). */
+  multiExamStudentCount: Scalars['Int']['output'];
+  /** The same-day start-to-start threshold (minutes) below which two exams count as too close. */
+  notTooCloseMinutes: Scalars['Int']['output'];
+  /** All consecutive-exam gaps grouped by proximity class. */
+  pairBuckets: Array<SpreadBucket>;
+  /** Share (%) of multi-exam students who have two exams on the same day. */
+  sameDayShare: Scalars['Float']['output'];
+  /** Students grouped by their WORST (tightest) consecutive-exam gap. */
+  studentBuckets: Array<SpreadBucket>;
+  /** Students with at least one exam placed on the grid. */
+  studentCount: Scalars['Int']['output'];
+  /** Students who still have at least one not-yet-placed exam (coverage caveat). */
+  studentsWithUnplannedExams: Scalars['Int']['output'];
+  /** Number of students with three or more exams on a single day. */
+  threeExamsOneDayCount: Scalars['Int']['output'];
+  /** Total placed exam registrations counted across all students. */
+  totalPlannedExams: Scalars['Int']['output'];
+  /** The most tightly-scheduled students, for GUI drill-down (not part of the aggregate PDF). */
+  worstStudents: Array<WorstStudent>;
+};
+
 /**
  * ExamTime is the time span of one exam an invigilator is the main examer of:
  * from the start time of the slot until the end time (start + maxDuration of the
@@ -708,29 +757,26 @@ export type GenerationConfig = {
   maxSpanHours: Scalars['Float']['output'];
   /** Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely). */
   preplanCapacityFactor: Scalars['Float']['output'];
-  /**
-   * Terminplan: whether the start-time window is enforced hard (exam left unplaced)
-   * or soft (deviation allowed, penalised & reported). Default HARD.
-   */
+  /** Terminplan: how strictly the window is enforced — HARD (domain restriction, default) or SOFT (penalty). */
   slotTimeEnforcement: SlotTimeConstraintEnforcement;
   /**
-   * Terminplan (summer): mild early-pull gradient inside the window — pulls large
-   * exams towards earlier start times. Default 2.0.
+   * Terminplan (summer): mild 'earlier is better' pull below the cutoff (per
+   * registration, per hour later than the day's first slot). 0 = use default.
    */
   slotTimeGradientWeight: Scalars['Float']['output'];
-  /** Terminplan: whether/how to weight exam start times (default AUTO by semester). */
+  /** Terminplan: whether/how the start-time window applies (default AUTO by semester). */
   slotTimeMode: SlotTimeConstraintMode;
   /**
-   * Terminplan (summer): latest allowed start time (HH:MM), e.g. 14:00. Booked,
-   * air-conditioned T-building rooms (EXaHM/SEB) are exempt.
+   * Terminplan (summer): exams must not start after this (HH:MM), e.g. 14:00
+   * (non-climatised rooms get too hot in the afternoon).
    */
   slotTimeSummerLatest: Scalars['String']['output'];
   /**
-   * Terminplan: start-time weight (penalty per registration, per hour of badness). 0 = use default.
-   * Only effective in SOFT enforcement.
+   * Terminplan: SOFT-mode window penalty (per registration, per hour outside the
+   * window). Unused in HARD mode. 0 = use default.
    */
   slotTimeWeight: Scalars['Float']['output'];
-  /** Terminplan (winter): avoid a start time before this (HH:MM), e.g. 10:00. */
+  /** Terminplan (winter): exams must not start before this (HH:MM), e.g. 10:00. */
   slotTimeWinterEarliest: Scalars['String']['output'];
   startTemp: Scalars['Float']['output'];
   /** allowed deviation (minutes) from an invigilator's target workload. */
@@ -1235,6 +1281,8 @@ export type Mutation = {
    * while a validation or transfer/email is running.
    */
   removeStudentReg: Scalars['Int']['output'];
+  /** Remove a user from the allow-list, so they can no longer log in. Requires role ADMIN. */
+  removeUser: Scalars['Boolean']['output'];
   /**
    * Delete the cached assembled exams and their state, undoing a generation; they can be
    * rebuilt with generateAssembledExams. Returns how many assembled exams were removed.
@@ -1399,6 +1447,11 @@ export type Mutation = {
    * VETO forces it to count despite an automatic repeat down-weighting).
    */
   setStudentConflictDecision: Scalars['Boolean']['output'];
+  /**
+   * Create or update a user (upsert by email). Admin surface for opening access to a
+   * wider circle with restricted rights (seed VIEWER users here). Requires role ADMIN.
+   */
+  setUser: User;
   /** Move an issue through a workflow transition (id from jiraTransitions). Returns true on success. */
   transitionJiraIssue: Scalars['Boolean']['output'];
   /** Remove a room block (key: room + starttime). */
@@ -1689,6 +1742,11 @@ export type MutationRemoveStudentRegArgs = {
 };
 
 
+export type MutationRemoveUserArgs = {
+  email: Scalars['String']['input'];
+};
+
+
 export type MutationResetEmailTemplateArgs = {
   name: Scalars['String']['input'];
 };
@@ -1864,6 +1922,13 @@ export type MutationSetStudentConflictDecisionArgs = {
   ancode2: Scalars['Int']['input'];
   decision: ConflictDecision;
   mtknr: Scalars['String']['input'];
+};
+
+
+export type MutationSetUserArgs = {
+  email: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  role: Role;
 };
 
 
@@ -2115,8 +2180,8 @@ export type PlannedRoom = {
 export type PlanningCondition = {
   __typename?: 'PlanningCondition';
   /**
-   * true when this condition is set automatically by the backend and cannot be
-   * toggled manually (setPlanningCondition returns an error for it).
+   * true when the condition is computed automatically from the underlying data
+   * (read-only: it cannot be toggled by hand, done follows the data).
    */
   auto: Scalars['Boolean']['output'];
   /** true when the condition (milestone) is reached. */
@@ -2378,6 +2443,17 @@ export type PrimussExamWithCount = {
   studentRegsCount: Scalars['Int']['output'];
 };
 
+export type ProgramSpread = {
+  __typename?: 'ProgramSpread';
+  avgExamsPerStudent: Scalars['Float']['output'];
+  avgMinFreeDays: Scalars['Float']['output'];
+  freeDayShare: Scalars['Float']['output'];
+  multiExamStudentCount: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
+  sameDayShare: Scalars['Float']['output'];
+  studentCount: Scalars['Int']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /**
@@ -2433,15 +2509,25 @@ export type Query = {
    */
   examPlanningMailRecipients: Array<ExamPlanningMailRecipient>;
   /**
-   * Fixation state of the EXaHM/SEB room phase (phase A): how many planned EXaHM/SEB
-   * exams exist and how many are currently fixed. Use before phase B to warn about
-   * unfixed exams that could still move.
+   * Summary of the EXaHM/SEB room phase for the GUI: how many EXaHM/SEB exams are planned and
+   * how many of those are frozen (phaseFixed) for phase B. Use allFixed to decide whether to
+   * warn before running generateExamSchedule (phase B), and planned/fixed to show the state
+   * next to the fix/unfix buttons.
    */
   examRoomsPhaseState: ExamRoomsPhaseState;
   /** Conflicts of the current plan, to review (accept per student). */
   examScheduleConflicts: Array<ExamScheduleConflict>;
   /** The read-only list of hard/soft constraints the exam-schedule generator applies. */
   examScheduleConstraints: Array<OptimizerConstraint>;
+  /**
+   * Student-centric quality statistics of the current plan: how well the exams are
+   * spread out in time for the individual students. Aggregates the gaps between each
+   * student's consecutive exams (NTA-aware, absolute times) into human-readable shares
+   * (e.g. "share of students with at least one exam-free day between all their exams"),
+   * a distribution histogram, a per-program breakdown and a Carter-style proximity
+   * index. Same data feeds the GUI and the printable PDF (/download/pdf/spread-statistics).
+   */
+  examSpreadStatistics: ExamSpreadStatistics;
   examerInPlan?: Maybe<Array<ExamerInPlan>>;
   /**
    * examersWithExamsPlannedByMe returns the main examers of all planned exams that
@@ -2503,6 +2589,12 @@ export type Query = {
   jiraOpenIssuesByType: Array<JiraIssueGroup>;
   /** List the workflow transitions currently available for an issue in its current status. */
   jiraTransitions: Array<JiraTransition>;
+  /**
+   * The currently authenticated user — from the auth-proxy header, or the local dev
+   * fallback when auth is disabled. The GUI uses it to show identity/role and adapt
+   * the UI cosmetically; it is NEVER a security boundary (enforcement is in the backend).
+   */
+  me: User;
   /**
    * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
    * carry the program with a missing number (0/-1) first, then same-examer + similar
@@ -2634,6 +2726,8 @@ export type Query = {
    * room generation (the replacement for the old 'No Room' placeholder).
    */
   unplacedExams: Array<UnplacedExam>;
+  /** All known users (the authorization allow-list). Admin view for managing who may log in. */
+  users: Array<User>;
   /** Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps). */
   validatePreplanAssignment: PreplanValidation;
   zpaAnCodes?: Maybe<Array<Maybe<AnCode>>>;
@@ -2874,6 +2968,20 @@ export type RegWithProgram = {
   program: Scalars['String']['output'];
   zpaAncode: Scalars['Int']['output'];
 };
+
+/**
+ * A role governs what a logged-in user may do. A user has exactly one role; the roles
+ * form a hierarchy ADMIN ⊇ PLANER ⊇ VIEWER:
+ * - VIEWER: read-only (queries + validations, no mutations/data-changing subscriptions).
+ * - PLANER: full planning access (everything VIEWER can, plus all data-changing ops).
+ * - ADMIN:  everything PLANER can, plus user administration (setUser/removeUser).
+ * The enum is intentionally extensible for finer-grained roles later.
+ */
+export enum Role {
+  Admin = 'ADMIN',
+  Planer = 'PLANER',
+  Viewer = 'VIEWER'
+}
 
 export type Room = {
   __typename?: 'Room';
@@ -3145,19 +3253,24 @@ export type Slot = {
   starttime: Scalars['Time']['output'];
 };
 
-/** How the Terminplan start-time window is enforced. */
+/**
+ * How strictly the start-time window is enforced. HARD (default): a hard domain restriction —
+ * a non-exempt exam is never placed outside its window; one that fits nowhere is left UNPLACED
+ * with a clear reason (the rest of the plan is still written). SOFT: a strong penalty instead —
+ * the exam may be placed outside the window (deliberate emergency deviation) but is reported as
+ * a violation. EXaHM/SEB exams (booked T-building rooms) are exempt in both cases.
+ */
 export enum SlotTimeConstraintEnforcement {
-  /** exam is left unplaced (with a reason) if it cannot start inside the window. */
   Hard = 'HARD',
-  /** deviation from the window is allowed but penalised (slotTimeWeight) and reported. */
   Soft = 'SOFT'
 }
 
 /**
- * When the exam-schedule generator (Terminplan) applies the start-time soft constraint, and
- * which way. AUTO follows the semester (winter → avoid early starts before the morning limit;
- * summer → prefer early starts, the later the worse, weighted by registrations so large exams
- * go first); WINTER/SUMMER force one variant (for testing); OFF disables it. Default AUTO.
+ * When the exam-schedule generator (Terminplan) applies the start-time window constraint, and
+ * which way. AUTO follows the semester (winter → exams must not start before the morning limit,
+ * e.g. 10:00; summer → exams must not start after the afternoon limit, e.g. 14:00, because the
+ * non-climatised rooms get too hot); WINTER/SUMMER force one variant (for testing); OFF disables
+ * it. Booked, climate-controlled T-building rooms (EXaHM/SEB) are always exempt. Default AUTO.
  */
 export enum SlotTimeConstraintMode {
   Auto = 'AUTO',
@@ -3191,6 +3304,16 @@ export type SpecialInterestInput = {
   ancodes: Array<Scalars['Int']['input']>;
   filename: Scalars['String']['input'];
   name: Scalars['String']['input'];
+};
+
+/** A named distribution bucket with an absolute count and a percentage share. */
+export type SpreadBucket = {
+  __typename?: 'SpreadBucket';
+  count: Scalars['Int']['output'];
+  /** Stable machine key: OVERLAP | SAME_DAY | ADJACENT | ONE_FREE | TWO_FREE | THREE_PLUS_FREE. */
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  share: Scalars['Float']['output'];
 };
 
 export type Starttime = {
@@ -3416,6 +3539,14 @@ export type Subscription = {
   validateRoomsPerExam: LogLine;
   validateRoomsPerSlot: LogLine;
   validateRoomsTimeDistance: LogLine;
+  /**
+   * validateSemesterTimes checks the generated Terminplan against the semester start-time
+   * window (winter: not before slotTimeWinterEarliest; summer: not after slotTimeSummerLatest).
+   * Our own non-exempt exams outside the window are graded by the configured enforcement
+   * (HARD → error, SOFT → warning); EXaHM/SEB (climate-controlled T-Bau) placements outside
+   * the window are reported as INFO only.
+   */
+  validateSemesterTimes: LogLine;
   validateStudentRegs: LogLine;
   validateZPADateTimes: LogLine;
   validateZPAInvigilators: LogLine;
@@ -3657,6 +3788,19 @@ export type UnplacedExamReason = {
 };
 
 /**
+ * A user is a login identity supplied by the auth proxy (Shibboleth/OIDC, matched by
+ * email) together with a role. Users live in the global plexams DB and are the
+ * authorization allow-list. Kept strictly separate from the planer (the shared email
+ * sender identity).
+ */
+export type User = {
+  __typename?: 'User';
+  email: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  role: Role;
+};
+
+/**
  * ValidationFinding is one problem (or note) found by a validator. message is clean
  * text (no ANSI); the optional reference fields let the GUI link a finding to the
  * affected exam / room / slot / invigilator / student and render it as a row.
@@ -3702,6 +3846,27 @@ export type ValidationReport = {
    */
   skipped: Scalars['Boolean']['output'];
   warningCount: Scalars['Int']['output'];
+};
+
+export type WorstStudent = {
+  __typename?: 'WorstStudent';
+  examCount: Scalars['Int']['output'];
+  exams: Array<WorstStudentExam>;
+  group: Scalars['String']['output'];
+  /** Smallest free-days-between over the student's consecutive exams: -2 overlap, -1 same day, 0 adjacent, k = k free days. */
+  minFreeDays: Scalars['Int']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  program: Scalars['String']['output'];
+  worstLabel: Scalars['String']['output'];
+};
+
+export type WorstStudentExam = {
+  __typename?: 'WorstStudentExam';
+  ancode: Scalars['Int']['output'];
+  durationMinutes: Scalars['Int']['output'];
+  module: Scalars['String']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type ZpaConflict = {

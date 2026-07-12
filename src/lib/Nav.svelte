@@ -322,6 +322,7 @@
 				{ href: '/plan/exams', label: '🗓️ Terminplanung' },
 				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau (Phase A)' },
 				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren (Phase B)' },
+				{ href: '/plan/exams/statistics', label: '📊 Prüfungsverteilung / Statistik' },
 				{ href: '/plan/exams/validate', label: '✅ Validierung' }
 			]
 		},
