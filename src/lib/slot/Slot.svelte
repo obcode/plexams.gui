@@ -90,7 +90,7 @@
 
 <div
 	class="h-full rounded {isEmpty
-		? 'bg-base-200/60 outline-1 outline-dashed outline-base-300/70'
+		? 'bg-base-300/70 outline-2 outline-dashed outline-base-content/25'
 		: ''}"
 >
 	<div class="flex justify-between">
