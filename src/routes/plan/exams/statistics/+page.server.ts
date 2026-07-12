@@ -7,69 +7,10 @@ import type { PageServerLoad } from './$types';
 // (gespeicherten) Terminplans aus examSpreadStatistics. Reine Lese-Query; die
 // Aufbereitung/Darstellung passiert in der Seite bzw. in $lib/statistics.
 //
-// examSpreadStatistics liefert zwei identisch aufgebaute Scopes: `regular`
-// (normaler Studienverlauf, ≤ maxRegularNonRepeatExams Nicht-Wdh.-Prüfungen) und
-// `all` (alle Studierenden). Dieselbe Feldauswahl wird für beide interpoliert.
-const SCOPE_FIELDS = `
-	studentCount
-	multiExamStudentCount
-	totalPlannedExams
-	studentsWithUnplannedExams
-	avgExamsPerStudent
-	maxExamsPerStudent
-	freeDayShare
-	sameDayShare
-	adjacentDayShare
-	conflictShare
-	threeExamsOneDayCount
-	avgMinFreeDays
-	medianMinFreeDays
-	avgProximityCost
-	studentBuckets {
-		key
-		label
-		count
-		share
-	}
-	pairBuckets {
-		key
-		label
-		count
-		share
-	}
-	examCountBuckets {
-		examCount
-		label
-		students
-		share
-	}
-	byProgram {
-		program
-		studentCount
-		multiExamStudentCount
-		avgExamsPerStudent
-		freeDayShare
-		sameDayShare
-		avgMinFreeDays
-		lowSampleSize
-	}
-	worstStudents {
-		mtknr
-		name
-		program
-		group
-		examCount
-		minFreeDays
-		worstLabel
-		exams {
-			ancode
-			module
-			starttime
-			durationMinutes
-		}
-	}
-`;
-
+// Die Kennzahlen beziehen sich auf den „normalen Studienverlauf": Studierende mit
+// höchstens maxRegularNonRepeatExams Nicht-Wiederholungsprüfungen. Wiederholungs-
+// lastige Ausreißer (excludedStudentCount) sind ausgeblendet; allFreeDayShare gibt
+// den freeDayShare über alle Studierenden für einen „kaum abweichend"-Hinweis an.
 export const load: PageServerLoad = async () => {
 	try {
 		const data = await request<any>(
@@ -77,14 +18,67 @@ export const load: PageServerLoad = async () => {
 			gql`
 				query {
 					examSpreadStatistics {
+						studentCount
+						multiExamStudentCount
+						totalPlannedExams
+						studentsWithUnplannedExams
+						avgExamsPerStudent
+						maxExamsPerStudent
+						freeDayShare
+						sameDayShare
+						adjacentDayShare
+						conflictShare
+						threeExamsOneDayCount
+						avgMinFreeDays
+						medianMinFreeDays
+						avgProximityCost
 						maxRegularNonRepeatExams
+						excludedStudentCount
+						allFreeDayShare
 						examGapMinutes
 						notTooCloseMinutes
-						regular {
-							${SCOPE_FIELDS}
+						studentBuckets {
+							key
+							label
+							count
+							share
 						}
-						all {
-							${SCOPE_FIELDS}
+						pairBuckets {
+							key
+							label
+							count
+							share
+						}
+						examCountBuckets {
+							examCount
+							label
+							students
+							share
+						}
+						byProgram {
+							program
+							studentCount
+							multiExamStudentCount
+							avgExamsPerStudent
+							freeDayShare
+							sameDayShare
+							avgMinFreeDays
+							lowSampleSize
+						}
+						worstStudents {
+							mtknr
+							name
+							program
+							group
+							examCount
+							minFreeDays
+							worstLabel
+							exams {
+								ancode
+								module
+								starttime
+								durationMinutes
+							}
 						}
 					}
 				}

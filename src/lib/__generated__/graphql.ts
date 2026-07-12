@@ -617,11 +617,15 @@ export type ExamScheduleReport = {
   written: Scalars['Boolean']['output'];
 };
 
-/** One population's spread figures (see ExamSpreadStatistics.regular / .all). */
-export type ExamSpreadScope = {
-  __typename?: 'ExamSpreadScope';
+export type ExamSpreadStatistics = {
+  __typename?: 'ExamSpreadStatistics';
   /** Share (%) of multi-exam students whose tightest gap is two consecutive days (0 free days). */
   adjacentDayShare: Scalars['Float']['output'];
+  /**
+   * freeDayShare over ALL students incl. the excluded outliers — for a 'barely
+   * differs' note; equals freeDayShare when there are no outliers.
+   */
+  allFreeDayShare: Scalars['Float']['output'];
   avgExamsPerStudent: Scalars['Float']['output'];
   /** Average, over multi-exam students, of their SMALLEST free-days-between-exams (same day = -1, overlap = -2). */
   avgMinFreeDays: Scalars['Float']['output'];
@@ -633,45 +637,39 @@ export type ExamSpreadScope = {
   conflictShare: Scalars['Float']['output'];
   /** Students grouped by how many exams they have. */
   examCountBuckets: Array<CountBucket>;
+  /** The travel/break buffer (minutes) below which two exams count as an overlap. */
+  examGapMinutes: Scalars['Int']['output'];
+  /** Students excluded here because they have more than maxRegularNonRepeatExams non-repeat exams (repeat-heavy outliers). */
+  excludedStudentCount: Scalars['Int']['output'];
   /** Share (%) of multi-exam students who have >= 1 free day between ALL consecutive exams. */
   freeDayShare: Scalars['Float']['output'];
   maxExamsPerStudent: Scalars['Int']['output'];
+  /** The non-repeat-exam cap for the in-scope population (6 = the most possible in a normal semester). */
+  maxRegularNonRepeatExams: Scalars['Int']['output'];
   medianMinFreeDays: Scalars['Float']['output'];
   /**
    * Students with at least one ratable gap (>= 2 exams, after dropping spurious
    * foreign-foreign / same-slot pairs); denominator of the shares.
    */
   multiExamStudentCount: Scalars['Int']['output'];
+  /** The same-day start-to-start threshold (minutes) below which two exams count as too close. */
+  notTooCloseMinutes: Scalars['Int']['output'];
   /** All consecutive-exam gaps grouped by proximity class. */
   pairBuckets: Array<SpreadBucket>;
   /** Share (%) of multi-exam students who have two exams on the same day. */
   sameDayShare: Scalars['Float']['output'];
   /** Students grouped by their WORST (tightest) consecutive-exam gap. */
   studentBuckets: Array<SpreadBucket>;
-  /** Students in this scope with at least one exam placed within the exam period. */
+  /** Students in scope with at least one exam placed within the exam period. */
   studentCount: Scalars['Int']['output'];
   /** Students who still have at least one not-yet-placed exam (coverage caveat). */
   studentsWithUnplannedExams: Scalars['Int']['output'];
   /** Number of students with three or more exam sittings on a single day. */
   threeExamsOneDayCount: Scalars['Int']['output'];
-  /** Total placed exam registrations counted across all students in this scope. */
+  /** Total placed exam registrations counted across all students in scope. */
   totalPlannedExams: Scalars['Int']['output'];
   /** The most tightly-scheduled students, for GUI drill-down (not part of the aggregate PDF). */
   worstStudents: Array<WorstStudent>;
-};
-
-export type ExamSpreadStatistics = {
-  __typename?: 'ExamSpreadStatistics';
-  /** Everyone, including students whose many repeat registrations push them past the normal maximum. */
-  all: ExamSpreadScope;
-  /** The travel/break buffer (minutes) below which two exams count as an overlap. */
-  examGapMinutes: Scalars['Int']['output'];
-  /** The non-repeat-exam cap for the `regular` scope (6 = the most possible in a normal semester). */
-  maxRegularNonRepeatExams: Scalars['Int']['output'];
-  /** The same-day start-to-start threshold (minutes) below which two exams count as too close. */
-  notTooCloseMinutes: Scalars['Int']['output'];
-  /** The meaningful headline population: students with <= maxRegularNonRepeatExams non-repeat exams. */
-  regular: ExamSpreadScope;
 };
 
 /**
@@ -2538,18 +2536,16 @@ export type Query = {
   /**
    * Student-centric quality statistics of the current plan: how well the exams are
    * spread out in time for the individual students. Covers our OWN students (enrolled in
-   * an FK07 or MUC.DAI program), for whom we hold the complete set of exams in the period
-   * — including the external / not-planned-by-me ones. Aggregates the gaps between each
-   * student's consecutive exams (NTA-aware, absolute times, calendar-day gaps) into
-   * human-readable shares (e.g. "share of students with at least one exam-free day between
-   * all their exams"), a distribution histogram, a per-program breakdown and a Carter-style
-   * proximity index.
+   * an FK07 or MUC.DAI program) with at most `maxRegularNonRepeatExams` non-repeat exams —
+   * the most anyone can have in a normal course of study; students beyond that (many
+   * repeat registrations) are excluded from the figures and only summarized via
+   * `excludedStudentCount` / `allFreeDayShare`, since including them barely moves the
+   * aggregate.
    *
-   * Two scopes are returned: `regular` counts only students with at most
-   * `maxRegularNonRepeatExams` non-repeat exams (the most anyone can have in a normal
-   * course of study — more means repeat exams are mixed in), which is the meaningful
-   * headline population; `all` additionally includes the outliers (students with many
-   * repeat registrations, up to ~14 exams).
+   * Aggregates the gaps between each student's consecutive exams (NTA-aware, absolute
+   * times, calendar-day gaps) into human-readable shares (e.g. "share of students with at
+   * least one exam-free day between all their exams"), a distribution histogram, a
+   * per-program breakdown and a Carter-style proximity index.
    *
    * Spurious pairs are dropped from the gap statistics (as ValidateConflicts does):
    * two exams of other faculties (not ours to resolve) and two exams declared same-slot
