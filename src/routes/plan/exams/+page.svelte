@@ -748,50 +748,6 @@
 			</div>
 		{/snippet}
 
-		<!-- Warn-Streifen: Prüfungen außerhalb des Standardrasters. Sie erscheinen in der
-		     Slot-Ansicht in ihrer Zeitfenster-Spalte (⏱-Markierung); hier die Gesamtliste. -->
-		{#if examsNotOnGrid.length}
-			<div class="flex flex-col gap-2 rounded-lg border border-warning/50 bg-warning/10 p-3">
-				<div class="flex items-center gap-2">
-					<span class="text-lg">⏱</span>
-					<h2 class="text-lg font-semibold">Außerhalb des Standardrasters</h2>
-					<span class="badge badge-warning badge-sm tabular-nums">{examsNotOnGrid.length}</span>
-				</div>
-				<p class="text-sm text-base-content/60">
-					Diese Prüfungen beginnen nicht auf einer Slot-Anfangszeit (externe/fremdgeplante Prüfungen
-					bzw. abweichende Zeiten). In der Slot-Ansicht stehen sie ⏱-markiert in der Spalte ihres
-					Zeitfensters — die echte Startzeit ist dort als Badge angezeigt.
-				</p>
-				<div class="flex flex-wrap gap-2">
-					{#each [...examsNotOnGrid].sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode) as e (e.ancode)}
-						<div
-							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-warning/50 border-l-warning bg-warning/10 p-2 text-xs"
-						>
-							<div class="flex items-center gap-2">
-								<span class="badge badge-warning badge-sm gap-1 tabular-nums">
-									⏱ {offGridTime(e.planEntry?.starttime)}
-								</span>
-								<span class="text-base-content/60">{fmtDateTime(e.planEntry?.starttime)}</span>
-							</div>
-							<div class="flex items-center gap-1 font-semibold">
-								<span class="font-mono">{otherFkAncode(e)}</span>
-								{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
-							</div>
-							<div class="truncate">{e.zpaExam?.module}</div>
-							<div class="text-base-content/50">
-								{e.zpaExam?.mainExamer} · &sum;{e.studentRegsCount}
-							</div>
-							{#if e.constraints?.notPlannedByMe}
-								<span class="badge badge-outline badge-sm mt-0.5 self-start">
-									nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
-								</span>
-							{/if}
-						</div>
-					{/each}
-				</div>
-			</div>
-		{/if}
-
 		<!-- Nach einer Platzierung (placeNonce++) baut {#key} das Raster + die Listen neu
 		     auf, damit die Slots (die ihre Prüfungen selbst laden) frisch holen. -->
 		{#key placeNonce}
@@ -926,6 +882,50 @@
 							</div>
 						</div>
 					{/each}
+				</div>
+			{/if}
+
+			<!-- Warn-Streifen: Prüfungen außerhalb des Standardrasters. Sie erscheinen in der
+			     Slot-Ansicht in ihrer Zeitfenster-Spalte (⏱-Markierung); hier die Gesamtliste. -->
+			{#if examsNotOnGrid.length}
+				<div class="flex flex-col gap-2 rounded-lg border border-warning/50 bg-warning/10 p-3">
+					<div class="flex items-center gap-2">
+						<span class="text-lg">⏱</span>
+						<h2 class="text-lg font-semibold">Außerhalb des Standardrasters</h2>
+						<span class="badge badge-warning badge-sm tabular-nums">{examsNotOnGrid.length}</span>
+					</div>
+					<p class="text-sm text-base-content/60">
+						Diese Prüfungen beginnen nicht auf einer Slot-Anfangszeit (externe/fremdgeplante
+						Prüfungen bzw. abweichende Zeiten). In der Slot-Ansicht stehen sie ⏱-markiert in der
+						Spalte ihres Zeitfensters — die echte Startzeit ist dort als Badge angezeigt.
+					</p>
+					<div class="flex flex-wrap gap-2">
+						{#each [...examsNotOnGrid].sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode) as e (e.ancode)}
+							<div
+								class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-warning/50 border-l-warning bg-warning/10 p-2 text-xs"
+							>
+								<div class="flex items-center gap-2">
+									<span class="badge badge-warning badge-sm gap-1 tabular-nums">
+										⏱ {offGridTime(e.planEntry?.starttime)}
+									</span>
+									<span class="text-base-content/60">{fmtDateTime(e.planEntry?.starttime)}</span>
+								</div>
+								<div class="flex items-center gap-1 font-semibold">
+									<span class="font-mono">{otherFkAncode(e)}</span>
+									{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
+								</div>
+								<div class="truncate">{e.zpaExam?.module}</div>
+								<div class="text-base-content/50">
+									{e.zpaExam?.mainExamer} · &sum;{e.studentRegsCount}
+								</div>
+								{#if e.constraints?.notPlannedByMe}
+									<span class="badge badge-outline badge-sm mt-0.5 self-start">
+										nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
+									</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
 				</div>
 			{/if}
 
