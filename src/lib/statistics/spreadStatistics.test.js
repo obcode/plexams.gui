@@ -6,6 +6,7 @@ import {
 	toneFromMinFreeDays,
 	barPercent,
 	totalCount,
+	studentBucketTotal,
 	formatShare,
 	formatDecimal
 } from './spreadStatistics.js';
@@ -89,6 +90,10 @@ describe('barPercent / totalCount', () => {
 	it('totalCount summiert counts (auch mit fehlenden)', () => {
 		expect(totalCount([{ count: 2 }, { count: 3 }, {}])).toBe(5);
 		expect(totalCount(null)).toBe(0);
+	});
+	it('studentBucketTotal summiert das students-Feld (auch mit fehlenden/null)', () => {
+		expect(studentBucketTotal([{ students: 4 }, { students: 1 }, {}])).toBe(5);
+		expect(studentBucketTotal(null)).toBe(0);
 	});
 });
 

@@ -87,6 +87,16 @@ export function totalCount(buckets) {
 }
 
 /**
+ * Summe der `students` einer examCountBuckets-Liste (Nenner für die Balken im
+ * Prüfungsanzahl-Diagramm; dort heißt das Feld `students`, nicht `count`).
+ * @param {{ students?: number }[] | null | undefined} buckets
+ * @returns {number}
+ */
+export function studentBucketTotal(buckets) {
+	return (buckets ?? []).reduce((s, b) => s + (b.students ?? 0), 0);
+}
+
+/**
  * Anteil als Prozentstring (eine Nachkommastelle, geschütztes Leerzeichen).
  * @param {number | null | undefined} v
  * @returns {string}

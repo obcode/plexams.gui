@@ -723,14 +723,24 @@ type ExamScheduleReport {
   unplacedReasons: [UnplacedExamReason!]!
 }
 
-type ExamSpreadStatistics {
-  """Students with at least one exam placed on the grid."""
+"""
+One population's spread figures (see ExamSpreadStatistics.regular / .all).
+"""
+type ExamSpreadScope {
+  """
+  Students in this scope with at least one exam placed within the exam period.
+  """
   studentCount: Int!
 
-  """Students with at least two placed exams (only these can have a gap)."""
+  """
+  Students with at least one ratable gap (>= 2 exams, after dropping spurious
+  foreign-foreign / same-slot pairs); denominator of the shares.
+  """
   multiExamStudentCount: Int!
 
-  """Total placed exam registrations counted across all students."""
+  """
+  Total placed exam registrations counted across all students in this scope.
+  """
   totalPlannedExams: Int!
 
   """
@@ -758,7 +768,7 @@ type ExamSpreadStatistics {
   """
   conflictShare: Float!
 
-  """Number of students with three or more exams on a single day."""
+  """Number of students with three or more exam sittings on a single day."""
   threeExamsOneDayCount: Int!
 
   """
@@ -788,6 +798,23 @@ type ExamSpreadStatistics {
   The most tightly-scheduled students, for GUI drill-down (not part of the aggregate PDF).
   """
   worstStudents: [WorstStudent!]!
+}
+
+type ExamSpreadStatistics {
+  """
+  The meaningful headline population: students with <= maxRegularNonRepeatExams non-repeat exams.
+  """
+  regular: ExamSpreadScope!
+
+  """
+  Everyone, including students whose many repeat registrations push them past the normal maximum.
+  """
+  all: ExamSpreadScope!
+
+  """
+  The non-repeat-exam cap for the `regular` scope (6 = the most possible in a normal semester).
+  """
+  maxRegularNonRepeatExams: Int!
 
   """
   The travel/break buffer (minutes) below which two exams count as an overlap.
@@ -2364,6 +2391,11 @@ type ProgramSpread {
   freeDayShare: Float!
   sameDayShare: Float!
   avgMinFreeDays: Float!
+
+  """
+  True when too few multi-exam students back the shares to be meaningful (read them with care).
+  """
+  lowSampleSize: Boolean!
 }
 
 type Query {
@@ -2611,6 +2643,14 @@ type Query {
   preExamsAt(starttime: Time!): [PreExam!]
   examsAt(starttime: Time!): [PlannedExam!]
   examsWithoutSlot: [PlannedExam!]!
+
+  """
+  examsNotOnSlotGrid returns the planned exams whose absolute start time is NOT one of the
+  semester's standard slot start times (e.g. another faculty's exam placed at 11:00). They
+  are invisible in a purely slot-by-slot grid, so the GUI must surface them separately —
+  e.g. rendered in the slot whose time window they overlap, with the real start time shown.
+  """
+  examsNotOnSlotGrid: [PlannedExam!]!
   allowedSlots(ancode: Int!): [Slot!]
   awkwardSlots(ancode: Int!): [Slot!]!
 
@@ -2713,11 +2753,28 @@ type Query {
 
   """
   Student-centric quality statistics of the current plan: how well the exams are
-  spread out in time for the individual students. Aggregates the gaps between each
-  student's consecutive exams (NTA-aware, absolute times) into human-readable shares
-  (e.g. "share of students with at least one exam-free day between all their exams"),
-  a distribution histogram, a per-program breakdown and a Carter-style proximity
-  index. Same data feeds the GUI and the printable PDF (/download/pdf/spread-statistics).
+  spread out in time for the individual students. Covers our OWN students (enrolled in
+  an FK07 or MUC.DAI program), for whom we hold the complete set of exams in the period
+  — including the external / not-planned-by-me ones. Aggregates the gaps between each
+  student's consecutive exams (NTA-aware, absolute times, calendar-day gaps) into
+  human-readable shares (e.g. "share of students with at least one exam-free day between
+  all their exams"), a distribution histogram, a per-program breakdown and a Carter-style
+  proximity index.
+  
+  Two scopes are returned: `regular` counts only students with at most
+  `maxRegularNonRepeatExams` non-repeat exams (the most anyone can have in a normal
+  course of study — more means repeat exams are mixed in), which is the meaningful
+  headline population; `all` additionally includes the outliers (students with many
+  repeat registrations, up to ~14 exams).
+  
+  Spurious pairs are dropped from the gap statistics (as ValidateConflicts does):
+  two exams of other faculties (not ours to resolve) and two exams declared same-slot
+  or can-share-slot (a student may not sit both, so the registration is invalid). Only
+  registrations that appear in the plan are counted (to-plan ZPA exams and external
+  exams); not-to-plan ZPA exams (e.g. Modularbeiten) and orphan MUC.DAI Primuss
+  registrations are already excluded upstream.
+  
+  Same data feeds the GUI and the printable PDF (/download/pdf/spread-statistics).
   """
   examSpreadStatistics: ExamSpreadStatistics!
 
@@ -3010,6 +3067,11 @@ type SemesterConfig {
   """
   notTooCloseMinutes: Int!
 
+  """
+  Effective end-to-start travel buffer (minutes) between a student's two exams at different campuses.
+  """
+  crossCampusGapMinutes: Int!
+
   """Effective max students examined at the same start time (0 = no limit)."""
   maxSeatsPerSlot: Int!
 }
@@ -3052,6 +3114,13 @@ type SemesterConfigInput {
   notTooCloseMinutes: Int
 
   """
+  End-to-start travel buffer (minutes) a student needs between two exams at
+  DIFFERENT campuses (null = default 120). Applied as a hard separation whenever
+  the two exams' locations differ.
+  """
+  crossCampusGapMinutes: Int
+
+  """
   Max students examined at the same start time (configurable per-time capacity
   for the Terminplan solver; null/0 = no limit).
   """
@@ -3084,6 +3153,13 @@ input SemesterConfigInputData {
   Two exams of a student closer than this (minutes, same day) are flagged as "too close" (null = default 120).
   """
   notTooCloseMinutes: Int
+
+  """
+  End-to-start travel buffer (minutes) a student needs between two exams at
+  DIFFERENT campuses (null = default 120). Applied as a hard separation whenever
+  the two exams' locations differ.
+  """
+  crossCampusGapMinutes: Int
 
   """
   Max students examined at the same start time (configurable per-time capacity

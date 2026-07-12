@@ -617,8 +617,9 @@ export type ExamScheduleReport = {
   written: Scalars['Boolean']['output'];
 };
 
-export type ExamSpreadStatistics = {
-  __typename?: 'ExamSpreadStatistics';
+/** One population's spread figures (see ExamSpreadStatistics.regular / .all). */
+export type ExamSpreadScope = {
+  __typename?: 'ExamSpreadScope';
   /** Share (%) of multi-exam students whose tightest gap is two consecutive days (0 free days). */
   adjacentDayShare: Scalars['Float']['output'];
   avgExamsPerStudent: Scalars['Float']['output'];
@@ -632,32 +633,45 @@ export type ExamSpreadStatistics = {
   conflictShare: Scalars['Float']['output'];
   /** Students grouped by how many exams they have. */
   examCountBuckets: Array<CountBucket>;
-  /** The travel/break buffer (minutes) below which two exams count as an overlap. */
-  examGapMinutes: Scalars['Int']['output'];
   /** Share (%) of multi-exam students who have >= 1 free day between ALL consecutive exams. */
   freeDayShare: Scalars['Float']['output'];
   maxExamsPerStudent: Scalars['Int']['output'];
   medianMinFreeDays: Scalars['Float']['output'];
-  /** Students with at least two placed exams (only these can have a gap). */
+  /**
+   * Students with at least one ratable gap (>= 2 exams, after dropping spurious
+   * foreign-foreign / same-slot pairs); denominator of the shares.
+   */
   multiExamStudentCount: Scalars['Int']['output'];
-  /** The same-day start-to-start threshold (minutes) below which two exams count as too close. */
-  notTooCloseMinutes: Scalars['Int']['output'];
   /** All consecutive-exam gaps grouped by proximity class. */
   pairBuckets: Array<SpreadBucket>;
   /** Share (%) of multi-exam students who have two exams on the same day. */
   sameDayShare: Scalars['Float']['output'];
   /** Students grouped by their WORST (tightest) consecutive-exam gap. */
   studentBuckets: Array<SpreadBucket>;
-  /** Students with at least one exam placed on the grid. */
+  /** Students in this scope with at least one exam placed within the exam period. */
   studentCount: Scalars['Int']['output'];
   /** Students who still have at least one not-yet-placed exam (coverage caveat). */
   studentsWithUnplannedExams: Scalars['Int']['output'];
-  /** Number of students with three or more exams on a single day. */
+  /** Number of students with three or more exam sittings on a single day. */
   threeExamsOneDayCount: Scalars['Int']['output'];
-  /** Total placed exam registrations counted across all students. */
+  /** Total placed exam registrations counted across all students in this scope. */
   totalPlannedExams: Scalars['Int']['output'];
   /** The most tightly-scheduled students, for GUI drill-down (not part of the aggregate PDF). */
   worstStudents: Array<WorstStudent>;
+};
+
+export type ExamSpreadStatistics = {
+  __typename?: 'ExamSpreadStatistics';
+  /** Everyone, including students whose many repeat registrations push them past the normal maximum. */
+  all: ExamSpreadScope;
+  /** The travel/break buffer (minutes) below which two exams count as an overlap. */
+  examGapMinutes: Scalars['Int']['output'];
+  /** The non-repeat-exam cap for the `regular` scope (6 = the most possible in a normal semester). */
+  maxRegularNonRepeatExams: Scalars['Int']['output'];
+  /** The same-day start-to-start threshold (minutes) below which two exams count as too close. */
+  notTooCloseMinutes: Scalars['Int']['output'];
+  /** The meaningful headline population: students with <= maxRegularNonRepeatExams non-repeat exams. */
+  regular: ExamSpreadScope;
 };
 
 /**
@@ -2448,6 +2462,8 @@ export type ProgramSpread = {
   avgExamsPerStudent: Scalars['Float']['output'];
   avgMinFreeDays: Scalars['Float']['output'];
   freeDayShare: Scalars['Float']['output'];
+  /** True when too few multi-exam students back the shares to be meaningful (read them with care). */
+  lowSampleSize: Scalars['Boolean']['output'];
   multiExamStudentCount: Scalars['Int']['output'];
   program: Scalars['String']['output'];
   sameDayShare: Scalars['Float']['output'];
@@ -2521,11 +2537,28 @@ export type Query = {
   examScheduleConstraints: Array<OptimizerConstraint>;
   /**
    * Student-centric quality statistics of the current plan: how well the exams are
-   * spread out in time for the individual students. Aggregates the gaps between each
-   * student's consecutive exams (NTA-aware, absolute times) into human-readable shares
-   * (e.g. "share of students with at least one exam-free day between all their exams"),
-   * a distribution histogram, a per-program breakdown and a Carter-style proximity
-   * index. Same data feeds the GUI and the printable PDF (/download/pdf/spread-statistics).
+   * spread out in time for the individual students. Covers our OWN students (enrolled in
+   * an FK07 or MUC.DAI program), for whom we hold the complete set of exams in the period
+   * — including the external / not-planned-by-me ones. Aggregates the gaps between each
+   * student's consecutive exams (NTA-aware, absolute times, calendar-day gaps) into
+   * human-readable shares (e.g. "share of students with at least one exam-free day between
+   * all their exams"), a distribution histogram, a per-program breakdown and a Carter-style
+   * proximity index.
+   *
+   * Two scopes are returned: `regular` counts only students with at most
+   * `maxRegularNonRepeatExams` non-repeat exams (the most anyone can have in a normal
+   * course of study — more means repeat exams are mixed in), which is the meaningful
+   * headline population; `all` additionally includes the outliers (students with many
+   * repeat registrations, up to ~14 exams).
+   *
+   * Spurious pairs are dropped from the gap statistics (as ValidateConflicts does):
+   * two exams of other faculties (not ours to resolve) and two exams declared same-slot
+   * or can-share-slot (a student may not sit both, so the registration is invalid). Only
+   * registrations that appear in the plan are counted (to-plan ZPA exams and external
+   * exams); not-to-plan ZPA exams (e.g. Modularbeiten) and orphan MUC.DAI Primuss
+   * registrations are already excluded upstream.
+   *
+   * Same data feeds the GUI and the printable PDF (/download/pdf/spread-statistics).
    */
   examSpreadStatistics: ExamSpreadStatistics;
   examerInPlan?: Maybe<Array<ExamerInPlan>>;
@@ -2537,6 +2570,13 @@ export type Query = {
   examsAt?: Maybe<Array<PlannedExam>>;
   /** Exam pairs declared as allowed to share a slot (no student legitimately sits both). */
   examsCanShareSlot: Array<ExamPair>;
+  /**
+   * examsNotOnSlotGrid returns the planned exams whose absolute start time is NOT one of the
+   * semester's standard slot start times (e.g. another faculty's exam placed at 11:00). They
+   * are invisible in a purely slot-by-slot grid, so the GUI must surface them separately —
+   * e.g. rendered in the slot whose time window they overlap, with the real start time shown.
+   */
+  examsNotOnSlotGrid: Array<PlannedExam>;
   examsWithNtas: Array<PlannedExam>;
   examsWithoutSlot: Array<PlannedExam>;
   fk07programs: Array<Fk07Program>;
@@ -3157,6 +3197,8 @@ export type Semester = {
 
 export type SemesterConfig = {
   __typename?: 'SemesterConfig';
+  /** Effective end-to-start travel buffer (minutes) between a student's two exams at different campuses. */
+  crossCampusGapMinutes: Scalars['Int']['output'];
   days: Array<ExamDay>;
   emails: Emails;
   /** Effective travel/break buffer (minutes) between a student's consecutive exams. */
@@ -3184,6 +3226,12 @@ export type SemesterConfig = {
  */
 export type SemesterConfigInput = {
   __typename?: 'SemesterConfigInput';
+  /**
+   * End-to-start travel buffer (minutes) a student needs between two exams at
+   * DIFFERENT campuses (null = default 120). Applied as a hard separation whenever
+   * the two exams' locations differ.
+   */
+  crossCampusGapMinutes?: Maybe<Scalars['Int']['output']>;
   emails: Emails;
   /** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
   examGapMinutes?: Maybe<Scalars['Int']['output']>;
@@ -3207,6 +3255,12 @@ export type SemesterConfigInput = {
 };
 
 export type SemesterConfigInputData = {
+  /**
+   * End-to-start travel buffer (minutes) a student needs between two exams at
+   * DIFFERENT campuses (null = default 120). Applied as a hard separation whenever
+   * the two exams' locations differ.
+   */
+  crossCampusGapMinutes?: InputMaybe<Scalars['Int']['input']>;
   emails: EmailsInput;
   /** Travel/break buffer (minutes) a student needs between two consecutive exams (null = default). */
   examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
