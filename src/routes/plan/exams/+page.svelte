@@ -20,6 +20,7 @@
 	let { data } = $props();
 
 	let examsWithoutSlot = $derived(data.examsWithoutSlot ?? []);
+	let examsNotOnGrid = $derived(data.examsNotOnGrid ?? []);
 
 	let onlyPlannedByMe = $state(true);
 	let details = $state(false);
@@ -449,6 +450,52 @@
 			.sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode)
 	);
 
+	// ---- Off-grid-Prüfungen (Startzeit nicht auf dem Standard-Slot-Raster) ----
+	// „HH:MM[:SS]" → Minuten seit Mitternacht.
+	/** @param {string} s */
+	const hmToMin = (s) => {
+		const m = /^(\d{2}):(\d{2})/.exec(String(s ?? ''));
+		return m ? +m[1] * 60 + +m[2] : 0;
+	};
+
+	// Echte Startzeit einer off-grid-Prüfung als „11:00" (Wanduhr laut ISO-Offset).
+	/** @param {string|null|undefined} iso */
+	const offGridTime = (iso) => {
+		const min = minutesOfDay(iso);
+		return min == null ? '' : hhmm(min);
+	};
+
+	// Off-grid-Prüfungen der Grid-Zelle (day,slot) zuordnen: Tag über den Kalendertag,
+	// Slot-Spalte über das Zeitfenster [slotStart, nächsterSlotStart), das die echte
+	// Startzeit enthält. Ohne echten Prüfungstag (out-of-period) → nur im Warn-Streifen.
+	let offGridBySlot = $derived(
+		(() => {
+			/** @type {Record<string, any[]>} */
+			const map = {};
+			const days = data.semesterConfig?.days ?? [];
+			const starttimes = data.semesterConfig?.starttimes ?? [];
+			const startMins = starttimes.map((/** @type {any} */ t) => hmToMin(t.start));
+			for (const e of examsNotOnGrid) {
+				const iso = e.planEntry?.starttime;
+				const dayNum = dayNumberForTime(iso, days);
+				if (dayNum === 0) continue;
+				const mins = minutesOfDay(iso);
+				if (mins == null) continue;
+				// letzte Slot-Startzeit ≤ echte Zeit → in diese Spalte einsortieren
+				// (vor der ersten Startzeit → erste Spalte).
+				let idx = 0;
+				for (let i = 0; i < startMins.length; i++) {
+					if (startMins[i] <= mins) idx = i;
+					else break;
+				}
+				const slotNum = starttimes[idx]?.number ?? idx + 1;
+				const key = `${dayNum},${slotNum}`;
+				(map[key] ??= []).push(e);
+			}
+			return map;
+		})()
+	);
+
 	function forbiddenSlot(/** @type {any} */ day, /** @type {any} */ time) {
 		const key = `${day},${time}`;
 		return data.globalSlotStatus.get(key) === 'forbidden';
@@ -627,6 +674,38 @@
 			</select>
 		</div>
 
+		<!-- Off-grid-Prüfung: echte Startzeit nicht auf dem Standard-Raster. Deutlich
+		     abgesetzt (⏱ + amber, gestrichelt), damit sie nicht mit einer Raster-Prüfung
+		     der Zeile verwechselt wird. Externe/fremdgeplante sind read-only (Fremd-FK). -->
+		{#snippet offGridCard(/** @type {any} */ e)}
+			<div
+				class="relative z-10 m-1 rounded-lg border border-warning/60 border-l-4 border-dashed border-l-warning bg-warning/10 p-2 text-xs shadow-sm"
+				title="{otherFkAncode(e)} · {e.zpaExam?.module} ({e.zpaExam
+					?.mainExamer}) — echte Startzeit {offGridTime(
+					e.planEntry?.starttime
+				)}, nicht auf dem Slot-Raster"
+			>
+				<div class="flex items-center gap-1">
+					<span class="badge badge-warning badge-sm gap-1 tabular-nums" title="echte Startzeit">
+						⏱ {offGridTime(e.planEntry?.starttime)}
+					</span>
+					{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span>{/if}
+				</div>
+				<div class="mt-1 flex items-center gap-1 font-semibold">
+					<span class="font-mono">{otherFkAncode(e)}</span>
+					<span class="text-base-content/50">&sum;{e.studentRegsCount}</span>
+				</div>
+				<div class="truncate text-base-content/70">{e.zpaExam?.module}</div>
+				{#if e.constraints?.notPlannedByMe}
+					<div class="mt-1">
+						<span class="badge badge-outline badge-sm">
+							nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
+						</span>
+					</div>
+				{/if}
+			</div>
+		{/snippet}
+
 		<!-- Slot-Zelle: in beiden Ansichten identisch (eigenes Fetching + Events) -->
 		{#snippet slotCell(/** @type {any} */ day, /** @type {any} */ time)}
 			<div
@@ -663,8 +742,55 @@
 					onunselected={handleUnselect}
 					onplace={handlePlace}
 				/>
+				{#each offGridBySlot[`${day.number},${time.number}`] ?? [] as e (e.ancode)}
+					{@render offGridCard(e)}
+				{/each}
 			</div>
 		{/snippet}
+
+		<!-- Warn-Streifen: Prüfungen außerhalb des Standardrasters. Sie erscheinen in der
+		     Slot-Ansicht in ihrer Zeitfenster-Spalte (⏱-Markierung); hier die Gesamtliste. -->
+		{#if examsNotOnGrid.length}
+			<div class="flex flex-col gap-2 rounded-lg border border-warning/50 bg-warning/10 p-3">
+				<div class="flex items-center gap-2">
+					<span class="text-lg">⏱</span>
+					<h2 class="text-lg font-semibold">Außerhalb des Standardrasters</h2>
+					<span class="badge badge-warning badge-sm tabular-nums">{examsNotOnGrid.length}</span>
+				</div>
+				<p class="text-sm text-base-content/60">
+					Diese Prüfungen beginnen nicht auf einer Slot-Anfangszeit (externe/fremdgeplante Prüfungen
+					bzw. abweichende Zeiten). In der Slot-Ansicht stehen sie ⏱-markiert in der Spalte ihres
+					Zeitfensters — die echte Startzeit ist dort als Badge angezeigt.
+				</p>
+				<div class="flex flex-wrap gap-2">
+					{#each [...examsNotOnGrid].sort((/** @type {any} */ a, /** @type {any} */ b) => a.ancode - b.ancode) as e (e.ancode)}
+						<div
+							class="flex flex-col gap-0.5 rounded-md border border-l-4 border-dashed border-warning/50 border-l-warning bg-warning/10 p-2 text-xs"
+						>
+							<div class="flex items-center gap-2">
+								<span class="badge badge-warning badge-sm gap-1 tabular-nums">
+									⏱ {offGridTime(e.planEntry?.starttime)}
+								</span>
+								<span class="text-base-content/60">{fmtDateTime(e.planEntry?.starttime)}</span>
+							</div>
+							<div class="flex items-center gap-1 font-semibold">
+								<span class="font-mono">{otherFkAncode(e)}</span>
+								{#if e.zpaExam?.isRepeaterExam}<span title="Wiederholung">🔁</span>{/if}
+							</div>
+							<div class="truncate">{e.zpaExam?.module}</div>
+							<div class="text-base-content/50">
+								{e.zpaExam?.mainExamer} · &sum;{e.studentRegsCount}
+							</div>
+							{#if e.constraints?.notPlannedByMe}
+								<span class="badge badge-outline badge-sm mt-0.5 self-start">
+									nicht von mir geplant{otherFk(e) ? ` · ${otherFk(e)}` : ''}
+								</span>
+							{/if}
+						</div>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 		<!-- Nach einer Platzierung (placeNonce++) baut {#key} das Raster + die Listen neu
 		     auf, damit die Slots (die ihre Prüfungen selbst laden) frisch holen. -->

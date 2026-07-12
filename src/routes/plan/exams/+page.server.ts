@@ -237,6 +237,50 @@ export const load: PageServerLoad = async () => {
 		otherFkExams = [];
 	}
 
+	// Geplante Prüfungen, deren Startzeit NICHT auf dem Standard-Slot-Raster liegt
+	// (externe/fremdgeplante Prüfungen, z. B. 11:00 oder MUC.DAI im :15-Raster). Sie
+	// tauchen in keiner Slot-Zelle auf (examsAt matcht exakt) und wären sonst unsichtbar.
+	// Backend-Feld ist evtl. älter als diese GUI → tolerant per try/catch.
+	let examsNotOnGrid: any[] = [];
+	try {
+		const ng = await request<any>(
+			env.PLEXAMS_SERVER,
+			gql`
+				query {
+					examsNotOnSlotGrid {
+						ancode
+						zpaExam {
+							ancode
+							module
+							mainExamer
+							faculty
+							isRepeaterExam
+							primussAncodes {
+								program
+								ancode
+							}
+						}
+						maxDuration
+						studentRegsCount
+						constraints {
+							notPlannedByMe
+							notPlannedByMeInFK
+							location
+						}
+						planEntry {
+							starttime
+							external
+						}
+					}
+				}
+			`
+		);
+		examsNotOnGrid = ng.examsNotOnSlotGrid ?? [];
+	} catch (e) {
+		const resp = (e as any)?.response;
+		if (resp?.data?.examsNotOnSlotGrid) examsNotOnGrid = resp.data.examsNotOnSlotGrid;
+	}
+
 	const semesterConfig = semesterData.semesterConfig;
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
@@ -244,6 +288,7 @@ export const load: PageServerLoad = async () => {
 		return {
 			semesterConfig: null,
 			examsWithoutSlot: [] as any[],
+			examsNotOnGrid: [] as any[],
 			globalSlotStatus: new Map<string, string>(),
 			roomsForSlots: new Map<string, any>()
 		};
@@ -291,6 +336,7 @@ export const load: PageServerLoad = async () => {
 	return {
 		semesterConfig: semesterData.semesterConfig,
 		examsWithoutSlot: data.examsWithoutSlot,
+		examsNotOnGrid,
 		plannedExams,
 		otherFkExams,
 		globalSlotStatus: globalSlotStatus,

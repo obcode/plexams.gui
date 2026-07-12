@@ -40,8 +40,15 @@
 					bind:checked={onlyPlannedByMe}
 					onchange={rerunConflicts}
 				/>
-				<span class="label-text">{onlyPlannedByMe ? 'nur eigene Planung' : 'alle'}</span>
+				<span class="label-text">
+					{onlyPlannedByMe ? 'ohne reine Fremd-Konflikte' : 'alle (inkl. Fremd-Fremd)'}
+				</span>
 			</label>
+			<span class="text-xs text-base-content/50">
+				{onlyPlannedByMe
+					? 'Konflikte zwischen zwei fremdgeplanten Prüfungen (nicht lösbar) ausgeblendet; eigene Überschneidungen immer sichtbar.'
+					: 'zusätzlich die nicht lösbaren Konflikte zwischen zwei fremdgeplanten Prüfungen.'}
+			</span>
 		</label>
 
 		<label class="flex flex-col gap-1">
