@@ -1,3 +1,4 @@
+- [Versioning policy](versioning-policy.md) — client major tracks plexams-server major (now v3); bump client major on every server breaking change; version via semantic-release tags, not package.json
 - [OIDC auth](oidc-auth.md) — Identität/Rolle/VIEWER-Ausblendung/Benutzerverwaltung; lebt auf Branch feat/oidc-auth, nicht auf main
 - [Validation write-lock](validation-write-lock.md) — backend blocks all mutations while any validation runs; why the nav indicator is on-demand, not polled
 - [Validation architecture](validation-architecture.md) — where the validation/generation UI lives and how to add a validator group
