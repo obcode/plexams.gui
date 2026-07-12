@@ -52,6 +52,9 @@
 			timelagMin: c.timelagMin ?? 15,
 			/** @type {number | ''} */
 			notTooCloseMinutes: c.notTooCloseMinutes ?? 120,
+			// Reisezeit zwischen Campus (optional; leer → Backend-Default 120).
+			/** @type {number | ''} */
+			crossCampusGapMinutes: c.crossCampusGapMinutes ?? '',
 			// Max. Plätze pro Startzeit (optional; leer/0 = unbegrenzt).
 			/** @type {number | ''} */
 			maxSeatsPerSlot: c.maxSeatsPerSlot ?? '',
@@ -215,6 +218,7 @@
 			mucDaiAllowedTimes: [...form.mucDai].sort(),
 			timelagMin: intOrNull(form.timelagMin),
 			notTooCloseMinutes: intOrNull(form.notTooCloseMinutes),
+			crossCampusGapMinutes: intOrNull(form.crossCampusGapMinutes),
 			maxSeatsPerSlot: intOrNull(form.maxSeatsPerSlot),
 			emails: {
 				profs: form.emails.profs,
@@ -310,6 +314,17 @@
 				<span class="text-[11px] text-base-content/40">Default 120</span>
 			</label>
 			<label class="flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Reisezeit zwischen Campus, Min</span>
+				<input
+					type="number"
+					min="0"
+					placeholder="120"
+					class="input input-bordered input-sm w-32"
+					bind:value={form.crossCampusGapMinutes}
+				/>
+				<span class="text-[11px] text-base-content/40">leer = 120</span>
+			</label>
+			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Max. Plätze pro Startzeit</span>
 				<input
 					type="number"
@@ -329,6 +344,10 @@
 		<p class="text-xs text-base-content/50">
 			„Max. Plätze pro Startzeit" begrenzt, wie viele Studierende gleichzeitig (zur selben
 			Startzeit) geprüft werden — für feinere Startzeiten/Morgen-Packung; 0 = unbegrenzt.
+		</p>
+		<p class="text-xs text-base-content/50">
+			„Reisezeit zwischen Campus" ist der harte End-zu-Start-Mindestabstand zwischen zwei Prüfungen
+			eines Studierenden an verschiedenen Standorten; leer = 120.
 		</p>
 	</div>
 

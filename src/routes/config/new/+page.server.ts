@@ -18,6 +18,7 @@ export const load: PageServerLoad = async () => {
 					mucDaiAllowedTimes
 					timelagMin
 					notTooCloseMinutes
+					crossCampusGapMinutes
 					maxSeatsPerSlot
 					emails {
 						profs
