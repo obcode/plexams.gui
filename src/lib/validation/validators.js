@@ -95,6 +95,11 @@ export const schedulingValidators = [
 		key: 'validateConstraints',
 		title: 'Constraints',
 		description: 'Constraints im Zeitplan eingehalten'
+	},
+	{
+		key: 'validateSemesterTimes',
+		title: 'Semester-Zeiten',
+		description: 'Prüfungszeiten liegen im gültigen Semesterzeitraum'
 	}
 ];
 
