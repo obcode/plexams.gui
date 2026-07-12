@@ -20,6 +20,7 @@ export const load: PageServerLoad = async () => {
 							title
 							done
 							gate
+							auto
 						}
 					}
 				}

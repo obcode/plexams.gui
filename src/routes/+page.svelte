@@ -108,28 +108,59 @@
 				</div>
 				<div class="flex flex-col gap-1">
 					{#each phase.conditions as cond}
-						<label class="flex cursor-pointer items-start gap-2 rounded p-1 hover:bg-base-200">
-							<input
-								type="checkbox"
-								class="checkbox checkbox-sm mt-0.5"
-								checked={cond.done}
-								disabled={busy.has(cond.key) || $page.data?.readOnly}
-								onchange={() => toggle(cond)}
-							/>
-							<span
-								class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
+						{#if cond.auto}
+							<!-- Automatisch gesetzte Bedingung: kein Toggle, nur Status anzeigen -->
+							<div
+								class="flex items-start gap-2 rounded p-1"
+								title="Dieser Status wird automatisch gesetzt und kann nicht manuell geändert werden"
 							>
-								{cond.title}
-							</span>
-							{#if cond.gate}
 								<span
-									class="text-base-content/40"
-									title="Sperre: ist dies erledigt, wird die {cond.gate}-Generierung gesperrt"
+									class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center text-sm {cond.done
+										? 'text-success'
+										: 'text-base-content/30'}"
+									aria-hidden="true"
 								>
-									🔒
+									{cond.done ? '✓' : '○'}
 								</span>
-							{/if}
-						</label>
+								<span
+									class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
+								>
+									{cond.title}
+								</span>
+								<span class="badge badge-ghost badge-xs shrink-0" title="Automatisch">auto</span>
+								{#if cond.gate}
+									<span
+										class="text-base-content/40"
+										title="Sperre: ist dies erledigt, wird die {cond.gate}-Generierung gesperrt"
+									>
+										🔒
+									</span>
+								{/if}
+							</div>
+						{:else}
+							<label class="flex cursor-pointer items-start gap-2 rounded p-1 hover:bg-base-200">
+								<input
+									type="checkbox"
+									class="checkbox checkbox-sm mt-0.5"
+									checked={cond.done}
+									disabled={busy.has(cond.key) || $page.data?.readOnly}
+									onchange={() => toggle(cond)}
+								/>
+								<span
+									class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
+								>
+									{cond.title}
+								</span>
+								{#if cond.gate}
+									<span
+										class="text-base-content/40"
+										title="Sperre: ist dies erledigt, wird die {cond.gate}-Generierung gesperrt"
+									>
+										🔒
+									</span>
+								{/if}
+							</label>
+						{/if}
 					{/each}
 				</div>
 			</div>
