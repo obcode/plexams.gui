@@ -63,16 +63,25 @@
 				level
 				text
 				roomReport {
+					exams
 					placedSeats
 					unplacedSeats
 					rooms
+					hardViolations
 					cost
 					costByConstraint {
 						name
 						cost
 					}
-					hardViolations
-					unplacedExams
+					iterations
+					seed
+					stoppedEarly
+					written
+					unplacedExams {
+						ancode
+						ntaMtknr
+						mtknrs
+					}
 				}
 			}
 		}
@@ -424,19 +433,20 @@
 			<div class="flex flex-wrap items-center gap-3">
 				<h2 class="text-xl font-semibold">Ergebnis-Report</h2>
 				<span class="badge badge-outline gap-1 tabular-nums" title="verwendeter Seed">
-					Seed {seedUsed}
+					Seed {r.seed ?? seedUsed}
 				</span>
-				{#if writeRun}
+				{#if r.written}
 					<span class="badge badge-success">in DB geschrieben</span>
 				{:else}
 					<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
 				{/if}
+				{#if r.stoppedEarly}<span class="badge badge-ghost">früh gestoppt</span>{/if}
 				{#if keepRun}<span class="badge badge-ghost">Warm-Start</span>{/if}
 			</div>
 
 			<!-- Kennzahlen -->
-			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
-				{#each [{ label: 'platzierte Plätze', value: fmt(r.placedSeats) }, { label: 'ungeplante Plätze', value: fmt(r.unplacedSeats) }, { label: 'Räume', value: fmt(r.rooms) }, { label: 'ungeplante Prüfungen', value: fmt(unplaced.length) }, { label: 'Kosten', value: fmt(r.cost) }] as stat}
+			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
+				{#each [{ label: 'Prüfungen', value: fmt(r.exams) }, { label: 'platzierte Plätze', value: fmt(r.placedSeats) }, { label: 'ungeplante Plätze', value: fmt(r.unplacedSeats) }, { label: 'Räume', value: fmt(r.rooms) }, { label: 'Kosten', value: fmt(r.cost) }, { label: 'Iterationen', value: fmt(r.iterations) }] as stat}
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
 						<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
@@ -462,13 +472,20 @@
 				</div>
 			{/if}
 
-			<!-- ungeplante Prüfungen (Ancodes) -->
+			<!-- ungeplante Prüfungen (mit betroffenen Studierenden) -->
 			{#if unplaced.length}
-				<div class="flex flex-col gap-1 rounded-lg border border-warning/40 bg-warning/10 p-3">
+				<div class="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3">
 					<span class="text-sm font-medium">Ungeplante Prüfungen ({unplaced.length})</span>
 					<div class="flex flex-wrap gap-1">
-						{#each unplaced as a}
-							<span class="badge badge-warning badge-sm tabular-nums">{a}</span>
+						{#each unplaced as u}
+							<span
+								class="badge badge-warning badge-sm gap-1 tabular-nums"
+								title={`${asArray(u.mtknrs).length} Studierende ohne Raum`}
+							>
+								{#if u.ntaMtknr}<span class="font-semibold">NTA</span>{/if}
+								{u.ancode}
+								<span class="opacity-70">· {asArray(u.mtknrs).length}</span>
+							</span>
 						{/each}
 					</div>
 				</div>

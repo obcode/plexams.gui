@@ -776,11 +776,11 @@ export type GenerationConfig = {
   /** Raumplanung: reward for compacting exams into fewer rooms/buildings. */
   roomCompaction: Scalars['Float']['output'];
   /** Raumplanung: hour of day from which the heat term ramps up. */
-  roomHeatBaselineHour: Scalars['Int']['output'];
-  /** Raumplanung: lowest floor (Stockwerk) that still counts as 'hot'. */
-  roomHeatFloor: Scalars['Int']['output'];
+  roomHeatBaselineHour: Scalars['Float']['output'];
+  /** Raumplanung: lowest floor (Stockwerk) that still counts as hot. */
+  roomHeatFloor: Scalars['Float']['output'];
   /** Raumplanung: whether/how the room-heat term applies (default AUTO by semester). */
-  roomHeatMode: RoomHeatMode;
+  roomHeatMode: RoomHeatConstraintMode;
   /** Raumplanung: penalty for splitting an exam across several rooms. */
   roomSplit: Scalars['Float']['output'];
   /** Raumplanung: penalty per unplaced exam (dominant — keep very high). */
@@ -840,9 +840,9 @@ export type GenerationConfigInput = {
   roomBuffer: Scalars['Float']['input'];
   roomChurn: Scalars['Float']['input'];
   roomCompaction: Scalars['Float']['input'];
-  roomHeatBaselineHour: Scalars['Int']['input'];
-  roomHeatFloor: Scalars['Int']['input'];
-  roomHeatMode: RoomHeatMode;
+  roomHeatBaselineHour: Scalars['Float']['input'];
+  roomHeatFloor: Scalars['Float']['input'];
+  roomHeatMode: RoomHeatConstraintMode;
   roomSplit: Scalars['Float']['input'];
   roomUnplaced: Scalars['Float']['input'];
   slotTimeEnforcement: SlotTimeConstraintEnforcement;
@@ -3106,11 +3106,11 @@ export type RoomConstraints = {
 };
 
 /**
- * RoomHeatMode classifies how the room-planning 'heat' term (avoid hot upper-floor
- * rooms in the afternoon) is applied. AUTO follows the semester (only in summer),
- * SUMMER forces it on, OFF disables it.
+ * RoomHeatConstraintMode classifies how the room-planning 'heat' term (avoid hot
+ * upper-floor rooms in the afternoon) is applied. AUTO follows the semester (only in
+ * summer), SUMMER forces it on, OFF disables it.
  */
-export enum RoomHeatMode {
+export enum RoomHeatConstraintMode {
   Auto = 'AUTO',
   Off = 'OFF',
   Summer = 'SUMMER'
@@ -3154,15 +3154,22 @@ export type RoomPlanReport = {
   __typename?: 'RoomPlanReport';
   cost: Scalars['Float']['output'];
   costByConstraint: Array<ConstraintCost>;
+  /** total exams considered for room assignment. */
+  exams: Scalars['Int']['output'];
   hardViolations: Array<Scalars['String']['output']>;
+  iterations: Scalars['Int']['output'];
   /** seats successfully placed into a room. */
   placedSeats: Scalars['Int']['output'];
   /** number of distinct rooms used by the assignment. */
   rooms: Scalars['Int']['output'];
-  /** ancodes of exams that could not be fully placed. */
-  unplacedExams: Array<Scalars['Int']['output']>;
+  /** the seed used — pass it back to reproduce this exact assignment. */
+  seed: Scalars['Int']['output'];
+  stoppedEarly: Scalars['Boolean']['output'];
+  /** exams that could not be fully placed (with their students). */
+  unplacedExams: Array<UnplacedExam>;
   /** seats that could not be placed into any room. */
   unplacedSeats: Scalars['Int']['output'];
+  written: Scalars['Boolean']['output'];
 };
 
 export type RoomRequest = {

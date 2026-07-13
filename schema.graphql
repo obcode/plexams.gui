@@ -991,7 +991,7 @@ type GenerationConfig {
   """
   Raumplanung: whether/how the room-heat term applies (default AUTO by semester).
   """
-  roomHeatMode: RoomHeatMode!
+  roomHeatMode: RoomHeatConstraintMode!
 
   """Raumplanung: penalty per unplaced exam (dominant — keep very high)."""
   roomUnplaced: Float!
@@ -1005,14 +1005,14 @@ type GenerationConfig {
   """Raumplanung: reward for compacting exams into fewer rooms/buildings."""
   roomCompaction: Float!
 
-  """Raumplanung: lowest floor (Stockwerk) that still counts as 'hot'."""
-  roomHeatFloor: Int!
+  """Raumplanung: lowest floor (Stockwerk) that still counts as hot."""
+  roomHeatFloor: Float!
 
   """Raumplanung: penalty for churn (re-assigning already assigned rooms)."""
   roomChurn: Float!
 
   """Raumplanung: hour of day from which the heat term ramps up."""
-  roomHeatBaselineHour: Int!
+  roomHeatBaselineHour: Float!
 }
 
 input GenerationConfigInput {
@@ -1049,14 +1049,14 @@ input GenerationConfigInput {
   examHole: Float!
   examClosenessFalloffMin: Float!
   preplanCapacityFactor: Float!
-  roomHeatMode: RoomHeatMode!
+  roomHeatMode: RoomHeatConstraintMode!
   roomUnplaced: Float!
   roomBuffer: Float!
   roomSplit: Float!
   roomCompaction: Float!
-  roomHeatFloor: Int!
+  roomHeatFloor: Float!
   roomChurn: Float!
-  roomHeatBaselineHour: Int!
+  roomHeatBaselineHour: Float!
 }
 
 type ImportMucDaiResult {
@@ -2940,11 +2940,11 @@ type RoomConstraints {
 }
 
 """
-RoomHeatMode classifies how the room-planning 'heat' term (avoid hot upper-floor
-rooms in the afternoon) is applied. AUTO follows the semester (only in summer),
-SUMMER forces it on, OFF disables it.
+RoomHeatConstraintMode classifies how the room-planning 'heat' term (avoid hot
+upper-floor rooms in the afternoon) is applied. AUTO follows the semester (only in
+summer), SUMMER forces it on, OFF disables it.
 """
-enum RoomHeatMode {
+enum RoomHeatConstraintMode {
   AUTO
   SUMMER
   OFF
@@ -2956,6 +2956,9 @@ the textual report. It is delivered once on the final RESULT line of the
 assignRoomsForExams subscription (also for dryRun, where nothing is written).
 """
 type RoomPlanReport {
+  """total exams considered for room assignment."""
+  exams: Int!
+
   """seats successfully placed into a room."""
   placedSeats: Int!
 
@@ -2964,12 +2967,18 @@ type RoomPlanReport {
 
   """number of distinct rooms used by the assignment."""
   rooms: Int!
+  hardViolations: [String!]!
   cost: Float!
   costByConstraint: [ConstraintCost!]!
-  hardViolations: [String!]!
+  iterations: Int!
 
-  """ancodes of exams that could not be fully placed."""
-  unplacedExams: [Int!]!
+  """the seed used — pass it back to reproduce this exact assignment."""
+  seed: Int!
+  stoppedEarly: Boolean!
+  written: Boolean!
+
+  """exams that could not be fully placed (with their students)."""
+  unplacedExams: [UnplacedExam!]!
 }
 
 input RoomInput {

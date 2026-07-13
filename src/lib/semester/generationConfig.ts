@@ -194,7 +194,6 @@ export const ROOM_GENERATION_FIELDS: GenerationConfigField[] = [
 	{
 		key: 'roomHeatFloor',
 		label: 'Hitze-Stockwerk',
-		int: true,
 		hint: 'niedrigstes Stockwerk, das noch als „heiß" zählt'
 	},
 	{
@@ -205,7 +204,6 @@ export const ROOM_GENERATION_FIELDS: GenerationConfigField[] = [
 	{
 		key: 'roomHeatBaselineHour',
 		label: 'Hitze-Basisstunde',
-		int: true,
 		hint: 'Uhrzeit (Stunde), ab der der Hitze-Term ansteigt'
 	}
 ];
@@ -302,8 +300,8 @@ export function toGenerationConfigInput(config: AnyConfig | null, overrides: Any
 		roomBuffer: num(c.roomBuffer),
 		roomSplit: num(c.roomSplit),
 		roomCompaction: num(c.roomCompaction),
-		roomHeatFloor: int(c.roomHeatFloor),
+		roomHeatFloor: num(c.roomHeatFloor),
 		roomChurn: num(c.roomChurn),
-		roomHeatBaselineHour: int(c.roomHeatBaselineHour)
+		roomHeatBaselineHour: num(c.roomHeatBaselineHour)
 	};
 }
