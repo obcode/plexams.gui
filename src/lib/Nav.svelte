@@ -341,7 +341,7 @@
 				{ href: '/plan/invigilation/planning', label: '👀 Anforderungen und Planung' },
 				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
 				{ href: '/plan/invigilation', label: '⏰ Zeitplan' },
-				{ href: '/plan/invigilation/generate', label: '✨ Einteilung' },
+				{ href: '/plan/invigilation/generate', label: '✨ Aufsichtenplan generieren' },
 				{ href: '/plan/invigilation/validate', label: '✅ Validierung' }
 			]
 		},
