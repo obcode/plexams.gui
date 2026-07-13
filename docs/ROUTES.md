@@ -98,3 +98,18 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 geschützten (read-only) Semester laufen — die Allowlist steht in
 [`src/hooks.server.js`](../src/hooks.server.js) (`READ_POST_PATHS`) und muss beim
 Umbenennen eines solchen Endpunkts mitgeführt werden.
+
+---
+
+## Identitäts-Seiten (OIDC-Auth, nicht in der NavBar-Leiste)
+
+Diese Seiten hängen nicht an einem Workflow-Menü, sondern am Identitäts-Dropdown
+oben rechts in [`src/lib/Nav.svelte`](../src/lib/Nav.svelte) (nur sichtbar, wenn ein
+`me`/Konto vorliegt). Sie sind global (nicht semesterbezogen); ihre Mutations-Proxys
+stehen daher in `READ_POST_PATHS` (Semester-Schutz blockiert sie nicht) — die
+Zugriffskontrolle macht das Backend.
+
+| Eintrag               | Seite (`src/routes/…`) | api-Domäne     | Backend                                                                                                   |
+| --------------------- | ---------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
+| 👤 Mein Account       | `account/`             | `api/account/` | `myAccount`, `setMyShortname`, `setMyJiraToken`, `removeMyJiraToken`; Jira-Test via `api/jira/connection` |
+| 👥 Benutzerverwaltung | `admin/users/` (ADMIN) | `api/admin/`   | `users`, `setUser`, `removeUser`                                                                          |

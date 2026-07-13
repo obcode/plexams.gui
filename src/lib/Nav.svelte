@@ -703,6 +703,14 @@
 							>
 						</span>
 					</li>
+					<li>
+						<a
+							class="rounded-lg {activeHref === '/account'
+								? 'bg-primary/15 font-medium text-primary'
+								: ''}"
+							href="/account">👤 Mein Account</a
+						>
+					</li>
 					{#if admin}
 						<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Administration</li>
 						<li>

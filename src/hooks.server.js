@@ -20,6 +20,11 @@ const READ_POST_PATHS = new Set([
 	// Semester-Schutz darf sie nicht blockieren. Zugriff regelt das Backend (ADMIN).
 	'/api/admin/setUser',
 	'/api/admin/removeUser',
+	// Persönliche Kontoeinstellungen (OIDC-Auth) sind global, nicht semesterbezogen
+	// — der Semester-Schutz darf sie nicht blockieren. Identität regelt das Backend.
+	'/api/account/setShortname',
+	'/api/account/setJiraToken',
+	'/api/account/removeJiraToken',
 	// reine Lese-Abfragen:
 	'/api/email/renderEmailTemplatePreview',
 	'/api/exam/conflictingAncodes',

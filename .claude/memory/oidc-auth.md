@@ -1,6 +1,6 @@
 ---
 name: oidc-auth
-description: "OIDC-Auth-Anbindung (Identität/Rolle/VIEWER-Ausblendung/Benutzerverwaltung) lebt auf Branch feat/oidc-auth, noch nicht auf main"
+description: "OIDC-Auth-Anbindung (Identität/Rolle/VIEWER-Ausblendung/Benutzerverwaltung) — am 2026-07-11 nach main gemergt; siehe [[account-page]]"
 metadata: 
   node_type: memory
   type: project
