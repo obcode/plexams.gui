@@ -330,6 +330,7 @@
 			label: 'Raumplanung',
 			items: [
 				{ href: '/plan/rooms', label: '🏢 Raumplanung' },
+				{ href: '/plan/rooms/generate', label: '✨ Räume generieren' },
 				{ href: '/plan/kdprooms', label: '💻 Anny-Anforderungen (KDP)' },
 				{ href: '/plan/roomRequests', label: '🛠️ Gebäudemanagement-Anforderungen' },
 				{ href: '/plan/rooms/validate', label: '✅ Validierung' }

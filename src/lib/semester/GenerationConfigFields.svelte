@@ -20,9 +20,14 @@
 
 	const allFields = sections.flatMap((s) => s.fields);
 	// Einmal aus der geladenen Config vorbelegen (die Config ändert sich während
-	// der Seitenlebensdauer nicht — sie kommt aus dem SSR-Load).
+	// der Seitenlebensdauer nicht — sie kommt aus dem SSR-Load). Auswahlfelder
+	// (options) fallen auf die erste Option zurück, Zahlenfelder auf 0.
+	/** @param {GenerationConfigField} f */
+	const fieldDefault = (f) => (f.options ? (f.options[0]?.value ?? '') : 0);
 	/** @type {Record<string, any>} */
-	let form = $state(Object.fromEntries(allFields.map((f) => [f.key, config?.[f.key] ?? 0])));
+	let form = $state(
+		Object.fromEntries(allFields.map((f) => [f.key, config?.[f.key] ?? fieldDefault(f)]))
+	);
 
 	let saving = $state(false);
 	let error = $state('');
@@ -93,13 +98,25 @@
 								>
 							{/if}
 						</span>
-						<input
-							type="number"
-							step={f.int ? '1' : 'any'}
-							class="input input-bordered input-sm {f.caution ? 'input-warning' : ''}"
-							bind:value={form[f.key]}
-							disabled={!config}
-						/>
+						{#if f.options}
+							<select
+								class="select select-bordered select-sm"
+								bind:value={form[f.key]}
+								disabled={!config}
+							>
+								{#each f.options as opt}
+									<option value={opt.value}>{opt.label}</option>
+								{/each}
+							</select>
+						{:else}
+							<input
+								type="number"
+								step={f.int ? '1' : 'any'}
+								class="input input-bordered input-sm {f.caution ? 'input-warning' : ''}"
+								bind:value={form[f.key]}
+								disabled={!config}
+							/>
+						{/if}
 						{#if f.hint}
 							<span class="text-[10px] leading-tight text-base-content/40">{f.hint}</span>
 						{/if}

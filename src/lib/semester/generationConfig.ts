@@ -44,6 +44,14 @@ export const GENERATION_CONFIG_FIELDS = `
 	examHole
 	examClosenessFalloffMin
 	preplanCapacityFactor
+	roomHeatMode
+	roomUnplaced
+	roomBuffer
+	roomSplit
+	roomCompaction
+	roomHeatFloor
+	roomChurn
+	roomHeatBaselineHour
 `;
 
 /**
@@ -61,6 +69,11 @@ export interface GenerationConfigField {
 	/** dominanter Parameter — Warnhinweis anzeigen, nur mit Vorsicht ändern. */
 	caution?: boolean;
 	hint?: string;
+	/**
+	 * Enum-/Auswahlfeld: wird als <select> gerendert statt als Zahleneingabe. Der
+	 * Default kommt aus der geladenen Config (nicht 0).
+	 */
+	options?: { value: string; label: string }[];
 }
 
 /**
@@ -138,6 +151,62 @@ export const ROOM_PHASE_A_WEIGHT_FIELDS: GenerationConfigField[] = [
 		key: 'examTbauFill',
 		label: 'T-Bau-Sitze',
 		hint: 'Strafe pro ungenutztem gebuchten T-Bau-Sitz (nur EXaHM/SEB-Raumphase A)'
+	}
+];
+
+/**
+ * Raumplanung (roomplan) — Steuerung der automatischen Raumzuteilung
+ * (Seite „Räume generieren"). `roomHeatMode` ist ein Auswahlfeld, der Rest sind
+ * Gewichte/Parameter.
+ */
+export const ROOM_GENERATION_FIELDS: GenerationConfigField[] = [
+	{
+		key: 'roomHeatMode',
+		label: 'Hitze-Modus',
+		options: [
+			{ value: 'AUTO', label: 'Automatik (nach Semester)' },
+			{ value: 'SUMMER', label: 'Sommer (immer an)' },
+			{ value: 'OFF', label: 'Aus' }
+		],
+		hint: 'Vermeidet im Sommer heiße Räume in oberen Stockwerken. Automatik wirkt nur im Sommersemester.'
+	},
+	{
+		key: 'roomUnplaced',
+		label: 'ungeplante Prüfung',
+		caution: true,
+		hint: 'Strafe pro nicht platzierter Prüfung — dominant, hoch lassen'
+	},
+	{
+		key: 'roomBuffer',
+		label: 'Puffer',
+		hint: 'Strafe für fehlende bzw. überzogene Reserveplätze (Kapazitätspuffer)'
+	},
+	{
+		key: 'roomSplit',
+		label: 'Aufteilung',
+		hint: 'Strafe für das Aufteilen einer Prüfung auf mehrere Räume'
+	},
+	{
+		key: 'roomCompaction',
+		label: 'Verdichtung',
+		hint: 'Belohnung für das Zusammenziehen auf wenige Räume/Gebäude'
+	},
+	{
+		key: 'roomHeatFloor',
+		label: 'Hitze-Stockwerk',
+		int: true,
+		hint: 'niedrigstes Stockwerk, das noch als „heiß" zählt'
+	},
+	{
+		key: 'roomChurn',
+		label: 'Umverteilung (Churn)',
+		hint: 'Strafe für das Umverteilen bereits zugeordneter Räume (Warm-Start)'
+	},
+	{
+		key: 'roomHeatBaselineHour',
+		label: 'Hitze-Basisstunde',
+		int: true,
+		hint: 'Uhrzeit (Stunde), ab der der Hitze-Term ansteigt'
 	}
 ];
 
@@ -226,6 +295,15 @@ export function toGenerationConfigInput(config: AnyConfig | null, overrides: Any
 		examHole: num(c.examHole),
 		examClosenessFalloffMin: num(c.examClosenessFalloffMin),
 		// Pre-Plan
-		preplanCapacityFactor: num(c.preplanCapacityFactor)
+		preplanCapacityFactor: num(c.preplanCapacityFactor),
+		// Raumplanung (auf der Seite „Räume generieren" editiert)
+		roomHeatMode: (c.roomHeatMode as string) ?? 'AUTO',
+		roomUnplaced: num(c.roomUnplaced),
+		roomBuffer: num(c.roomBuffer),
+		roomSplit: num(c.roomSplit),
+		roomCompaction: num(c.roomCompaction),
+		roomHeatFloor: int(c.roomHeatFloor),
+		roomChurn: num(c.roomChurn),
+		roomHeatBaselineHour: int(c.roomHeatBaselineHour)
 	};
 }

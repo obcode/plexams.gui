@@ -987,6 +987,32 @@ type GenerationConfig {
   Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely).
   """
   preplanCapacityFactor: Float!
+
+  """
+  Raumplanung: whether/how the room-heat term applies (default AUTO by semester).
+  """
+  roomHeatMode: RoomHeatMode!
+
+  """Raumplanung: penalty per unplaced exam (dominant — keep very high)."""
+  roomUnplaced: Float!
+
+  """Raumplanung: penalty per reserved buffer seat missing / over-booked."""
+  roomBuffer: Float!
+
+  """Raumplanung: penalty for splitting an exam across several rooms."""
+  roomSplit: Float!
+
+  """Raumplanung: reward for compacting exams into fewer rooms/buildings."""
+  roomCompaction: Float!
+
+  """Raumplanung: lowest floor (Stockwerk) that still counts as 'hot'."""
+  roomHeatFloor: Int!
+
+  """Raumplanung: penalty for churn (re-assigning already assigned rooms)."""
+  roomChurn: Float!
+
+  """Raumplanung: hour of day from which the heat term ramps up."""
+  roomHeatBaselineHour: Int!
 }
 
 input GenerationConfigInput {
@@ -1023,6 +1049,14 @@ input GenerationConfigInput {
   examHole: Float!
   examClosenessFalloffMin: Float!
   preplanCapacityFactor: Float!
+  roomHeatMode: RoomHeatMode!
+  roomUnplaced: Float!
+  roomBuffer: Float!
+  roomSplit: Float!
+  roomCompaction: Float!
+  roomHeatFloor: Int!
+  roomChurn: Float!
+  roomHeatBaselineHour: Int!
 }
 
 type ImportMucDaiResult {
@@ -1285,6 +1319,12 @@ type LogLine {
   report: InvigilationReport
   validation: ValidationReport
   examReport: ExamScheduleReport
+
+  """
+  only set on the final RESULT line of an assignRoomsForExams run and carries the
+  structured room-planning outcome (also for dryRun).
+  """
+  roomReport: RoomPlanReport
 }
 
 """
@@ -2511,6 +2551,11 @@ type Query {
   examScheduleConstraints: [OptimizerConstraint!]!
 
   """
+  The read-only list of hard/soft constraints the room-planning generator applies.
+  """
+  roomPlanConstraints: [OptimizerConstraint!]!
+
+  """
   Summary of the EXaHM/SEB room phase for the GUI: how many EXaHM/SEB exams are planned and
   how many of those are frozen (phaseFixed) for phase B. Use allFixed to decide whether to
   warn before running generateExamSchedule (phase B), and planned/fixed to show the state
@@ -2852,6 +2897,12 @@ type Room {
   sebSeats: Int
   hmebSeats: Int
   deactivated: Boolean!
+
+  """
+  Explicit heat value (Hitzewert) for the room-planning heat term. null means the
+  value is derived from the floor (Stockwerk) in the room name.
+  """
+  hitzewert: Int
 }
 
 type RoomAndExam {
@@ -2888,6 +2939,39 @@ type RoomConstraints {
   comments: String
 }
 
+"""
+RoomHeatMode classifies how the room-planning 'heat' term (avoid hot upper-floor
+rooms in the afternoon) is applied. AUTO follows the semester (only in summer),
+SUMMER forces it on, OFF disables it.
+"""
+enum RoomHeatMode {
+  AUTO
+  SUMMER
+  OFF
+}
+
+"""
+RoomPlanReport is the structured outcome of an assignRoomsForExams run, mirroring
+the textual report. It is delivered once on the final RESULT line of the
+assignRoomsForExams subscription (also for dryRun, where nothing is written).
+"""
+type RoomPlanReport {
+  """seats successfully placed into a room."""
+  placedSeats: Int!
+
+  """seats that could not be placed into any room."""
+  unplacedSeats: Int!
+
+  """number of distinct rooms used by the assignment."""
+  rooms: Int!
+  cost: Float!
+  costByConstraint: [ConstraintCost!]!
+  hardViolations: [String!]!
+
+  """ancodes of exams that could not be fully placed."""
+  unplacedExams: [Int!]!
+}
+
 input RoomInput {
   name: String!
   seats: Int!
@@ -2904,6 +2988,12 @@ input RoomInput {
   seb: Boolean!
   sebSeats: Int
   hmebSeats: Int
+
+  """
+  Explicit heat value (Hitzewert). Optional; null (or omitted) = derive from the
+  floor (Stockwerk) in the room name.
+  """
+  hitzewert: Int
 }
 
 """One exam's use of a room in a slot."""
@@ -3474,11 +3564,15 @@ type Subscription {
   generateExamRoomsPhase(dryRun: Boolean!, seed: Int, iterations: Int): LogLine!
 
   """
-  Assign rooms to all exams (rooms-for-exams) and stream the output. The allowed
-  rooms per slot are computed live from the current rooms/requests/bookings;
-  there is no separate rooms-for-slots step or cache.
+  Assign rooms to all exams (rooms-for-exams) and stream the output line by line.
+  The allowed rooms per slot are computed live from the current
+  rooms/requests/bookings; there is no separate rooms-for-slots step or cache.
+  With dryRun nothing is written; the final RESULT line carries the structured
+  roomReport either way. With keepAssigned the current room assignment is used as
+  the warm start (only improve, minimal churn) instead of assigning from scratch.
+  A non-dry-run write is refused while the room plan is gated (published).
   """
-  assignRoomsForExams: LogLine!
+  assignRoomsForExams(dryRun: Boolean!, seed: Int, iterations: Int, keepAssigned: Boolean): LogLine!
 
   """
   Fetch the room bookings from anny.eu and store them (used for the EXaHM room slots). Streams its output.

@@ -27,7 +27,9 @@
 		exahm: false,
 		seb: false,
 		sebSeats: 0,
-		hmebSeats: 0
+		hmebSeats: 0,
+		// leer = Hitzewert aus dem Stockwerk im Namen ableiten
+		hitzewert: ''
 	};
 
 	function pick(r: any) {
@@ -41,7 +43,8 @@
 			exahm: !!r.exahm,
 			seb: !!r.seb,
 			sebSeats: r.sebSeats ?? 0,
-			hmebSeats: r.hmebSeats ?? 0
+			hmebSeats: r.hmebSeats ?? 0,
+			hitzewert: r.hitzewert ?? ''
 		};
 	}
 
@@ -81,7 +84,9 @@
 			placesWithSocket: form.placesWithSocket,
 			requestWith: form.requestWith,
 			exahm: form.exahm,
-			seb: form.seb
+			seb: form.seb,
+			// leer → null: Backend leitet den Hitzewert aus dem Stockwerk im Namen ab
+			hitzewert: form.hitzewert === '' || form.hitzewert == null ? null : Number(form.hitzewert)
 		};
 		if (form.seb) {
 			input.sebSeats = Number(form.sebSeats) || 0;
@@ -148,6 +153,20 @@
 					<option value={opt.value}>{opt.label}</option>
 				{/each}
 			</select>
+		</label>
+
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">Hitzewert</span>
+			<input
+				type="number"
+				step="1"
+				placeholder="leer = aus Stockwerk"
+				class="input input-bordered input-sm"
+				bind:value={form.hitzewert}
+			/>
+			<span class="text-[10px] leading-tight text-base-content/40">
+				Steuert den Hitze-Term der Raumplanung. Leer lassen = aus dem Stockwerk im Namen ableiten.
+			</span>
 		</label>
 	</div>
 

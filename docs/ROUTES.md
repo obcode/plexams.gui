@@ -33,6 +33,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 |                       | Prüfungsverteilung / Statistik  | `plan/exams/statistics/`         | `statistics/`                 | —                                              |
 |                       | Validierung                     | `plan/exams/validate/`           | `validation/`                 | —                                              |
 | **Raumplanung**       | Raumplanung                     | `plan/rooms/`                    | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
+|                       | Räume generieren                | `plan/rooms/generate/`           | `room/`, `semester/`          | `api/room/`, `api/semester/`                   |
 |                       | Anny-Anforderungen (KDP)        | `plan/kdprooms/`                 | `room/`                       | `api/room/`                                    |
 |                       | Gebäudemanagement-Anforderungen | `plan/roomRequests/`             | `room/`                       | `api/room/`                                    |
 |                       | Validierung                     | `plan/rooms/validate/`           | `validation/`                 | —                                              |

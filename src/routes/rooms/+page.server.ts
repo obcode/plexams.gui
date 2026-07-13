@@ -17,6 +17,7 @@ export async function load() {
 				sebSeats
 				hmebSeats
 				deactivated
+				hitzewert
 			}
 		}
 	`;

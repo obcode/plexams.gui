@@ -267,21 +267,21 @@
 			{#if needsRegen}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						Raum-Sperren geändert — bitte „Räume für Prüfungen zuordnen", damit sie berücksichtigt
-						werden.
+						Raum-Sperren geändert — bitte auf „✨ Räume generieren" neu zuordnen, damit sie
+						berücksichtigt werden.
 					</span>
 				</div>
 			{/if}
+			<div class="flex flex-wrap items-center gap-2">
+				<a class="btn btn-primary btn-sm gap-2" href="/plan/rooms/generate">
+					✨ Räume generieren
+				</a>
+				<span class="text-xs text-base-content/50">
+					Automatische Raumzuteilung mit Probelauf, Report &amp; Parametern (eigene Seite).
+				</span>
+			</div>
 			<SubscriptionTerminal
-				actions={[
-					{
-						field: 'assignRoomsForExams',
-						label: 'Räume für Prüfungen zuordnen',
-						primary: true,
-						disabled: data.roomsBlocked
-					},
-					{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }
-				]}
+				actions={[{ field: 'importAnnyBookings', label: 'Anny-Buchungen importieren' }]}
 				ondone={onGenerated}
 			/>
 			<p class="text-xs text-base-content/50">

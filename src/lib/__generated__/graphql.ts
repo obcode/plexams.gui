@@ -769,6 +769,22 @@ export type GenerationConfig = {
   maxSpanHours: Scalars['Float']['output'];
   /** Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely). */
   preplanCapacityFactor: Scalars['Float']['output'];
+  /** Raumplanung: penalty per reserved buffer seat missing / over-booked. */
+  roomBuffer: Scalars['Float']['output'];
+  /** Raumplanung: penalty for churn (re-assigning already assigned rooms). */
+  roomChurn: Scalars['Float']['output'];
+  /** Raumplanung: reward for compacting exams into fewer rooms/buildings. */
+  roomCompaction: Scalars['Float']['output'];
+  /** Raumplanung: hour of day from which the heat term ramps up. */
+  roomHeatBaselineHour: Scalars['Int']['output'];
+  /** Raumplanung: lowest floor (Stockwerk) that still counts as 'hot'. */
+  roomHeatFloor: Scalars['Int']['output'];
+  /** Raumplanung: whether/how the room-heat term applies (default AUTO by semester). */
+  roomHeatMode: RoomHeatMode;
+  /** Raumplanung: penalty for splitting an exam across several rooms. */
+  roomSplit: Scalars['Float']['output'];
+  /** Raumplanung: penalty per unplaced exam (dominant — keep very high). */
+  roomUnplaced: Scalars['Float']['output'];
   /** Terminplan: how strictly the window is enforced — HARD (domain restriction, default) or SOFT (penalty). */
   slotTimeEnforcement: SlotTimeConstraintEnforcement;
   /**
@@ -821,6 +837,14 @@ export type GenerationConfigInput = {
   iterations: Scalars['Int']['input'];
   maxSpanHours: Scalars['Float']['input'];
   preplanCapacityFactor: Scalars['Float']['input'];
+  roomBuffer: Scalars['Float']['input'];
+  roomChurn: Scalars['Float']['input'];
+  roomCompaction: Scalars['Float']['input'];
+  roomHeatBaselineHour: Scalars['Int']['input'];
+  roomHeatFloor: Scalars['Int']['input'];
+  roomHeatMode: RoomHeatMode;
+  roomSplit: Scalars['Float']['input'];
+  roomUnplaced: Scalars['Float']['input'];
   slotTimeEnforcement: SlotTimeConstraintEnforcement;
   slotTimeGradientWeight: Scalars['Float']['input'];
   slotTimeMode: SlotTimeConstraintMode;
@@ -1087,6 +1111,11 @@ export type LogLine = {
   level: LogLevel;
   progress?: Maybe<OptimizerProgress>;
   report?: Maybe<InvigilationReport>;
+  /**
+   * only set on the final RESULT line of an assignRoomsForExams run and carries the
+   * structured room-planning outcome (also for dryRun).
+   */
+  roomReport?: Maybe<RoomPlanReport>;
   text: Scalars['String']['output'];
   validation?: Maybe<ValidationReport>;
 };
@@ -2709,6 +2738,8 @@ export type Query = {
    * editing; a template error is returned in the preview's `error` field, not as a GraphQL error.
    */
   renderEmailTemplatePreview: EmailTemplatePreview;
+  /** The read-only list of hard/soft constraints the room-planning generator applies. */
+  roomPlanConstraints: Array<OptimizerConstraint>;
   /** All building-management room requests of the semester. */
   roomRequests: Array<RoomRequest>;
   /** Dry-run: which management rooms would be requested for which exams (read-only, changes nothing). */
@@ -3024,6 +3055,11 @@ export type Room = {
   deactivated: Scalars['Boolean']['output'];
   exahm: Scalars['Boolean']['output'];
   handicap: Scalars['Boolean']['output'];
+  /**
+   * Explicit heat value (Hitzewert) for the room-planning heat term. null means the
+   * value is derived from the floor (Stockwerk) in the room name.
+   */
+  hitzewert?: Maybe<Scalars['Int']['output']>;
   hmebSeats?: Maybe<Scalars['Int']['output']>;
   lab: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
@@ -3069,6 +3105,17 @@ export type RoomConstraints = {
   seb: Scalars['Boolean']['output'];
 };
 
+/**
+ * RoomHeatMode classifies how the room-planning 'heat' term (avoid hot upper-floor
+ * rooms in the afternoon) is applied. AUTO follows the semester (only in summer),
+ * SUMMER forces it on, OFF disables it.
+ */
+export enum RoomHeatMode {
+  Auto = 'AUTO',
+  Off = 'OFF',
+  Summer = 'SUMMER'
+}
+
 /** One exam's use of a room in a slot. */
 export type RoomInSlotUsage = {
   __typename?: 'RoomInSlotUsage';
@@ -3081,6 +3128,11 @@ export type RoomInSlotUsage = {
 export type RoomInput = {
   exahm: Scalars['Boolean']['input'];
   handicap: Scalars['Boolean']['input'];
+  /**
+   * Explicit heat value (Hitzewert). Optional; null (or omitted) = derive from the
+   * floor (Stockwerk) in the room name.
+   */
+  hitzewert?: InputMaybe<Scalars['Int']['input']>;
   hmebSeats?: InputMaybe<Scalars['Int']['input']>;
   lab: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
@@ -3091,6 +3143,26 @@ export type RoomInput = {
   seats: Scalars['Int']['input'];
   seb: Scalars['Boolean']['input'];
   sebSeats?: InputMaybe<Scalars['Int']['input']>;
+};
+
+/**
+ * RoomPlanReport is the structured outcome of an assignRoomsForExams run, mirroring
+ * the textual report. It is delivered once on the final RESULT line of the
+ * assignRoomsForExams subscription (also for dryRun, where nothing is written).
+ */
+export type RoomPlanReport = {
+  __typename?: 'RoomPlanReport';
+  cost: Scalars['Float']['output'];
+  costByConstraint: Array<ConstraintCost>;
+  hardViolations: Array<Scalars['String']['output']>;
+  /** seats successfully placed into a room. */
+  placedSeats: Scalars['Int']['output'];
+  /** number of distinct rooms used by the assignment. */
+  rooms: Scalars['Int']['output'];
+  /** ancodes of exams that could not be fully placed. */
+  unplacedExams: Array<Scalars['Int']['output']>;
+  /** seats that could not be placed into any room. */
+  unplacedSeats: Scalars['Int']['output'];
 };
 
 export type RoomRequest = {
@@ -3476,9 +3548,13 @@ export type Subscription = {
    */
   assignInvigilations: LogLine;
   /**
-   * Assign rooms to all exams (rooms-for-exams) and stream the output. The allowed
-   * rooms per slot are computed live from the current rooms/requests/bookings;
-   * there is no separate rooms-for-slots step or cache.
+   * Assign rooms to all exams (rooms-for-exams) and stream the output line by line.
+   * The allowed rooms per slot are computed live from the current
+   * rooms/requests/bookings; there is no separate rooms-for-slots step or cache.
+   * With dryRun nothing is written; the final RESULT line carries the structured
+   * roomReport either way. With keepAssigned the current room assignment is used as
+   * the warm start (only improve, minimal churn) instead of assigning from scratch.
+   * A non-dry-run write is refused while the room plan is gated (published).
    */
   assignRoomsForExams: LogLine;
   /**
@@ -3607,6 +3683,14 @@ export type Subscription = {
 export type SubscriptionAssignInvigilationsArgs = {
   dryRun: Scalars['Boolean']['input'];
   iterations?: InputMaybe<Scalars['Int']['input']>;
+  seed?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type SubscriptionAssignRoomsForExamsArgs = {
+  dryRun: Scalars['Boolean']['input'];
+  iterations?: InputMaybe<Scalars['Int']['input']>;
+  keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
   seed?: InputMaybe<Scalars['Int']['input']>;
 };
 

@@ -209,6 +209,11 @@
 								{#if REQUEST_LABEL[room.requestWith]}<span class="badge badge-warning badge-sm"
 										>{REQUEST_LABEL[room.requestWith]}</span
 									>{/if}
+								{#if room.hitzewert != null}<span
+										class="badge badge-outline badge-sm"
+										title="Hitzewert (überschreibt das Stockwerk aus dem Namen)"
+										>🌡 {room.hitzewert}</span
+									>{/if}
 							</div>
 						</td>
 						<td>
