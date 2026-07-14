@@ -39,6 +39,15 @@ export function icsDownloadUrl(program) {
 }
 
 /**
+ * Download-URL für den vollständigen Semester-Dump (ZIP, Sicherung/Backup). Der
+ * Server stempelt beim Ausliefern lastDumpAt (→ backupStatus danach refetchen).
+ * @returns {string}
+ */
+export function semesterDumpUrl() {
+	return `${backendBase()}/download/semester-dump.zip`;
+}
+
+/**
  * @typedef {{ kind: string, label: string, format: 'pdf' | 'zip', group: 'list' | 'draft' }} PdfDownload
  * @typedef {{ kind: string, label: string, needsProgram?: boolean }} CsvDownload
  */

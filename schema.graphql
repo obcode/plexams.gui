@@ -151,6 +151,21 @@ type AssembledExamsState {
   changedAt: Time
 }
 
+type BackupStatus {
+  """
+  True when there were mutations after the last dump (or a dump was never taken).
+  """
+  hasUnsavedChanges: Boolean!
+
+  """When the last full semester ZIP dump was downloaded; null if never."""
+  lastDumpAt: Time
+
+  """
+  Timestamp of the most recent change (mutation log); null if nothing changed yet.
+  """
+  lastChangeAt: Time
+}
+
 """
 BalanceReport: are all invigilators within ±tolerance of their target minutes.
 """
@@ -989,29 +1004,44 @@ type GenerationConfig {
   preplanCapacityFactor: Float!
 
   """
-  Raumplanung: whether/how the room-heat term applies (default AUTO by semester).
+  Room plan: whether/how the summer heat constraints apply (default AUTO by semester).
   """
   roomHeatMode: RoomHeatConstraintMode!
 
-  """Raumplanung: penalty per unplaced exam (dominant — keep very high)."""
+  """
+  Room plan: penalty per unplaced seat (dominant — keep very high so everyone gets a room).
+  """
   roomUnplaced: Float!
 
-  """Raumplanung: penalty per reserved buffer seat missing / over-booked."""
+  """
+  Room plan: penalty per seat an exam's free-seat buffer falls short (do not pack rooms full).
+  """
   roomBuffer: Float!
 
-  """Raumplanung: penalty for splitting an exam across several rooms."""
+  """
+  Room plan: penalty per extra room an exam is split across (keep an exam together).
+  """
   roomSplit: Float!
 
-  """Raumplanung: reward for compacting exams into fewer rooms/buildings."""
+  """
+  Room plan: penalty per distinct room used overall (compaction — request/open fewer rooms).
+  """
   roomCompaction: Float!
 
-  """Raumplanung: lowest floor (Stockwerk) that still counts as hot."""
+  """
+  Room plan (summer): penalty per (floor × lateness × seat) in own rooms — later = lower floor.
+  """
   roomHeatFloor: Float!
 
-  """Raumplanung: penalty for churn (re-assigning already assigned rooms)."""
+  """
+  Room plan: penalty per seat whose room differs from the saved plan on a re-run (warm start).
+  """
   roomChurn: Float!
 
-  """Raumplanung: hour of day from which the heat term ramps up."""
+  """
+  Room plan (summer): clock hour up to which a slot start is 'cool' (lateness
+  0); later starts get lateness = start − baseline.
+  """
   roomHeatBaselineHour: Float!
 }
 
@@ -1319,11 +1349,6 @@ type LogLine {
   report: InvigilationReport
   validation: ValidationReport
   examReport: ExamScheduleReport
-
-  """
-  only set on the final RESULT line of an assignRoomsForExams run and carries the
-  structured room-planning outcome (also for dryRun).
-  """
   roomReport: RoomPlanReport
 }
 
@@ -1373,6 +1398,21 @@ type MucDaiExam {
 }
 
 type Mutation {
+  """
+  Set the current user's Kürzel override. An empty string resets to the ZPA default.
+  """
+  setMyShortname(shortname: String!): MyAccount!
+
+  """
+  Store the current user's Jira Personal Access Token, AES-256-GCM encrypted in the
+  DB. Write-only: the token is never returned by any query. Requires secrets.key to
+  be configured on the server.
+  """
+  setMyJiraToken(token: String!): MyAccount!
+
+  """Remove the current user's stored Jira PAT."""
+  removeMyJiraToken: MyAccount!
+
   """Create or update an additional exam (key: ancode)."""
   upsertAdditionalExam(input: AdditionalExamInput!): AdditionalExam!
 
@@ -1921,6 +1961,33 @@ type MutationLogEntry {
   durationMs: Int!
 }
 
+"""
+The current user's own account: identity (from the IdP via the auth proxy,
+read-only) plus editable self-service settings — the Kürzel (shortname) and the
+per-user Jira Personal Access Token (stored encrypted in the DB, never returned).
+"""
+type MyAccount {
+  email: String!
+  name: String!
+  role: Role!
+
+  """
+  Effective Kürzel: the user's own override if set, otherwise the ZPA default.
+  """
+  shortname: String!
+
+  """
+  The Kürzel from the matching ZPA teacher record (for display / reset), empty if none.
+  """
+  shortnameFromZpa: String!
+
+  """Whether an (encrypted) Jira PAT is stored for this user."""
+  jiraTokenSet: Boolean!
+
+  """When the Jira PAT was last set (null if none)."""
+  jiraTokenUpdatedAt: Time
+}
+
 type NTA {
   name: String!
   email: String
@@ -2452,6 +2519,9 @@ type Query {
   """
   newSemesterConfigDefaults: SemesterConfigInput!
 
+  """The current user's account (identity + Kürzel + Jira-token status)."""
+  myAccount: MyAccount!
+
   """
   Additional exams: fully specified entries that are appended to the ZPA upload
   but are not part of the normal plan (replaces publish.additionalExams).
@@ -2484,6 +2554,14 @@ type Query {
   All known users (the authorization allow-list). Admin view for managing who may log in.
   """
   users: [User!]!
+
+  """
+  Whether the current semester has changes that are not yet captured in a
+  downloaded full ZIP dump, plus the relevant timestamps. Used by the GUI to
+  prominently offer the semester-dump download once something changed since the
+  last backup.
+  """
+  backupStatus: BackupStatus!
   constraintForAncode(ancode: Int!): Constraints
   zpaExamsToPlanWithConstraints: [ZPAExamWithConstraints!]!
   emailAttachments(kind: String!): [EmailAttachmentInfo!]!
@@ -2549,11 +2627,6 @@ type Query {
   The read-only list of hard/soft constraints the exam-schedule generator applies.
   """
   examScheduleConstraints: [OptimizerConstraint!]!
-
-  """
-  The read-only list of hard/soft constraints the room-planning generator applies.
-  """
-  roomPlanConstraints: [OptimizerConstraint!]!
 
   """
   Summary of the EXaHM/SEB room phase for the GUI: how many EXaHM/SEB exams are planned and
@@ -2771,6 +2844,11 @@ type Query {
   """
   unplacedExams: [UnplacedExam!]!
 
+  """
+  The read-only list of hard/soft constraints the room-plan generator (solver) applies.
+  """
+  roomPlanConstraints: [OptimizerConstraint!]!
+
   """All building-management room requests of the semester."""
   roomRequests: [RoomRequest!]!
 
@@ -2899,8 +2977,8 @@ type Room {
   deactivated: Boolean!
 
   """
-  Explicit heat value (Hitzewert) for the room-planning heat term. null means the
-  value is derived from the floor (Stockwerk) in the room name.
+  Optional summer heat override (higher = hotter). Null = derive from the
+  R-building floor in the name. Only used for own (non-booked) rooms.
   """
   hitzewert: Int
 }
@@ -2940,45 +3018,14 @@ type RoomConstraints {
 }
 
 """
-RoomHeatConstraintMode classifies how the room-planning 'heat' term (avoid hot
-upper-floor rooms in the afternoon) is applied. AUTO follows the semester (only in
-summer), SUMMER forces it on, OFF disables it.
+When the room-plan generator applies the summer heat constraints (heat-floor soft + summer
+cooldown hard). AUTO follows the semester (active only in summer/SS); SUMMER forces them on
+(for testing); OFF disables them. Only own (non-booked) rooms are ever affected. Default AUTO.
 """
 enum RoomHeatConstraintMode {
   AUTO
   SUMMER
   OFF
-}
-
-"""
-RoomPlanReport is the structured outcome of an assignRoomsForExams run, mirroring
-the textual report. It is delivered once on the final RESULT line of the
-assignRoomsForExams subscription (also for dryRun, where nothing is written).
-"""
-type RoomPlanReport {
-  """total exams considered for room assignment."""
-  exams: Int!
-
-  """seats successfully placed into a room."""
-  placedSeats: Int!
-
-  """seats that could not be placed into any room."""
-  unplacedSeats: Int!
-
-  """number of distinct rooms used by the assignment."""
-  rooms: Int!
-  hardViolations: [String!]!
-  cost: Float!
-  costByConstraint: [ConstraintCost!]!
-  iterations: Int!
-
-  """the seed used — pass it back to reproduce this exact assignment."""
-  seed: Int!
-  stoppedEarly: Boolean!
-  written: Boolean!
-
-  """exams that could not be fully placed (with their students)."""
-  unplacedExams: [UnplacedExam!]!
 }
 
 input RoomInput {
@@ -2999,8 +3046,8 @@ input RoomInput {
   hmebSeats: Int
 
   """
-  Explicit heat value (Hitzewert). Optional; null (or omitted) = derive from the
-  floor (Stockwerk) in the room name.
+  Optional summer heat override (higher = hotter). Null = derive from the
+  R-building floor in the name. Only used for own (non-booked) rooms.
   """
   hitzewert: Int
 }
@@ -3011,6 +3058,31 @@ type RoomInSlotUsage {
   module: String!
   examer: String!
   studentCount: Int!
+}
+
+"""
+Structured outcome of a solver-based room-generation run (assignRoomsForExams),
+delivered once on the final RESULT line (also for dryRun).
+"""
+type RoomPlanReport {
+  exams: Int!
+  placedSeats: Int!
+  unplacedSeats: Int!
+
+  """distinct rooms used."""
+  rooms: Int!
+  hardViolations: [String!]!
+  cost: Float!
+  costByConstraint: [ConstraintCost!]!
+  iterations: Int!
+
+  """the seed used — pass it back to reproduce this exact plan."""
+  seed: Int!
+  stoppedEarly: Boolean!
+  written: Boolean!
+
+  """exams with students that got no room (grouped)."""
+  unplacedExams: [UnplacedExam!]!
 }
 
 type RoomRequest {
@@ -3573,15 +3645,13 @@ type Subscription {
   generateExamRoomsPhase(dryRun: Boolean!, seed: Int, iterations: Int): LogLine!
 
   """
-  Assign rooms to all exams (rooms-for-exams) and stream the output line by line.
-  The allowed rooms per slot are computed live from the current
-  rooms/requests/bookings; there is no separate rooms-for-slots step or cache.
-  With dryRun nothing is written; the final RESULT line carries the structured
-  roomReport either way. With keepAssigned the current room assignment is used as
-  the warm start (only improve, minimal churn) instead of assigning from scratch.
-  A non-dry-run write is refused while the room plan is gated (published).
+  Assign rooms to all exams with the constraint solver (simulated annealing) and stream the
+  output line by line. The allowed rooms per slot are computed live from the current
+  rooms/requests/bookings. With dryRun nothing is written; the final RESULT line carries the
+  structured roomReport either way. seed and iterations override the defaults (0/null = keep
+  default). With keepAssigned the current plan is used as the warm start (minimal churn).
   """
-  assignRoomsForExams(dryRun: Boolean!, seed: Int, iterations: Int, keepAssigned: Boolean): LogLine!
+  assignRoomsForExams(dryRun: Boolean! = false, seed: Int, iterations: Int, keepAssigned: Boolean): LogLine!
 
   """
   Fetch the room bookings from anny.eu and store them (used for the EXaHM room slots). Streams its output.
@@ -3741,6 +3811,12 @@ type User {
   email: String!
   name: String!
   role: Role!
+
+  """
+  Kürzel (shortname) override; empty when not set — the effective value then
+  defaults to the ZPA teacher shortname (see myAccount).
+  """
+  shortname: String!
 }
 
 """

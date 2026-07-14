@@ -141,6 +141,16 @@ export type AssembledExamsState = {
   reason?: Maybe<Scalars['String']['output']>;
 };
 
+export type BackupStatus = {
+  __typename?: 'BackupStatus';
+  /** True when there were mutations after the last dump (or a dump was never taken). */
+  hasUnsavedChanges: Scalars['Boolean']['output'];
+  /** Timestamp of the most recent change (mutation log); null if nothing changed yet. */
+  lastChangeAt?: Maybe<Scalars['Time']['output']>;
+  /** When the last full semester ZIP dump was downloaded; null if never. */
+  lastDumpAt?: Maybe<Scalars['Time']['output']>;
+};
+
 /** BalanceReport: are all invigilators within ±tolerance of their target minutes. */
 export type BalanceReport = {
   __typename?: 'BalanceReport';
@@ -769,21 +779,24 @@ export type GenerationConfig = {
   maxSpanHours: Scalars['Float']['output'];
   /** Pre-plan (SEB/EXaHM): usable fraction of a slot's booked Anny seats (1.0 = fill completely). */
   preplanCapacityFactor: Scalars['Float']['output'];
-  /** Raumplanung: penalty per reserved buffer seat missing / over-booked. */
+  /** Room plan: penalty per seat an exam's free-seat buffer falls short (do not pack rooms full). */
   roomBuffer: Scalars['Float']['output'];
-  /** Raumplanung: penalty for churn (re-assigning already assigned rooms). */
+  /** Room plan: penalty per seat whose room differs from the saved plan on a re-run (warm start). */
   roomChurn: Scalars['Float']['output'];
-  /** Raumplanung: reward for compacting exams into fewer rooms/buildings. */
+  /** Room plan: penalty per distinct room used overall (compaction — request/open fewer rooms). */
   roomCompaction: Scalars['Float']['output'];
-  /** Raumplanung: hour of day from which the heat term ramps up. */
+  /**
+   * Room plan (summer): clock hour up to which a slot start is 'cool' (lateness
+   * 0); later starts get lateness = start − baseline.
+   */
   roomHeatBaselineHour: Scalars['Float']['output'];
-  /** Raumplanung: lowest floor (Stockwerk) that still counts as hot. */
+  /** Room plan (summer): penalty per (floor × lateness × seat) in own rooms — later = lower floor. */
   roomHeatFloor: Scalars['Float']['output'];
-  /** Raumplanung: whether/how the room-heat term applies (default AUTO by semester). */
+  /** Room plan: whether/how the summer heat constraints apply (default AUTO by semester). */
   roomHeatMode: RoomHeatConstraintMode;
-  /** Raumplanung: penalty for splitting an exam across several rooms. */
+  /** Room plan: penalty per extra room an exam is split across (keep an exam together). */
   roomSplit: Scalars['Float']['output'];
-  /** Raumplanung: penalty per unplaced exam (dominant — keep very high). */
+  /** Room plan: penalty per unplaced seat (dominant — keep very high so everyone gets a room). */
   roomUnplaced: Scalars['Float']['output'];
   /** Terminplan: how strictly the window is enforced — HARD (domain restriction, default) or SOFT (penalty). */
   slotTimeEnforcement: SlotTimeConstraintEnforcement;
@@ -1111,10 +1124,6 @@ export type LogLine = {
   level: LogLevel;
   progress?: Maybe<OptimizerProgress>;
   report?: Maybe<InvigilationReport>;
-  /**
-   * only set on the final RESULT line of an assignRoomsForExams run and carries the
-   * structured room-planning outcome (also for dryRun).
-   */
   roomReport?: Maybe<RoomPlanReport>;
   text: Scalars['String']['output'];
   validation?: Maybe<ValidationReport>;
@@ -1301,6 +1310,8 @@ export type Mutation = {
   removeExamsCanShareSlot: Scalars['Boolean']['output'];
   /** Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection. */
   removeMucDaiLink: MucDaiExam;
+  /** Remove the current user's stored Jira PAT. */
+  removeMyJiraToken: MyAccount;
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
@@ -1408,6 +1419,14 @@ export type Mutation = {
    * for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
    */
   setMucDaiZpaLink: MucDaiExam;
+  /**
+   * Store the current user's Jira Personal Access Token, AES-256-GCM encrypted in the
+   * DB. Write-only: the token is never returned by any query. Requires secrets.key to
+   * be configured on the server.
+   */
+  setMyJiraToken: MyAccount;
+  /** Set the current user's Kürzel override. An empty string resets to the ZPA default. */
+  setMyShortname: MyAccount;
   /** Activate/deactivate an NTA (key: mtknr). A deactivated NTA is not applied to exams. */
   setNTAActive: Nta;
   /**
@@ -1861,6 +1880,16 @@ export type MutationSetMucDaiZpaLinkArgs = {
 };
 
 
+export type MutationSetMyJiraTokenArgs = {
+  token: Scalars['String']['input'];
+};
+
+
+export type MutationSetMyShortnameArgs = {
+  shortname: Scalars['String']['input'];
+};
+
+
 export type MutationSetNtaActiveArgs = {
   active: Scalars['Boolean']['input'];
   mtknr: Scalars['String']['input'];
@@ -2054,6 +2083,26 @@ export type MutationLogEntry = {
    * operator.* config (empty for entries written before this was configured).
    */
   user?: Maybe<Scalars['String']['output']>;
+};
+
+/**
+ * The current user's own account: identity (from the IdP via the auth proxy,
+ * read-only) plus editable self-service settings — the Kürzel (shortname) and the
+ * per-user Jira Personal Access Token (stored encrypted in the DB, never returned).
+ */
+export type MyAccount = {
+  __typename?: 'MyAccount';
+  email: Scalars['String']['output'];
+  /** Whether an (encrypted) Jira PAT is stored for this user. */
+  jiraTokenSet: Scalars['Boolean']['output'];
+  /** When the Jira PAT was last set (null if none). */
+  jiraTokenUpdatedAt?: Maybe<Scalars['Time']['output']>;
+  name: Scalars['String']['output'];
+  role: Role;
+  /** Effective Kürzel: the user's own override if set, otherwise the ZPA default. */
+  shortname: Scalars['String']['output'];
+  /** The Kürzel from the matching ZPA teacher record (for display / reset), empty if none. */
+  shortnameFromZpa: Scalars['String']['output'];
 };
 
 export type Nta = {
@@ -2522,6 +2571,13 @@ export type Query = {
    */
   assembledExamsState: AssembledExamsState;
   awkwardSlots: Array<Slot>;
+  /**
+   * Whether the current semester has changes that are not yet captured in a
+   * downloaded full ZIP dump, plus the relevant timestamps. Used by the GUI to
+   * prominently offer the semester-dump download once something changed since the
+   * last backup.
+   */
+  backupStatus: BackupStatus;
   /** All rooms blocked for a specific slot (not usable there, e.g. otherwise occupied). */
   blockedRooms: Array<BlockedRoom>;
   /** Auto-detected canShareSlot candidates (same module+program, different examer) not yet declared. */
@@ -2675,6 +2731,8 @@ export type Query = {
   mutationLog: Array<MutationLogEntry>;
   /** Distinct operation names present in the mutation log (for a filter dropdown). */
   mutationLogNames: Array<Scalars['String']['output']>;
+  /** The current user's account (identity + Kürzel + Jira-token status). */
+  myAccount: MyAccount;
   /**
    * A template for creating a new semester, seeded from the current semester's
    * config (slots/emails/go-slots carry over; the planner adjusts the dates).
@@ -2738,7 +2796,7 @@ export type Query = {
    * editing; a template error is returned in the preview's `error` field, not as a GraphQL error.
    */
   renderEmailTemplatePreview: EmailTemplatePreview;
-  /** The read-only list of hard/soft constraints the room-planning generator applies. */
+  /** The read-only list of hard/soft constraints the room-plan generator (solver) applies. */
   roomPlanConstraints: Array<OptimizerConstraint>;
   /** All building-management room requests of the semester. */
   roomRequests: Array<RoomRequest>;
@@ -3056,8 +3114,8 @@ export type Room = {
   exahm: Scalars['Boolean']['output'];
   handicap: Scalars['Boolean']['output'];
   /**
-   * Explicit heat value (Hitzewert) for the room-planning heat term. null means the
-   * value is derived from the floor (Stockwerk) in the room name.
+   * Optional summer heat override (higher = hotter). Null = derive from the
+   * R-building floor in the name. Only used for own (non-booked) rooms.
    */
   hitzewert?: Maybe<Scalars['Int']['output']>;
   hmebSeats?: Maybe<Scalars['Int']['output']>;
@@ -3106,9 +3164,9 @@ export type RoomConstraints = {
 };
 
 /**
- * RoomHeatConstraintMode classifies how the room-planning 'heat' term (avoid hot
- * upper-floor rooms in the afternoon) is applied. AUTO follows the semester (only in
- * summer), SUMMER forces it on, OFF disables it.
+ * When the room-plan generator applies the summer heat constraints (heat-floor soft + summer
+ * cooldown hard). AUTO follows the semester (active only in summer/SS); SUMMER forces them on
+ * (for testing); OFF disables them. Only own (non-booked) rooms are ever affected. Default AUTO.
  */
 export enum RoomHeatConstraintMode {
   Auto = 'AUTO',
@@ -3129,8 +3187,8 @@ export type RoomInput = {
   exahm: Scalars['Boolean']['input'];
   handicap: Scalars['Boolean']['input'];
   /**
-   * Explicit heat value (Hitzewert). Optional; null (or omitted) = derive from the
-   * floor (Stockwerk) in the room name.
+   * Optional summer heat override (higher = hotter). Null = derive from the
+   * R-building floor in the name. Only used for own (non-booked) rooms.
    */
   hitzewert?: InputMaybe<Scalars['Int']['input']>;
   hmebSeats?: InputMaybe<Scalars['Int']['input']>;
@@ -3146,28 +3204,24 @@ export type RoomInput = {
 };
 
 /**
- * RoomPlanReport is the structured outcome of an assignRoomsForExams run, mirroring
- * the textual report. It is delivered once on the final RESULT line of the
- * assignRoomsForExams subscription (also for dryRun, where nothing is written).
+ * Structured outcome of a solver-based room-generation run (assignRoomsForExams),
+ * delivered once on the final RESULT line (also for dryRun).
  */
 export type RoomPlanReport = {
   __typename?: 'RoomPlanReport';
   cost: Scalars['Float']['output'];
   costByConstraint: Array<ConstraintCost>;
-  /** total exams considered for room assignment. */
   exams: Scalars['Int']['output'];
   hardViolations: Array<Scalars['String']['output']>;
   iterations: Scalars['Int']['output'];
-  /** seats successfully placed into a room. */
   placedSeats: Scalars['Int']['output'];
-  /** number of distinct rooms used by the assignment. */
+  /** distinct rooms used. */
   rooms: Scalars['Int']['output'];
-  /** the seed used — pass it back to reproduce this exact assignment. */
+  /** the seed used — pass it back to reproduce this exact plan. */
   seed: Scalars['Int']['output'];
   stoppedEarly: Scalars['Boolean']['output'];
-  /** exams that could not be fully placed (with their students). */
+  /** exams with students that got no room (grouped). */
   unplacedExams: Array<UnplacedExam>;
-  /** seats that could not be placed into any room. */
   unplacedSeats: Scalars['Int']['output'];
   written: Scalars['Boolean']['output'];
 };
@@ -3555,13 +3609,11 @@ export type Subscription = {
    */
   assignInvigilations: LogLine;
   /**
-   * Assign rooms to all exams (rooms-for-exams) and stream the output line by line.
-   * The allowed rooms per slot are computed live from the current
-   * rooms/requests/bookings; there is no separate rooms-for-slots step or cache.
-   * With dryRun nothing is written; the final RESULT line carries the structured
-   * roomReport either way. With keepAssigned the current room assignment is used as
-   * the warm start (only improve, minimal churn) instead of assigning from scratch.
-   * A non-dry-run write is refused while the room plan is gated (published).
+   * Assign rooms to all exams with the constraint solver (simulated annealing) and stream the
+   * output line by line. The allowed rooms per slot are computed live from the current
+   * rooms/requests/bookings. With dryRun nothing is written; the final RESULT line carries the
+   * structured roomReport either way. seed and iterations override the defaults (0/null = keep
+   * default). With keepAssigned the current plan is used as the warm start (minimal churn).
    */
   assignRoomsForExams: LogLine;
   /**
@@ -3695,7 +3747,7 @@ export type SubscriptionAssignInvigilationsArgs = {
 
 
 export type SubscriptionAssignRoomsForExamsArgs = {
-  dryRun: Scalars['Boolean']['input'];
+  dryRun?: Scalars['Boolean']['input'];
   iterations?: InputMaybe<Scalars['Int']['input']>;
   keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
   seed?: InputMaybe<Scalars['Int']['input']>;
@@ -3939,6 +3991,11 @@ export type User = {
   email: Scalars['String']['output'];
   name: Scalars['String']['output'];
   role: Role;
+  /**
+   * Kürzel (shortname) override; empty when not set — the effective value then
+   * defaults to the ZPA teacher shortname (see myAccount).
+   */
+  shortname: Scalars['String']['output'];
 };
 
 /**

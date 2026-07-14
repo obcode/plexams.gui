@@ -1,16 +1,28 @@
 <script>
+	import { onMount } from 'svelte';
 	import {
 		pdfDownloadUrl,
 		csvDownloadUrl,
 		icsDownloadUrl,
+		semesterDumpUrl,
 		PDF_DOWNLOADS,
 		CSV_DOWNLOADS
 	} from '$lib/download/downloads.js';
+	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
 
 	let { data } = $props();
 
 	/** @type {string[]} */
 	let programs = $derived(data.programs ?? []);
+
+	const dumpUrl = semesterDumpUrl();
+	onMount(checkBackupStatus);
+
+	// Server stempelt lastDumpAt beim Ausliefern → danach den Status neu holen.
+	function onDumpDownload() {
+		setTimeout(checkBackupStatus, 2000);
+		setTimeout(checkBackupStatus, 6000);
+	}
 
 	// Gemeinsame Studiengang-Auswahl für Entwurf-CSV und ICS-Kalender.
 	let program = $state('');
@@ -29,6 +41,33 @@
 			Server mit einer Klartext-Fehlermeldung.
 		</p>
 	</div>
+
+	<!-- Sicherung / Backup (vollständiger Semester-Dump) -->
+	<section
+		class="flex flex-col gap-2 rounded-lg border p-4 {$backupStatus.hasUnsavedChanges
+			? 'border-info/40 bg-info/10'
+			: 'border-base-300 bg-base-100'}"
+	>
+		<h2 class="flex items-center gap-2 text-sm font-semibold text-base-content/70">
+			💾 Sicherung (Backup)
+			{#if $backupStatus.hasUnsavedChanges}
+				<span class="badge badge-info badge-sm">Änderungen seit letztem Backup</span>
+			{/if}
+		</h2>
+		<p class="text-sm text-base-content/60">
+			Vollständiger Semester-Dump als ZIP — alle Daten des aktuellen Semesters zum Sichern.
+		</p>
+		<div class="flex flex-wrap items-center gap-2">
+			<a
+				class="btn btn-sm {$backupStatus.hasUnsavedChanges ? 'btn-info' : 'btn-outline'}"
+				href={dumpUrl}
+				download
+				onclick={onDumpDownload}
+			>
+				⬇️ Semester-Dump (ZIP)
+			</a>
+		</div>
+	</section>
 
 	<!-- Listen (PDF) -->
 	<section class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">

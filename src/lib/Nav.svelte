@@ -10,7 +10,11 @@
 	} from '$lib/validation/store';
 	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
 	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
+	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
+	import { semesterDumpUrl } from '$lib/download/downloads.js';
 	import { isViewer, isAdmin, displayName, roleOf } from '$lib/auth';
+
+	const dumpUrl = semesterDumpUrl();
 
 	// Angemeldete Identität + Rolle (SSR aus dem Layout-Load; kein Flackern).
 	// null = kein Auth-Backend (lokal/Dev) → voller Zugriff.
@@ -59,6 +63,28 @@
 		const h = Math.round(min / 60);
 		if (h < 24) return `vor ${h} Std.`;
 		return `vor ${Math.round(h / 24)} Tg.`;
+	}
+
+	/** Relative Zeit aus einem ISO-Zeitstempel (Backup-Kontext). @param {string | null} iso */
+	function agoIso(iso: string | null) {
+		if (!iso) return null;
+		const t = new Date(iso).getTime();
+		if (Number.isNaN(t)) return null;
+		return ago(t);
+	}
+
+	// „Letztes Backup: …" — Kontext für den Backup-Hinweis.
+	let lastBackupLabel = $derived(
+		$backupStatus.lastDumpAt
+			? `Letztes Backup: ${agoIso($backupStatus.lastDumpAt)}`
+			: 'Letztes Backup: noch nie'
+	);
+
+	// Semester-Dump herunterladen: der Server stempelt beim Ausliefern lastDumpAt,
+	// daher kurz danach den Backup-Status neu holen → der Hinweis verschwindet.
+	function onDumpDownload() {
+		setTimeout(checkBackupStatus, 2000);
+		setTimeout(checkBackupStatus, 6000);
 	}
 
 	function statusTitle(
@@ -218,6 +244,9 @@
 	function checkStaleStates() {
 		checkAssembledExams();
 		checkStudentRegs();
+		// Backup-Status reitet auf denselben Auslösern mit (Mount, Fokus, Intervall,
+		// Routenwechsel): nach Mutationen wird hasUnsavedChanges beim nächsten Poll true.
+		checkBackupStatus();
 	}
 
 	// aktuell aktives Theme (von theme-change als data-theme am <html> gesetzt),
@@ -607,6 +636,34 @@
 			</button>
 		</div>
 
+		<!-- Backup/Dump: dauerhaft erreichbar; wird hervorgehoben (Badge-Punkt), wenn
+		     seit dem letzten Backup Änderungen anstehen. Klick lädt den Semester-Dump. -->
+		<a
+			href={dumpUrl}
+			download
+			onclick={onDumpDownload}
+			class="btn btn-ghost btn-sm btn-circle relative {$backupStatus.hasUnsavedChanges
+				? 'text-warning'
+				: 'text-base-content/60'}"
+			title={$backupStatus.hasUnsavedChanges
+				? `Seit dem letzten Backup geändert — Sicherung herunterladen · ${lastBackupLabel}`
+				: `Semester-Sicherung herunterladen · ${lastBackupLabel}`}
+			aria-label="Semester-Sicherung herunterladen"
+		>
+			<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+				/>
+			</svg>
+			{#if $backupStatus.hasUnsavedChanges}
+				<span
+					class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 animate-pulse rounded-full bg-warning ring-2 ring-base-100"
+				></span>
+			{/if}
+		</a>
+
 		<!-- Theme-Auswahl -->
 		<div class="dropdown dropdown-end">
 			<div
@@ -969,6 +1026,21 @@
 			{#if changedAt}<span class="opacity-60">· {fmtChangedAt(changedAt)}</span>{/if}
 			<div class="flex-1"></div>
 			<a class="btn btn-warning btn-xs" href="/exam/assembledExams">→ Generieren</a>
+		</div>
+	{/if}
+
+	<!-- Banner: seit dem letzten Backup geändert (dezenter Hinweis, kein Modal) -->
+	{#if $backupStatus.hasUnsavedChanges}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-info/40 bg-info/15 px-3 py-1.5 text-sm text-info-content"
+		>
+			<span>💾</span>
+			<span class="font-medium">Seit dem letzten Backup geändert</span>
+			<span class="opacity-70">— {lastBackupLabel}</span>
+			<div class="flex-1"></div>
+			<a class="btn btn-info btn-xs" href={dumpUrl} download onclick={onDumpDownload}>
+				⬇️ Sicherung herunterladen
+			</a>
 		</div>
 	{/if}
 
