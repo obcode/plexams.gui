@@ -54,7 +54,7 @@ async function loadExams() {
 			}
 		}
 	`;
-	const data = await backendRequest(query);
+	const data = await backendRequest<{ examsWithNtas: any[] }>(query);
 	return data.examsWithNtas;
 }
 
@@ -84,7 +84,7 @@ async function loadStudents() {
 		}
 	`;
 
-	const data = await backendRequest(query);
+	const data = await backendRequest<{ ntasWithRegs: any[] }>(query);
 	const ntasWithRegs = data.ntasWithRegs;
 
 	if (ntasWithRegs != null) {

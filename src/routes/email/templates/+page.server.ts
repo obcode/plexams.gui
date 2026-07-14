@@ -14,7 +14,10 @@ type EmailTemplate = {
 type TemplateFunction = { name: string; usage: string; description: string };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{
+		emailTemplates: EmailTemplate[];
+		emailTemplateFunctions: TemplateFunction[];
+	}>(gql`
 		query {
 			emailTemplates {
 				name

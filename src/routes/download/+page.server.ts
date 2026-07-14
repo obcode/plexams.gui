@@ -6,7 +6,7 @@ type StudyProgram = { shortname: string; active: boolean; retired: boolean };
 
 // Studiengänge für die Programm-Auswahl (ICS-Kalender + Entwurf-CSV).
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{ studyPrograms: StudyProgram[] }>(gql`
 		query {
 			studyPrograms {
 				shortname

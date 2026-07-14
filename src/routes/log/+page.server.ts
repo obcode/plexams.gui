@@ -14,7 +14,10 @@ type MutationLogEntry = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{
+		mutationLogNames: string[];
+		mutationLog: MutationLogEntry[];
+	}>(gql`
 		query {
 			mutationLogNames
 			mutationLog(limit: 200) {

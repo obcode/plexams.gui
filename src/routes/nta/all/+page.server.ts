@@ -22,7 +22,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await backendRequest(query);
+	const data = await backendRequest<{ ntas: any[] }>(query);
 
 	const semesterQuery = gql`
 		query {
@@ -32,7 +32,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const semesterData = await backendRequest(semesterQuery);
+	const semesterData = await backendRequest<{ semester: { id: string } }>(semesterQuery);
 
 	return {
 		semester: semesterData.semester.id,

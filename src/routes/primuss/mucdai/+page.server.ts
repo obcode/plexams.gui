@@ -5,7 +5,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await backendRequest(gql`
+		const data = await backendRequest<{ mucdaiExams: any[]; semesterConfig: any }>(gql`
 			query {
 				semesterConfig {
 					days {

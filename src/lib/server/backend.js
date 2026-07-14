@@ -40,11 +40,14 @@ export function backendClient(ctx) {
 
 /**
  * Kurzform für Einzel-Requests — ersetzt `request(env.PLEXAMS_SERVER, doc, vars)`.
+ * Generisch wie das frühere `request<T>(…)`: ohne Typargument fällt T auf `any`
+ * zurück (aus einem String-Dokument ist T nicht ableitbar).
  *
+ * @template {any} [T=any]
  * @param {import('graphql-request').RequestDocument} document Query/Mutation
  * @param {Record<string, any>} [variables]
- * @returns {Promise<any>}
+ * @returns {Promise<T>}
  */
 export function backendRequest(document, variables) {
-	return backendClient().request(document, variables);
+	return /** @type {Promise<T>} */ (backendClient().request(document, variables));
 }

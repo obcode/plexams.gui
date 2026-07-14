@@ -8,7 +8,11 @@ import type { PageServerLoad } from './$types';
 // connectionError weiterreichen; die interaktiven Teile arbeiten client-seitig.
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await backendRequest(gql`
+		const data = await backendRequest<{
+			jiraConnection: any;
+			jiraOpenIssues: any[];
+			jiraOpenIssuesByRequestType: any[];
+		}>(gql`
 			query {
 				jiraConnection {
 					name

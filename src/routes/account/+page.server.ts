@@ -9,7 +9,7 @@ import type { PageServerLoad } from './$types';
 // Seite zu killen. `email`/`name`/`role` kommen read-only aus dem IdP.
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await backendRequest(gql`
+		const data = await backendRequest<{ myAccount: any }>(gql`
 			query {
 				myAccount {
 					email

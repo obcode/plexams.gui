@@ -8,7 +8,7 @@ type PrimussExam = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{ primussExams: PrimussExam[] }>(gql`
 		query {
 			primussExams {
 				program

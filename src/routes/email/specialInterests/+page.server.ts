@@ -5,7 +5,7 @@ import type { PageServerLoad } from './$types';
 type SpecialInterest = { name: string; filename: string; ancodes: number[] };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{ specialInterests: SpecialInterest[] }>(gql`
 		query {
 			specialInterests {
 				name

@@ -6,7 +6,10 @@ type PermanentNonInvigilator = { teacherID: number; name: string; reason: string
 type InvigilatorCandidate = { id: number; shortname: string; fullname: string };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{
+		permanentNonInvigilators: PermanentNonInvigilator[];
+		invigilatorCandidates: InvigilatorCandidate[];
+	}>(gql`
 		query {
 			permanentNonInvigilators {
 				teacherID

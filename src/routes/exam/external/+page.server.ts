@@ -65,7 +65,7 @@ export type OtherFkItem = {
 
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await backendRequest(gql`
+		const data = await backendRequest<QueryResult>(gql`
 			query {
 				semesterConfig {
 					days {

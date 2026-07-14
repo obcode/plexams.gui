@@ -13,7 +13,7 @@ type StudyProgram = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await backendRequest(gql`
+	const data = await backendRequest<{ studyPrograms: StudyProgram[] }>(gql`
 		query {
 			studyPrograms {
 				shortname
