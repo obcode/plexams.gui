@@ -8,7 +8,7 @@ import type { LayoutServerLoad } from './$types';
  * Deaktivieren der Schreib-Buttons.
  */
 export const load: LayoutServerLoad = async () => {
-	// Server-Infos für den Footer (GUI-/plexams.go-Version, Mongo). Eigener
+	// Server-Infos für den Footer (plexams.gui-/plexams.go-Version). Eigener
 	// try/catch, damit ein Backend ohne `serverInfo` den Semester-Status nicht
 	// mitreißt.
 	let serverInfo = null;
@@ -19,8 +19,6 @@ export const load: LayoutServerLoad = async () => {
 					version
 					commit
 					releaseURL
-					mongoHost
-					mongoDatabase
 				}
 			}
 		`);

@@ -4,8 +4,6 @@
 	 * @property {string} [version]      plexams.go-Version (bringt das führende „v" bereits mit)
 	 * @property {string} [commit]       Git-Commit des Backends
 	 * @property {string|null} [releaseURL] Link zum GitHub-Release (null bei dev-Build)
-	 * @property {string} [mongoHost]     Mongo-Host:Port (Credentials herausgefiltert)
-	 * @property {string} [mongoDatabase] Mongo-Datenbank / Semester
 	 *
 	 * @typedef {Object} Props
 	 * @property {string} [guiVersion]           eigene GUI-Version (Buildzeit, aus semantic-release-Tag)
@@ -67,7 +65,7 @@
 	<!-- Eigene GUI-Version: immer als Link aufs (zugehörige) GitHub-Release -->
 	{#if guiDisplay}
 		<span>
-			GUI
+			plexams.gui
 			<a class="link link-hover" href={guiReleaseURL} target="_blank" rel="noopener">
 				{guiDisplay}
 			</a>
@@ -89,19 +87,6 @@
 				<span class="opacity-70">(↗ Release)</span>
 			{:else}
 				<span title={serverInfo?.commit ?? undefined}>{serverDisplay} (dev)</span>
-			{/if}
-		</span>
-	{/if}
-
-	{#if serverInfo?.mongoHost || serverInfo?.mongoDatabase}
-		<span aria-hidden="true">·</span>
-		<!-- Mongo-Verbindung: Host / Datenbank (Credentials werden backendseitig entfernt) -->
-		<span>
-			mongo:
-			{#if serverInfo.mongoHost && serverInfo.mongoDatabase}
-				{serverInfo.mongoHost} / {serverInfo.mongoDatabase}
-			{:else}
-				{serverInfo.mongoHost || serverInfo.mongoDatabase}
 			{/if}
 		</span>
 	{/if}
