@@ -52,3 +52,24 @@ jobs:
           # den Build reichen; vite.config.js liest sie als APP_VERSION.
           build-args: |
             APP_VERSION=${{ github.event.release.tag_name }}
+
+  # Rollt das frisch gepushte Image auf dem Deploy-Host aus. Spiegelbildlich zum
+  # Backend (plexams.go): derselbe Self-hosted-Runner (Label `plexams-deploy`),
+  # derselbe on-host Stack — dieser Job fasst aber nur den `gui`-Service an, das
+  # Backend nur seinen. Die docker-compose.yml synct weiterhin das Backend-Repo.
+  deploy:
+    needs: build-and-push-image
+    runs-on: [self-hosted, plexams-deploy]
+    env:
+      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/opt/plexams/deploy' }}
+    steps:
+      - name: Deploy pinned GUI image
+        run: |
+          set -euo pipefail
+          # release-Event → github.ref ist refs/tags/vX.Y.Z; das „v" strippen.
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          cd "$DEPLOY_DIR"
+          sed -i "s/^GUI_TAG=.*/GUI_TAG=$VERSION/" .env
+          docker compose pull gui
+          docker compose up -d gui
+          docker image prune -f

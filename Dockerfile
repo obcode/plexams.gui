@@ -30,9 +30,15 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 FROM node:24-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app/build build/
-COPY --from=prod-deps /app/node_modules node_modules/
-COPY package.json .
+# adapter-node lauscht per Default auf 0.0.0.0:3000; explizit gesetzt, damit der
+# nginx-Upstream `gui:3000` im plexams.go-Deploy garantiert passt.
+ENV PORT=3000
+ENV HOST=0.0.0.0
+COPY --from=builder --chown=node:node /app/build build/
+COPY --from=prod-deps --chown=node:node /app/node_modules node_modules/
+COPY --chown=node:node package.json .
+# Non-root: node:24-alpine bringt den unprivilegierten Nutzer „node" mit.
+USER node
 EXPOSE 3000
 
 CMD ["node", "-r", "dotenv/config", "./build"]
