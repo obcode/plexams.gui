@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
 import { NTA_FIELDS } from '$lib/gql/fragments';
 import type { PageServerLoad } from './$types';
@@ -113,7 +113,7 @@ export const load: PageServerLoad = async () => {
 
 	let data;
 	try {
-		data = await request<any>(env.PLEXAMS_SERVER, query);
+		data = await backendRequest(query);
 	} catch (e) {
 		// Einzelne planEntry.starttime werfen für externe Zeiten außerhalb des
 		// Prüfungszeitraums (Slot 0/0). GraphQL nullt dadurch nur den betroffenen

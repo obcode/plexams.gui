@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 type PrimussExam = {
@@ -8,21 +8,18 @@ type PrimussExam = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await request<{ primussExams: PrimussExam[] }>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				primussExams {
-					program
-					exams {
-						ancode
-						module
-						mainExamer
-					}
+	const data = await backendRequest(gql`
+		query {
+			primussExams {
+				program
+				exams {
+					ancode
+					module
+					mainExamer
 				}
 			}
-		`
-	);
+		}
+	`);
 
 	// Lookup: "program/ancode" → { module, mainExamer }
 	const examByKey: Record<string, { module: string; mainExamer: string }> = {};

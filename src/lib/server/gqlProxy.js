@@ -1,7 +1,6 @@
-import { env } from '$env/dynamic/private';
 import { json } from '@sveltejs/kit';
-import { request as gqlrequest } from 'graphql-request';
 import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '$lib/server/backend';
 
 // Serverseitiger Helfer für die /api-Proxy-Endpunkte: führt eine GraphQL-
 // Operation gegen das Backend ($PLEXAMS_SERVER) aus und verpackt das Ergebnis
@@ -23,7 +22,7 @@ import { gqlErrorMessage } from '$lib/gqlError';
  */
 export async function gqlProxy(document, variables) {
 	try {
-		const data = await gqlrequest(env.PLEXAMS_SERVER, document, variables);
+		const data = await backendRequest(document, variables);
 		return json(data);
 	} catch (e) {
 		return json({ error: gqlErrorMessage(e) }, { status: 400 });

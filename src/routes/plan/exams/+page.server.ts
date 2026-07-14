@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
@@ -36,7 +36,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await backendRequest(semesterQuery);
 
 	const examsWithoutSlotQuery = gql`
 		query {
@@ -133,7 +133,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, examsWithoutSlotQuery);
+	const data = await backendRequest(examsWithoutSlotQuery);
 
 	// Kompakte Liste der geplanten Prüfungen für die zeitbasierte Kalenderansicht
 	// (Blöcke nach echter Start-Zeit + Dauer). Robust gegen Slot-0/0-externe
@@ -183,7 +183,7 @@ export const load: PageServerLoad = async () => {
 	`;
 	let plannedExams = [];
 	try {
-		const pd = await request<any>(env.PLEXAMS_SERVER, plannedQuery);
+		const pd = await backendRequest(plannedQuery);
 		plannedExams = pd.plannedExams ?? [];
 	} catch (e) {
 		const resp = (e as any)?.response;
@@ -196,34 +196,31 @@ export const load: PageServerLoad = async () => {
 	// (out-of-period oder noch ganz ohne Zeit) für den eigenen Block.
 	let otherFkExams;
 	try {
-		const od = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					zpaExamsToPlanWithConstraints {
-						zpaExam {
+		const od = await backendRequest(gql`
+			query {
+				zpaExamsToPlanWithConstraints {
+					zpaExam {
+						ancode
+						module
+						mainExamer
+						faculty
+						isRepeaterExam
+						primussAncodes {
+							program
 							ancode
-							module
-							mainExamer
-							faculty
-							isRepeaterExam
-							primussAncodes {
-								program
-								ancode
-							}
 						}
-						constraints {
-							notPlannedByMe
-							notPlannedByMeInFK
-						}
-						planEntry {
-							starttime
-						}
-						studentRegsCount
 					}
+					constraints {
+						notPlannedByMe
+						notPlannedByMeInFK
+					}
+					planEntry {
+						starttime
+					}
+					studentRegsCount
 				}
-			`
-		);
+			}
+		`);
 		otherFkExams = (od.zpaExamsToPlanWithConstraints ?? [])
 			.filter((e: any) => e.constraints?.notPlannedByMe)
 			.map((e: any) => ({
@@ -243,38 +240,35 @@ export const load: PageServerLoad = async () => {
 	// Backend-Feld ist evtl. älter als diese GUI → tolerant per try/catch.
 	let examsNotOnGrid: any[] = [];
 	try {
-		const ng = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					examsNotOnSlotGrid {
+		const ng = await backendRequest(gql`
+			query {
+				examsNotOnSlotGrid {
+					ancode
+					zpaExam {
 						ancode
-						zpaExam {
+						module
+						mainExamer
+						faculty
+						isRepeaterExam
+						primussAncodes {
+							program
 							ancode
-							module
-							mainExamer
-							faculty
-							isRepeaterExam
-							primussAncodes {
-								program
-								ancode
-							}
-						}
-						maxDuration
-						studentRegsCount
-						constraints {
-							notPlannedByMe
-							notPlannedByMeInFK
-							location
-						}
-						planEntry {
-							starttime
-							external
 						}
 					}
+					maxDuration
+					studentRegsCount
+					constraints {
+						notPlannedByMe
+						notPlannedByMeInFK
+						location
+					}
+					planEntry {
+						starttime
+						external
+					}
 				}
-			`
-		);
+			}
+		`);
 		examsNotOnGrid = ng.examsNotOnSlotGrid ?? [];
 	} catch (e) {
 		const resp = (e as any)?.response;

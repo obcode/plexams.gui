@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
@@ -9,21 +9,18 @@ import type { PageServerLoad } from './$types';
 // Zusätzlich pro Anforderung die Belegung des Raums in diesem Slot anreichern
 // (Prüfung, Modul, Prüfer, Zeit, NTAs inkl. NTA-Zeit).
 export const load: PageServerLoad = async () => {
-	const data = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				roomRequests {
-					room
-					starttime
-					from
-					until
-					approved
-					active
-				}
+	const data = await backendRequest(gql`
+		query {
+			roomRequests {
+				room
+				starttime
+				from
+				until
+				approved
+				active
 			}
-		`
-	);
+		}
+	`);
 
 	const roomRequests = data.roomRequests ?? [];
 
@@ -35,34 +32,31 @@ export const load: PageServerLoad = async () => {
 
 	// Semester-Config (Tage/Anfangszeiten) zuerst laden — für den return und um die
 	// absolute Startzeit je (day, slot) für die zeitbasierte examsAt-Query zu bauen.
-	const cfg = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				semesterConfig {
-					days {
-						date
-					}
-					starttimes {
-						start
-					}
+	const cfg = await backendRequest(gql`
+		query {
+			semesterConfig {
+				days {
+					date
 				}
-				rooms {
-					name
-					requestWith
-					deactivated
+				starttimes {
+					start
 				}
-				planningState {
-					phases {
-						conditions {
-							key
-							done
-						}
+			}
+			rooms {
+				name
+				requestWith
+				deactivated
+			}
+			planningState {
+				phases {
+					conditions {
+						key
+						done
 					}
 				}
 			}
-		`
-	);
+		}
+	`);
 	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
 	const cfgDays = (cfg.semesterConfig?.days ?? []).map((d: any, i: number) => ({
 		...d,
@@ -108,7 +102,7 @@ export const load: PageServerLoad = async () => {
 	const slotResults = await Promise.all(
 		startKeys.map(async (starttime): Promise<[string, any[]]> => {
 			try {
-				const d = await request<any>(env.PLEXAMS_SERVER, slotQuery, { starttime });
+				const d = await backendRequest(slotQuery, { starttime });
 				return [starttime, d.examsAt ?? []];
 			} catch {
 				return [starttime, []];

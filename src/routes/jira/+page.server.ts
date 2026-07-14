@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 import type { PageServerLoad } from './$types';
 
@@ -8,45 +8,38 @@ import type { PageServerLoad } from './$types';
 // connectionError weiterreichen; die interaktiven Teile arbeiten client-seitig.
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await request<{
-			jiraConnection: any;
-			jiraOpenIssues: any[];
-			jiraOpenIssuesByRequestType: any[];
-		}>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					jiraConnection {
-						name
+		const data = await backendRequest(gql`
+			query {
+				jiraConnection {
+					name
+					displayName
+					emailAddress
+				}
+				jiraOpenIssues {
+					key
+					summary
+					status
+					issueType
+					url
+					created
+					reporter {
 						displayName
-						emailAddress
 					}
-					jiraOpenIssues {
+				}
+				jiraOpenIssuesByRequestType {
+					requestType
+					issues {
 						key
 						summary
 						status
-						issueType
 						url
-						created
 						reporter {
 							displayName
 						}
 					}
-					jiraOpenIssuesByRequestType {
-						requestType
-						issues {
-							key
-							summary
-							status
-							url
-							reporter {
-								displayName
-							}
-						}
-					}
 				}
-			`
-		);
+			}
+		`);
 		return {
 			connection: data.jiraConnection ?? null,
 			openIssues: data.jiraOpenIssues ?? [],

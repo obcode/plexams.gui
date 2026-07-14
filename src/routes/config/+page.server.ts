@@ -1,53 +1,50 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const data = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				semester {
-					id
-				}
-				planer {
-					name
-					email
-					testMail
-					cc
-					noreplyMail
-					noreplyName
-					defaultMail
-					effectiveTestMail
-					effectiveCc
-					effectiveNoreplyMail
-					effectiveNoreplyName
-				}
-				semesterConfigInput {
-					from
-					until
-					startTimes
-					forbiddenDays
-					mucDaiAllowedTimes
-					timelagMin
-					notTooCloseMinutes
-					crossCampusGapMinutes
-					maxSeatsPerSlot
-					emails {
-						profs
-						lbas
-						lbasLastSemester
-						additionalExamer
-						fs
-						sekr
-						roomManagement
-						kdp
-						lbaba
-					}
+	const data = await backendRequest(gql`
+		query {
+			semester {
+				id
+			}
+			planer {
+				name
+				email
+				testMail
+				cc
+				noreplyMail
+				noreplyName
+				defaultMail
+				effectiveTestMail
+				effectiveCc
+				effectiveNoreplyMail
+				effectiveNoreplyName
+			}
+			semesterConfigInput {
+				from
+				until
+				startTimes
+				forbiddenDays
+				mucDaiAllowedTimes
+				timelagMin
+				notTooCloseMinutes
+				crossCampusGapMinutes
+				maxSeatsPerSlot
+				emails {
+					profs
+					lbas
+					lbasLastSemester
+					additionalExamer
+					fs
+					sekr
+					roomManagement
+					kdp
+					lbaba
 				}
 			}
-		`
-	);
+		}
+	`);
 
 	// Prüfungstage kommen vom Backend (semesterConfig.days), damit z. B. spätere
 	// Samstags-Nutzung nur dort geändert werden muss. Separat + tolerant: ohne Config
@@ -57,19 +54,16 @@ export const load: PageServerLoad = async () => {
 	// Effektive (aus der Config berechnete) Werte für Hinweistexte im Formular.
 	let effective: { maxSeatsPerSlot: number } | null = null;
 	try {
-		const dd = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					semesterConfig {
-						days {
-							date
-						}
-						maxSeatsPerSlot
+		const dd = await backendRequest(gql`
+			query {
+				semesterConfig {
+					days {
+						date
 					}
+					maxSeatsPerSlot
 				}
-			`
-		);
+			}
+		`);
 		// Die 1-basierte Tag-Nummer entspricht der Position (Index+1) in den geordneten
 		// Tagen; das Setup-Formular (SemesterConfigForm) liest sie als d.number.
 		if (dd.semesterConfig?.days)

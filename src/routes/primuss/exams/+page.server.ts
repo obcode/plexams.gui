@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -39,7 +39,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// Programm-Kürzel → Kategorie (fk07 | mucdai | misc); unbekannte → Sonstige
 	const catByProgram: Record<string, string> = {};

@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 import type { PageServerLoad } from './$types';
 
@@ -13,77 +13,74 @@ import type { PageServerLoad } from './$types';
 // den freeDayShare über alle Studierenden für einen „kaum abweichend"-Hinweis an.
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					examSpreadStatistics {
+		const data = await backendRequest(gql`
+			query {
+				examSpreadStatistics {
+					studentCount
+					multiExamStudentCount
+					totalPlannedExams
+					studentsWithUnplannedExams
+					avgExamsPerStudent
+					maxExamsPerStudent
+					freeDayShare
+					sameDayShare
+					adjacentDayShare
+					conflictShare
+					threeExamsOneDayCount
+					avgMinFreeDays
+					medianMinFreeDays
+					avgProximityCost
+					maxRegularNonRepeatExams
+					excludedStudentCount
+					allFreeDayShare
+					examGapMinutes
+					notTooCloseMinutes
+					studentBuckets {
+						key
+						label
+						count
+						share
+					}
+					pairBuckets {
+						key
+						label
+						count
+						share
+					}
+					examCountBuckets {
+						examCount
+						label
+						students
+						share
+					}
+					byProgram {
+						program
 						studentCount
 						multiExamStudentCount
-						totalPlannedExams
-						studentsWithUnplannedExams
 						avgExamsPerStudent
-						maxExamsPerStudent
 						freeDayShare
 						sameDayShare
-						adjacentDayShare
-						conflictShare
-						threeExamsOneDayCount
 						avgMinFreeDays
-						medianMinFreeDays
-						avgProximityCost
-						maxRegularNonRepeatExams
-						excludedStudentCount
-						allFreeDayShare
-						examGapMinutes
-						notTooCloseMinutes
-						studentBuckets {
-							key
-							label
-							count
-							share
-						}
-						pairBuckets {
-							key
-							label
-							count
-							share
-						}
-						examCountBuckets {
-							examCount
-							label
-							students
-							share
-						}
-						byProgram {
-							program
-							studentCount
-							multiExamStudentCount
-							avgExamsPerStudent
-							freeDayShare
-							sameDayShare
-							avgMinFreeDays
-							lowSampleSize
-						}
-						worstStudents {
-							mtknr
-							name
-							program
-							group
-							examCount
-							minFreeDays
-							worstLabel
-							exams {
-								ancode
-								module
-								starttime
-								durationMinutes
-							}
+						lowSampleSize
+					}
+					worstStudents {
+						mtknr
+						name
+						program
+						group
+						examCount
+						minFreeDays
+						worstLabel
+						exams {
+							ancode
+							module
+							starttime
+							durationMinutes
 						}
 					}
 				}
-			`
-		);
+			}
+		`);
 		return { stats: data.examSpreadStatistics ?? null, loadError: '' };
 	} catch (e) {
 		return { stats: null, loadError: gqlErrorMessage(e) };

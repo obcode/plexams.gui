@@ -1,35 +1,32 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const data = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				additionalExams {
-					ancode
-					date
-					time
-					rooms {
-						roomName
-						invigilatorID
-						duration
-						isReserve
-						studentCount
-						isHandicap
-					}
-				}
+	const data = await backendRequest(gql`
+		query {
+			additionalExams {
+				ancode
+				date
+				time
 				rooms {
-					name
-				}
-				teachers(fromZPA: false) {
-					id
-					fullname
+					roomName
+					invigilatorID
+					duration
+					isReserve
+					studentCount
+					isHandicap
 				}
 			}
-		`
-	);
+			rooms {
+				name
+			}
+			teachers(fromZPA: false) {
+				id
+				fullname
+			}
+		}
+	`);
 	const teachers = (data.teachers ?? [])
 		.slice()
 		.sort((a: any, b: any) => a.fullname.localeCompare(b.fullname));

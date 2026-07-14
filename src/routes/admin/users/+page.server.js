@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 
 /**
@@ -12,23 +12,20 @@ import { gqlErrorMessage } from '$lib/gqlError';
  */
 export const load = async () => {
 	try {
-		const data = await request(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					users {
-						email
-						name
-						role
-					}
-					me {
-						email
-						name
-						role
-					}
+		const data = await backendRequest(gql`
+			query {
+				users {
+					email
+					name
+					role
 				}
-			`
-		);
+				me {
+					email
+					name
+					role
+				}
+			}
+		`);
 		const users = /** @type {any} */ (data.users ?? [])
 			.slice()
 			.sort((/** @type {any} */ a, /** @type {any} */ b) =>

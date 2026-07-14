@@ -1,5 +1,4 @@
-import { env } from '$env/dynamic/private';
-import { request } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
@@ -81,7 +80,7 @@ export const load: PageServerLoad = async () => {
 			}
 		}
 	`;
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
 	const cfgDays = (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({

@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { LayoutServerLoad } from './$types';
 
 /**
@@ -13,20 +13,17 @@ export const load: LayoutServerLoad = async () => {
 	// mitreißt.
 	let serverInfo = null;
 	try {
-		const info = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query ServerInfo {
-					serverInfo {
-						version
-						commit
-						releaseURL
-						mongoHost
-						mongoDatabase
-					}
+		const info = await backendRequest(gql`
+			query ServerInfo {
+				serverInfo {
+					version
+					commit
+					releaseURL
+					mongoHost
+					mongoDatabase
 				}
-			`
-		);
+			}
+		`);
 		serverInfo = info?.serverInfo ?? null;
 	} catch {
 		// z. B. älteres Backend ohne serverInfo → Footer zeigt nur GUI-Version.
@@ -37,37 +34,31 @@ export const load: LayoutServerLoad = async () => {
 	// mitreißt → me bleibt null = voller Zugriff, es wird nichts ausgeblendet.
 	let me = null;
 	try {
-		const info = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query Me {
-					me {
-						email
-						name
-						role
-					}
+		const info = await backendRequest(gql`
+			query Me {
+				me {
+					email
+					name
+					role
 				}
-			`
-		);
+			}
+		`);
 		me = info?.me ?? null;
 	} catch {
 		// Älteres Backend ohne Auth → keine Rolle, GUI verhält sich wie bisher.
 	}
 
 	try {
-		const data = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					semester {
-						id
-						semester
-						compatible
-						readOnly
-					}
+		const data = await backendRequest(gql`
+			query {
+				semester {
+					id
+					semester
+					compatible
+					readOnly
 				}
-			`
-		);
+			}
+		`);
 		const s = data?.semester ?? null;
 		return {
 			semesterStatus: s,

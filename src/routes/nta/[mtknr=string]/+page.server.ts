@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	const nta = data.nta;
 
@@ -45,7 +45,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		}
 	`;
 
-			const examData = await request<any>(env.PLEXAMS_SERVER, examQuery);
+			const examData = await backendRequest(examQuery);
 			exams.push(examData.zpaExam);
 		}
 

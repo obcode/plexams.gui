@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -22,7 +22,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<{ ntas: any[] }>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	const semesterQuery = gql`
 		query {
@@ -32,10 +32,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const semesterData = await request<{ semester: { id: string } }>(
-		env.PLEXAMS_SERVER,
-		semesterQuery
-	);
+	const semesterData = await backendRequest(semesterQuery);
 
 	return {
 		semester: semesterData.semester.id,

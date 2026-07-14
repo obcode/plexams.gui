@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
@@ -33,9 +33,7 @@ export const load: PageServerLoad = async () => {
 	};
 
 	try {
-		const data = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
+		const data = await backendRequest(gql`
 				query {
 					planningState {
 						blockedAreas
@@ -73,8 +71,7 @@ export const load: PageServerLoad = async () => {
 						}
 					}
 				}
-			`
-		);
+			`);
 		out.blockedAreas = data.planningState?.blockedAreas ?? [];
 		out.constraints = [...(data.examScheduleConstraints ?? [])].sort(
 			(a: any, b: any) => a.tier - b.tier
@@ -88,9 +85,7 @@ export const load: PageServerLoad = async () => {
 	// Konflikt-Daten separat: ohne generierten Plan kann das (noch) fehlschlagen —
 	// dann bleibt der Bereich leer statt die Seite zu killen.
 	try {
-		const cd = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
+		const cd = await backendRequest(gql`
 				query {
 					examScheduleConflicts {
 						ancode1
@@ -139,8 +134,7 @@ export const load: PageServerLoad = async () => {
 						${PAIR_FIELDS}
 					}
 				}
-			`
-		);
+			`);
 		out.conflicts = cd.examScheduleConflicts ?? [];
 		out.decisions = cd.studentConflictDecisions ?? [];
 		out.suggestions = cd.canShareSlotSuggestions ?? [];

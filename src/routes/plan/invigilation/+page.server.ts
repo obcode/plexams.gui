@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { combineStarttime } from '$lib/exam/setExamTime';
 import type { PageServerLoad } from './$types';
 
@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ url }) => {
 		}
 	`;
 
-	const { semesterConfig, planningState } = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
+	const { semesterConfig, planningState } = await backendRequest(semesterQuery);
 	const invigilationsBlocked = (planningState?.blockedAreas ?? []).includes('INVIGILATIONS');
 
 	// Semester noch nicht konfiguriert → leer zurück, die Seite zeigt einen Hinweis
@@ -95,12 +95,12 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	// load the NTA list and every (day, time) slot in parallel
 	const [ntaData, days] = await Promise.all([
-		request<any>(env.PLEXAMS_SERVER, ntaQuery),
+		backendRequest(ntaQuery),
 		Promise.all(
 			semesterConfig.days.map(async (day: { number: number; date: string }) => {
 				const slots = await Promise.all(
 					semesterConfig.starttimes.map(async (time: { number: number; start: string }) => {
-						const data = await request<any>(env.PLEXAMS_SERVER, slotQuery, {
+						const data = await backendRequest(slotQuery, {
 							starttime: combineStarttime(day.date, time.start, day.date)
 						});
 						return { time, slot: data.roomsWithInvigilationsAt };

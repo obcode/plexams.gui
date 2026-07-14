@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import type { PageServerLoad } from './$types';
 
@@ -52,7 +52,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// ExamDay/Starttime tragen keine `number` mehr (Backend-Zeitmodell). Die 1-basierte
 	// Tag-/Slot-Nummer entspricht der Position im (chronologisch sortierten) Array und wird

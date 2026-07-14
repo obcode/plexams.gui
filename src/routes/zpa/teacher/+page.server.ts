@@ -1,38 +1,35 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 // Promise NICHT awaiten → SvelteKit streamt es: die Seite ist sofort da,
 // die Tabelle füllt sich, sobald die (etwas langsamere) Query zurückkommt.
 export const load: PageServerLoad = () => {
-	const people = request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				semester {
-					id
-				}
-				teachers(fromZPA: false) {
-					fullname
-					shortname
-					isProf
-					isLBA
-					isProfHC
-					isStaff
-					lastSemester
-					fk
-					id
-					email
-				}
-				invigilators {
-					teacher {
-						id
-					}
-					hasSubmittedRequirements
-				}
+	const people = backendRequest(gql`
+		query {
+			semester {
+				id
 			}
-		`
-	)
+			teachers(fromZPA: false) {
+				fullname
+				shortname
+				isProf
+				isLBA
+				isProfHC
+				isStaff
+				lastSemester
+				fk
+				id
+				email
+			}
+			invigilators {
+				teacher {
+					id
+				}
+				hasSubmittedRequirements
+			}
+		}
+	`)
 		.then((data) => {
 			// Aufsichten (Teilmenge) je teacherID: present = ist Aufsicht, Wert = Anforderungen abgegeben?
 			const invigById: Record<number, boolean> = {};

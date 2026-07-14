@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '$lib/gql/fragments';
 import type { PageServerLoad } from './$types';
@@ -83,7 +83,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// Prüfer-ID → Fakultät (z. B. „FK07"), für den „nicht-FK07"-Filter.
 	const fkById: Record<number, string> = {};

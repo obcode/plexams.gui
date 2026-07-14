@@ -1,6 +1,6 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
 import { json } from '@sveltejs/kit';
+import { authContext, backendRequest } from '$lib/server/backend';
 
 /**
  * POST-Proxys unter /api, die in Wahrheit Lese-Abfragen sind (Suche, Slot-Lookups,
@@ -53,16 +53,13 @@ async function isReadOnly() {
 	const now = Date.now();
 	if (now < roCache.expires) return roCache.value;
 	try {
-		const data = await request(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					semester {
-						readOnly
-					}
+		const data = await backendRequest(gql`
+			query {
+				semester {
+					readOnly
 				}
-			`
-		);
+			}
+		`);
 		roCache = { value: !!data?.semester?.readOnly, expires: now + 5000 };
 	} catch {
 		// Im Zweifel nicht blockieren — das Backend bleibt der eigentliche Riegel.
@@ -73,14 +70,26 @@ async function isReadOnly() {
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-	const { method, url } = { method: event.request.method, url: event.url };
-	if (method === 'POST' && url.pathname.startsWith('/api/') && !READ_POST_PATHS.has(url.pathname)) {
-		if (await isReadOnly()) {
-			return json(
-				{ error: 'Semester ist geschützt (nur lesen) — Schreibvorgang abgelehnt.' },
-				{ status: 423 }
-			);
+	// Vom Auth-Proxy (nginx/Shibboleth) autoritativ injizierte Identität. Wird
+	// als AsyncLocalStorage-Kontext gesetzt, damit jeder serverseitige GraphQL-
+	// Call (SSR-load()s, /api-Proxys, isReadOnly unten) sie als X-Remote-User an
+	// das Backend weiterreicht — siehe $lib/server/backend.
+	const remoteUser = event.request.headers.get('x-remote-user') || undefined;
+	const remoteDisplayname = event.request.headers.get('x-remote-displayname') || undefined;
+	event.locals.remoteUser = remoteUser;
+	event.locals.remoteDisplayname = remoteDisplayname;
+
+	return authContext.run({ remoteUser, remoteDisplayname }, async () => {
+		const { method } = event.request;
+		const { pathname } = event.url;
+		if (method === 'POST' && pathname.startsWith('/api/') && !READ_POST_PATHS.has(pathname)) {
+			if (await isReadOnly()) {
+				return json(
+					{ error: 'Semester ist geschützt (nur lesen) — Schreibvorgang abgelehnt.' },
+					{ status: 423 }
+				);
+			}
 		}
-	}
-	return resolve(event);
+		return resolve(event);
+	});
 }

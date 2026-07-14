@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 
 export async function load() {
 	const query = gql`
@@ -22,7 +22,7 @@ export async function load() {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	return {
 		rooms: data.rooms

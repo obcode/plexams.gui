@@ -1,7 +1,12 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			// Vom Auth-Proxy (nginx/Shibboleth) injizierte Identität; in
+			// hooks.server.js aus X-Remote-User/-Displayname gesetzt.
+			remoteUser?: string;
+			remoteDisplayname?: string;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

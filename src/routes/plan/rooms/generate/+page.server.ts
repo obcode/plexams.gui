@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
@@ -10,9 +10,7 @@ import type { PageServerLoad } from './$types';
 // generationConfig für die Raumplanungs-Parameter (roomHeat*/room*-Gewichte).
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
+		const data = await backendRequest(gql`
 				query {
 					planningState {
 						blockedAreas
@@ -29,8 +27,7 @@ export const load: PageServerLoad = async () => {
 						${GENERATION_CONFIG_FIELDS}
 					}
 				}
-			`
-		);
+			`);
 		return {
 			blockedAreas: (data.planningState?.blockedAreas ?? []) as string[],
 			constraints: [...(data.roomPlanConstraints ?? [])].sort((a: any, b: any) => a.tier - b.tier),

@@ -1,5 +1,4 @@
-import { env } from '$env/dynamic/private';
-import { request } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 
 const BOOKING_TIMEZONE = 'Europe/Berlin';
 const SLOT_DURATION_MINUTES = 120;
@@ -133,7 +132,7 @@ export async function load() {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// Backend liefert keine day/slot-Nummern mehr → 1-basierte Position rekonstruieren.
 	const cfgDays = (data.semesterConfig?.days ?? []).map((d: any, i: number) => ({

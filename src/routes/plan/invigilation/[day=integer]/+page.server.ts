@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		}
 	`;
 
-	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await backendRequest(semesterQuery);
 
 	// Backend liefert keine `number` mehr — die 1-basierte Nummer entspricht der
 	// Position (Index+1). Rekonstruieren, damit `.number`-Zugriffe (Tag-Auswahl,

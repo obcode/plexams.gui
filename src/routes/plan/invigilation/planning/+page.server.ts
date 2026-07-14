@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -71,7 +71,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const dataTodos = await request<any>(env.PLEXAMS_SERVER, queryTodos);
+	const dataTodos = await backendRequest(queryTodos);
 
 	const semesterQuery = gql`
 		query {
@@ -86,7 +86,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const semesterData = await request<any>(env.PLEXAMS_SERVER, semesterQuery);
+	const semesterData = await backendRequest(semesterQuery);
 
 	// Backend liefert keine `number` mehr — die 1-basierte Nummer entspricht der
 	// Position (Index+1). Rekonstruieren, damit `.number`-Zugriffe in InvigilatorTR/
@@ -120,7 +120,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const excludedData = await request<any>(env.PLEXAMS_SERVER, excludedQuery);
+	const excludedData = await backendRequest(excludedQuery);
 
 	return {
 		semesterConfig,

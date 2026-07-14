@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 type MutationLogEntry = {
@@ -14,27 +14,24 @@ type MutationLogEntry = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await request<{ mutationLogNames: string[]; mutationLog: MutationLogEntry[] }>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				mutationLogNames
-				mutationLog(limit: 200) {
-					time
-					name
-					type
-					user
-					args {
-						key
-						value
-					}
-					ancodes
-					error
-					durationMs
+	const data = await backendRequest(gql`
+		query {
+			mutationLogNames
+			mutationLog(limit: 200) {
+				time
+				name
+				type
+				user
+				args {
+					key
+					value
 				}
+				ancodes
+				error
+				durationMs
 			}
-		`
-	);
+		}
+	`);
 
 	return {
 		names: data.mutationLogNames ?? [],

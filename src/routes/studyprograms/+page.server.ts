@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 type StudyProgram = {
@@ -13,22 +13,19 @@ type StudyProgram = {
 };
 
 export const load: PageServerLoad = async () => {
-	const data = await request<{ studyPrograms: StudyProgram[] }>(
-		env.PLEXAMS_SERVER,
-		gql`
-			query {
-				studyPrograms {
-					shortname
-					name
-					degree
-					category
-					active
-					retired
-					externalExamsBase
-				}
+	const data = await backendRequest(gql`
+		query {
+			studyPrograms {
+				shortname
+				name
+				degree
+				category
+				active
+				retired
+				externalExamsBase
 			}
-		`
-	);
+		}
+	`);
 
 	const programs = (data.studyPrograms ?? [])
 		.slice()

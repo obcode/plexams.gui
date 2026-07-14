@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { gqlErrorMessage } from '$lib/gqlError';
 import type { PageServerLoad } from './$types';
 
@@ -65,56 +65,53 @@ export type OtherFkItem = {
 
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await request<QueryResult>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					semesterConfig {
-						days {
-							date
-						}
-					}
-					mucdaiExams {
-						primussAncode
-						module
-						mainExamer
-						examType
-						duration
-						isRepeaterExam
-						program
-						plannedBy
-						ancode
-						planEntry {
-							starttime
-							external
-						}
-					}
-					zpaExamsToPlanWithConstraints {
-						zpaExam {
-							ancode
-							module
-							mainExamer
-							mainExamerID
-							examType
-							examTypeFull
-							groups
-						}
-						constraints {
-							notPlannedByMe
-							notPlannedByMeInFK
-						}
-						planEntry {
-							starttime
-							external
-						}
-					}
-					teachers {
-						id
-						fk
+		const data = await backendRequest(gql`
+			query {
+				semesterConfig {
+					days {
+						date
 					}
 				}
-			`
-		);
+				mucdaiExams {
+					primussAncode
+					module
+					mainExamer
+					examType
+					duration
+					isRepeaterExam
+					program
+					plannedBy
+					ancode
+					planEntry {
+						starttime
+						external
+					}
+				}
+				zpaExamsToPlanWithConstraints {
+					zpaExam {
+						ancode
+						module
+						mainExamer
+						mainExamerID
+						examType
+						examTypeFull
+						groups
+					}
+					constraints {
+						notPlannedByMe
+						notPlannedByMeInFK
+					}
+					planEntry {
+						starttime
+						external
+					}
+				}
+				teachers {
+					id
+					fk
+				}
+			}
+		`);
 
 		// FK je Prüfenden-ID (Fallback für ZPA-Prüfungen ohne notPlannedByMeInFK)
 		const fkById: Record<number, string> = {};

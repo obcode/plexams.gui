@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
 import type { PageServerLoad } from './$types';
 
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async () => {
 	`;
 
 	try {
-		const data = await request<any>(env.PLEXAMS_SERVER, query);
+		const data = await backendRequest(query);
 
 		// Studiengang → Primuss-Prüfungen (für „anderes Primuss-Exam hinzufügen")
 		const primussByProgram: Record<

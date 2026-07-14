@@ -1,6 +1,6 @@
-import { env } from '$env/dynamic/private';
 import { json } from '@sveltejs/kit';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async ({ url }) => {
@@ -12,7 +12,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	return json(data.semester.id);
 };

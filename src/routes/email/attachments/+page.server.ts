@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { conditionsDoneMap } from '$lib/email/emailConditions';
 import type { PageServerLoad } from './$types';
 
@@ -33,7 +33,7 @@ export const load: PageServerLoad = async () => {
 		}
 	`;
 
-	const data = await request<any>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 
 	// Prüfende mit von mir geplanten Prüfungen (eindeutig nach ID)
 	const examerMap = new Map<string | number, { key: string | number; label: string }>();

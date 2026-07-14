@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 import type { PageServerLoad } from './$types';
@@ -10,9 +10,7 @@ import type { PageServerLoad } from './$types';
 // rendert sofort), Kalender-Query als gestreamtes Promise nachliefern (`{#await}`).
 
 export const load: PageServerLoad = async () => {
-	const data = await request<any>(
-		env.PLEXAMS_SERVER,
-		gql`
+	const data = await backendRequest(gql`
 			query {
 				preplanExams {
 					id
@@ -98,8 +96,7 @@ export const load: PageServerLoad = async () => {
 					description
 				}
 			}
-		`
-	);
+		`);
 
 	const teachers = (data.teachers ?? [])
 		.slice()
@@ -140,48 +137,45 @@ export const load: PageServerLoad = async () => {
 	// langsamen Teile; sie speisen nur den Kalender. Die Post-Verarbeitung (Anny-Balken,
 	// belegte Räume je Slot, Kalender-Slots) hängt an slots/examDates/dn/sn aus dem Kern.
 	async function loadCalendar() {
-		const cal = await request<any>(
-			env.PLEXAMS_SERVER,
-			gql`
-				query {
-					preplanOverview {
-						slots {
-							starttime
-							exahm {
-								examCount
-								seatsNeeded
-								roomsSuggested
-								rooms
-								seatsAvailable
-								seatsBooked
-								roomsToBook
-							}
-							seb {
-								examCount
-								seatsNeeded
-								roomsSuggested
-								rooms
-								seatsAvailable
-								seatsBooked
-								roomsToBook
-							}
-							conflicts {
-								program
-								preplanExamIDs
-								modules
-							}
+		const cal = await backendRequest(gql`
+			query {
+				preplanOverview {
+					slots {
+						starttime
+						exahm {
+							examCount
+							seatsNeeded
+							roomsSuggested
+							rooms
+							seatsAvailable
+							seatsBooked
+							roomsToBook
+						}
+						seb {
+							examCount
+							seatsNeeded
+							roomsSuggested
+							rooms
+							seatsAvailable
+							seatsBooked
+							roomsToBook
+						}
+						conflicts {
+							program
+							preplanExamIDs
+							modules
 						}
 					}
-					allAnnyBookings {
-						room
-						startDate
-						endDate
-						canceledAt
-						mine
-					}
 				}
-			`
-		);
+				allAnnyBookings {
+					room
+					startDate
+					endDate
+					canceledAt
+					mine
+				}
+			}
+		`);
 
 		// --- Anny-Buchungen je Slot (für „gebucht/ungenutzt" im Kalender) ---
 		// gleiche Berlin-Zeit-Logik wie /rooms/annyBookings.

@@ -1,5 +1,5 @@
-import { env } from '$env/dynamic/private';
-import { request, gql } from 'graphql-request';
+import { gql } from 'graphql-request';
+import { backendRequest } from '$lib/server/backend';
 import type { PageServerLoad } from './$types';
 
 // Zwei Sichten auf dieselben Semester-NTAs: nach Studierenden (teuer, N+1)
@@ -54,7 +54,7 @@ async function loadExams() {
 			}
 		}
 	`;
-	const data = await request<{ examsWithNtas: any[] }>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 	return data.examsWithNtas;
 }
 
@@ -84,7 +84,7 @@ async function loadStudents() {
 		}
 	`;
 
-	const data = await request<{ ntasWithRegs: any[] }>(env.PLEXAMS_SERVER, query);
+	const data = await backendRequest(query);
 	const ntasWithRegs = data.ntasWithRegs;
 
 	if (ntasWithRegs != null) {
@@ -117,7 +117,7 @@ async function loadStudents() {
 				// Generieren.
 				let examData: any;
 				try {
-					examData = await request<any>(env.PLEXAMS_SERVER, examQuery);
+					examData = await backendRequest(examQuery);
 				} catch {
 					continue;
 				}
@@ -136,7 +136,7 @@ async function loadStudents() {
 							}
 						}
 					`;
-					const roomData = await request<any>(env.PLEXAMS_SERVER, roomQuery);
+					const roomData = await backendRequest(roomQuery);
 
 					if (roomData?.plannedRoomForStudent?.room != null) {
 						examData.assembledExam.roomName = roomData.plannedRoomForStudent.room.name;
@@ -151,7 +151,7 @@ async function loadStudents() {
 							}
 						}
 					`;
-					const planData = await request<any>(env.PLEXAMS_SERVER, plannedExamQuery);
+					const planData = await backendRequest(plannedExamQuery);
 
 					if (planData?.plannedExam?.planEntry != null) {
 						examData.assembledExam.starttime = planData.plannedExam.planEntry.starttime;
@@ -164,7 +164,7 @@ async function loadStudents() {
 									}
 								}
 							`;
-							const invigilatorData = await request<any>(env.PLEXAMS_SERVER, invigilatorQuery);
+							const invigilatorData = await backendRequest(invigilatorQuery);
 							if (invigilatorData?.invigilator?.shortname != null) {
 								examData.assembledExam.invigilator = invigilatorData.invigilator.shortname;
 							}
