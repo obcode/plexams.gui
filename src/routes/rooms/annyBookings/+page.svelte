@@ -134,33 +134,43 @@
 		})()
 	);
 
-	// Pro Tag überlappungsfrei in „Spuren" (lanes) packen.
+	// Pro Tag in Spuren packen — nach Raum gruppiert in fester Legenden-Reihenfolge
+	// (sortRooms), damit die Spalten der Kalenderübersicht der Legende entsprechen.
+	// Je Raum eine Spur; nur bei zeitlicher Überlappung desselben Raums mehrere.
 	let calendar = $derived(
 		calendarDates.map((date) => {
-			const dayBookings = calBookings
-				.filter((/** @type {any} */ b) => b.dateKey === date)
-				.sort(
-					(/** @type {any} */ a, /** @type {any} */ b) =>
-						a.startMin - b.startMin || a.endMin - b.endMin
-				);
-			/** @type {number[]} */
-			const laneEnds = [];
-			const placed = dayBookings.map((/** @type {any} */ b) => {
-				let lane = laneEnds.findIndex((end) => end <= b.startMin);
-				if (lane === -1) {
-					lane = laneEnds.length;
-					laneEnds.push(b.endMin);
-				} else {
-					laneEnds[lane] = b.endMin;
+			const dayBookings = calBookings.filter((/** @type {any} */ b) => b.dateKey === date);
+			const rooms = sortRooms(dayBookings.map((/** @type {any} */ b) => b.room));
+			/** @type {any[]} */
+			const placed = [];
+			let laneOffset = 0;
+			for (const room of rooms) {
+				const roomBookings = dayBookings
+					.filter((/** @type {any} */ b) => b.room === room)
+					.sort(
+						(/** @type {any} */ a, /** @type {any} */ b) =>
+							a.startMin - b.startMin || a.endMin - b.endMin
+					);
+				/** @type {number[]} */
+				const laneEnds = [];
+				for (const b of roomBookings) {
+					let lane = laneEnds.findIndex((end) => end <= b.startMin);
+					if (lane === -1) {
+						lane = laneEnds.length;
+						laneEnds.push(b.endMin);
+					} else {
+						laneEnds[lane] = b.endMin;
+					}
+					placed.push({ ...b, lane: laneOffset + lane });
 				}
-				return { ...b, lane };
-			});
+				laneOffset += Math.max(1, laneEnds.length);
+			}
 			return {
 				date,
 				label: dayLabel(date),
 				dayNumber: examDays.find((/** @type {any} */ d) => d.date === date)?.dayNumber,
 				bookings: placed,
-				lanes: Math.max(1, laneEnds.length)
+				lanes: Math.max(1, laneOffset)
 			};
 		})
 	);
