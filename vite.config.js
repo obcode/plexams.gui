@@ -29,10 +29,17 @@ function gitDescribe() {
 
 const appVersion = process.env.APP_VERSION?.trim() || gitDescribe() || pkg.version;
 
+// Zeitpunkt des Builds für den Footer, ISO-8601. Im Docker-Release ist der
+// Build-Zeitpunkt praktisch der Release-Zeitpunkt (das Image wird direkt nach
+// dem semantic-release-Tag gebaut). Über BUILD_TIME überschreibbar, falls ein
+// reproduzierbarer/exakter Zeitstempel gewünscht ist.
+const buildTime = process.env.BUILD_TIME?.trim() || new Date().toISOString();
+
 export default defineConfig({
 	plugins: [sveltekit()],
 	define: {
-		__APP_VERSION__: JSON.stringify(appVersion)
+		__APP_VERSION__: JSON.stringify(appVersion),
+		__BUILD_TIME__: JSON.stringify(buildTime)
 	},
 	// Unit-Tests (vitest) leben in src/; e2e-Smoke-Tests (Playwright) in tests/.
 	// Explizit scopen, damit `pnpm test` die Playwright-Specs nie einsammelt.

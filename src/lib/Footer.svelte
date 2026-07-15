@@ -7,11 +7,12 @@
 	 *
 	 * @typedef {Object} Props
 	 * @property {string} [guiVersion]           eigene GUI-Version (Buildzeit, aus semantic-release-Tag)
+	 * @property {string} [buildTime]            Build-Zeitpunkt (ISO-8601), aus Vite-`define`
 	 * @property {ServerInfo|null} [serverInfo]  Server-Infos vom Backend
 	 */
 
 	/** @type {Props} */
-	let { guiVersion, serverInfo = null } = $props();
+	let { guiVersion, buildTime, serverInfo = null } = $props();
 
 	/**
 	 * Eine Version einheitlich als „v1.2.3" darstellen — egal ob die Quelle das
@@ -44,8 +45,31 @@
 		return !!raw && /^v?\d+\.\d+\.\d+$/.test(raw);
 	}
 
+	/**
+	 * Build-/Release-Zeitpunkt fürs Footer formatieren. Bei einem sauberen
+	 * Release-Tag reicht das Datum („Release-Date"); bei Dev-Builds ist die
+	 * Uhrzeit nützlich, um denselben Tag mehrfach gebaute Stände zu unterscheiden.
+	 * Feste Zeitzone/Locale, damit SSR und Client identisch rendern.
+	 * @param {string|null|undefined} iso
+	 * @param {boolean} withTime
+	 */
+	function formatBuildTime(iso, withTime) {
+		if (!iso) return null;
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return null;
+		return new Intl.DateTimeFormat('de-DE', {
+			day: '2-digit',
+			month: '2-digit',
+			year: 'numeric',
+			...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+			timeZone: 'Europe/Berlin'
+		}).format(d);
+	}
+
 	const guiDisplay = $derived(display(guiVersion));
 	const guiExact = $derived(isExactTag(guiVersion));
+	// Sauberer Tag → nur Datum (Release-Date); Dev-Build → Datum + Uhrzeit.
+	const buildDisplay = $derived(formatBuildTime(buildTime, !guiExact));
 	// Immer aufs zugehörige GitHub-Release verlinken: bei sauberem Tag auf genau
 	// dieses, bei dev-Builds auf das zugrunde liegende Release; ist gar kein Tag
 	// erkennbar, auf die Releases-Übersicht.
@@ -72,6 +96,9 @@
 			{#if !guiExact}
 				<span class="opacity-70">(dev)</span>
 			{/if}
+			{#if buildDisplay}
+				<span class="opacity-70">— {buildDisplay}</span>
+			{/if}
 		</span>
 	{/if}
 
@@ -84,7 +111,6 @@
 				<a class="link link-hover" href={serverInfo.releaseURL} target="_blank" rel="noopener">
 					{serverDisplay}
 				</a>
-				<span class="opacity-70">(↗ Release)</span>
 			{:else}
 				<span title={serverInfo?.commit ?? undefined}>{serverDisplay} (dev)</span>
 			{/if}

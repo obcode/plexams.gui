@@ -14,6 +14,9 @@ declare global {
 
 	// Von Vite via `define` injizierte GUI-Version (aus package.json).
 	const __APP_VERSION__: string;
+
+	// Von Vite via `define` injizierter Build-Zeitpunkt (ISO-8601).
+	const __BUILD_TIME__: string;
 }
 
 export {};

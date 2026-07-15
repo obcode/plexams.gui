@@ -63,10 +63,18 @@ export const load: LayoutServerLoad = async () => {
 			readOnly: !!s?.readOnly,
 			me,
 			serverInfo,
-			guiVersion: __APP_VERSION__
+			guiVersion: __APP_VERSION__,
+			buildTime: __BUILD_TIME__
 		};
 	} catch {
 		// Backend nicht erreichbar → keine Annahme über Schutz treffen.
-		return { semesterStatus: null, readOnly: false, me, serverInfo, guiVersion: __APP_VERSION__ };
+		return {
+			semesterStatus: null,
+			readOnly: false,
+			me,
+			serverInfo,
+			guiVersion: __APP_VERSION__,
+			buildTime: __BUILD_TIME__
+		};
 	}
 };
