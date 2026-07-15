@@ -46,14 +46,12 @@
 	}
 
 	/**
-	 * Build-/Release-Zeitpunkt fürs Footer formatieren. Bei einem sauberen
-	 * Release-Tag reicht das Datum („Release-Date"); bei Dev-Builds ist die
-	 * Uhrzeit nützlich, um denselben Tag mehrfach gebaute Stände zu unterscheiden.
+	 * Build-/Release-Zeitpunkt fürs Footer formatieren — immer Datum + Uhrzeit
+	 * (der Deploy-Zeitpunkt ist auch bei einem sauberen Release interessant).
 	 * Feste Zeitzone/Locale, damit SSR und Client identisch rendern.
 	 * @param {string|null|undefined} iso
-	 * @param {boolean} withTime
 	 */
-	function formatBuildTime(iso, withTime) {
+	function formatBuildTime(iso) {
 		if (!iso) return null;
 		const d = new Date(iso);
 		if (isNaN(d.getTime())) return null;
@@ -61,15 +59,15 @@
 			day: '2-digit',
 			month: '2-digit',
 			year: 'numeric',
-			...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+			hour: '2-digit',
+			minute: '2-digit',
 			timeZone: 'Europe/Berlin'
 		}).format(d);
 	}
 
 	const guiDisplay = $derived(display(guiVersion));
 	const guiExact = $derived(isExactTag(guiVersion));
-	// Sauberer Tag → nur Datum (Release-Date); Dev-Build → Datum + Uhrzeit.
-	const buildDisplay = $derived(formatBuildTime(buildTime, !guiExact));
+	const buildDisplay = $derived(formatBuildTime(buildTime));
 	// Immer aufs zugehörige GitHub-Release verlinken: bei sauberem Tag auf genau
 	// dieses, bei dev-Builds auf das zugrunde liegende Release; ist gar kein Tag
 	// erkennbar, auf die Releases-Übersicht.
