@@ -121,10 +121,16 @@
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
-	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester)
-	let logicalSem = $derived(
-		currentSem?.semester && currentSem.semester !== currentSem.id ? currentSem.semester : ''
-	);
+	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester).
+	// Reine Trenner-Unterschiede (z.B. "2026 WS" vs. "2026-WS") gelten als gleich und
+	// werden nur einmal angezeigt.
+	let logicalSem = $derived.by(() => {
+		const sem = currentSem?.semester;
+		if (!sem) return '';
+		const norm = sem.replace(/[\s-]+/g, '').toUpperCase();
+		const normId = (currentSem?.id ?? '').replace(/[\s-]+/g, '').toUpperCase();
+		return norm !== normId ? sem : '';
+	});
 	async function getSemester() {
 		const response = await fetch('/api/semester/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
