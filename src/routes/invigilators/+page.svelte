@@ -9,8 +9,22 @@
 
 	let teacherID = $state(0);
 	let reason = $state('');
+	let validFrom = $state('');
+	let validUntil = $state('');
 	let busy = $state(false);
 	let error = $state('');
+
+	/**
+	 * Gültigkeitsfenster für die Anzeige formatieren.
+	 * @param {string | null} from
+	 * @param {string | null} until
+	 */
+	function windowLabel(from, until) {
+		if (from && until) return `${from} – ${until}`;
+		if (from) return `ab ${from}`;
+		if (until) return `bis ${until}`;
+		return 'unbefristet';
+	}
 
 	async function add() {
 		const id = Number(teacherID);
@@ -25,7 +39,7 @@
 			const res = await fetch('/api/invigilator/setPermanentNonInvigilator', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ teacherID: id, name, reason: r })
+				body: JSON.stringify({ teacherID: id, name, reason: r, validFrom, validUntil })
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
@@ -34,6 +48,8 @@
 			}
 			teacherID = 0;
 			reason = '';
+			validFrom = '';
+			validUntil = '';
 			await invalidateAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
@@ -42,9 +58,41 @@
 		}
 	}
 
+	/**
+	 * Gültigkeitsfenster eines bestehenden Eintrags ändern (Upsert per teacherID).
+	 * So wird „ab diesem Semester keine Aufsicht mehr" per validUntil erledigt,
+	 * ohne den Eintrag zu löschen.
+	 * @param {any} p
+	 * @param {{ validFrom?: string | null, validUntil?: string | null }} patch
+	 */
+	async function saveWindow(p, patch) {
+		error = '';
+		try {
+			const res = await fetch('/api/invigilator/setPermanentNonInvigilator', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({
+					teacherID: p.teacherID,
+					name: p.name,
+					reason: p.reason,
+					validFrom: 'validFrom' in patch ? patch.validFrom : p.validFrom,
+					validUntil: 'validUntil' in patch ? patch.validUntil : p.validUntil
+				})
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				error = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			await invalidateAll();
+		} catch (e) {
+			error = e instanceof Error ? e.message : String(e);
+		}
+	}
+
 	/** @param {any} p */
 	async function remove(p) {
-		if (!confirm(`Permanente Nicht-Aufsicht für ${p.name} aufheben?`)) return;
+		if (!confirm(`Permanente Nicht-Aufsicht für ${p.name} wirklich löschen?`)) return;
 		error = '';
 		try {
 			const res = await fetch('/api/invigilator/removePermanentNonInvigilator', {
@@ -76,7 +124,8 @@
 	<p class="max-w-3xl text-sm text-base-content/60">
 		Wer hier steht, macht semesterübergreifend keine Aufsichten und braucht keinen
 		semesterspezifischen Eintrag. Semesterbezogene Constraints stehen unter
-		<a class="link" href="/plan/invigilation/constraints">Aufsichten-Constraints</a>.
+		<a class="link" href="/plan/invigilation/constraints">Aufsichten-Constraints</a>. Über „gültig
+		von" / „gültig bis" lässt sich das Ganze auf ein Semesterfenster begrenzen (leer = offen).
 	</p>
 
 	<!-- Hinzufügen -->
@@ -99,6 +148,24 @@
 				bind:value={reason}
 			/>
 		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">gültig von</span>
+			<select class="select select-bordered select-sm w-32" bind:value={validFrom}>
+				<option value="">— offen —</option>
+				{#each data.semesters as s}
+					<option value={s}>{s}</option>
+				{/each}
+			</select>
+		</label>
+		<label class="flex flex-col gap-1">
+			<span class="text-xs font-medium text-base-content/60">gültig bis</span>
+			<select class="select select-bordered select-sm w-32" bind:value={validUntil}>
+				<option value="">— offen —</option>
+				{#each data.semesters as s}
+					<option value={s}>{s}</option>
+				{/each}
+			</select>
+		</label>
 		<WriteButton
 			class="btn btn-neutral btn-sm"
 			disabled={!teacherID || !reason.trim() || busy}
@@ -119,6 +186,9 @@
 					<tr>
 						<th>Person</th>
 						<th>Grund</th>
+						<th>Gültigkeit</th>
+						<th>gültig von</th>
+						<th>gültig bis</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -127,9 +197,38 @@
 						<tr class="hover">
 							<td class="font-medium">{p.name}</td>
 							<td class="text-base-content/70">{p.reason}</td>
+							<td class="whitespace-nowrap">
+								<span class="badge badge-ghost badge-sm tabular-nums"
+									>{windowLabel(p.validFrom, p.validUntil)}</span
+								>
+							</td>
+							<td>
+								<select
+									class="select select-bordered select-xs w-28"
+									value={p.validFrom ?? ''}
+									onchange={(e) => saveWindow(p, { validFrom: e.currentTarget.value || null })}
+								>
+									<option value="">— offen —</option>
+									{#each data.semesters as s}
+										<option value={s}>{s}</option>
+									{/each}
+								</select>
+							</td>
+							<td>
+								<select
+									class="select select-bordered select-xs w-28"
+									value={p.validUntil ?? ''}
+									onchange={(e) => saveWindow(p, { validUntil: e.currentTarget.value || null })}
+								>
+									<option value="">— offen —</option>
+									{#each data.semesters as s}
+										<option value={s}>{s}</option>
+									{/each}
+								</select>
+							</td>
 							<td class="text-right">
 								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => remove(p)}>
-									aufheben
+									löschen
 								</WriteButton>
 							</td>
 						</tr>

@@ -1900,6 +1900,8 @@ export type MutationSetPermanentNonInvigilatorArgs = {
   name: Scalars['String']['input'];
   reason: Scalars['String']['input'];
   teacherID: Scalars['Int']['input'];
+  validFrom?: InputMaybe<Scalars['String']['input']>;
+  validUntil?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2197,6 +2199,10 @@ export type PermanentNonInvigilator = {
   name: Scalars['String']['output'];
   reason: Scalars['String']['output'];
   teacherID: Scalars['Int']['output'];
+  /** First semester the exemption applies to (inclusive, label like "2026-SS"); null = open (applies to all earlier semesters too). */
+  validFrom?: Maybe<Scalars['String']['output']>;
+  /** Last semester the exemption applies to (inclusive, label like "2026-SS"); null = open (never retires). Set this to retire an exemption without deleting the record. */
+  validUntil?: Maybe<Scalars['String']['output']>;
 };
 
 export type PlanEntry = {

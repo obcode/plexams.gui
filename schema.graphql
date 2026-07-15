@@ -1575,7 +1575,7 @@ type Mutation {
   e.g. someone retired. name is the display name (pass the candidate's name; if
   empty the backend tries to resolve it).
   """
-  setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!): PermanentNonInvigilator!
+  setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!, validFrom: String, validUntil: String): PermanentNonInvigilator!
 
   """
   Remove a permanent non-invigilator (key: teacherID). Returns false if there was none.
@@ -2080,6 +2080,16 @@ type PermanentNonInvigilator {
   """
   name: String!
   reason: String!
+
+  """
+  First semester the exemption applies to (inclusive, label like "2026-SS"); null = open (applies to all earlier semesters too).
+  """
+  validFrom: String
+
+  """
+  Last semester the exemption applies to (inclusive, label like "2026-SS"); null = open (never retires). Set this to retire an exemption without deleting the record.
+  """
+  validUntil: String
 }
 
 type PlanEntry {
