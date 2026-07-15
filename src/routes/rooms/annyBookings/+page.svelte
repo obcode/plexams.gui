@@ -145,6 +145,7 @@
 			const placed = [];
 			let laneOffset = 0;
 			for (const room of rooms) {
+				/** @type {any[]} */
 				const roomBookings = dayBookings
 					.filter((/** @type {any} */ b) => b.room === room)
 					.sort(
