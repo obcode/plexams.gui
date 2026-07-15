@@ -3704,6 +3704,11 @@ export type Subscription = {
    * ZPA. Send before publishing the room plan.
    */
   sendEmailRoomsSecretariat: LogLine;
+  /**
+   * Run the nightly auto-sync now: pull ZPA (exams/teachers/invigilator requirements)
+   * and Anny bookings, record the diff and mail it. Streams progress; ends with DONE.
+   */
+  triggerScheduledSync: LogLine;
   /** Upload the planned exams to ZPA without rooms or invigilators (dryRun = build only, do not post). */
   uploadExamsToZPA: LogLine;
   /** Upload the planned exams to ZPA including planned rooms and invigilators. */

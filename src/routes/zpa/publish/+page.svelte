@@ -4,11 +4,19 @@
 	import SyncLog from '$lib/zpa/SyncLog.svelte';
 	import { zpaValidators } from '$lib/validation/validators';
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { isViewer } from '$lib/auth';
 
 	let { data } = $props();
 
 	// nach einem Im-/Export den Sync-Verlauf neu laden
 	const refreshLog = () => invalidateAll();
+
+	// Der komplette Datenabgleich schreibt (überschreibt Importe, verschickt Mails):
+	// für die VIEWER-Rolle ausblenden, bei geschütztem Semester deaktivieren.
+	// Enforcement macht das Backend (lehnt VIEWER/read-only ab) — das ist nur die Politur.
+	let viewer = $derived(isViewer($page.data?.me));
+	let readOnly = $derived($page.data?.readOnly ?? false);
 
 	// Downloads (Import aus ZPA) — ohne Argumente.
 	/** @type {{ field: string, title: string, desc: string }[]} */
@@ -67,6 +75,30 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
 	<h1 class="text-2xl font-semibold">ZPA — Veröffentlichung</h1>
+
+	<!-- Kompletter Datenabgleich (identisch zum nächtlichen Auto-Sync): zieht alle
+	     vier Quellen nacheinander, protokolliert die Diffs und verschickt die
+	     Änderungs-Mail. Schreib-Aktion → für VIEWER ausgeblendet. -->
+	{#if !viewer}
+		<div class="flex flex-col gap-3">
+			<div class="flex flex-wrap items-baseline gap-2">
+				<h2 class="text-xl font-semibold">Datenabgleich</h2>
+				<span class="text-sm text-base-content/60">
+					wie der nächtliche Auto-Sync — überschreibt die Daten und mailt die Unterschiede
+				</span>
+			</div>
+			<StreamAction
+				field="triggerScheduledSync"
+				title="ZPA + Anny jetzt abgleichen"
+				description="Zieht Prüfungen, Dozierende und Aufsichts-Anforderungen (ZPA) sowie die Buchungen (Anny) für das aktive Semester nacheinander, protokolliert die Unterschiede und verschickt die Änderungs-Mail. Kein Probelauf — kann etwas dauern."
+				accent="warning"
+				actionLabel="Jetzt abgleichen"
+				disabled={readOnly}
+				disabledTitle="Semester ist geschützt (nur lesen)"
+				ondone={refreshLog}
+			/>
+		</div>
+	{/if}
 
 	<!-- ZPA-Validierungen: eigene Ampel, manuell starten -->
 	<div class="flex flex-col gap-3">

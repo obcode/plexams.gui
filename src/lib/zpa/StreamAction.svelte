@@ -11,6 +11,8 @@
 	 * @property {boolean} [hasDryRun] - Feld hat ein dryRun-Argument
 	 * @property {string} [accent] - Akzentfarbe: 'info' (Download) | 'success' (Upload)
 	 * @property {string} [actionLabel]
+	 * @property {boolean} [disabled] - Start-Button deaktivieren (z. B. read-only-Semester)
+	 * @property {string} [disabledTitle] - Tooltip, wenn deaktiviert
 	 * @property {(info: { field: string }) => void} [ondone] - meldet Abschluss
 	 */
 
@@ -22,6 +24,8 @@
 		hasDryRun = false,
 		accent = 'info',
 		actionLabel = 'Starten',
+		disabled = false,
+		disabledTitle = '',
 		ondone
 	} = $props();
 
@@ -208,7 +212,12 @@
 			{#if status === 'running'}
 				<button class="btn btn-error btn-sm" onclick={stop}>Abbrechen</button>
 			{:else}
-				<button class="btn btn-{accent} btn-sm" onclick={start}>{actionLabel}</button>
+				<button
+					class="btn btn-{accent} btn-sm"
+					{disabled}
+					title={disabled ? disabledTitle || undefined : undefined}
+					onclick={start}>{actionLabel}</button
+				>
 			{/if}
 		</div>
 	</div>
