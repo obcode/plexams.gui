@@ -4,6 +4,7 @@
 	 * @property {string} [version]      plexams.go-Version (bringt das führende „v" bereits mit)
 	 * @property {string} [commit]       Git-Commit des Backends
 	 * @property {string|null} [releaseURL] Link zum GitHub-Release (null bei dev-Build)
+	 * @property {string} [date]         Release-/Build-Zeitpunkt (RFC3339 UTC); „unknown" bei dev-Build
 	 *
 	 * @typedef {Object} Props
 	 * @property {string} [guiVersion]           eigene GUI-Version (Buildzeit, aus semantic-release-Tag)
@@ -79,6 +80,10 @@
 	);
 
 	const serverDisplay = $derived(display(serverInfo?.version));
+	// Release-/Build-Zeitpunkt des Backends; „unknown" = dev-Build → nichts anzeigen.
+	const serverDateDisplay = $derived(
+		serverInfo?.date && serverInfo.date !== 'unknown' ? formatBuildTime(serverInfo.date) : null
+	);
 </script>
 
 <footer
@@ -111,6 +116,9 @@
 				</a>
 			{:else}
 				<span title={serverInfo?.commit ?? undefined}>{serverDisplay} (dev)</span>
+			{/if}
+			{#if serverDateDisplay}
+				<span class="opacity-70">— {serverDateDisplay}</span>
 			{/if}
 		</span>
 	{/if}

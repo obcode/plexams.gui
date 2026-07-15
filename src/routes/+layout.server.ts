@@ -19,6 +19,7 @@ export const load: LayoutServerLoad = async () => {
 					version
 					commit
 					releaseURL
+					date
 				}
 			}
 		`);
