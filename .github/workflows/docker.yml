@@ -59,15 +59,20 @@ jobs:
   # Backend nur seinen. Die docker-compose.yml synct weiterhin das Backend-Repo.
   deploy:
     needs: build-and-push-image
+    # Gate wie beim Backend: erst deployen, wenn der GUI-Runner existiert (Repo-Variable
+    # AUTO_DEPLOY=true). Vorher wird nur gebaut+gepusht, dieser Job übersprungen.
+    if: ${{ vars.AUTO_DEPLOY == 'true' }}
     runs-on: [self-hosted, plexams-deploy]
     env:
-      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/opt/plexams/deploy' }}
+      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/home/plexams/plexams.go/deploy' }}
     steps:
       - name: Deploy pinned GUI image
         run: |
           set -euo pipefail
-          # release-Event → github.ref ist refs/tags/vX.Y.Z; das „v" strippen.
-          VERSION="${GITHUB_REF#refs/tags/v}"
+          # release-Event → github.ref ist refs/tags/vX.Y.Z. Das "v" MUSS bleiben:
+          # docker/metadata-action taggt das Image mit dem rohen Ref (v1.97.0), wie die
+          # ganze Registry-Historie — ohne v läuft der Pull in ein "not found".
+          VERSION="${GITHUB_REF#refs/tags/}"
           cd "$DEPLOY_DIR"
           sed -i "s/^GUI_TAG=.*/GUI_TAG=$VERSION/" .env
           docker compose pull gui

@@ -18,4 +18,5 @@
 - [Refactor roadmap](refactor-roadmap.md) — ongoing architecture refactor: what's done + open blocks (TS, runes, e2e); conventions (semilinear, extract-to-lib-and-test)
 - [Svelte runes migration](svelte-runes-migration.md) — plan to move legacy Svelte syntax → runes (within Svelte 5), combined with the TS migration
 - [Always commit and push](always-commit-push.md) — user wants every finished, verified change committed+pushed to main immediately, without asking
+- [Check before commit](check-before-commit.md) — run `pnpm run check` and ensure it passes before every commit
 - [Responsive baseline](responsive-baseline.md) — app is Tablet-first responsive (done 2026-07-08); conventions + how to verify 375px overflow with Playwright
