@@ -227,6 +227,47 @@
 	 * @param {string} program */
 	const countFor = (program) => form.jointTimes[program]?.size ?? 0;
 
+	// ---- Vorbelegungen (spart Klickerei) ----
+	// Alle Zellen (jeder Tag × jede Anfangszeit) für den gewählten Studiengang setzen.
+	function fillAll() {
+		const s = new Set();
+		for (const d of matrixDays) for (const r of matrixRows) s.add(cellTime(d, r.time));
+		setCurSet(s);
+	}
+	// Abwechselnd erster/letzter Slot, ein Termin je Prüfungstag (Sperrtage ausgelassen;
+	// die Abwechslung zählt nur über die tatsächlich belegten Tage). startWithLast=true
+	// beginnt mit dem letzten Slot (z. B. „Tag 1 nachmittags").
+	/** @param {boolean} startWithLast */
+	function fillAlternating(startWithLast) {
+		if (matrixRows.length === 0) return;
+		const first = matrixRows[0].time;
+		const last = matrixRows[matrixRows.length - 1].time;
+		const s = new Set();
+		let i = 0;
+		for (const d of matrixDays) {
+			if (forbiddenSet.has(d.iso)) continue;
+			const useLast = startWithLast ? i % 2 === 0 : i % 2 === 1;
+			s.add(cellTime(d, useLast ? last : first));
+			i++;
+		}
+		setCurSet(s);
+	}
+	// Reservierte Zeiten eines anderen Studiengangs übernehmen.
+	/** @param {string} program */
+	function copyFrom(program) {
+		const src = form.jointTimes[program];
+		if (!src) return;
+		setCurSet(new Set(src));
+	}
+	// Andere gemeinsame Studiengänge mit bereits gesetzten Zeiten (Kandidaten zum Übernehmen).
+	let copyableFrom = $derived(
+		jointPrograms
+			.map((/** @type {any} */ jp) => jp.shortname)
+			.filter((/** @type {string} */ sn) => sn !== selectedProgram && countFor(sn) > 0)
+	);
+	/** @type {string} */
+	let copySource = $state('');
+
 	/** @param {number | ''} v */
 	const intOrNull = (v) => (v === '' || v == null ? null : Number(v));
 
@@ -421,6 +462,43 @@
 						{/if}
 					</button>
 				{/each}
+			</div>
+		{/if}
+		{#if selectedProgram && matrixDays.length > 0 && matrixRows.length > 0}
+			<!-- Vorbelegungen: schnelle Muster statt einzeln klicken -->
+			<div class="flex flex-wrap items-center gap-1">
+				<span class="text-xs text-base-content/50">Vorbelegung:</span>
+				<button class="btn btn-outline btn-xs" onclick={fillAll}>alle wählen</button>
+				<button
+					class="btn btn-outline btn-xs"
+					title="ein Termin je Prüfungstag, abwechselnd letzter/erster Slot — Tag 1 = letzter Slot (nachmittags); Sperrtage ausgelassen"
+					onclick={() => fillAlternating(true)}
+				>
+					abwechselnd ab letztem Slot
+				</button>
+				<button
+					class="btn btn-outline btn-xs"
+					title="ein Termin je Prüfungstag, abwechselnd erster/letzter Slot — Tag 1 = erster Slot (vormittags); Sperrtage ausgelassen"
+					onclick={() => fillAlternating(false)}
+				>
+					abwechselnd ab erstem Slot
+				</button>
+				{#if copyableFrom.length > 0}
+					<span class="ml-2 text-xs text-base-content/50">übernehmen von</span>
+					<select class="select select-bordered select-xs" bind:value={copySource}>
+						<option value="">–</option>
+						{#each copyableFrom as sn}
+							<option value={sn}>{sn}</option>
+						{/each}
+					</select>
+					<button
+						class="btn btn-outline btn-xs"
+						disabled={!copySource}
+						onclick={() => copyFrom(copySource)}
+					>
+						übernehmen
+					</button>
+				{/if}
 			</div>
 		{/if}
 		{#if jointPrograms.length === 0 || matrixDays.length === 0 || matrixRows.length === 0}
