@@ -127,7 +127,7 @@
 	// program → { slotKey: Zellklasse }
 	let jointSlotsByProgram = /** @type {Record<string, Record<string, string>>} */ ({});
 	for (const jps of data.semesterConfig?.jointProgramSlots ?? []) {
-		const cls = `rounded ring-2 ${jointRingByProgram[jps.program]}`;
+		const cls = `rounded ring-4 ${jointRingByProgram[jps.program]}`;
 		/** @type {Record<string, string>} */
 		const m = {};
 		for (const slot of jps.slots ?? []) m[slotKey(slot.starttime)] = cls;
