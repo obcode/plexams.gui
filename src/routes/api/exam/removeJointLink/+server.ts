@@ -3,24 +3,24 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 /**
- * Vorgeschlagene ZPA-Prüfungen für eine (noch) ungeklärte MUC.DAI-Prüfung.
+ * Manuelle Verknüpfung einer Prüfung eines gemeinsamen Studiengangs entfernen
+ * (fällt auf die automatische Erkennung zurück).
  *
  * @type {import('./$types').RequestHandler}
  */
 export const POST: RequestHandler = async ({ request }) => {
 	const { program, primussAncode } = await request.json();
-	const query = gql`
-		query ($program: String!, $primussAncode: Int!) {
-			mucDaiZpaCandidates(program: $program, primussAncode: $primussAncode) {
+	const mutation = gql`
+		mutation ($program: String!, $primussAncode: Int!) {
+			removeJointLink(program: $program, primussAncode: $primussAncode) {
+				program
+				primussAncode
 				ancode
-				module
-				mainExamer
-				examTypeFull
-				duration
+				linkStatus
 			}
 		}
 	`;
-	return gqlProxy(query, {
+	return gqlProxy(mutation, {
 		program: String(program),
 		primussAncode: Number(primussAncode)
 	});

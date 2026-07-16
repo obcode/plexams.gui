@@ -69,8 +69,8 @@
 	</div>
 
 	<p class="max-w-3xl text-sm text-base-content/60">
-		Die Felder sind aus dem aktuellen Semester <strong>vorbefüllt</strong> (Anfangszeiten, E-Mails, MUC.DAI-Zeiten
-		übernehmen — Termine anpassen).
+		Die Felder sind aus dem aktuellen Semester <strong>vorbefüllt</strong> (Anfangszeiten, E-Mails, reservierte
+		Zeiten je gemeinsamem Studiengang übernehmen — Termine anpassen).
 	</p>
 
 	{#if errorMsg}
@@ -114,7 +114,11 @@
 		>
 	</div>
 
-	<SemesterConfigForm bind:this={formComp} config={data.defaults} />
+	<SemesterConfigForm
+		bind:this={formComp}
+		config={data.defaults}
+		jointPrograms={data.jointPrograms}
+	/>
 
 	<div class="flex items-center gap-3">
 		<WriteButton

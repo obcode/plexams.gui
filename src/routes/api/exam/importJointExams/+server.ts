@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const { csv } = await request.json();
 	const mutation = gql`
 		mutation ($csv: String!) {
-			importMucDaiExams(csv: $csv) {
+			importJointExams(csv: $csv) {
 				programs
 				examsImported
 				examsCreated

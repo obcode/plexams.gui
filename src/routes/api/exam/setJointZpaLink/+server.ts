@@ -3,7 +3,8 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 /**
- * MUC.DAI-Prüfung (program, primussAncode) mit einem ZPA-Ancode verknüpfen.
+ * Prüfung eines gemeinsamen Studiengangs (program, primussAncode) mit einem
+ * ZPA-Ancode verknüpfen.
  *
  * @type {import('./$types').RequestHandler}
  */
@@ -11,7 +12,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const { program, primussAncode, zpaAncode } = await request.json();
 	const mutation = gql`
 		mutation ($program: String!, $primussAncode: Int!, $zpaAncode: Int!) {
-			setMucDaiZpaLink(program: $program, primussAncode: $primussAncode, zpaAncode: $zpaAncode) {
+			setJointZpaLink(program: $program, primussAncode: $primussAncode, zpaAncode: $zpaAncode) {
 				program
 				primussAncode
 				ancode

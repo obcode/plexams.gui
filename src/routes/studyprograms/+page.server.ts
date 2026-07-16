@@ -10,6 +10,7 @@ type StudyProgram = {
 	active: boolean;
 	retired: boolean;
 	externalExamsBase: number;
+	jointFaculty: string | null;
 };
 
 export const load: PageServerLoad = async () => {
@@ -23,6 +24,7 @@ export const load: PageServerLoad = async () => {
 				active
 				retired
 				externalExamsBase
+				jointFaculty
 			}
 		}
 	`);

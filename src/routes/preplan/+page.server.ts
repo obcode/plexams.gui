@@ -73,8 +73,10 @@ export const load: PageServerLoad = async () => {
 					slots {
 						starttime
 					}
-					mucDaiSlots {
-						starttime
+					jointProgramSlots {
+						slots {
+							starttime
+						}
 					}
 				}
 				preplanSameSlotGroups {
@@ -115,12 +117,13 @@ export const load: PageServerLoad = async () => {
 	const dn = (st: string) => dayNumberForTime(st, cfgDaysNum);
 	const sn = (st: string) => slotNumberForTime(st, cfgStarts);
 
-	// gültige Slots = slots ∪ mucDaiSlots (dedupliziert, sortiert) — nur innerhalb
-	// der Prüfungszeit (Datum aus starttime muss ein konfigurierter Prüfungstag sein).
+	// gültige Slots = slots ∪ reservierte Slots gemeinsamer Studiengänge (dedupliziert,
+	// sortiert) — nur innerhalb der Prüfungszeit (Datum aus starttime muss ein
+	// konfigurierter Prüfungstag sein).
 	const slotMap = new Map<string, any>();
 	for (const s of [
 		...(data.semesterConfig?.slots ?? []),
-		...(data.semesterConfig?.mucDaiSlots ?? [])
+		...(data.semesterConfig?.jointProgramSlots ?? []).flatMap((jps: any) => jps.slots ?? [])
 	]) {
 		const dk = dayKey(s.starttime);
 		if (examDates.size && dk && !examDates.has(dk)) continue;

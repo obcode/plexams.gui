@@ -10,8 +10,10 @@ export const load: PageServerLoad = async () => {
 				days {
 					date
 				}
-				mucDaiSlots {
-					starttime
+				jointProgramSlots {
+					slots {
+						starttime
+					}
 				}
 				starttimes {
 					start

@@ -22,7 +22,7 @@ describe('buildGroups', () => {
 	it('gruppiert nach FK, alphabetisch, Prüfungen nach Ancode', () => {
 		const groups = buildGroups([
 			item({ fk: 'FK10', ancode: 200 }),
-			item({ fk: 'FK03', ancode: 101, source: 'mucdai' }),
+			item({ fk: 'FK03', ancode: 101, source: 'joint' }),
 			item({ fk: 'FK10', ancode: 100 })
 		]);
 		expect(groups.map((g) => g.fk)).toEqual(['FK03', 'FK10']);
@@ -35,9 +35,14 @@ describe('buildGroups', () => {
 	});
 
 	it('source-Filter', () => {
-		const items = [item({ source: 'zpa' }), item({ source: 'mucdai', ancode: 101 })];
-		expect(buildGroups(items, { source: 'mucdai' })).toHaveLength(1);
-		expect(buildGroups(items, { source: 'mucdai' })[0].exams[0].sourceLabel).toBe('MUC.DAI');
+		const items = [item({ source: 'zpa' }), item({ source: 'joint', ancode: 101 })];
+		expect(buildGroups(items, { source: 'joint' })).toHaveLength(1);
+		expect(buildGroups(items, { source: 'joint' })[0].exams[0].sourceLabel).toBe('Gemeinsam');
+	});
+
+	it('sourceLabel zeigt Studienfakultät wenn vorhanden', () => {
+		const items = [item({ source: 'joint', jointFaculty: 'MUC.DAI' })];
+		expect(buildGroups(items)[0].exams[0].sourceLabel).toBe('MUC.DAI');
 	});
 
 	it('fk-Filter', () => {

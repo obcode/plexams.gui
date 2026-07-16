@@ -90,10 +90,10 @@
 	}
 	const closeEdit = () => (editing = null);
 
-	// Studiengänge gruppiert: FK07 → MUC.DAI → Misc (sonstige Kategorien am Ende).
+	// Studiengänge gruppiert: FK07 → gemeinsame Studiengänge → Misc (sonstige am Ende).
 	/** @type {Record<string, string>} */
-	const CAT_LABEL = { fk07: 'FK07', mucdai: 'MUC.DAI', misc: 'Misc' };
-	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
+	const CAT_LABEL = { fk07: 'FK07', joint: 'Gemeinsame Studiengänge', misc: 'Misc' };
+	const CAT_ORDER = ['fk07', 'joint', 'misc'];
 
 	/** @param {string} sn */
 	function toggleProgram(sn) {
@@ -609,7 +609,7 @@
 	let unplanned = $derived(
 		(data.exams ?? []).filter((/** @type {any} */ e) => e.plannedStarttime == null)
 	);
-	// Reihenfolge der Badges: FK07 → MUC.DAI → Misc, dann Kürzel.
+	// Reihenfolge der Badges: FK07 → gemeinsame Studiengänge → Misc, dann Kürzel.
 	let catRank = $derived(
 		new Map(
 			(data.studyPrograms ?? []).map((/** @type {any} */ sp) => [

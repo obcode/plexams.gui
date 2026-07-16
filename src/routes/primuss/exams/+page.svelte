@@ -147,13 +147,13 @@
 	// offene (unverbundene) FK07-Prüfungen — die eigentlich interessanten Fälle.
 	let openFK07 = $derived(allRows.filter((/** @type {any} */ e) => e.fk07 && !e.connected).length);
 
-	// Studiengänge nach Kategorie gruppieren: FK07 / MUC.DAI / Sonstige
+	// Studiengänge nach Kategorie gruppieren: FK07 / gemeinsame Studiengänge / Sonstige
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
 		fk07: 'FK07',
-		mucdai: 'MUC.DAI',
+		joint: 'Gemeinsame Studiengänge',
 		misc: 'Sonstige'
 	});
-	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
+	const CAT_ORDER = ['fk07', 'joint', 'misc'];
 	/** @param {string} prog */
 	const catOf = (prog) => data.catByProgram?.[prog] ?? 'misc';
 

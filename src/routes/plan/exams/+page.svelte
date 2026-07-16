@@ -44,7 +44,7 @@
 	let showOnlyExahm = $state(false);
 	let showOnlySEB = false;
 	let showOnlyEXaHMRooms = $state(false);
-	let showMucdaiSlots = $state(false);
+	let showJointSlots = $state(false);
 
 	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
 	async function getPrograms() {
@@ -102,24 +102,27 @@
 		return '';
 	}
 
-	let mucdaiSlot = /** @type {any} */ (new Map());
+	let jointSlot = /** @type {any} */ (new Map());
 
 	// Slot hat nur noch starttime → Grid-Key (day,slot) lokal ableiten.
 	/** @param {string} iso */
 	const slotKey = (iso) =>
 		`${dayNumberForTime(iso, data.semesterConfig?.days)},${slotNumberForTime(iso, data.semesterConfig?.starttimes)}`;
 
-	for (const slot of data.semesterConfig?.mucDaiSlots ?? []) {
-		mucdaiSlot[slotKey(slot.starttime)] = 'rounded ring-2 ring-error/70';
+	// Reservierte Slots aller gemeinsamen Studiengänge (über Programme vereint).
+	for (const jps of data.semesterConfig?.jointProgramSlots ?? []) {
+		for (const slot of jps.slots ?? []) {
+			jointSlot[slotKey(slot.starttime)] = 'rounded ring-2 ring-error/70';
+		}
 	}
 
-	let mucdaiSlotToShow = $state(/** @type {any} */ (new Map()));
+	let jointSlotToShow = $state(/** @type {any} */ (new Map()));
 
-	function handleMucdaiSlots() {
-		if (showMucdaiSlots) {
-			mucdaiSlotToShow = mucdaiSlot;
+	function handleJointSlots() {
+		if (showJointSlots) {
+			jointSlotToShow = jointSlot;
 		} else {
-			mucdaiSlotToShow = new Map();
+			jointSlotToShow = new Map();
 		}
 	}
 
@@ -667,10 +670,10 @@
 				<input
 					type="checkbox"
 					class="toggle toggle-sm"
-					bind:checked={showMucdaiSlots}
-					onchange={handleMucdaiSlots}
+					bind:checked={showJointSlots}
+					onchange={handleJointSlots}
 					disabled={view === 'zeit'}
-				/> MUC.DAI-Slots
+				/> Slots gemeinsamer Studiengänge
 			</label>
 			<div class="flex-1"></div>
 			<select class="select select-bordered select-sm" bind:value={showExam}>
@@ -758,7 +761,7 @@
 			<div
 				class="h-full rounded {statusColor(
 					slotsStatus[`${day.number},${time.number}`]
-				)} {globalForbiddenSlot(day.number, time.number) ?? ''} {mucdaiSlotToShow[
+				)} {globalForbiddenSlot(day.number, time.number) ?? ''} {jointSlotToShow[
 					`${day.number},${time.number}`
 				] ?? ''}"
 			>

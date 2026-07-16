@@ -1,11 +1,11 @@
 // Gruppierung/Filterung der „Prüfungen anderer FKs" (Seite /exam/external):
-// vereint MUC.DAI-Externe und ZPA-notPlannedByMe, nach FK gruppiert. Reine
-// Funktionen, aus der .svelte extrahiert und unit-getestet.
+// vereint Prüfungen gemeinsamer Studiengänge und ZPA-notPlannedByMe, nach FK
+// gruppiert. Reine Funktionen, aus der .svelte extrahiert und unit-getestet.
 
-export type OtherFkSource = 'mucdai' | 'zpa';
+export type OtherFkSource = 'joint' | 'zpa';
 
 export const SOURCE_LABEL: Record<OtherFkSource, string> = {
-	mucdai: 'MUC.DAI',
+	joint: 'Gemeinsam',
 	zpa: 'ZPA'
 };
 
@@ -41,8 +41,9 @@ export function buildGroups(items: any[] | null | undefined, f: GroupFilter = {}
 			mainExamer: e.mainExamer,
 			examType: e.examType,
 			isRepeaterExam: e.isRepeaterExam,
-			sourceLabel: SOURCE_LABEL[e.source as OtherFkSource] ?? '',
-			// Programm (MUC.DAI) bzw. Gruppen (ZPA) als Kontext-Badges
+			// Studienfakultät (z. B. MUC.DAI) für gemeinsame Studiengänge, sonst Quelle
+			sourceLabel: e.jointFaculty || SOURCE_LABEL[e.source as OtherFkSource] || '',
+			// Programm (gemeinsamer Studiengang) bzw. Gruppen (ZPA) als Kontext-Badges
 			extra: e.program ? [e.program, ...(e.groups ?? [])] : (e.groups ?? []),
 			fkLabel: '',
 			planEntry: e.planEntry

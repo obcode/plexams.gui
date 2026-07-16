@@ -91,7 +91,9 @@
 			examGapMinutes: examGap === '' || examGap == null ? null : Number(examGap),
 			startTimes: base.startTimes ?? [],
 			forbiddenDays: base.forbiddenDays ?? [],
-			mucDaiAllowedTimes: base.mucDaiAllowedTimes ?? [],
+			jointProgramAllowedTimes: (base.jointProgramAllowedTimes ?? []).map(
+				(/** @type {any} */ jt) => ({ program: jt.program, allowedTimes: jt.allowedTimes ?? [] })
+			),
 			timelagMin: base.timelagMin ?? null,
 			notTooCloseMinutes: base.notTooCloseMinutes ?? null,
 			emails: {

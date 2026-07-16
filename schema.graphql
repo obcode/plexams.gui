@@ -1089,11 +1089,11 @@ input GenerationConfigInput {
   roomHeatBaselineHour: Float!
 }
 
-type ImportMucDaiResult {
+type ImportJointResult {
   """programs (Studiengruppen) found in the CSV."""
   programs: [String!]!
 
-  """total exam rows imported into the mucdai_<program> collections."""
+  """total exam rows imported into the joint_<program> collections."""
   examsImported: Int!
 
   """new non-ZPA exams created (non-FK07, not existing yet)."""
@@ -1322,6 +1322,61 @@ type JiraUser {
   emailAddress: String!
 }
 
+type JointExam {
+  primussAncode: Int!
+  module: String!
+  mainExamer: String!
+  mainExamerID: Int
+  examType: String!
+  duration: Int!
+  isRepeaterExam: Boolean!
+  program: String!
+
+  """
+  the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12.
+  """
+  plannedBy: String!
+
+  """
+  Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
+  auto-assigned ancode for exams planned by other faculties. null if not yet
+  created/linked.
+  """
+  ancode: Int
+
+  """
+  Link status to our data: "external" (auto-created external exam, linked), "zpa"
+  (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
+  manual linking).
+  """
+  linkStatus: String!
+
+  """
+  The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time.
+  """
+  planEntry: PlanEntry
+}
+
+"""
+The reserved grid slots (matching the allowed times) for one joint study program.
+"""
+type JointProgramSlots {
+  program: String!
+  slots: [Slot!]!
+}
+
+"""Absolute start times reserved for one joint study program's exams."""
+type JointProgramTimes {
+  """Study program shortname (Kürzel), e.g. "DE"."""
+  program: String!
+  allowedTimes: [Time!]!
+}
+
+input JointProgramTimesInput {
+  program: String!
+  allowedTimes: [Time!]!
+}
+
 """
 LogLevel classifies a streamed LogLine. PROGRESS lines are throttled optimizer
 snapshots and should be rendered in-place (like a spinner) instead of appended.
@@ -1360,41 +1415,6 @@ type MinutesReport {
   over: Int!
   under: Int!
   toleranceMin: Int!
-}
-
-type MucDaiExam {
-  primussAncode: Int!
-  module: String!
-  mainExamer: String!
-  mainExamerID: Int
-  examType: String!
-  duration: Int!
-  isRepeaterExam: Boolean!
-  program: String!
-
-  """
-  the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12.
-  """
-  plannedBy: String!
-
-  """
-  Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
-  auto-assigned ancode for exams planned by other faculties. null if not yet
-  created/linked.
-  """
-  ancode: Int
-
-  """
-  Link status to our data: "external" (auto-created external exam, linked), "zpa"
-  (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
-  manual linking).
-  """
-  linkStatus: String!
-
-  """
-  The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time.
-  """
-  planEntry: PlanEntry
 }
 
 type Mutation {
@@ -1573,7 +1593,10 @@ type Mutation {
   """
   Add or update a permanent (cross-semester) non-invigilator (key: teacherID),
   e.g. someone retired. name is the display name (pass the candidate's name; if
-  empty the backend tries to resolve it).
+  empty the backend tries to resolve it). validFrom/validUntil (semester labels
+  like "2026-SS", either omitted for an open bound) limit the semesters the
+  exemption applies to; leave both empty for a truly permanent exemption, or set
+  validUntil to retire it without deleting the record (so past semesters stay correct).
   """
   setPermanentNonInvigilator(teacherID: Int!, name: String!, reason: String!, validFrom: String, validUntil: String): PermanentNonInvigilator!
 
@@ -1599,12 +1622,12 @@ type Mutation {
   """
   Import MUC.DAI exams from a CSV (the file you get from MUC.DAI; columns Nr,
   Modulname, Prüfungsform, Bewertung, Dauer, Erstpruefender, Zweitpruefender,
-  IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the mucdai_<program>
+  IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the joint_<program>
   data and generates the non-ZPA exams for everything not planned by FK07 (FK07
   exams already exist as ZPA exams and are only linked). The GUI sends the file
   content as text.
   """
-  importMucDaiExams(csv: String!): ImportMucDaiResult!
+  importJointExams(csv: String!): ImportJointResult!
 
   """
   Set the external date/time of an exam (e.g. a MUC.DAI exam planned by another
@@ -1617,12 +1640,12 @@ type Mutation {
   Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
   for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
   """
-  setMucDaiZpaLink(program: String!, primussAncode: Int!, zpaAncode: Int!): MucDaiExam!
+  setJointZpaLink(program: String!, primussAncode: Int!, zpaAncode: Int!): JointExam!
 
   """
   Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection.
   """
-  removeMucDaiLink(program: String!, primussAncode: Int!): MucDaiExam!
+  removeJointLink(program: String!, primussAncode: Int!): JointExam!
   addNTA(input: NTAInput!): NTA!
 
   """
@@ -1916,7 +1939,7 @@ type Mutation {
   deleteStudyProgram(shortname: String!): Boolean!
 
   """
-  Seed study programs from the configured lists (fk07programs, mucdaiprograms,
+  Seed study programs from the configured lists (fk07programs, joint faculties,
   miscprograms) without overwriting existing ones. Returns the number created.
   """
   seedStudyProgramsFromConfig: Int!
@@ -2068,9 +2091,10 @@ type OptimizerProgress {
 }
 
 """
-PermanentNonInvigilator is a teacher who never does invigilation duty again
-(e.g. retired). It lives in the global plexams database and therefore carries
-over between semesters; it always implies isNotInvigilator.
+PermanentNonInvigilator is a teacher who does no invigilation duty (e.g.
+retired, or a role/leave-bound exemption). It lives in the global plexams
+database and therefore carries over between semesters; it implies
+isNotInvigilator for the semesters it applies to.
 """
 type PermanentNonInvigilator {
   teacherID: Int!
@@ -2082,12 +2106,14 @@ type PermanentNonInvigilator {
   reason: String!
 
   """
-  First semester the exemption applies to (inclusive, label like "2026-SS"); null = open (applies to all earlier semesters too).
+  First semester the exemption applies to (inclusive, label like "2026-SS");
+  null = open (applies to all earlier semesters too).
   """
   validFrom: String
 
   """
-  Last semester the exemption applies to (inclusive, label like "2026-SS"); null = open (never retires). Set this to retire an exemption without deleting the record.
+  Last semester the exemption applies to (inclusive, label like "2026-SS"); null
+  = open (never retires). Set this to retire an exemption without deleting the record.
   """
   validUntil: String
 }
@@ -2608,7 +2634,7 @@ type Query {
   assembledExam(ancode: Int!): AssembledExam
   plannedExams: [PlannedExam!]!
   plannedExam(ancode: Int!): PlannedExam
-  mucdaiExams: [MucDaiExam!]!
+  jointExams: [JointExam!]!
   conflictingAncodes(ancode: Int!): [Conflict!]
 
   """Conflicts of the current plan, to review (accept per student)."""
@@ -2721,7 +2747,7 @@ type Query {
   carry the program with a missing number (0/-1) first, then same-examer + similar
   module, then either. For the GUI to confirm/correct the link.
   """
-  mucDaiZpaCandidates(program: String!, primussAncode: Int!): [ZPAExam!]!
+  jointZpaCandidates(program: String!, primussAncode: Int!): [ZPAExam!]!
 
   """
   Audit log of mutating operations (mutations + data-changing subscriptions),
@@ -3215,11 +3241,13 @@ type SemesterConfig {
   starttimes: [Starttime!]!
   slots: [Slot!]!
 
+  """Reserved start times per joint study program (echo of the raw config)."""
+  jointProgramAllowedTimes: [JointProgramTimes!]
+
   """
-  Absolute start times allowed for MUC.DAI exams (echo of the raw config).
+  Reserved grid slots per joint study program (derived from jointProgramAllowedTimes).
   """
-  mucDaiAllowedTimes: [Time!]
-  mucDaiSlots: [Slot!]!
+  jointProgramSlots: [JointProgramSlots!]!
   forbiddenSlots: [Slot!]
   from: Time!
   until: Time!
@@ -3266,9 +3294,9 @@ type SemesterConfigInput {
   forbiddenDays: [Time!]
 
   """
-  Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times).
+  Absolute start times reserved per joint study program (one entry per program, e.g. DE/GS/ID).
   """
-  mucDaiAllowedTimes: [Time!]
+  jointProgramAllowedTimes: [JointProgramTimes!]
   emails: Emails!
 
   """
@@ -3307,9 +3335,9 @@ input SemesterConfigInputData {
   forbiddenDays: [Time!]
 
   """
-  Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times).
+  Absolute start times reserved per joint study program (one entry per program, e.g. DE/GS/ID).
   """
-  mucDaiAllowedTimes: [Time!]
+  jointProgramAllowedTimes: [JointProgramTimesInput!]
   emails: EmailsInput!
 
   """
@@ -3525,7 +3553,7 @@ type StudyProgram {
   """e.g. Bachelor / Master."""
   degree: String
 
-  """Origin/grouping: fk07 | mucdai | misc."""
+  """Origin/grouping: fk07 | joint | misc."""
   category: String!
   active: Boolean!
 
@@ -3533,11 +3561,17 @@ type StudyProgram {
   retired: Boolean!
 
   """
-  Base ancode for external (e.g. MUC.DAI) exams of this program: the local ZPA
-  ancode is externalExamsBase + primussAncode. Only for externally imported
-  programs (mucdai/misc).
+  Base ancode for external (e.g. joint-program) exams of this program: the local
+  ZPA ancode is externalExamsBase + primussAncode. Only for externally imported
+  programs (joint/misc).
   """
   externalExamsBase: Int
+
+  """
+  The joint Studienfakultät this program belongs to (e.g. "MUC.DAI" |
+  "MUC.HEALTH"). Set exactly for category "joint" programs.
+  """
+  jointFaculty: String
 }
 
 input StudyProgramInput {
@@ -3548,6 +3582,7 @@ input StudyProgramInput {
   active: Boolean!
   retired: Boolean!
   externalExamsBase: Int
+  jointFaculty: String
 }
 
 type Subscription {
@@ -3728,8 +3763,9 @@ type Subscription {
   importStudentsFromZPA: LogLine!
 
   """
-  Run the nightly auto-sync now: pull ZPA (exams/teachers/invigilator requirements)
-  and Anny bookings, record the diff and mail it. Streams progress; ends with DONE.
+  Run the nightly auto-sync now: pull ZPA (exams/teachers/invigilator
+  requirements) and Anny bookings, record the diff and mail it. Streams
+  progress; ends with DONE.
   """
   triggerScheduledSync: LogLine!
 }

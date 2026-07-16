@@ -55,7 +55,10 @@ export const load: PageServerLoad = async () => {
 						examGapMinutes
 						startTimes
 						forbiddenDays
-						mucDaiAllowedTimes
+						jointProgramAllowedTimes {
+							program
+							allowedTimes
+						}
 						timelagMin
 						notTooCloseMinutes
 						emails {

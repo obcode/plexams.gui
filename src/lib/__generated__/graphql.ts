@@ -876,13 +876,13 @@ export type GenerationConfigInput = {
   weightPreferExamDays: Scalars['Float']['input'];
 };
 
-export type ImportMucDaiResult = {
-  __typename?: 'ImportMucDaiResult';
+export type ImportJointResult = {
+  __typename?: 'ImportJointResult';
   /** new non-ZPA exams created (non-FK07, not existing yet). */
   examsCreated: Scalars['Int']['output'];
   /** non-FK07 exams that already existed (kept with their ancode). */
   examsExisting: Scalars['Int']['output'];
-  /** total exam rows imported into the mucdai_<program> collections. */
+  /** total exam rows imported into the joint_<program> collections. */
   examsImported: Scalars['Int']['output'];
   /** assembled exams of the imported programs removed because they are no longer in the CSV (or flipped to FK07). */
   examsRemoved: Scalars['Int']['output'];
@@ -1098,6 +1098,54 @@ export type JiraUser = {
   name: Scalars['String']['output'];
 };
 
+export type JointExam = {
+  __typename?: 'JointExam';
+  /**
+   * Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
+   * auto-assigned ancode for exams planned by other faculties. null if not yet
+   * created/linked.
+   */
+  ancode?: Maybe<Scalars['Int']['output']>;
+  duration: Scalars['Int']['output'];
+  examType: Scalars['String']['output'];
+  isRepeaterExam: Scalars['Boolean']['output'];
+  /**
+   * Link status to our data: "external" (auto-created external exam, linked), "zpa"
+   * (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
+   * manual linking).
+   */
+  linkStatus: Scalars['String']['output'];
+  mainExamer: Scalars['String']['output'];
+  mainExamerID?: Maybe<Scalars['Int']['output']>;
+  module: Scalars['String']['output'];
+  /** The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time. */
+  planEntry?: Maybe<PlanEntry>;
+  /** the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12. */
+  plannedBy: Scalars['String']['output'];
+  primussAncode: Scalars['Int']['output'];
+  program: Scalars['String']['output'];
+};
+
+/** The reserved grid slots (matching the allowed times) for one joint study program. */
+export type JointProgramSlots = {
+  __typename?: 'JointProgramSlots';
+  program: Scalars['String']['output'];
+  slots: Array<Slot>;
+};
+
+/** Absolute start times reserved for one joint study program's exams. */
+export type JointProgramTimes = {
+  __typename?: 'JointProgramTimes';
+  allowedTimes: Array<Scalars['Time']['output']>;
+  /** Study program shortname (Kürzel), e.g. "DE". */
+  program: Scalars['String']['output'];
+};
+
+export type JointProgramTimesInput = {
+  allowedTimes: Array<Scalars['Time']['input']>;
+  program: Scalars['String']['input'];
+};
+
 /**
  * LogLevel classifies a streamed LogLine. PROGRESS lines are throttled optimizer
  * snapshots and should be rendered in-place (like a spinner) instead of appended.
@@ -1136,34 +1184,6 @@ export type MinutesReport = {
   toleranceMin: Scalars['Int']['output'];
   under: Scalars['Int']['output'];
   withinTolerance: Scalars['Int']['output'];
-};
-
-export type MucDaiExam = {
-  __typename?: 'MucDaiExam';
-  /**
-   * Ancode of the created/linked exam: our ZPA ancode for FK07-planned exams, the
-   * auto-assigned ancode for exams planned by other faculties. null if not yet
-   * created/linked.
-   */
-  ancode?: Maybe<Scalars['Int']['output']>;
-  duration: Scalars['Int']['output'];
-  examType: Scalars['String']['output'];
-  isRepeaterExam: Scalars['Boolean']['output'];
-  /**
-   * Link status to our data: "external" (auto-created external exam, linked), "zpa"
-   * (linked to a ZPA exam), or "unresolved" (FK07 exam with no clear ZPA match — needs
-   * manual linking).
-   */
-  linkStatus: Scalars['String']['output'];
-  mainExamer: Scalars['String']['output'];
-  mainExamerID?: Maybe<Scalars['Int']['output']>;
-  module: Scalars['String']['output'];
-  /** The plan entry, if planned: dayNumber/slotNumber = my time, externalTime = the other faculty's time. */
-  planEntry?: Maybe<PlanEntry>;
-  /** the responsible faculty (Prüfungsplanung), e.g. FK07 / FK03 / FK08 / FK12. */
-  plannedBy: Scalars['String']['output'];
-  primussAncode: Scalars['Int']['output'];
-  program: Scalars['String']['output'];
 };
 
 export type Mutation = {
@@ -1286,12 +1306,12 @@ export type Mutation = {
   /**
    * Import MUC.DAI exams from a CSV (the file you get from MUC.DAI; columns Nr,
    * Modulname, Prüfungsform, Bewertung, Dauer, Erstpruefender, Zweitpruefender,
-   * IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the mucdai_<program>
+   * IstWiederholung, Studiengruppe, Prüfungsplanung). Replaces the joint_<program>
    * data and generates the non-ZPA exams for everything not planned by FK07 (FK07
    * exams already exist as ZPA exams and are only linked). The GUI sends the file
    * content as text.
    */
-  importMucDaiExams: ImportMucDaiResult;
+  importJointExams: ImportJointResult;
   lab: Scalars['Boolean']['output'];
   /** Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10"). */
   notPlannedByMe: Scalars['Boolean']['output'];
@@ -1309,7 +1329,7 @@ export type Mutation = {
   removeExamDuration: Scalars['Boolean']['output'];
   removeExamsCanShareSlot: Scalars['Boolean']['output'];
   /** Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection. */
-  removeMucDaiLink: MucDaiExam;
+  removeJointLink: JointExam;
   /** Remove the current user's stored Jira PAT. */
   removeMyJiraToken: MyAccount;
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
@@ -1378,7 +1398,7 @@ export type Mutation = {
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
   /**
-   * Seed study programs from the configured lists (fk07programs, mucdaiprograms,
+   * Seed study programs from the configured lists (fk07programs, joint faculties,
    * miscprograms) without overwriting existing ones. Returns the number created.
    */
   seedStudyProgramsFromConfig: Scalars['Int']['output'];
@@ -1418,7 +1438,7 @@ export type Mutation = {
    * Manually link a MUC.DAI exam (program + primussAncode) to a ZPA exam (zpaAncode),
    * for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
    */
-  setMucDaiZpaLink: MucDaiExam;
+  setJointZpaLink: JointExam;
   /**
    * Store the current user's Jira Personal Access Token, AES-256-GCM encrypted in the
    * DB. Write-only: the token is never returned by any query. Requires secrets.key to
@@ -1432,7 +1452,10 @@ export type Mutation = {
   /**
    * Add or update a permanent (cross-semester) non-invigilator (key: teacherID),
    * e.g. someone retired. name is the display name (pass the candidate's name; if
-   * empty the backend tries to resolve it).
+   * empty the backend tries to resolve it). validFrom/validUntil (semester labels
+   * like "2026-SS", either omitted for an open bound) limit the semesters the
+   * exemption applies to; leave both empty for a truly permanent exemption, or set
+   * validUntil to retire it without deleting the record (so past semesters stay correct).
    */
   setPermanentNonInvigilator: PermanentNonInvigilator;
   /**
@@ -1698,7 +1721,7 @@ export type MutationGeneratePreplanAssignmentArgs = {
 };
 
 
-export type MutationImportMucDaiExamsArgs = {
+export type MutationImportJointExamsArgs = {
   csv: Scalars['String']['input'];
 };
 
@@ -1752,7 +1775,7 @@ export type MutationRemoveExamsCanShareSlotArgs = {
 };
 
 
-export type MutationRemoveMucDaiLinkArgs = {
+export type MutationRemoveJointLinkArgs = {
   primussAncode: Scalars['Int']['input'];
   program: Scalars['String']['input'];
 };
@@ -1873,7 +1896,7 @@ export type MutationSetInvigilatorConstraintsArgs = {
 };
 
 
-export type MutationSetMucDaiZpaLinkArgs = {
+export type MutationSetJointZpaLinkArgs = {
   primussAncode: Scalars['Int']['input'];
   program: Scalars['String']['input'];
   zpaAncode: Scalars['Int']['input'];
@@ -2189,9 +2212,10 @@ export type OptimizerProgress = {
 };
 
 /**
- * PermanentNonInvigilator is a teacher who never does invigilation duty again
- * (e.g. retired). It lives in the global plexams database and therefore carries
- * over between semesters; it always implies isNotInvigilator.
+ * PermanentNonInvigilator is a teacher who does no invigilation duty (e.g.
+ * retired, or a role/leave-bound exemption). It lives in the global plexams
+ * database and therefore carries over between semesters; it implies
+ * isNotInvigilator for the semesters it applies to.
  */
 export type PermanentNonInvigilator = {
   __typename?: 'PermanentNonInvigilator';
@@ -2199,9 +2223,15 @@ export type PermanentNonInvigilator = {
   name: Scalars['String']['output'];
   reason: Scalars['String']['output'];
   teacherID: Scalars['Int']['output'];
-  /** First semester the exemption applies to (inclusive, label like "2026-SS"); null = open (applies to all earlier semesters too). */
+  /**
+   * First semester the exemption applies to (inclusive, label like "2026-SS");
+   * null = open (applies to all earlier semesters too).
+   */
   validFrom?: Maybe<Scalars['String']['output']>;
-  /** Last semester the exemption applies to (inclusive, label like "2026-SS"); null = open (never retires). Set this to retire an exemption without deleting the record. */
+  /**
+   * Last semester the exemption applies to (inclusive, label like "2026-SS"); null
+   * = open (never retires). Set this to retire an exemption without deleting the record.
+   */
   validUntil?: Maybe<Scalars['String']['output']>;
 };
 
@@ -2716,19 +2746,19 @@ export type Query = {
   jiraOpenIssuesByType: Array<JiraIssueGroup>;
   /** List the workflow transitions currently available for an issue in its current status. */
   jiraTransitions: Array<JiraTransition>;
+  jointExams: Array<JointExam>;
+  /**
+   * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
+   * carry the program with a missing number (0/-1) first, then same-examer + similar
+   * module, then either. For the GUI to confirm/correct the link.
+   */
+  jointZpaCandidates: Array<ZpaExam>;
   /**
    * The currently authenticated user — from the auth-proxy header, or the local dev
    * fallback when auth is disabled. The GUI uses it to show identity/role and adapt
    * the UI cosmetically; it is NEVER a security boundary (enforcement is in the backend).
    */
   me: User;
-  /**
-   * Suggested ZPA exams for linking an (unresolved) MUC.DAI exam, ranked: ZPA exams that
-   * carry the program with a missing number (0/-1) first, then same-examer + similar
-   * module, then either. For the GUI to confirm/correct the link.
-   */
-  mucDaiZpaCandidates: Array<ZpaExam>;
-  mucdaiExams: Array<MucDaiExam>;
   /**
    * Audit log of mutating operations (mutations + data-changing subscriptions),
    * newest first. Filter by operation name, by an ancode referenced in the
@@ -2952,7 +2982,7 @@ export type QueryJiraTransitionsArgs = {
 };
 
 
-export type QueryMucDaiZpaCandidatesArgs = {
+export type QueryJointZpaCandidatesArgs = {
   primussAncode: Scalars['Int']['input'];
   program: Scalars['String']['input'];
 };
@@ -3340,11 +3370,12 @@ export type SemesterConfig = {
   examGapMinutes: Scalars['Int']['output'];
   forbiddenSlots?: Maybe<Array<Slot>>;
   from: Scalars['Time']['output'];
+  /** Reserved start times per joint study program (echo of the raw config). */
+  jointProgramAllowedTimes?: Maybe<Array<JointProgramTimes>>;
+  /** Reserved grid slots per joint study program (derived from jointProgramAllowedTimes). */
+  jointProgramSlots: Array<JointProgramSlots>;
   /** Effective max students examined at the same start time (0 = no limit). */
   maxSeatsPerSlot: Scalars['Int']['output'];
-  /** Absolute start times allowed for MUC.DAI exams (echo of the raw config). */
-  mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
-  mucDaiSlots: Array<Slot>;
   /** Effective "too close" threshold (minutes, same day) for a student's two exams. */
   notTooCloseMinutes: Scalars['Int']['output'];
   slots: Array<Slot>;
@@ -3373,13 +3404,13 @@ export type SemesterConfigInput = {
   forbiddenDays?: Maybe<Array<Scalars['Time']['output']>>;
   /** Start of the planning period; day 1 = from. Exams of other faculties may lie earlier (no check). */
   from: Scalars['Time']['output'];
+  /** Absolute start times reserved per joint study program (one entry per program, e.g. DE/GS/ID). */
+  jointProgramAllowedTimes?: Maybe<Array<JointProgramTimes>>;
   /**
    * Max students examined at the same start time (configurable per-time capacity
    * for the Terminplan solver; null/0 = no limit).
    */
   maxSeatsPerSlot?: Maybe<Scalars['Int']['output']>;
-  /** Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times). */
-  mucDaiAllowedTimes?: Maybe<Array<Scalars['Time']['output']>>;
   /** Two exams of a student closer than this (minutes, same day) are flagged as "too close" (null = default 120). */
   notTooCloseMinutes?: Maybe<Scalars['Int']['output']>;
   /** Allowed daily exam start times as "HH:MM". */
@@ -3401,13 +3432,13 @@ export type SemesterConfigInputData = {
   examGapMinutes?: InputMaybe<Scalars['Int']['input']>;
   forbiddenDays?: InputMaybe<Array<Scalars['Time']['input']>>;
   from: Scalars['Time']['input'];
+  /** Absolute start times reserved per joint study program (one entry per program, e.g. DE/GS/ID). */
+  jointProgramAllowedTimes?: InputMaybe<Array<JointProgramTimesInput>>;
   /**
    * Max students examined at the same start time (configurable per-time capacity
    * for the Terminplan solver; null/0 = no limit).
    */
   maxSeatsPerSlot?: InputMaybe<Scalars['Int']['input']>;
-  /** Absolute start times allowed for MUC.DAI exams (currently "morning vs afternoon"; will become allowed/forbidden times). */
-  mucDaiAllowedTimes?: InputMaybe<Array<Scalars['Time']['input']>>;
   /** Two exams of a student closer than this (minutes, same day) are flagged as "too close" (null = default 120). */
   notTooCloseMinutes?: InputMaybe<Scalars['Int']['input']>;
   startTimes: Array<Scalars['String']['input']>;
@@ -3578,16 +3609,21 @@ export type StudentRegsState = {
 export type StudyProgram = {
   __typename?: 'StudyProgram';
   active: Scalars['Boolean']['output'];
-  /** Origin/grouping: fk07 | mucdai | misc. */
+  /** Origin/grouping: fk07 | joint | misc. */
   category: Scalars['String']['output'];
   /** e.g. Bachelor / Master. */
   degree?: Maybe<Scalars['String']['output']>;
   /**
-   * Base ancode for external (e.g. MUC.DAI) exams of this program: the local ZPA
-   * ancode is externalExamsBase + primussAncode. Only for externally imported
-   * programs (mucdai/misc).
+   * Base ancode for external (e.g. joint-program) exams of this program: the local
+   * ZPA ancode is externalExamsBase + primussAncode. Only for externally imported
+   * programs (joint/misc).
    */
   externalExamsBase?: Maybe<Scalars['Int']['output']>;
+  /**
+   * The joint Studienfakultät this program belongs to (e.g. "MUC.DAI" |
+   * "MUC.HEALTH"). Set exactly for category "joint" programs.
+   */
+  jointFaculty?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   /** A retired fk07 program counts as an "old program" (no longer planned). */
   retired: Scalars['Boolean']['output'];
@@ -3600,6 +3636,7 @@ export type StudyProgramInput = {
   category: Scalars['String']['input'];
   degree?: InputMaybe<Scalars['String']['input']>;
   externalExamsBase?: InputMaybe<Scalars['Int']['input']>;
+  jointFaculty?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   retired: Scalars['Boolean']['input'];
   shortname: Scalars['String']['input'];
@@ -3705,8 +3742,9 @@ export type Subscription = {
    */
   sendEmailRoomsSecretariat: LogLine;
   /**
-   * Run the nightly auto-sync now: pull ZPA (exams/teachers/invigilator requirements)
-   * and Anny bookings, record the diff and mail it. Streams progress; ends with DONE.
+   * Run the nightly auto-sync now: pull ZPA (exams/teachers/invigilator
+   * requirements) and Anny bookings, record the diff and mail it. Streams
+   * progress; ends with DONE.
    */
   triggerScheduledSync: LogLine;
   /** Upload the planned exams to ZPA without rooms or invigilators (dryRun = build only, do not post). */

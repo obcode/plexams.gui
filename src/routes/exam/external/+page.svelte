@@ -8,7 +8,7 @@
 	let { data } = $props();
 
 	let onlyMissing = $state(false);
-	/** @type {'all' | 'mucdai' | 'zpa'} */
+	/** @type {'all' | 'joint' | 'zpa'} */
 	let source = $state('all');
 	/** '' = alle FKs */
 	let fkFilter = $state('');
@@ -65,17 +65,17 @@
 				Stammdaten der externen Prüfungen <strong>ohne Zeit</strong>.
 			</DatasetCsvTransfer>
 			<DatasetCsvTransfer name="exam-times" title="Prüfungszeiten">
-				Absolutes Datum &amp; Uhrzeit der externen/MUC.DAI-Prüfungen. Der Import berechnet den Slot
-				neu.
+				Absolutes Datum &amp; Uhrzeit der externen Prüfungen (inkl. gemeinsamer Studiengänge). Der
+				Import berechnet den Slot neu.
 			</DatasetCsvTransfer>
 		</div>
 	</details>
 
 	<p class="max-w-3xl text-sm text-base-content/60">
 		Termine für Prüfungen, die <strong>eine andere Fakultät</strong> plant: ZPA-Prüfungen mit dem Constraint
-		„nicht von mir geplant" (FK aus dem Constraint-Feld) sowie von anderen FKs geplante MUC.DAI-Prüfungen.
-		Nach FK gruppiert. Datum &amp; Zeit direkt in der Zeile setzen — Prüfungen außerhalb des Prüfungszeitraums
-		behalten nur die Zeit (keinen Slot).
+		„nicht von mir geplant" (FK aus dem Constraint-Feld) sowie von anderen FKs geplante Prüfungen gemeinsamer
+		Studiengänge. Nach FK gruppiert. Datum &amp; Zeit direkt in der Zeile setzen — Prüfungen außerhalb
+		des Prüfungszeitraums behalten nur die Zeit (keinen Slot).
 	</p>
 
 	{#if data.loadError}
@@ -104,10 +104,10 @@
 			</button>
 			<button
 				role="tab"
-				class="tab {source === 'mucdai' ? 'tab-active' : ''}"
-				onclick={() => (source = 'mucdai')}
+				class="tab {source === 'joint' ? 'tab-active' : ''}"
+				onclick={() => (source = 'joint')}
 			>
-				MUC.DAI
+				Gemeinsame Studiengänge
 			</button>
 		</div>
 

@@ -5,7 +5,11 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
 	try {
-		const data = await backendRequest<{ mucdaiExams: any[]; semesterConfig: any }>(gql`
+		const data = await backendRequest<{
+			jointExams: any[];
+			semesterConfig: any;
+			studyPrograms: { shortname: string; jointFaculty: string | null }[];
+		}>(gql`
 			query {
 				semesterConfig {
 					days {
@@ -15,7 +19,11 @@ export const load: PageServerLoad = async () => {
 						start
 					}
 				}
-				mucdaiExams {
+				studyPrograms {
+					shortname
+					jointFaculty
+				}
+				jointExams {
 					primussAncode
 					module
 					mainExamer
@@ -34,13 +42,24 @@ export const load: PageServerLoad = async () => {
 				}
 			}
 		`);
+		// Studienfakultät je gemeinsamem Studiengang (JointExam trägt selbst keine):
+		// JointExam.program → StudyProgram.jointFaculty.
+		const facultyByProgram: Record<string, string> = {};
+		for (const p of data.studyPrograms ?? [])
+			if (p.jointFaculty) facultyByProgram[p.shortname] = p.jointFaculty;
 		return {
-			mucdaiExams: data.mucdaiExams ?? [],
+			jointExams: data.jointExams ?? [],
 			semesterConfig: data.semesterConfig ?? null,
+			facultyByProgram,
 			loadError: ''
 		};
 	} catch (e) {
 		// Backend-Fehler nicht als 500 durchschlagen lassen — Seite zeigt einen Hinweis.
-		return { mucdaiExams: [] as any[], semesterConfig: null, loadError: gqlErrorMessage(e) };
+		return {
+			jointExams: [] as any[],
+			semesterConfig: null,
+			facultyByProgram: {} as Record<string, string>,
+			loadError: gqlErrorMessage(e)
+		};
 	}
 };

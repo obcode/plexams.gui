@@ -7,7 +7,7 @@ import type { PageServerLoad } from './$types';
 // Zwei Quellen, nach FK zusammengeführt:
 //   (a) ZPA-Prüfungen mit Constraint notPlannedByMe → FK = notPlannedByMeInFK
 //       (Fallback: Fakultät des/der Prüfenden)
-//   (b) MUC.DAI-Prüfungen anderer FKs → FK = plannedBy (≠ FK07)
+//   (b) Prüfungen gemeinsamer Studiengänge anderer FKs → FK = plannedBy (≠ FK07)
 // Beide werden über setExternalExamTime(ancode) terminiert; die Zeit steht immer in
 // starttime, außerhalb des Zeitraums liegende Prüfungen haben keinen Slot (day/slot 0).
 
@@ -20,7 +20,8 @@ type PlanEntryTime = {
 // die vollen Schema-Typen aus $lib/gql/types).
 type QueryResult = {
 	semesterConfig: { days: { date: string }[] } | null;
-	mucdaiExams: {
+	studyPrograms: { shortname: string; jointFaculty: string | null }[];
+	jointExams: {
 		primussAncode: number;
 		module: string;
 		mainExamer: string;
@@ -50,7 +51,7 @@ type QueryResult = {
 
 // Die vereinheitlichte Zeile, die die Seite (und $lib/exam/otherFkGroups) konsumiert.
 export type OtherFkItem = {
-	source: 'zpa' | 'mucdai';
+	source: 'zpa' | 'joint';
 	ancode: number;
 	primussAncode?: number;
 	module: string;
@@ -59,6 +60,7 @@ export type OtherFkItem = {
 	isRepeaterExam: boolean;
 	fk: string;
 	program: string | null;
+	jointFaculty?: string | null;
 	groups: string[];
 	planEntry: PlanEntryTime | null;
 };
@@ -72,7 +74,11 @@ export const load: PageServerLoad = async () => {
 						date
 					}
 				}
-				mucdaiExams {
+				studyPrograms {
+					shortname
+					jointFaculty
+				}
+				jointExams {
 					primussAncode
 					module
 					mainExamer
@@ -117,6 +123,11 @@ export const load: PageServerLoad = async () => {
 		const fkById: Record<number, string> = {};
 		for (const t of data.teachers ?? []) fkById[t.id] = t.fk;
 
+		// Studienfakultät je gemeinsamem Studiengang (JointExam.program → StudyProgram.jointFaculty)
+		const jointFacultyByProgram: Record<string, string> = {};
+		for (const p of data.studyPrograms ?? [])
+			if (p.jointFaculty) jointFacultyByProgram[p.shortname] = p.jointFaculty;
+
 		const items: OtherFkItem[] = [];
 
 		// (a) ZPA notPlannedByMe
@@ -137,11 +148,11 @@ export const load: PageServerLoad = async () => {
 			});
 		}
 
-		// (b) MUC.DAI anderer FKs (FK07 = wir selbst)
-		for (const e of data.mucdaiExams ?? []) {
+		// (b) gemeinsame Studiengänge anderer FKs (FK07 = wir selbst)
+		for (const e of data.jointExams ?? []) {
 			if (e.plannedBy === 'FK07') continue;
 			items.push({
-				source: 'mucdai',
+				source: 'joint',
 				ancode: e.ancode,
 				primussAncode: e.primussAncode,
 				module: e.module,
@@ -150,6 +161,7 @@ export const load: PageServerLoad = async () => {
 				isRepeaterExam: !!e.isRepeaterExam,
 				fk: e.plannedBy || '',
 				program: e.program ?? null,
+				jointFaculty: (e.program && jointFacultyByProgram[e.program]) || null,
 				groups: [],
 				planEntry: e.planEntry
 			});

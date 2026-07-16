@@ -41,7 +41,7 @@ export const load: PageServerLoad = async () => {
 
 	const data = await backendRequest(query);
 
-	// Programm-Kürzel → Kategorie (fk07 | mucdai | misc); unbekannte → Sonstige
+	// Programm-Kürzel → Kategorie (fk07 | joint | misc); unbekannte → Sonstige
 	const catByProgram: Record<string, string> = {};
 	for (const sp of data.studyPrograms ?? []) {
 		catByProgram[sp.shortname] = sp.category;

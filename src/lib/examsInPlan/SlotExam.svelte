@@ -90,7 +90,7 @@
 		if (sameSlot) return 'border-l-accent bg-accent/15';
 		if (conflictingAncodes.includes(exam.ancode) && !onlyConflicts)
 			return 'border-l-error bg-error/15';
-		// von anderer FK geplant (MUC.DAI oder ZPA notPlannedByMe) → grau, read-only-Anmutung
+		// von anderer FK geplant (gemeinsame Studiengänge oder ZPA notPlannedByMe) → grau, read-only-Anmutung
 		if (exam.constraints && exam.constraints.notPlannedByMe) return 'border-l-base-300 bg-base-200';
 		if (exam.zpaExam.isRepeaterExam) return 'border-l-warning bg-warning/10';
 		return 'border-l-success/60';

@@ -6,10 +6,10 @@
 
 	const CAT_LABEL = /** @type {Record<string, string>} */ ({
 		fk07: 'FK07',
-		mucdai: 'MUC.DAI',
+		joint: 'Gemeinsame Studiengänge',
 		misc: 'Sonstige'
 	});
-	const CAT_ORDER = ['fk07', 'mucdai', 'misc'];
+	const CAT_ORDER = ['fk07', 'joint', 'misc'];
 
 	let byCat = $derived(
 		(() => {
@@ -53,7 +53,8 @@
 			category: 'fk07',
 			active: true,
 			retired: false,
-			externalExamsBase: ''
+			externalExamsBase: '',
+			jointFaculty: ''
 		};
 		isNew = true;
 		editError = '';
@@ -67,7 +68,8 @@
 			category: p.category || 'misc',
 			active: !!p.active,
 			retired: !!p.retired,
-			externalExamsBase: p.externalExamsBase ?? ''
+			externalExamsBase: p.externalExamsBase ?? '',
+			jointFaculty: p.jointFaculty ?? ''
 		};
 		isNew = false;
 		editError = '';
@@ -104,7 +106,11 @@
 				externalExamsBase:
 					editing.externalExamsBase === '' || editing.externalExamsBase == null
 						? null
-						: Number(editing.externalExamsBase)
+						: Number(editing.externalExamsBase),
+				jointFaculty:
+					editing.category === 'joint' && (editing.jointFaculty ?? '').trim()
+						? editing.jointFaculty.trim()
+						: null
 			});
 			closeEdit();
 			await invalidateAll();
@@ -128,7 +134,8 @@
 				category: p.category || 'misc',
 				active: !p.active,
 				retired: !!p.retired,
-				externalExamsBase: p.externalExamsBase ?? null
+				externalExamsBase: p.externalExamsBase ?? null,
+				jointFaculty: p.jointFaculty ?? null
 			});
 			await invalidateAll();
 		} catch (e) {
@@ -249,6 +256,14 @@
 												ausgelaufen
 											</span>
 										{/if}
+										{#if p.jointFaculty}
+											<span
+												class="badge badge-info badge-sm ml-1"
+												title="gemeinsame Studienfakultät"
+											>
+												{p.jointFaculty}
+											</span>
+										{/if}
 										{#if p.externalExamsBase != null}
 											<span
 												class="badge badge-ghost badge-sm ml-1 tabular-nums"
@@ -319,10 +334,24 @@
 					<span class="text-xs font-medium text-base-content/60">Kategorie</span>
 					<select class="select select-bordered select-sm w-40" bind:value={editing.category}>
 						<option value="fk07">FK07</option>
-						<option value="mucdai">MUC.DAI</option>
+						<option value="joint">Gemeinsamer Studiengang</option>
 						<option value="misc">Sonstige</option>
 					</select>
 				</label>
+				{#if editing.category === 'joint'}
+					<label class="flex flex-col gap-1">
+						<span class="text-xs font-medium text-base-content/60">Studienfakultät</span>
+						<input
+							type="text"
+							class="input input-bordered input-sm w-40"
+							bind:value={editing.jointFaculty}
+							placeholder="z. B. MUC.DAI"
+						/>
+						<span class="text-xs text-base-content/40">
+							gemeinsame Studienfakultät (z. B. MUC.DAI, MUC.HEALTH)
+						</span>
+					</label>
+				{/if}
 				<label class="flex cursor-pointer items-center gap-2">
 					<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.active} />
 					<span>aktiv</span>

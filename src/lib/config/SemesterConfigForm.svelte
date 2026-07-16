@@ -3,26 +3,29 @@
 	// Initialwerte über `config` (null = leer). Das gebaute Input liefert getInput().
 	//
 	// `form` ist tief mit `bind:` verdrahtet (bind:value auf verschachtelte Felder,
-	// Anfangszeiten-/Sperrtag-Arrays, MUC.DAI-Set) und muss daher ein tief-reaktiver
-	// $state bleiben — ein writable $derived würde die bind:-Reaktivität brechen. Beim
-	// Config-Wechsel (nach dem Speichern lädt /config die neu berechnete Config)
-	// setzt der Aufrufer das Formular per {#key config} zurück (Remount), statt hier
-	// einen run()/$effect-Reset zu fahren.
+	// Anfangszeiten-/Sperrtag-Arrays, reservierte Zeiten je gemeinsamem Studiengang)
+	// und muss daher ein tief-reaktiver $state bleiben — ein writable $derived würde
+	// die bind:-Reaktivität brechen. Beim Config-Wechsel (nach dem Speichern lädt
+	// /config die neu berechnete Config) setzt der Aufrufer das Formular per
+	// {#key config} zurück (Remount), statt hier einen run()/$effect-Reset zu fahren.
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} [config]
 	 * @property {{ number: number, date: string }[] | null} [days] Prüfungstage vom
 	 *   Backend (semesterConfig.days). Wenn gesetzt, liefern sie die Spalten der
-	 *   MUC.DAI-Matrix; sonst werden sie aus from/until abgeleitet (z. B. beim
+	 *   Zeiten-Matrix; sonst werden sie aus from/until abgeleitet (z. B. beim
 	 *   Anlegen eines neuen Semesters, für das das Backend noch keine Tage kennt).
+	 * @property {{ shortname: string, name?: string, jointFaculty?: string | null }[]}
+	 *   [jointPrograms] Gemeinsame Studiengänge (StudyProgram mit category=joint) —
+	 *   die Kandidaten für den Pro-Studiengang-Zeiten-Editor.
 	 * @property {{ maxSeatsPerSlot: number } | null} [effective] Effektive, aus der
 	 *   Config berechnete Werte (SemesterConfig) für Hinweistexte. null = frisches
 	 *   Semester ohne Config.
 	 */
 
 	/** @type {Props} */
-	let { config = null, days = null, effective = null } = $props();
+	let { config = null, days = null, jointPrograms = [], effective = null } = $props();
 
 	/** @param {string} iso */
 	const datePart = (iso) => (iso ?? '').slice(0, 10);
@@ -44,9 +47,17 @@
 			startTimes: [...(c.startTimes ?? [])],
 			/** @type {string[]} */
 			forbiddenDays: [...(c.forbiddenDays ?? [])],
-			// MUC.DAI: Menge absoluter Anfangszeiten (Time-Strings), wie vom Backend geliefert.
-			/** @type {Set<string>} */
-			mucDai: new Set(c.mucDaiAllowedTimes ?? []),
+			// Reservierte absolute Anfangszeiten (Time-Strings) je gemeinsamem Studiengang:
+			// program → Menge, wie vom Backend geliefert (jointProgramAllowedTimes).
+			/** @type {Record<string, Set<string>>} */
+			jointTimes: Object.fromEntries(
+				(c.jointProgramAllowedTimes ?? []).map(
+					(/** @type {{ program: string, allowedTimes: string[] }} */ jt) => [
+						jt.program,
+						new Set(jt.allowedTimes ?? [])
+					]
+				)
+			),
 			// Zeitabstände (optional; Default 15 / 120). '' = leer → null an das Backend.
 			/** @type {number | ''} */
 			timelagMin: c.timelagMin ?? 15,
@@ -75,6 +86,9 @@
 
 	let form = $state(initForm(config));
 
+	// Gewählter gemeinsamer Studiengang für den Zeiten-Editor (erste Kandidat als Default).
+	let selectedProgram = $state(jointPrograms[0]?.shortname ?? '');
+
 	const addStartTime = () => (form.startTimes = [...form.startTimes, '']);
 	/** @param {number} i */
 	const rmStartTime = (i) => (form.startTimes = form.startTimes.filter((_, j) => j !== i));
@@ -86,9 +100,10 @@
 	const rmExaminer = (i) =>
 		(form.emails.additionalExamer = form.emails.additionalExamer.filter((_, j) => j !== i));
 
-	// ---- MUC.DAI-Matrix (Zeilen = Anfangszeit, Spalten = Prüfungstag/Datum) ----
+	// ---- Zeiten-Matrix je Studiengang (Zeilen = Anfangszeit, Spalten = Prüfungstag/Datum) ----
 	// Jede angekreuzte Zelle entspricht einer absoluten Anfangszeit (Time), gebildet
-	// aus dem Datum des Tages + der Uhrzeit der Zeile.
+	// aus dem Datum des Tages + der Uhrzeit der Zeile; sie zählt für den aktuell
+	// gewählten gemeinsamen Studiengang (selectedProgram).
 	const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 	/** @param {string} iso */
 	const fmtDay = (iso) => {
@@ -168,41 +183,49 @@
 		return null;
 	}
 
+	// Das Set des aktuell gewählten Studiengangs (leer, falls noch keins existiert).
+	const curSet = () => form.jointTimes[selectedProgram] ?? new Set();
+	/** @param {Set<string>} s */
+	const setCurSet = (s) => (form.jointTimes = { ...form.jointTimes, [selectedProgram]: s });
+
 	/** @param {{ iso: string, date?: string }} day @param {string} time */
-	const cellChecked = (day, time) => !!cellMember(form.mucDai, day, time);
+	const cellChecked = (day, time) => !!cellMember(curSet(), day, time);
 	/** @param {{ iso: string, date?: string }} day @param {string} time */
 	function toggleCell(day, time) {
-		const s = new Set(form.mucDai);
+		const s = new Set(curSet());
 		const ex = cellMember(s, day, time);
 		if (ex) s.delete(ex);
 		else s.add(cellTime(day, time));
-		form.mucDai = s;
+		setCurSet(s);
 	}
 	/** Spalte (Tag) umschalten: an, wenn noch nicht alle gesetzt sind, sonst aus.
 	 * @param {{ iso: string, date?: string }} day */
 	function toggleDay(day) {
-		const s = new Set(form.mucDai);
+		const s = new Set(curSet());
 		const allSet = matrixRows.every((r) => cellMember(s, day, r.time));
 		for (const r of matrixRows) {
 			const ex = cellMember(s, day, r.time);
 			if (allSet && ex) s.delete(ex);
 			else if (!allSet && !ex) s.add(cellTime(day, r.time));
 		}
-		form.mucDai = s;
+		setCurSet(s);
 	}
 	/** Zeile (Anfangszeit) umschalten.
 	 * @param {string} time */
 	function toggleTimeRow(time) {
-		const s = new Set(form.mucDai);
+		const s = new Set(curSet());
 		const allSet = matrixDays.every((d) => cellMember(s, d, time));
 		for (const d of matrixDays) {
 			const ex = cellMember(s, d, time);
 			if (allSet && ex) s.delete(ex);
 			else if (!allSet && !ex) s.add(cellTime(d, time));
 		}
-		form.mucDai = s;
+		setCurSet(s);
 	}
-	const clearMucDai = () => (form.mucDai = new Set());
+	const clearCurrent = () => setCurSet(new Set());
+	/** Anzahl reservierter Zeiten eines Studiengangs.
+	 * @param {string} program */
+	const countFor = (program) => form.jointTimes[program]?.size ?? 0;
 
 	/** @param {number | ''} v */
 	const intOrNull = (v) => (v === '' || v == null ? null : Number(v));
@@ -214,8 +237,11 @@
 			until: form.until,
 			startTimes: form.startTimes.map((s) => s.trim()).filter(Boolean),
 			forbiddenDays: form.forbiddenDays.filter(Boolean),
-			// Menge absoluter Anfangszeiten (Time-Strings), sortiert
-			mucDaiAllowedTimes: [...form.mucDai].sort(),
+			// Reservierte Anfangszeiten je gemeinsamem Studiengang (nur nicht-leere Listen),
+			// je Eintrag { program, allowedTimes } mit sortierten Time-Strings.
+			jointProgramAllowedTimes: Object.entries(form.jointTimes)
+				.map(([program, set]) => ({ program, allowedTimes: [...set].sort() }))
+				.filter((e) => e.allowedTimes.length > 0),
 			timelagMin: intOrNull(form.timelagMin),
 			notTooCloseMinutes: intOrNull(form.notTooCloseMinutes),
 			crossCampusGapMinutes: intOrNull(form.crossCampusGapMinutes),
@@ -351,27 +377,58 @@
 		</p>
 	</div>
 
-	<!-- MUC.DAI-Anfangszeiten als Matrix: Zeilen = Uhrzeit, Spalten = Prüfungstag/Datum -->
+	<!-- Reservierte Zeiten je gemeinsamem Studiengang als Matrix: Zeilen = Uhrzeit,
+	     Spalten = Prüfungstag/Datum; eine eigene Zeitliste je Studiengang. -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex flex-wrap items-center gap-2">
-			<span class="font-semibold">MUC.DAI-Anfangszeiten</span>
-			<span class="badge badge-ghost badge-sm">{form.mucDai.size}</span>
+			<span class="font-semibold">Reservierte Zeiten je gemeinsamem Studiengang</span>
 			<div class="flex-1"></div>
-			<button class="btn btn-ghost btn-xs" onclick={clearMucDai} disabled={form.mucDai.size === 0}>
-				alle abwählen
-			</button>
+			{#if selectedProgram}
+				<button
+					class="btn btn-ghost btn-xs"
+					onclick={clearCurrent}
+					disabled={countFor(selectedProgram) === 0}
+				>
+					alle abwählen
+				</button>
+			{/if}
 		</div>
 		<p class="text-xs text-base-content/50">
-			Ankreuzen, zu welchen Terminen MUC.DAI-Prüfungen beginnen dürfen. Klick auf einen Spalten-
-			oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
+			Ankreuzen, zu welchen Terminen Prüfungen des gewählten gemeinsamen Studiengangs beginnen
+			dürfen. Klick auf einen Spalten- oder Zeilenkopf schaltet die ganze Spalte/Zeile um.
 		</p>
 		<p class="text-xs text-base-content/50">
 			Üblicherweise an Tag 1 nachmittags und dann immer abwechselnd vor- und nachmittags.
 		</p>
-		{#if matrixDays.length === 0 || matrixRows.length === 0}
+		{#if jointPrograms.length === 0}
 			<div class="text-xs text-base-content/50">
-				Bitte zuerst Zeitraum (von/bis) und Anfangszeiten setzen.
+				Keine gemeinsamen Studiengänge angelegt — unter „Studiengänge" einen Studiengang mit
+				Kategorie „Gemeinsamer Studiengang" anlegen.
 			</div>
+		{:else}
+			<!-- Studiengang-Auswahl (Kandidaten = Studiengänge mit category=joint) -->
+			<div class="flex flex-wrap items-center gap-1">
+				<span class="text-xs text-base-content/50">Studiengang:</span>
+				{#each jointPrograms as jp}
+					<button
+						class="badge gap-1 {selectedProgram === jp.shortname ? 'badge-primary' : 'badge-ghost'}"
+						title={[jp.name, jp.jointFaculty].filter(Boolean).join(' · ')}
+						onclick={() => (selectedProgram = jp.shortname)}
+					>
+						{jp.shortname}
+						{#if countFor(jp.shortname) > 0}
+							<span class="text-[10px] opacity-70 tabular-nums">({countFor(jp.shortname)})</span>
+						{/if}
+					</button>
+				{/each}
+			</div>
+		{/if}
+		{#if jointPrograms.length === 0 || matrixDays.length === 0 || matrixRows.length === 0}
+			{#if jointPrograms.length > 0}
+				<div class="text-xs text-base-content/50">
+					Bitte zuerst Zeitraum (von/bis) und Anfangszeiten setzen.
+				</div>
+			{/if}
 		{:else}
 			<div class="overflow-x-auto">
 				<table class="table-xs table w-auto border-separate border-spacing-0.5">
