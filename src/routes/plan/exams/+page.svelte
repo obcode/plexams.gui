@@ -44,7 +44,6 @@
 	let showOnlyExahm = $state(false);
 	let showOnlySEB = false;
 	let showOnlyEXaHMRooms = $state(false);
-	let showJointSlots = $state(false);
 
 	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
 	async function getPrograms() {
@@ -102,29 +101,52 @@
 		return '';
 	}
 
-	let jointSlot = /** @type {any} */ (new Map());
-
 	// Slot hat nur noch starttime → Grid-Key (day,slot) lokal ableiten.
 	/** @param {string} iso */
 	const slotKey = (iso) =>
 		`${dayNumberForTime(iso, data.semesterConfig?.days)},${slotNumberForTime(iso, data.semesterConfig?.starttimes)}`;
 
-	// Reservierte Slots aller gemeinsamen Studiengänge (über Programme vereint).
+	// Reservierte Slots je gemeinsamem Studiengang, mit einer eigenen Ring-Farbe je
+	// Studiengang (für die farbkodierte „(alle)"-Ansicht / Legende).
+	const JOINT_RINGS = [
+		'ring-error/70',
+		'ring-info/70',
+		'ring-success/70',
+		'ring-warning/70',
+		'ring-secondary/70',
+		'ring-accent/70',
+		'ring-primary/70'
+	];
+	// Reihenfolge der Studiengänge (aus jointProgramSlots) für Filter + Legende.
+	let jointPrograms = /** @type {string[]} */ (
+		(data.semesterConfig?.jointProgramSlots ?? []).map((/** @type {any} */ j) => j.program)
+	);
+	/** @type {Record<string, string>} program → Ring-Farbe */
+	let jointRingByProgram = {};
+	jointPrograms.forEach((p, i) => (jointRingByProgram[p] = JOINT_RINGS[i % JOINT_RINGS.length]));
+	// program → { slotKey: Zellklasse }
+	let jointSlotsByProgram = /** @type {Record<string, Record<string, string>>} */ ({});
 	for (const jps of data.semesterConfig?.jointProgramSlots ?? []) {
-		for (const slot of jps.slots ?? []) {
-			jointSlot[slotKey(slot.starttime)] = 'rounded ring-2 ring-error/70';
-		}
+		const cls = `rounded ring-2 ${jointRingByProgram[jps.program]}`;
+		/** @type {Record<string, string>} */
+		const m = {};
+		for (const slot of jps.slots ?? []) m[slotKey(slot.starttime)] = cls;
+		jointSlotsByProgram[jps.program] = m;
 	}
 
-	let jointSlotToShow = $state(/** @type {any} */ (new Map()));
+	// '' = aus, '*' = alle (Vereinigung, farbkodiert), sonst ein Studiengang-Kürzel.
+	let jointSlotProgram = $state('');
 
-	function handleJointSlots() {
-		if (showJointSlots) {
-			jointSlotToShow = jointSlot;
-		} else {
-			jointSlotToShow = new Map();
+	let jointSlotToShow = $derived.by(() => {
+		if (!jointSlotProgram || view === 'zeit') return /** @type {Record<string, string>} */ ({});
+		if (jointSlotProgram === '*') {
+			/** @type {Record<string, string>} */
+			const out = {};
+			for (const p of jointPrograms) Object.assign(out, jointSlotsByProgram[p]);
+			return out;
 		}
-	}
+		return jointSlotsByProgram[jointSlotProgram] ?? {};
+	});
 
 	onMount(() => {
 		getPrograms();
@@ -661,20 +683,41 @@
 					disabled={view === 'zeit'}
 				/> EXaHM-Räume
 			</label>
-			<label
-				class="flex items-center gap-2 {view === 'zeit'
-					? 'cursor-not-allowed opacity-40'
-					: 'cursor-pointer'}"
-				title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
-			>
-				<input
-					type="checkbox"
-					class="toggle toggle-sm"
-					bind:checked={showJointSlots}
-					onchange={handleJointSlots}
-					disabled={view === 'zeit'}
-				/> Slots gemeinsamer Studiengänge
-			</label>
+			{#if jointPrograms.length > 0}
+				<div
+					class="flex items-center gap-1 {view === 'zeit' ? 'opacity-40' : ''}"
+					title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
+				>
+					<span class="text-sm text-base-content/60">reservierte Slots:</span>
+					<button
+						class="badge {jointSlotProgram === '' ? 'badge-neutral' : 'badge-ghost'}"
+						disabled={view === 'zeit'}
+						onclick={() => (jointSlotProgram = '')}
+					>
+						aus
+					</button>
+					{#each jointPrograms as p}
+						<button
+							class="badge gap-1 {jointSlotProgram === p ? 'badge-primary' : 'badge-ghost'}"
+							disabled={view === 'zeit'}
+							onclick={() => (jointSlotProgram = p)}
+						>
+							<span class="inline-block h-2 w-2 rounded-full ring-2 {jointRingByProgram[p]}"></span>
+							{p}
+						</button>
+					{/each}
+					{#if jointPrograms.length > 1}
+						<button
+							class="badge {jointSlotProgram === '*' ? 'badge-primary' : 'badge-ghost'}"
+							disabled={view === 'zeit'}
+							title="alle Studiengänge, je Studiengang eine Farbe"
+							onclick={() => (jointSlotProgram = '*')}
+						>
+							alle
+						</button>
+					{/if}
+				</div>
+			{/if}
 			<div class="flex-1"></div>
 			<select class="select select-bordered select-sm" bind:value={showExam}>
 				<option value="all">Alle Gruppen</option>

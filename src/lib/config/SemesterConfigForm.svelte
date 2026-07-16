@@ -268,6 +268,51 @@
 	/** @type {string} */
 	let copySource = $state('');
 
+	// ---- Gruppierung nach Studienfakultät ----
+	/** Studienfakultät eines Studiengangs ('' wenn keine).
+	 * @param {string} program */
+	const facultyOf = (program) =>
+		jointPrograms.find((/** @type {any} */ jp) => jp.shortname === program)?.jointFaculty ?? '';
+
+	// Studiengänge nach Studienfakultät gruppiert (ohne Fakultät ans Ende).
+	let programsByFaculty = $derived(
+		(() => {
+			/** @type {Map<string, any[]>} */
+			const m = new Map();
+			for (const jp of jointPrograms) {
+				const key = jp.jointFaculty || '—';
+				if (!m.has(key)) m.set(key, []);
+				m.get(key)?.push(jp);
+			}
+			return [...m.entries()]
+				.sort((a, b) => (a[0] === '—' ? 1 : b[0] === '—' ? -1 : a[0].localeCompare(b[0])))
+				.map(([faculty, programs]) => ({ faculty, programs }));
+		})()
+	);
+
+	let selectedFaculty = $derived(facultyOf(selectedProgram));
+	// Studiengänge derselben Studienfakultät wie der gewählte (inkl. gewähltem).
+	let sameFacultyPrograms = $derived(
+		jointPrograms.filter((/** @type {any} */ jp) => (jp.jointFaculty ?? '') === selectedFaculty)
+	);
+
+	// Die aktuellen Zeiten des gewählten Studiengangs auf alle Studiengänge derselben
+	// Studienfakultät übertragen (danach je Studiengang feinjustierbar).
+	function applyToFaculty() {
+		const src = curSet();
+		const next = { ...form.jointTimes };
+		for (const jp of sameFacultyPrograms) next[jp.shortname] = new Set(src);
+		form.jointTimes = next;
+	}
+
+	// Nach der Backend-Migration (MUC.DAI → joint) greift eine Übergangs-Fallback:
+	// die alte einzelne Zeitliste gilt für alle joint-Studiengänge, bis hier pro
+	// Studiengang gesetzt wird. Solange noch nichts gepflegt ist, dazu anregen.
+	let noJointTimesYet = $derived(
+		jointPrograms.length > 0 &&
+			jointPrograms.every((/** @type {any} */ jp) => countFor(jp.shortname) === 0)
+	);
+
 	/** @param {number | ''} v */
 	const intOrNull = (v) => (v === '' || v == null ? null : Number(v));
 
@@ -441,26 +486,43 @@
 		<p class="text-xs text-base-content/50">
 			Üblicherweise an Tag 1 nachmittags und dann immer abwechselnd vor- und nachmittags.
 		</p>
+		{#if noJointTimesYet}
+			<div class="alert alert-info py-2 text-xs">
+				<span>
+					Noch keine Zeiten je Studiengang gepflegt. Übergangsweise gilt die bisherige einzelne
+					Zeitliste für alle gemeinsamen Studiengänge — bitte hier pro Studiengang setzen (Tipp:
+					„für alle &lt;Fakultät&gt; übernehmen").
+				</span>
+			</div>
+		{/if}
 		{#if jointPrograms.length === 0}
 			<div class="text-xs text-base-content/50">
 				Keine gemeinsamen Studiengänge angelegt — unter „Studiengänge" einen Studiengang mit
 				Kategorie „Gemeinsamer Studiengang" anlegen.
 			</div>
 		{:else}
-			<!-- Studiengang-Auswahl (Kandidaten = Studiengänge mit category=joint) -->
-			<div class="flex flex-wrap items-center gap-1">
-				<span class="text-xs text-base-content/50">Studiengang:</span>
-				{#each jointPrograms as jp}
-					<button
-						class="badge gap-1 {selectedProgram === jp.shortname ? 'badge-primary' : 'badge-ghost'}"
-						title={[jp.name, jp.jointFaculty].filter(Boolean).join(' · ')}
-						onclick={() => (selectedProgram = jp.shortname)}
-					>
-						{jp.shortname}
-						{#if countFor(jp.shortname) > 0}
-							<span class="text-[10px] opacity-70 tabular-nums">({countFor(jp.shortname)})</span>
-						{/if}
-					</button>
+			<!-- Studiengang-Auswahl, nach Studienfakultät gruppiert (Kandidaten = category=joint) -->
+			<div class="flex flex-col gap-1">
+				{#each programsByFaculty as grp}
+					<div class="flex flex-wrap items-center gap-1">
+						<span class="w-28 shrink-0 text-xs font-medium text-base-content/60">{grp.faculty}</span
+						>
+						{#each grp.programs as jp}
+							<button
+								class="badge gap-1 {selectedProgram === jp.shortname
+									? 'badge-primary'
+									: 'badge-ghost'}"
+								title={[jp.name, jp.jointFaculty].filter(Boolean).join(' · ')}
+								onclick={() => (selectedProgram = jp.shortname)}
+							>
+								{jp.shortname}
+								{#if countFor(jp.shortname) > 0}
+									<span class="text-[10px] opacity-70 tabular-nums">({countFor(jp.shortname)})</span
+									>
+								{/if}
+							</button>
+						{/each}
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -483,6 +545,15 @@
 				>
 					abwechselnd ab erstem Slot
 				</button>
+				{#if sameFacultyPrograms.length > 1 && selectedFaculty}
+					<button
+						class="btn btn-outline btn-xs"
+						title="die aktuellen Zeiten auf alle {sameFacultyPrograms.length} Studiengänge der Studienfakultät {selectedFaculty} übertragen"
+						onclick={applyToFaculty}
+					>
+						für alle {selectedFaculty} übernehmen
+					</button>
+				{/if}
 				{#if copyableFrom.length > 0}
 					<span class="ml-2 text-xs text-base-content/50">übernehmen von</span>
 					<select class="select select-bordered select-xs" bind:value={copySource}>

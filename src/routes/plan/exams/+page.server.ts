@@ -11,6 +11,7 @@ export const load: PageServerLoad = async () => {
 					date
 				}
 				jointProgramSlots {
+					program
 					slots {
 						starttime
 					}
