@@ -50,6 +50,7 @@
 			shortname: '',
 			name: '',
 			degree: '',
+			zpaCode: '',
 			category: 'fk07',
 			active: true,
 			retired: false,
@@ -65,6 +66,7 @@
 			shortname: p.shortname,
 			name: p.name ?? '',
 			degree: p.degree ?? '',
+			zpaCode: p.zpaCode ?? '',
 			category: p.category || 'misc',
 			active: !!p.active,
 			retired: !!p.retired,
@@ -100,6 +102,7 @@
 				shortname: sn,
 				name: editing.name ?? '',
 				degree: (editing.degree ?? '').trim() || null,
+				zpaCode: (editing.zpaCode ?? '').trim() || null,
 				category: editing.category || 'misc',
 				active: !!editing.active,
 				retired: !!editing.retired,
@@ -131,6 +134,7 @@
 				shortname: p.shortname,
 				name: p.name ?? '',
 				degree: p.degree ?? null,
+				zpaCode: p.zpaCode ?? null,
 				category: p.category || 'misc',
 				active: !p.active,
 				retired: !!p.retired,
@@ -241,7 +245,17 @@
 						<tbody>
 							{#each group.items as p (p.shortname)}
 								<tr class="hover {p.active ? '' : 'opacity-50'}">
-									<td class="font-mono font-medium">{p.shortname}</td>
+									<td class="font-mono font-medium whitespace-nowrap">
+										{p.shortname}
+										{#if p.zpaCode && p.zpaCode !== p.shortname}
+											<span
+												class="badge badge-ghost badge-sm ml-1"
+												title="ZPA-Code (Kürzel im ZPA-System)"
+											>
+												ZPA {p.zpaCode}
+											</span>
+										{/if}
+									</td>
 									<td>
 										{#if (p.name ?? '').trim()}
 											{p.name}
@@ -328,7 +342,23 @@
 						type="text"
 						class="input input-bordered input-sm w-40"
 						bind:value={editing.degree}
+						placeholder="z. B. Bachelor"
 					/>
+				</label>
+				<label class="flex flex-col gap-1">
+					<span class="text-xs font-medium text-base-content/60">ZPA-Code (optional)</span>
+					<input
+						type="text"
+						class="input input-bordered input-sm w-40 font-mono"
+						bind:value={editing.zpaCode}
+						placeholder="leer = wie Kürzel"
+					/>
+					<span class="text-xs text-base-content/40">
+						Das interne Kürzel darf abschluss-suffigiert sein (z. B. <span class="font-mono"
+							>DC-B</span
+						>). Der ZPA-Code ist das 2-Buchstaben-Kürzel, das ZPA verwendet (z. B.
+						<span class="font-mono">DC</span> für DC-B und DC-M). Leer = wie Kürzel.
+					</span>
 				</label>
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Kategorie</span>

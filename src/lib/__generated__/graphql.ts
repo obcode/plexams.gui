@@ -3627,8 +3627,13 @@ export type StudyProgram = {
   name: Scalars['String']['output'];
   /** A retired fk07 program counts as an "old program" (no longer planned). */
   retired: Scalars['Boolean']['output'];
-  /** Kürzel, e.g. IF (unique key). */
+  /** Kürzel, e.g. IF (unique key). May be degree-suffixed, e.g. DC-B / DC-M. */
   shortname: Scalars['String']['output'];
+  /**
+   * The (still 2-letter, possibly non-unique) code this program has in the external
+   * ZPA system, e.g. "DC" for both DC-B and DC-M. Empty defaults to shortname.
+   */
+  zpaCode?: Maybe<Scalars['String']['output']>;
 };
 
 export type StudyProgramInput = {
@@ -3640,6 +3645,7 @@ export type StudyProgramInput = {
   name: Scalars['String']['input'];
   retired: Scalars['Boolean']['input'];
   shortname: Scalars['String']['input'];
+  zpaCode?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Subscription = {

@@ -6,6 +6,7 @@ type StudyProgram = {
 	shortname: string;
 	name: string;
 	degree: string;
+	zpaCode: string | null;
 	category: string;
 	active: boolean;
 	retired: boolean;
@@ -20,6 +21,7 @@ export const load: PageServerLoad = async () => {
 				shortname
 				name
 				degree
+				zpaCode
 				category
 				active
 				retired

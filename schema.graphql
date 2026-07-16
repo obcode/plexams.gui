@@ -3546,12 +3546,20 @@ type StudentRegsState {
 
 """A study program (Studiengang), e.g. IF / DE / GN."""
 type StudyProgram {
-  """Kürzel, e.g. IF (unique key)."""
+  """
+  Kürzel, e.g. IF (unique key). May be degree-suffixed, e.g. DC-B / DC-M.
+  """
   shortname: String!
   name: String!
 
   """e.g. Bachelor / Master."""
   degree: String
+
+  """
+  The (still 2-letter, possibly non-unique) code this program has in the external
+  ZPA system, e.g. "DC" for both DC-B and DC-M. Empty defaults to shortname.
+  """
+  zpaCode: String
 
   """Origin/grouping: fk07 | joint | misc."""
   category: String!
@@ -3578,6 +3586,7 @@ input StudyProgramInput {
   shortname: String!
   name: String!
   degree: String
+  zpaCode: String
   category: String!
   active: Boolean!
   retired: Boolean!
