@@ -126,13 +126,15 @@
 					'Selber Tag',
 					formatShare(stats.sameDayShare),
 					'zwei Prüfungen am selben Tag',
-					stats.sameDayShare > 0 ? 'warning' : 'neutral'
+					stats.sameDayShare > 0 ? 'warning' : 'neutral',
+					undefined
 				)}
 				{@render kpi(
 					'Ø min. freie Tage',
 					formatDecimal(stats.avgMinFreeDays),
 					'kleinster Abstand je Studi (Ø)',
-					'neutral'
+					'neutral',
+					undefined
 				)}
 				{@render kpi(
 					'Ø Proximity-Cost',
@@ -145,19 +147,22 @@
 					'Konflikte',
 					formatShare(stats.conflictShare),
 					'Überschneidung / zu eng — sollte 0 sein',
-					stats.conflictShare > 0 ? 'error' : 'success'
+					stats.conflictShare > 0 ? 'error' : 'success',
+					undefined
 				)}
 				{@render kpi(
 					'Studierende',
 					String(stats.studentCount),
 					'mit ≥ 1 geplanten Prüfung',
-					'neutral'
+					'neutral',
+					undefined
 				)}
 				{@render kpi(
 					'davon ≥ 2 Prüfungen',
 					String(stats.multiExamStudentCount),
 					'Nenner der Quoten',
-					'neutral'
+					'neutral',
+					undefined
 				)}
 			</div>
 		</section>
