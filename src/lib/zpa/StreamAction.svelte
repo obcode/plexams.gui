@@ -9,6 +9,7 @@
 	 * @property {any} title
 	 * @property {string} [description]
 	 * @property {boolean} [hasDryRun] - Feld hat ein dryRun-Argument
+	 * @property {string} [dryRunHint] - Hinweis, der bei aktivem Probelauf gezeigt wird
 	 * @property {string} [accent] - Akzentfarbe: 'info' (Download) | 'success' (Upload)
 	 * @property {string} [actionLabel]
 	 * @property {boolean} [disabled] - Start-Button deaktivieren (z. B. read-only-Semester)
@@ -22,6 +23,7 @@
 		title,
 		description = '',
 		hasDryRun = false,
+		dryRunHint = 'Probelauf aktiv — es wird nichts ins ZPA gesendet.',
 		accent = 'info',
 		actionLabel = 'Starten',
 		disabled = false,
@@ -224,7 +226,7 @@
 
 	{#if hasDryRun && dryRun && status !== 'running'}
 		<div class="text-[10px] text-base-content/50">
-			Probelauf aktiv — es wird nichts ins ZPA gesendet.
+			{dryRunHint}
 		</div>
 	{/if}
 

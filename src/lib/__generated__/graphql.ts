@@ -15,6 +15,21 @@ export type Scalars = {
   Time: { input: any; output: any; }
 };
 
+/** Aktivitäts-Kennzahlen aus dem Audit-Log (bezogen auf das aktive Semester). */
+export type ActivitySummary = {
+  __typename?: 'ActivitySummary';
+  /** Anzahl unterschiedlicher handelnder Nutzer in den letzten 7 Tagen. */
+  distinctUsers7d: Scalars['Int']['output'];
+  /** Anzahl fehlgeschlagener Operationen in den letzten 7 Tagen. */
+  errors7d: Scalars['Int']['output'];
+  /** Anzahl mutierender Operationen der letzten 7 Tage. */
+  last7d: Scalars['Int']['output'];
+  /** Anzahl mutierender Operationen der letzten 24 Stunden. */
+  last24h: Scalars['Int']['output'];
+  /** Die häufigsten Operationen der letzten 7 Tage (absteigend), gekappt. */
+  topOperations: Array<OperationCount>;
+};
+
 export type AdditionalExam = {
   __typename?: 'AdditionalExam';
   ancode: Scalars['Int']['output'];
@@ -49,6 +64,37 @@ export type AdditionalExamRoomInput = {
   isReserve: Scalars['Boolean']['input'];
   roomName: Scalars['String']['input'];
   studentCount: Scalars['Int']['input'];
+};
+
+/** Plattform-Überblick für Admins. */
+export type AdminOverview = {
+  __typename?: 'AdminOverview';
+  /** Das aktuell aktive Semester (Workspace), z. B. "2026 SS". */
+  activeSemester: Scalars['String']['output'];
+  /** Aktivitäts-Kennzahlen aus dem Audit-Log des aktiven Workspace (24h/7d/Fehler/aktive Nutzer + Top-Operationen). */
+  activity: ActivitySummary;
+  /** Backup-Fälligkeit des aktiven Workspace (Änderungen seit dem letzten Dump). */
+  backup: BackupStatus;
+  /** Zeitpunkt, zu dem diese Übersicht erhoben wurde. */
+  generatedAt: Scalars['Time']['output'];
+  /** Laufzeit-Status: ob gerade geschrieben werden darf und ob der Workspace schreibgeschützt ist. */
+  live: LiveStatus;
+  /** Die jüngsten Audit-Einträge (neueste zuerst) des aktiven Workspace. */
+  recentActivity: Array<MutationLogEntry>;
+  /** Die jüngsten fehlgeschlagenen Operationen (neueste zuerst) des aktiven Workspace. */
+  recentErrors: Array<MutationLogEntry>;
+  /** Die jüngsten externen Transfers (ZPA/Anny) des aktiven Workspace. */
+  recentSyncs: Array<SyncLogEntry>;
+  /** Anzahl der Nutzer je Rolle. */
+  roleCounts: RoleCounts;
+  /** Zustand des Auto-Syncs und des Admin-Digests. */
+  scheduler: SchedulerStatus;
+  /** Build-Version und verbundene MongoDB des laufenden Servers. */
+  server: ServerInfo;
+  /** Die Zugriffsliste (alle bekannten Login-Identitäten). */
+  users: Array<User>;
+  /** Alle bekannten Workspaces (Semester-Datenbanken) mit Read-only-/Schema-Stand. */
+  workspaces: Array<Semester>;
 };
 
 export type AnCode = {
@@ -1146,6 +1192,15 @@ export type JointProgramTimesInput = {
   program: Scalars['String']['input'];
 };
 
+/** Laufzeit-Status der Schreibsperren. */
+export type LiveStatus = {
+  __typename?: 'LiveStatus';
+  /** Ob der aktive Workspace schreibgeschützt ist (read-only). */
+  readOnly: Scalars['Boolean']['output'];
+  /** Ob Schreiboperationen aktuell erlaubt sind (keine Validierung/kein exklusiver Transfer läuft). */
+  writesAllowed: Scalars['Boolean']['output'];
+};
+
 /**
  * LogLevel classifies a streamed LogLine. PROGRESS lines are throttled optimizer
  * snapshots and should be rendered in-place (like a spinner) instead of appended.
@@ -2184,6 +2239,13 @@ export type NtaRoomAloneWaiver = {
   reason: Scalars['String']['output'];
 };
 
+/** Eine Operation mit ihrer Häufigkeit. */
+export type OperationCount = {
+  __typename?: 'OperationCount';
+  count: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
 /** OptimizerConstraint describes one applied constraint (for the read-only view). */
 export type OptimizerConstraint = {
   __typename?: 'OptimizerConstraint';
@@ -2589,6 +2651,8 @@ export type Query = {
    * but are not part of the normal plan (replaces publish.additionalExams).
    */
   additionalExams: Array<AdditionalExam>;
+  /** Plattform-Überblick für Admins (Zugriff/Rollen, Auto-Sync, Aktivität/Audit, Backup, Workspaces). Erfordert Rolle ADMIN. */
+  adminOverview: AdminOverview;
   allAnnyBookings: Array<AnnyBooking>;
   allProgramsInPlan?: Maybe<Array<Scalars['String']['output']>>;
   allSemesterNames: Array<Semester>;
@@ -2847,6 +2911,8 @@ export type Query = {
    */
   roomsWithFreeSeatsAt: Array<RoomWithFreeSeats>;
   roomsWithInvigilationsAt?: Maybe<InvigilationSlot>;
+  /** Zustand des nächtlichen Auto-Syncs und des Admin-Digest-Versands. Erfordert Rolle ADMIN. */
+  schedulerStatus: SchedulerStatus;
   semester: Semester;
   /** null when the semester has no config yet (fresh/empty DB) — create it via createSemester / init. */
   semesterConfig?: Maybe<SemesterConfig>;
@@ -3144,6 +3210,15 @@ export enum Role {
   Viewer = 'VIEWER'
 }
 
+/** Anzahl der Nutzer je Rolle. */
+export type RoleCounts = {
+  __typename?: 'RoleCounts';
+  admin: Scalars['Int']['output'];
+  planer: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
+  viewer: Scalars['Int']['output'];
+};
+
 export type Room = {
   __typename?: 'Room';
   deactivated: Scalars['Boolean']['output'];
@@ -3341,6 +3416,33 @@ export type SaveSemesterConfigResult = {
   ok: Scalars['Boolean']['output'];
   /** Non-fatal warnings, e.g. changes that may invalidate an existing plan. */
   warnings: Array<Scalars['String']['output']>;
+};
+
+/** Zustand der beiden serverinternen Zeitpläne (nächtlicher Auto-Sync, täglicher Admin-Digest). */
+export type SchedulerStatus = {
+  __typename?: 'SchedulerStatus';
+  /** Ob der tägliche Admin-Digest aktiviert ist (scheduler.adminmail.enabled). */
+  adminMailEnabled: Scalars['Boolean']['output'];
+  /** Geplante Uhrzeit des Admin-Digests (HH:MM, lokal). */
+  adminMailTime: Scalars['String']['output'];
+  /** Ob der nächtliche Auto-Sync aktiviert ist (scheduler.enabled). */
+  autoSyncEnabled: Scalars['Boolean']['output'];
+  /** Geplante Uhrzeit des Auto-Syncs (HH:MM, lokal). */
+  autoSyncTime: Scalars['String']['output'];
+  /** Ende des letzten Auto-Sync-Laufs; null wenn nie gelaufen. */
+  lastFinished?: Maybe<Scalars['Time']['output']>;
+  /** Beginn des letzten Auto-Sync-Laufs; null wenn nie gelaufen. */
+  lastFireAt?: Maybe<Scalars['Time']['output']>;
+  /** Workspace, den der letzte Lauf abgeglichen hat. */
+  lastSemester: Scalars['String']['output'];
+  /** Ergebnis des letzten Laufs: ok | errors | skipped | panic (leer wenn nie gelaufen). */
+  lastStatus: Scalars['String']['output'];
+  /** Anzahl der im letzten Lauf gefundenen Änderungen. */
+  lastTotalChanges: Scalars['Int']['output'];
+  /** Auslöser des letzten Laufs: nightly | catchup | manual (leer wenn nie gelaufen). */
+  lastTrigger: Scalars['String']['output'];
+  /** Ob der Auto-Sync noch nie gelaufen ist (kein persistierter Zustand). */
+  neverRan: Scalars['Boolean']['output'];
 };
 
 export type Semester = {
@@ -3691,6 +3793,12 @@ export type Subscription = {
   importStudentsFromZPA: LogLine;
   /** Fetch teachers from ZPA and cache them. */
   importTeachersFromZPA: LogLine;
+  /**
+   * Sendet den Admin-Digest sofort (statt zur geplanten Zeit) und streamt den Fortschritt.
+   * dryRun=true schickt die Vorschau an die Testadresse (smtp.testmail) statt an die Admins.
+   * Erfordert Rolle ADMIN. Endet mit DONE.
+   */
+  sendAdminDigestNow: LogLine;
   /** Send the cover-page email to a single examer. */
   sendEmailCoverPage: LogLine;
   /** Send cover-page emails to all examers with exams planned by me. */
@@ -3822,6 +3930,11 @@ export type SubscriptionGenerateExamScheduleArgs = {
   iterations?: InputMaybe<Scalars['Int']['input']>;
   keepAssigned?: InputMaybe<Scalars['Boolean']['input']>;
   seed?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type SubscriptionSendAdminDigestNowArgs = {
+  dryRun: Scalars['Boolean']['input'];
 };
 
 

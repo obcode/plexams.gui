@@ -781,6 +781,14 @@
 						<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Administration</li>
 						<li>
 							<a
+								class="rounded-lg {activeHref === '/admin/overview'
+									? 'bg-primary/15 font-medium text-primary'
+									: ''}"
+								href="/admin/overview">🛠️ Überblick</a
+							>
+						</li>
+						<li>
+							<a
 								class="rounded-lg {activeHref === '/admin/users'
 									? 'bg-primary/15 font-medium text-primary'
 									: ''}"

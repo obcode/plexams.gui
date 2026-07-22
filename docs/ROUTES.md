@@ -109,7 +109,8 @@ oben rechts in [`src/lib/Nav.svelte`](../src/lib/Nav.svelte) (nur sichtbar, wenn
 stehen daher in `READ_POST_PATHS` (Semester-Schutz blockiert sie nicht) — die
 Zugriffskontrolle macht das Backend.
 
-| Eintrag               | Seite (`src/routes/…`) | api-Domäne     | Backend                                                                                                   |
-| --------------------- | ---------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| 👤 Mein Account       | `account/`             | `api/account/` | `myAccount`, `setMyShortname`, `setMyJiraToken`, `removeMyJiraToken`; Jira-Test via `api/jira/connection` |
-| 👥 Benutzerverwaltung | `admin/users/` (ADMIN) | `api/admin/`   | `users`, `setUser`, `removeUser`                                                                          |
+| Eintrag               | Seite (`src/routes/…`)    | api-Domäne     | Backend                                                                                                   |
+| --------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
+| 👤 Mein Account       | `account/`                | `api/account/` | `myAccount`, `setMyShortname`, `setMyJiraToken`, `removeMyJiraToken`; Jira-Test via `api/jira/connection` |
+| 🛠️ Überblick          | `admin/overview/` (ADMIN) | —              | `adminOverview` (SSR-Load); Digest-Versand via Subscription `sendAdminDigestNow($dryRun)`                 |
+| 👥 Benutzerverwaltung | `admin/users/` (ADMIN)    | `api/admin/`   | `users`, `setUser`, `removeUser`                                                                          |
