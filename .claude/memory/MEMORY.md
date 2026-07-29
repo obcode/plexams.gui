@@ -15,8 +15,8 @@
 - [Room generation](room-generation.md) — /plan/rooms/generate runs assignRoomsForExams (now with args) + roomReport panel; roomPlanConstraints; roomHeat* config; Room.hitzewert
 - [Slot-free migration](slot-free-migration.md) — backend moving slot→time model; done: config forms (startTimes/mucDaiAllowedTimes/timelagMin/notTooCloseMinutes) + PlanEntry.starttime/external & setExamTime placement in Terminplan; Räume/Aufsichten still slot-based
 - [Source structure](source-structure.md) — NavBar (workflow) vs src/ (domain); docs/ROUTES.md maps Nav→route→lib→api; api endpoints grouped by domain, new ones never flat
-- [Refactor roadmap](refactor-roadmap.md) — ongoing architecture refactor: what's done + open blocks (TS, runes, e2e); conventions (semilinear, extract-to-lib-and-test)
-- [Svelte runes migration](svelte-runes-migration.md) — plan to move legacy Svelte syntax → runes (within Svelte 5), combined with the TS migration
+- [Refactor roadmap](refactor-roadmap.md) — the 2026-07 architecture refactor, **all blocks done**; conventions (semilinear, extract-to-lib-and-test). Der Schlussteil ist Historie, keine offene Liste
+- [Svelte runes migration](svelte-runes-migration.md) — **DONE**: `runes: true` ist global gesetzt, Legacy-Syntax ist ein Compile-Fehler; enthält die Mapping-Tabelle als Referenz
 - [Always commit and push](always-commit-push.md) — user wants every finished, verified change committed+pushed to main immediately, without asking
 - [Check before commit](check-before-commit.md) — run `pnpm run check` and ensure it passes before every commit
 - [Responsive baseline](responsive-baseline.md) — app is Tablet-first responsive (done 2026-07-08); conventions + how to verify 375px overflow with Playwright

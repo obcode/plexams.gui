@@ -17,7 +17,7 @@ pnpm devhost         # dev server exposed on the network (--host)
 pnpm build           # production build (adapter-node → ./build)
 pnpm preview         # serve the production build on :4173
 pnpm check           # svelte-check type checking (checkJs is on; .js files are type-checked)
-pnpm lint            # prettier --check (eslint is not configured; see below)
+pnpm lint            # prettier --check . && eslint . (config: eslint.config.js)
 pnpm format          # prettier --write (formats .svelte too, via prettier-plugin-svelte)
 pnpm test            # vitest unit tests (run once)
 pnpm test:e2e        # playwright (builds + previews first, see playwright.config.js)
@@ -52,7 +52,6 @@ GraphQL queries are written inline as `gql\`...\``template strings in each`+page
 
 ### Caveats about the data layer
 
-- `src/client.ts` imports `$houdini` and looks like a Houdini GraphQL setup, but **Houdini is not configured or used** (no `houdini.config.js`, no `.houdini`). Treat it as dead scaffolding; the real client is `graphql-request`.
 - `src/lib/__generated__/graphql.ts` (from graphql-codegen) is generated but currently imported only for a couple of TypeScript types (e.g. in `Nav.svelte`). It is not a runtime client.
 
 ## Routes / domain map
@@ -74,7 +73,7 @@ Route folders mirror the planning workflow. Key domain terms:
 
 ## Conventions
 
-- **Svelte 5 with legacy (non-runes) syntax** — components use `export let` props and `$store` auto-subscriptions, not `$props()`/`$state()`. Match the existing style; don't introduce runes unless migrating deliberately.
+- **Svelte 5 in runes mode** — `svelte.config.js` sets `compilerOptions.runes: true` for the whole project, so legacy syntax (`export let`, `$:`, `on:click`, `createEventDispatcher`, `<slot>`) is a **compile error**, not a style preference. Use `$props()` for props, `$state()` for local state, `$derived`/`$derived.by()` for computed values, `$effect()` for side effects, callback props for events, and `{@render children()}` for slots. `$store` auto-subscription still works and is used throughout. Third-party packages that ship legacy `.svelte` sources are compiled in legacy mode on purpose via `dynamicCompileOptions` (`node_modules` only) — that escape hatch is for dependencies, never for `src/`.
 - Mixed `.js`/`.ts` for server files — both are type-checked (`checkJs: true`, `strict: true`). New server files can be either; follow the neighbours in the folder.
 - Styling is **Tailwind v4 + daisyUI**; theme switching uses `theme-change` (see the theme list in `Nav.svelte`).
 - Prettier: tabs, single quotes, no trailing commas, printWidth 100. Run `pnpm format` before committing.

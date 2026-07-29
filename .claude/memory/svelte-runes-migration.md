@@ -1,23 +1,36 @@
 ---
 name: svelte-runes-migration
-description: Plan für die Migration von Legacy-Svelte-Syntax auf Runes (innerhalb Svelte 5)
+description: ABGESCHLOSSEN — Projekt läuft im Runes-Modus; Legacy-Syntax ist ein Compile-Fehler. Mapping-Tabelle als Referenz.
 metadata:
   node_type: memory
   type: project
   originSessionId: c5f57170-c127-4286-8376-33501b96ade2
 ---
 
-Projekt ist auf **Svelte 5** (aktuell), nutzt aber **0 Runes** — durchgehend Legacy-Syntax. „Switch auf aktuelles Svelte" = Syntax-Migration Legacy→Runes, **kein** Versionssprung.
+**Status: DONE.** Die Migration Legacy-Syntax → Runes (innerhalb Svelte 5, kein Versionssprung)
+ist abgeschlossen. `svelte.config.js` setzt `compilerOptions.runes: true` global — der
+„Endschalter" ist **an**, damit ist Legacy-Syntax (`export let`, `$:`, `on:`,
+`createEventDispatcher`, `<slot>`) im Projekt ein **Compile-Fehler**, keine Stilfrage.
+`src/` enthält keine Legacy-Konstrukte mehr.
 
-**Umfang (Stand 2026-07):** 81 Dateien `export let`, 60× `$:`, 63× `on:`, 18× `createEventDispatcher`, 4× `<slot>`.
+Ausnahme: Fremd-Bibliotheken, die ihre `.svelte`-Quellen ausliefern (z. B.
+`@svelte-plugins/tooltips`), werden über `dynamicCompileOptions` bewusst im Legacy-Modus
+kompiliert. Diese Escape-Hatch gilt ausschließlich für `node_modules`, nie für `src/`.
 
-**Schlüssel:** Svelte 5 lässt Legacy + Runes **pro Komponente** koexistieren. `svelte.config.js` hat `compilerOptions.runes: true` auskommentiert — das ist der **Endschalter**, erst ganz zuletzt aktivieren (macht verbliebene Legacy-Stellen zu Compile-Fehlern).
+**Mapping (Referenz beim Lesen alter Beispiele oder von Bibliotheks-Code):**
 
-**Mapping:** `export let` → `$props()`; `$: x=…` → `$derived`; `$: sideEffect` → `$effect`; `createEventDispatcher`+`on:ev` → Callback-Props (`onev={…}`, Kind+Eltern zusammen!); `<slot>` → `{@render children()}`. `$store`-Auto-Subscribe bleibt.
+| Legacy | Runes |
+| --- | --- |
+| `export let x` | `let { x } = $props()` |
+| `$: y = …` | `const y = $derived(…)` / `$derived.by(() => …)` |
+| `$: sideEffect` | `$effect(() => …)` |
+| `createEventDispatcher` + `on:ev` | Callback-Prop (`onev={…}`) |
+| `<slot>` | `{@render children()}` |
+| `$store` | unverändert — Auto-Subscribe bleibt gültig |
 
-**Strategie: Runes ZUSAMMEN mit TS migrieren** — dieselben Dateien, einmal anfassen. Runes macht Props typsicher:
+Runes machen Props typsicher, das war der Hebel für die gemeinsame Migration mit TypeScript:
 `let { exam, selected = false }: { exam: ZpaExam; selected?: boolean } = $props()`.
 
-**Phasen:** (0) CI-Gate+Dependabot → (1) 2–3 Blatt-Komponenten manuell als Referenz → (2) area-weise mit `npx sv migrate svelte-5`, Diff-Review, Events paarweise, Blätter→Container→Seiten → (3) Endschalter `runes: true`.
-
-Riskanteste Änderung: Events (`on:` → Callback-Props) ändern die Komponenten-API → Kind und alle Eltern koordiniert umstellen. Teil von [[refactor-roadmap]].
+Die riskanteste Klasse von Änderungen waren die Events: `on:` → Callback-Props ändert die
+Komponenten-API, Kind und alle Eltern mussten koordiniert umgestellt werden. Teil von
+[[refactor-roadmap]].

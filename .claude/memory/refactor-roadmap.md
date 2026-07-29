@@ -64,7 +64,16 @@ Großer Architektur-Refactor der über Jahre gewachsenen, kaum refactorten Codeb
 
 **→ Damit sind ALLE Roadmap-Blöcke abgearbeitet.** Verbliebene Dauer-Aufgaben sind nur noch Routine: neue Seiten gleich als Runes+TS + gqlProxy anlegen, Fragmente wo exakt-identisch, e2e-Route in die Smoke-Liste eintragen. Optional/später: e2e ins CI (bräuchte Backend-Mock oder Test-Backend in der Pipeline), param-Route `/nta/[mtknr]` gegen befüllten Pfad (Backend liefert für alle mtknrs `null`).
 
-<!-- Historie des Cleanups (erledigt): --> check 134→**96** (unter Pre-Migration 105!). Erledigt: examersToPlan, InvigilatorTR, ExamsWithoutSlot, SlotExam, kdprooms (run()→$derived), ExamWithNTAsForRoomPlanning+StreamAction (Typedef-Fix). Drei Muster: (a) `run(() => { x = expr })` aus `svelte/legacy` → `const x = $derived[.by](...)`; (b) implizite `any` typisieren — ACHTUNG `lang="ts"`-Components → `: any`, reine `<script>`-Components → JSDoc, NIE mischen!; (c) **HÄUFIG & billig:** sv migrate hängte `@type {...}` an `@property`-Zeilen → kaputte Props-Typedef (alle Props „existieren nicht"); suche `grep -rn "@property.*@type"`, entferne den `@type`-Suffix. Noch ~10 `run()`-Dateien + Dispatcher-Reste. Ziel check→0. Größter Rest-Brocken: `/plan/exams/+page.svelte` (29, NICHT migriert — sv-migrate-Crash; `slotsStatus[[day,time]]`-Array-Index), misc.js (8, .js-lib), validation/store.js (5).
+---
+
+## Historie (alles erledigt — NICHT mehr als offene Aufgaben lesen)
+
+Der folgende Block ist der Stand *während* des Umbaus und nur noch als Rezept-Sammlung
+nützlich. Insbesondere: der „Endschalter `compilerOptions.runes: true` ganz zuletzt" ist
+**seit 2026-07-04 umgelegt**; das Projekt ist im Runes-Modus, Legacy-Syntax ist ein
+Compile-Fehler. Siehe [[svelte-runes-migration]].
+
+check 134→**96** (unter Pre-Migration 105!). Erledigt: examersToPlan, InvigilatorTR, ExamsWithoutSlot, SlotExam, kdprooms (run()→$derived), ExamWithNTAsForRoomPlanning+StreamAction (Typedef-Fix). Drei Muster: (a) `run(() => { x = expr })` aus `svelte/legacy` → `const x = $derived[.by](...)`; (b) implizite `any` typisieren — ACHTUNG `lang="ts"`-Components → `: any`, reine `<script>`-Components → JSDoc, NIE mischen!; (c) **HÄUFIG & billig:** sv migrate hängte `@type {...}` an `@property`-Zeilen → kaputte Props-Typedef (alle Props „existieren nicht"); suche `grep -rn "@property.*@type"`, entferne den `@type`-Suffix. Noch ~10 `run()`-Dateien + Dispatcher-Reste. Ziel check→0. Größter Rest-Brocken: `/plan/exams/+page.svelte` (29, NICHT migriert — sv-migrate-Crash; `slotsStatus[[day,time]]`-Array-Index), misc.js (8, .js-lib), validation/store.js (5).
 2. **Event-Migration-Rezept** (falls noch nötig): Kind `dispatch('x',v)` → Callback-Prop `onx?.(v)`; native `on:click`→`onclick`; Eltern `on:x={h}`→`onx={h}`, Handler nimmt Wert direkt. `WriteButton` (Legacy) nimmt `onclick={fn}` via `$$restProps` — verifiziert. Endschalter `compilerOptions.runes: true` ganz zuletzt.
 3. **Loads → TS inkrementell:** `+page.server.js` (~36 übrig) NICHT bulk (JSDoc-`@type` wirkt in `.js`, wird in `.ts` IGNORIERT → +155 Fehler beim Bulk-Versuch, revertiert). Pro Datei JSDoc→TS umschreiben, am besten zusammen mit der Runes-Migration der Seite. Muster: `exam/external`.
 4. **Runes-Migration fortsetzen:** Blätter → Container → Seiten. Events (`on:`/`createEventDispatcher`, 63/18 Dateien) = Callback-Props, Kind+Eltern koordiniert. Endschalter `compilerOptions.runes: true` ganz zuletzt. — [[svelte-runes-migration]]
