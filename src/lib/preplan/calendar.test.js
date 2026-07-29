@@ -8,6 +8,7 @@ import {
 	examBlocks,
 	packLanes,
 	packByCapacity,
+	packEqualLanes,
 	weekGroups,
 	mondayKeyOf,
 	dayLabel,
@@ -179,6 +180,30 @@ describe('packByCapacity', () => {
 			{ start: 0, end: 60, frac: 0.2 }
 		]);
 		expect(placed.map((p) => p.left)).toEqual([0, 0.2, 0.4]);
+	});
+});
+
+describe('packEqualLanes', () => {
+	it('teilt gleichzeitige Prüfungen in gleich breite Spuren (Kapazität egal)', () => {
+		const { placed, lanes } = packEqualLanes([
+			{ start: 0, end: 60, frac: 0.1 },
+			{ start: 0, end: 60, frac: 0.9 }
+		]);
+		expect(lanes).toBe(2);
+		expect(placed.map((p) => p.left)).toEqual([0, 0.5]);
+		expect(placed.every((p) => p.width === 0.5)).toBe(true);
+	});
+	it('gibt disjunkten Prüfungen die volle Breite in derselben Spur', () => {
+		const { placed, lanes } = packEqualLanes([
+			{ start: 0, end: 60 },
+			{ start: 60, end: 120 }
+		]);
+		expect(lanes).toBe(1);
+		expect(placed.map((p) => p.width)).toEqual([1, 1]);
+		expect(placed.map((p) => p.left)).toEqual([0, 0]);
+	});
+	it('bleibt bei leerem Tag bei einer Spur', () => {
+		expect(packEqualLanes([])).toEqual({ placed: [], lanes: 1 });
 	});
 });
 

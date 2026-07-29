@@ -179,6 +179,24 @@ export function packByCapacity(items, minFrac = 0.08) {
 	return placed;
 }
 
+/**
+ * Lesemodus-Pendant zu packByCapacity: die Breite trägt keine Information mehr,
+ * sondern alle gleichzeitig laufenden Prüfungen teilen sich die Spalte in gleich
+ * breite Spuren (überlappungsfrei über packLanes). Liefert dasselbe left/width-
+ * Format (Anteile 0..1) plus die Spurenzahl des Tages — die Spaltenbreite richtet
+ * sich danach, damit jede Spur lesbar bleibt.
+ * @template {{ start: number, end: number }} T
+ * @param {T[]} items
+ * @returns {{ placed: (T & { lane: number, left: number, width: number })[], lanes: number }}
+ */
+export function packEqualLanes(items) {
+	const { placed, lanes } = packLanes(items);
+	return {
+		placed: placed.map((it) => ({ ...it, left: it.lane / lanes, width: 1 / lanes })),
+		lanes
+	};
+}
+
 const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 
 /** @param {string} dateKey → UTC-Date */

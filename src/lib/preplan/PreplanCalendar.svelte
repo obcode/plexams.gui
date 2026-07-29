@@ -4,6 +4,7 @@
 		roomOrder,
 		examBlocks,
 		packByCapacity,
+		packEqualLanes,
 		weekGroups,
 		timeRange,
 		hhmm,
@@ -29,8 +30,17 @@
 		/** @type {string[]} */ selectedPrograms = []
 	} = $props();
 
-	const PX_PER_MIN = 0.8;
+	// Lesemodus: die Breite trägt keine Kapazitäts-Information mehr, sondern jede
+	// gleichzeitige Prüfung bekommt eine gleich breite, lesbare Spur. Dafür braucht
+	// ein Tag deutlich mehr Platz — die Woche scrollt dann horizontal und es stehen
+	// nur noch ein bis drei Tage nebeneinander. Default ist die Kapazitätsansicht.
+	let readable = $state(false);
+
 	const ROOM_COL_PX = 16; // sehr schmale Raum-Spalte
+	const LANE_PX = 190; // Mindestbreite einer Spur im Lesemodus
+	// Im Lesemodus auch vertikal mehr Platz, sonst schneidet der Prüfungskern einer
+	// kurzen Prüfung (60 Min → 48 px) die letzten Textzeilen ab.
+	let pxPerMin = $derived(readable ? 1.3 : 0.8);
 
 	let roomColors = $derived(roomColorMap(bookingRooms));
 	/** @param {string} r */
@@ -69,7 +79,7 @@
 			...(annyBars ?? []).map((b) => ({ start: b.startMin, end: b.endMin }))
 		])
 	);
-	let totalHeight = $derived((range.hi - range.lo) * PX_PER_MIN);
+	let totalHeight = $derived((range.hi - range.lo) * pxPerMin);
 	let hourMarks = $derived(
 		(() => {
 			/** @type {number[]} */
@@ -79,7 +89,7 @@
 		})()
 	);
 	/** @param {number} min → px von oben */
-	const top = (min) => (min - range.lo) * PX_PER_MIN;
+	const top = (min) => (min - range.lo) * pxPerMin;
 
 	// Wochen (Mo–Fr) aus allen Tagen mit Prüfung oder Buchung
 	let weeks = $derived(
@@ -111,9 +121,9 @@
 	// pro Tag: Prüfungsblöcke nach Kapazitätsanteil nebeneinander + Raum-Balken je Raum
 	/** @param {string} dateKey */
 	function dayData(dateKey) {
-		const dayBlocks = blocks.filter((/** @type {any} */ b) => b.dateKey === dateKey);
-		const placed = packByCapacity(
-			dayBlocks.map((/** @type {any} */ b) => {
+		const dayBlocks = blocks
+			.filter((/** @type {any} */ b) => b.dateKey === dateKey)
+			.map((/** @type {any} */ b) => {
 				const cap = capacityOf(b);
 				return {
 					...b,
@@ -123,13 +133,16 @@
 					capBooked: cap.booked,
 					capPct: cap.pct
 				};
-			})
-		);
+			});
+		// Lesemodus: gleich breite Spuren; sonst Breite = Kapazitätsanteil.
+		const lanesPacked = readable ? packEqualLanes(dayBlocks) : null;
+		const placed = lanesPacked ? lanesPacked.placed : packByCapacity(dayBlocks);
+		const lanes = lanesPacked ? lanesPacked.lanes : 1;
 		const bars = (annyBars ?? []).filter((b) => b.dateKey === dateKey);
 		const rooms = roomOrder(bars.map((b) => b.room));
 		/** @type {Map<string, number>} */
 		const roomCol = new Map(rooms.map((r, i) => [r, i]));
-		return { blocks: placed, bars, rooms, roomCol };
+		return { blocks: placed, bars, rooms, roomCol, lanes };
 	}
 
 	/** @param {any} b passt die Prüfung zum aktiven Studiengang-Filter? */
@@ -193,9 +206,20 @@
 			<span class="inline-block h-3 w-4 rounded-sm border border-base-content/40 bg-base-content/10"
 			></span> Vor-/Nachlauf
 		</span>
-		<span class="text-base-content/50"
-			>↔ Breite = Anteil an den gebuchten Plätzen (freie Breite = frei)</span
+		{#if readable}
+			<span class="text-base-content/50">↔ Breite = gleich breite Spuren (Lesemodus)</span>
+		{:else}
+			<span class="text-base-content/50"
+				>↔ Breite = Anteil an den gebuchten Plätzen (freie Breite = frei)</span
+			>
+		{/if}
+		<label
+			class="flex cursor-pointer items-center gap-1.5"
+			title="Blöcke gleich breit und voll beschriftet; dafür passen nur noch ein bis drei Tage nebeneinander (die Woche scrollt horizontal)."
 		>
+			<input type="checkbox" class="toggle toggle-xs" bind:checked={readable} />
+			<span class="text-base-content/70">Lesemodus</span>
+		</label>
 		<span class="text-base-content/30">|</span>
 		<span class="text-base-content/50">gebuchte Räume:</span>
 		{#each legendRooms as r}
@@ -210,8 +234,15 @@
 
 	{#snippet dayColumn(/** @type {{ dateKey: string, label: string }} */ day)}
 		{@const d = dayData(day.dateKey)}
-		<!-- gestapelt (ein Tag pro Zeile) auf schmalen Screens, ab lg nebeneinander -->
-		<div class="lg:min-w-[150px] lg:flex-1">
+		<!-- gestapelt (ein Tag pro Zeile) auf schmalen Screens, ab lg nebeneinander.
+		     Im Lesemodus bekommt der Tag so viel Breite, dass jede Spur lesbar bleibt
+		     (Zeitachse + Spuren + Raum-Spalte) — die Woche scrollt dann horizontal. -->
+		<div
+			class="lg:flex-1 {readable && d.blocks.length ? '' : 'lg:min-w-[150px]'}"
+			style={readable && d.blocks.length
+				? `min-width:${30 + d.lanes * LANE_PX + Math.max(d.rooms.length, 1) * ROOM_COL_PX}px`
+				: ''}
+		>
 			<div class="h-6 text-center text-xs font-medium tabular-nums">{day.label}</div>
 			<div class="flex" style="height:{totalHeight}px">
 				<!-- schmale Zeitachse je Tag (funktioniert auch gestapelt) -->
@@ -244,7 +275,7 @@
 									? 'z-10 ring-2 ring-primary'
 									: 'opacity-20 grayscale'}"
 							style="top:{top(b.winStart)}px; height:{(b.winEnd - b.winStart) *
-								PX_PER_MIN}px; left:calc({b.left * 100}% + 1px); width:calc({b.width * 100}% - 2px)"
+								pxPerMin}px; left:calc({b.left * 100}% + 1px); width:calc({b.width * 100}% - 2px)"
 							title={`${b.examKind} · ${b.module} · ${b.expectedStudents} Studis${
 								b.capBooked ? ` (${b.capPct}% von ${b.capBooked} gebuchten Plätzen)` : ''
 							}${b.programs?.length ? ' · ' + b.programs.join(', ') : ''}${
@@ -255,32 +286,59 @@
 						>
 							<!-- solider Prüfungskern (Höhe = Dauer) -->
 							<div
-								class="absolute inset-x-0 overflow-hidden rounded px-1 py-0.5 text-[10px] leading-tight {coreClass(
-									b.examKind
-								)}"
-								style="top:{b.pre * PX_PER_MIN}px; height:{Math.max(b.dur * PX_PER_MIN, 14)}px"
+								class="absolute inset-x-0 overflow-hidden rounded px-1 py-0.5 leading-tight {readable
+									? 'text-[11px]'
+									: 'text-[10px]'} {coreClass(b.examKind)}"
+								style="top:{b.pre * pxPerMin}px; height:{Math.max(b.dur * pxPerMin, 14)}px"
 							>
-								<div class="flex items-center gap-0.5">
-									{#if stt && stt.level !== 'neutral'}<span>{stt.dot}</span>{/if}
-									{#if b.isFixed}<span title="fixiert">🔒</span>{/if}
-									<span class="truncate font-semibold">{b.module}</span>
-									<span class="opacity-70 tabular-nums">{b.expectedStudents}</span>
-									{#if b.capBooked && b.dur * PX_PER_MIN > 26}
-										<span class="opacity-60 tabular-nums">· {b.capPct}%</span>
+								{#if readable}
+									<!-- Lesemodus: nichts abgeschnitten — Modul umbricht, dazu Zeit,
+									     Studis, Kapazität, Studiengänge und Prüfende:r. -->
+									<div class="flex items-start gap-1 font-semibold">
+										{#if stt && stt.level !== 'neutral'}<span>{stt.dot}</span>{/if}
+										{#if b.isFixed}<span title="fixiert">🔒</span>{/if}
+										<span>{b.module}</span>
+									</div>
+									<div class="tabular-nums opacity-90">
+										{hhmm(b.examStart)}–{hhmm(b.examEnd)}{#if !b.durKnown}&nbsp;~{/if} ·
+										{b.expectedStudents} Studis{#if b.capBooked}
+											&nbsp;· {b.capPct}%{/if}
+									</div>
+									{#if b.programs?.length}
+										<div class="opacity-90">
+											{#each b.programs as p, i}{i ? ', ' : ''}<span
+													class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}
+													>{p}</span
+												>{/each}
+										</div>
 									{/if}
-								</div>
-								{#if b.dur * PX_PER_MIN > 26}
-									<div class="truncate opacity-80 tabular-nums">
-										{hhmm(b.examStart)}{#if !b.durKnown}
-											~{/if}
+									{#if b.examerName}
+										<div class="opacity-70">{b.examerName}</div>
+									{/if}
+								{:else}
+									<div class="flex items-center gap-0.5">
+										{#if stt && stt.level !== 'neutral'}<span>{stt.dot}</span>{/if}
+										{#if b.isFixed}<span title="fixiert">🔒</span>{/if}
+										<span class="truncate font-semibold">{b.module}</span>
+										<span class="opacity-70 tabular-nums">{b.expectedStudents}</span>
+										{#if b.capBooked && b.dur * pxPerMin > 26}
+											<span class="opacity-60 tabular-nums">· {b.capPct}%</span>
+										{/if}
 									</div>
-								{/if}
-								{#if b.programs?.length && b.dur * PX_PER_MIN > 38}
-									<div class="truncate opacity-90">
-										{#each b.programs as p, i}{i ? ', ' : ''}<span
-												class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}>{p}</span
-											>{/each}
-									</div>
+									{#if b.dur * pxPerMin > 26}
+										<div class="truncate opacity-80 tabular-nums">
+											{hhmm(b.examStart)}{#if !b.durKnown}
+												~{/if}
+										</div>
+									{/if}
+									{#if b.programs?.length && b.dur * pxPerMin > 38}
+										<div class="truncate opacity-90">
+											{#each b.programs as p, i}{i ? ', ' : ''}<span
+													class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}
+													>{p}</span
+												>{/each}
+										</div>
+									{/if}
 								{/if}
 							</div>
 						</div>
@@ -302,7 +360,7 @@
 						<div
 							class="absolute rounded-sm"
 							style="top:{top(bar.startMin)}px; height:{Math.max(
-								(bar.endMin - bar.startMin) * PX_PER_MIN,
+								(bar.endMin - bar.startMin) * pxPerMin,
 								4
 							)}px; left:{col * ROOM_COL_PX + 1}px; width:{ROOM_COL_PX - 2}px; background:{colorOf(
 								bar.room
@@ -321,8 +379,10 @@
 				<div class="mb-1 px-1 text-xs font-semibold text-base-content/60 tabular-nums">
 					{week.rangeLabel}
 				</div>
-				<!-- schmal: ein Tag pro Zeile (gestapelt); ab lg: ganze Woche nebeneinander -->
-				<div class="flex flex-col gap-3 lg:flex-row lg:gap-1.5 lg:overflow-x-auto">
+				<!-- schmal: ein Tag pro Zeile (gestapelt); ab lg: ganze Woche nebeneinander.
+				     overflow-x-auto auch schmal, damit die breiten Lesemodus-Spalten
+				     im Kasten scrollen statt die Seite zu sprengen. -->
+				<div class="flex flex-col gap-3 overflow-x-auto lg:flex-row lg:gap-1.5">
 					{#each week.days as day}
 						{@render dayColumn(day)}
 					{/each}
