@@ -3,7 +3,7 @@ import { gql } from 'graphql-request';
 import { backendRequest } from '$lib/server/backend';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async () => {
 	const query = gql`
 		query {
 			semester {

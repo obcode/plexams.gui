@@ -24,10 +24,6 @@
 
 	let onlyPlannedByMe = $state(true);
 	let details = $state(false);
-	let moveable = false;
-
-	let maxSlots =
-		(data.semesterConfig?.days?.length ?? 0) * (data.semesterConfig?.starttimes?.length ?? 0);
 
 	// // status can be
 	// // unknown
@@ -42,7 +38,6 @@
 	let showExamerID = $state('all');
 	let showOnlyOnline = false;
 	let showOnlyExahm = $state(false);
-	let showOnlySEB = false;
 	let showOnlyEXaHMRooms = $state(false);
 
 	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
@@ -85,14 +80,6 @@
 	}
 
 	let refresh = $state(/** @type {any} */ (new Map()));
-
-	function initRefresh() {
-		for (let day of data.semesterConfig?.days ?? []) {
-			for (let time of data.semesterConfig?.starttimes ?? []) {
-				refresh[`${day.number},${time.number}`] = false;
-			}
-		}
-	}
 
 	function statusColor(/** @type {any} */ status) {
 		if (status == 'allowed') return 'bg-success/20';
@@ -815,19 +802,16 @@
 					exahmrooms={(data.roomsForSlots.get(`${day.number},${time.number}`) ?? []).filter(
 						(/** @type {any} */ r) => r.exahm
 					)}
-					{maxSlots}
 					{selectedExam}
 					{selectedExamerID}
 					{onlyPlannedByMe}
 					{onlyConflicts}
 					{details}
-					{moveable}
 					{showExam}
 					{showAncode}
 					{showExamerID}
 					{showOnlyOnline}
 					{showOnlyExahm}
-					{showOnlySEB}
 					{showOnlyEXaHMRooms}
 					{conflictingAncodes}
 					refresh={refresh[`${day.number},${time.number}`]}
@@ -1030,18 +1014,15 @@
 
 			<ExamsWithoutSlot
 				{examsWithoutSlot}
-				{maxSlots}
 				{showExam}
 				{showAncode}
 				{showExamerID}
 				{showOnlyOnline}
 				{showOnlyExahm}
-				{showOnlySEB}
 				{selectedExam}
 				{selectedExamerID}
 				{onlyPlannedByMe}
 				{details}
-				{moveable}
 				{conflictingAncodes}
 				onselected={handleSelect}
 				onunselected={handleUnselect}

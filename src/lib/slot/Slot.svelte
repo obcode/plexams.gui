@@ -9,19 +9,16 @@
 		time,
 		forbiddenSlot,
 		exahmrooms,
-		maxSlots,
 		selectedExam,
 		selectedExamerID,
 		onlyPlannedByMe,
 		onlyConflicts,
 		details,
-		moveable,
 		showExam,
 		showAncode,
 		showExamerID,
 		showOnlyOnline,
 		showOnlyExahm,
-		showOnlySEB,
 		showOnlyEXaHMRooms,
 		conflictingAncodes,
 		refresh = $bindable(),
@@ -136,19 +133,16 @@
 		{#each exams as exam}
 			<SlotExam
 				{exam}
-				{maxSlots}
 				{showExam}
 				{showAncode}
 				{showExamerID}
 				{showOnlyOnline}
 				{showOnlyExahm}
-				{showOnlySEB}
 				{selectedExam}
 				{selectedExamerID}
 				{onlyPlannedByMe}
 				{onlyConflicts}
 				{details}
-				{moveable}
 				inSlot={true}
 				{conflictingAncodes}
 				{onselected}

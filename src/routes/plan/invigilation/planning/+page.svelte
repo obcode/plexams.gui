@@ -478,10 +478,9 @@
 
 	{#key filteredInvigilators}
 		<div class="mx-2 flex flex-col items-center" transition:fade>
-			{#each filteredInvigilators as invigilator, index}
+			{#each filteredInvigilators as invigilator}
 				<InvigilatorTR
 					semesterConfig={data.semesterConfig}
-					{index}
 					{invigilator}
 					{showInvigilations}
 					base100={todos.todoPerInvigilatorOvertimeCutted}

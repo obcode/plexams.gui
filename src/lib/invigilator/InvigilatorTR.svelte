@@ -5,14 +5,13 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} semesterConfig
-	 * @property {any} index
 	 * @property {any} invigilator
 	 * @property {boolean} [showInvigilations] - forwarded to the calendar: hide Aufsicht/Reserve blocks, show only exams
 	 * @property {number} [base100] - relative to this, so the "bei 100 %" bar is normally full.
 	 */
 
 	/** @type {Props} */
-	let { semesterConfig, index, invigilator, showInvigilations = true, base100 = 0 } = $props();
+	let { semesterConfig, invigilator, showInvigilations = true, base100 = 0 } = $props();
 
 	/** @param {any} invigilator */
 	function nameBg(invigilator) {

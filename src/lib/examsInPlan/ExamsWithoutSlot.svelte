@@ -3,18 +3,15 @@
 
 	let {
 		examsWithoutSlot,
-		maxSlots,
 		showExam,
 		showAncode,
 		showExamerID,
 		showOnlyOnline,
 		showOnlyExahm,
-		showOnlySEB,
 		selectedExam,
 		selectedExamerID,
 		onlyPlannedByMe,
 		details,
-		moveable,
 		conflictingAncodes,
 		onselected,
 		onunselected
@@ -47,18 +44,15 @@
 			{#each examsPlannedByMe as exam}
 				<SlotExam
 					{exam}
-					{maxSlots}
 					{showExam}
 					{showAncode}
 					{showExamerID}
 					{showOnlyOnline}
 					{showOnlyExahm}
-					{showOnlySEB}
 					{selectedExam}
 					{selectedExamerID}
 					{onlyPlannedByMe}
 					{details}
-					{moveable}
 					inSlot={false}
 					onlyConflicts={false}
 					{conflictingAncodes}
@@ -82,18 +76,15 @@
 		{#each examsNotPlannedByMe as exam}
 			<SlotExam
 				{exam}
-				{maxSlots}
 				{showExam}
 				{showAncode}
 				{showExamerID}
 				{showOnlyOnline}
 				{showOnlyExahm}
-				{showOnlySEB}
 				{selectedExam}
 				{selectedExamerID}
 				{onlyPlannedByMe}
 				{details}
-				{moveable}
 				inSlot={false}
 				onlyConflicts={false}
 				{conflictingAncodes}

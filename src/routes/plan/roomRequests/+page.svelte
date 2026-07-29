@@ -1,6 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { slide, fade } from 'svelte/transition';
+	import { fade } from 'svelte/transition';
 	import RoomRequestToggles from '$lib/room/RoomRequestToggles.svelte';
 	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
 	import EmailSender from '$lib/email/EmailSender.svelte';

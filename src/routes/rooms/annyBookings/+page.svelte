@@ -76,10 +76,6 @@
 		dt.setUTCDate(dt.getUTCDate() + diff);
 		return fmtKey(dt);
 	}
-	/** @param {number} min */
-	const hhmm = (min) =>
-		`${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-
 	// Spalten = Prüfungstage; ohne Prüfungszeitraum-Filter auch Tage außerhalb.
 	let calendarDates = $derived(
 		(() => {
