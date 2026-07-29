@@ -2349,6 +2349,46 @@ type PreExam {
   planEntry: PlanEntry
 }
 
+type PreplanBookingProposal {
+  """
+  The rooms to book, merged per room and contiguous time window, sorted by time.
+  """
+  suggestions: [PreplanBookingSuggestion!]!
+
+  """How many pre-exams have no slot right now."""
+  unplacedNow: Int!
+
+  """Pre-exams that would get a slot with the proposed bookings."""
+  newlyPlaced: [PreplanPlacement!]!
+
+  """
+  Pre-exams that stay without a slot even when every free Anny room is booked.
+  """
+  stillUnplacedIDs: [Int!]!
+
+  """Graded summary (same levels as the pre-plan validation)."""
+  findings: [PreplanFinding!]!
+}
+
+"""One room to book in Anny, with the time window it is needed for."""
+type PreplanBookingSuggestion {
+  room: String!
+  from: Time!
+  until: Time!
+
+  """Seats of the room (EXaHM/physical)."""
+  seats: Int!
+
+  """Slot start times this booking covers."""
+  starttimes: [Time!]!
+
+  """Modules the room is needed for."""
+  modules: [String!]!
+
+  """Exam kinds in these slots (EXaHM/SEB)."""
+  kinds: [String!]!
+}
+
 """
 A manually entered pseudo-exam for the SEB/EXaHM pre-planning, captured before the
 ZPA exam list / Primuss data exist. Linked to a ZPA ancode later (phase 4).
@@ -2367,6 +2407,10 @@ type PreplanExam {
   """StudyProgram shortnames."""
   programs: [String!]!
   expectedStudents: Int!
+
+  """
+  Exam duration in minutes. Always set: left empty on input it defaults to 90.
+  """
   duration: Int
 
   """
@@ -2408,6 +2452,11 @@ input PreplanExamInput {
   module: String!
   programs: [String!]!
   expectedStudents: Int!
+
+  """
+  Exam duration in minutes. Optional: empty (or <= 0) stores the standard 90 minutes,
+  so a pre-exam is never gated with a guessed duration.
+  """
   duration: Int
   notes: String
 }
@@ -2473,6 +2522,15 @@ type PrePlannedRoom {
 
 type PreplanOverview {
   slots: [PreplanSlotNeed!]!
+}
+
+"""A proposed slot for a pre-exam (not persisted)."""
+type PreplanPlacement {
+  id: Int!
+  module: String!
+  examKind: String!
+  expectedStudents: Int!
+  starttime: Time!
 }
 
 type PreplanProgramConflict {
@@ -2918,6 +2976,16 @@ type Query {
   Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps).
   """
   validatePreplanAssignment: PreplanValidation!
+
+  """
+  Proposes the Anny bookings still missing so that every SEB/EXaHM pre-exam can be
+  planned. It computes with the rooms that are still FREE in Anny (a foreign booking
+  blocks a room, our own bookings do not) and changes nothing — neither the pre-exams
+  nor Anny. With keepAssigned the exams that already have a slot keep it and only the
+  unplaced ones are placed (minimal additional bookings); without it everything is
+  re-planned from scratch, so a proposal can also be made before booking anything.
+  """
+  preplanBookingSuggestions(keepAssigned: Boolean! = true): PreplanBookingProposal!
 
   """
   The hard and soft rules the SEB/EXaHM pre-planning uses, as a human-readable list

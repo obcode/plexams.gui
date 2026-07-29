@@ -2433,6 +2433,36 @@ export type PrePlannedRoom = {
   seats?: Maybe<Scalars['Int']['output']>;
 };
 
+export type PreplanBookingProposal = {
+  __typename?: 'PreplanBookingProposal';
+  /** Graded summary (same levels as the pre-plan validation). */
+  findings: Array<PreplanFinding>;
+  /** Pre-exams that would get a slot with the proposed bookings. */
+  newlyPlaced: Array<PreplanPlacement>;
+  /** Pre-exams that stay without a slot even when every free Anny room is booked. */
+  stillUnplacedIDs: Array<Scalars['Int']['output']>;
+  /** The rooms to book, merged per room and contiguous time window, sorted by time. */
+  suggestions: Array<PreplanBookingSuggestion>;
+  /** How many pre-exams have no slot right now. */
+  unplacedNow: Scalars['Int']['output'];
+};
+
+/** One room to book in Anny, with the time window it is needed for. */
+export type PreplanBookingSuggestion = {
+  __typename?: 'PreplanBookingSuggestion';
+  from: Scalars['Time']['output'];
+  /** Exam kinds in these slots (EXaHM/SEB). */
+  kinds: Array<Scalars['String']['output']>;
+  /** Modules the room is needed for. */
+  modules: Array<Scalars['String']['output']>;
+  room: Scalars['String']['output'];
+  /** Seats of the room (EXaHM/physical). */
+  seats: Scalars['Int']['output'];
+  /** Slot start times this booking covers. */
+  starttimes: Array<Scalars['Time']['output']>;
+  until: Scalars['Time']['output'];
+};
+
 /**
  * A manually entered pseudo-exam for the SEB/EXaHM pre-planning, captured before the
  * ZPA exam list / Primuss data exist. Linked to a ZPA ancode later (phase 4).
@@ -2451,6 +2481,7 @@ export type PreplanExam = {
    * carried over to the ZPA exam on linking. In sameSlot the ints are PRE-EXAM ids.
    */
   constraints?: Maybe<Constraints>;
+  /** Exam duration in minutes. Always set: left empty on input it defaults to 90. */
   duration?: Maybe<Scalars['Int']['output']>;
   /** EXaHM | SEB */
   examKind: Scalars['String']['output'];
@@ -2475,6 +2506,10 @@ export type PreplanExam = {
 };
 
 export type PreplanExamInput = {
+  /**
+   * Exam duration in minutes. Optional: empty (or <= 0) stores the standard 90 minutes,
+   * so a pre-exam is never gated with a guessed duration.
+   */
   duration?: InputMaybe<Scalars['Int']['input']>;
   examKind: Scalars['String']['input'];
   examerID: Scalars['Int']['input'];
@@ -2510,6 +2545,16 @@ export type PreplanKindNeed = {
 export type PreplanOverview = {
   __typename?: 'PreplanOverview';
   slots: Array<PreplanSlotNeed>;
+};
+
+/** A proposed slot for a pre-exam (not persisted). */
+export type PreplanPlacement = {
+  __typename?: 'PreplanPlacement';
+  examKind: Scalars['String']['output'];
+  expectedStudents: Scalars['Int']['output'];
+  id: Scalars['Int']['output'];
+  module: Scalars['String']['output'];
+  starttime: Scalars['Time']['output'];
 };
 
 export type PreplanProgramConflict = {
@@ -2863,6 +2908,15 @@ export type Query = {
   prePlannedInvigilations: Array<PrePlannedInvigilation>;
   prePlannedRooms: Array<PrePlannedRoom>;
   /**
+   * Proposes the Anny bookings still missing so that every SEB/EXaHM pre-exam can be
+   * planned. It computes with the rooms that are still FREE in Anny (a foreign booking
+   * blocks a room, our own bookings do not) and changes nothing — neither the pre-exams
+   * nor Anny. With keepAssigned the exams that already have a slot keep it and only the
+   * unplaced ones are placed (minimal additional bookings); without it everything is
+   * re-planned from scratch, so a proposal can also be made before booking anything.
+   */
+  preplanBookingSuggestions: PreplanBookingProposal;
+  /**
    * The hard and soft rules the SEB/EXaHM pre-planning uses, as a human-readable list
    * for a read-only display in the GUI. Derived from the solver so it stays in sync.
    */
@@ -3094,6 +3148,11 @@ export type QueryPlannedRoomsAtArgs = {
 
 export type QueryPreExamsAtArgs = {
   starttime: Scalars['Time']['input'];
+};
+
+
+export type QueryPreplanBookingSuggestionsArgs = {
+  keepAssigned?: Scalars['Boolean']['input'];
 };
 
 

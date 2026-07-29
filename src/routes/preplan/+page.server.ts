@@ -176,6 +176,15 @@ export const load: PageServerLoad = async () => {
 					endDate
 					canceledAt
 					mine
+					personalizationName
+				}
+				rooms {
+					name
+					seats
+					exahm
+					seb
+					requestWith
+					deactivated
 				}
 			}
 		`);
@@ -227,18 +236,28 @@ export const load: PageServerLoad = async () => {
 			return out;
 		}
 
+		// eigene Buchungen je Tag+Raum; fremde zusätzlich je Person, damit der Balken
+		// sagen kann, wer den Raum belegt (und zwei Personen nicht zu einem Balken
+		// verschmelzen).
 		const annyByDayRoom = new Map<string, { start: number; end: number }[]>();
+		const foreignByDayRoom = new Map<string, { start: number; end: number }[]>();
 		for (const b of cal.allAnnyBookings ?? []) {
-			// nur eigene Buchungen (mine) zählen — fremde Anny-Buchungen sind nicht „unsere"
-			// gebuchten Räume (entspricht der seatsBooked-Logik des Servers).
-			if (!b.mine || !b.room || !String(b.room).startsWith('T') || b.canceledAt) continue;
+			if (!b.room || !String(b.room).startsWith('T') || b.canceledAt) continue;
 			const dk = toDateKey(b.startDate);
 			const s = toMinutes(b.startDate);
 			const e = toMinutes(b.endDate);
 			if (dk == null || s == null || e == null || e <= s) continue;
-			const key = `${dk}|${b.room}`;
-			if (!annyByDayRoom.has(key)) annyByDayRoom.set(key, []);
-			annyByDayRoom.get(key)?.push({ start: s, end: e });
+			// nur eigene Buchungen (mine) zählen als „unsere" gebuchten Räume (entspricht
+			// der seatsBooked-Logik des Servers); fremde blockieren den Raum für uns.
+			if (b.mine) {
+				const key = `${dk}|${b.room}`;
+				if (!annyByDayRoom.has(key)) annyByDayRoom.set(key, []);
+				annyByDayRoom.get(key)?.push({ start: s, end: e });
+			} else {
+				const key = `${dk}|${b.room}|${b.personalizationName ?? ''}`;
+				if (!foreignByDayRoom.has(key)) foreignByDayRoom.set(key, []);
+				foreignByDayRoom.get(key)?.push({ start: s, end: e });
+			}
 		}
 		// Räume mit Anny-Buchung, die das Slot-Fenster überlappen.
 		function bookedRoomsForSlot(starttime: any) {
@@ -330,6 +349,28 @@ export const load: PageServerLoad = async () => {
 				a.room.localeCompare(b.room)
 		);
 
+		// Fremde Buchungen (blockieren den Raum für uns) — gleiche Aufbereitung, zusätzlich
+		// mit dem Namen der buchenden Person für den Tooltip.
+		const foreignBars: {
+			dateKey: string;
+			room: string;
+			startMin: number;
+			endMin: number;
+			who: string;
+		}[] = [];
+		for (const [key, ivs] of foreignByDayRoom) {
+			const [dk, room, who] = key.split('|');
+			if (examDates.size && !examDates.has(dk)) continue;
+			for (const iv of mergeIntervals(ivs))
+				foreignBars.push({ dateKey: dk, room, startMin: iv.start, endMin: iv.end, who });
+		}
+		foreignBars.sort(
+			(a, b) =>
+				a.dateKey.localeCompare(b.dateKey) ||
+				a.startMin - b.startMin ||
+				a.room.localeCompare(b.room)
+		);
+
 		// Raum-Menge für das Farb-Mapping — aus ALLEN (nicht stornierten) Buchungen,
 		// damit die Raum-Farben exakt denen von /rooms/annyBookings entsprechen.
 		const bookingRooms = [
@@ -340,7 +381,13 @@ export const load: PageServerLoad = async () => {
 			)
 		].sort((a, b) => String(a).localeCompare(String(b)));
 
-		return { calendarSlots, annyBars, bookingRooms };
+		// Alle für die Vorplanung nutzbaren Anny-Räume (T-Bau) — sie bilden die Spalten,
+		// sobald die fremden Buchungen eingeblendet sind: eine leere Spalte = freier Raum.
+		const annyRooms = (cal.rooms ?? [])
+			.filter((r: any) => r.requestWith === 'ANNY' && !r.deactivated && (r.exahm || r.seb))
+			.map((r: any) => ({ name: r.name as string, seats: r.seats as number }));
+
+		return { calendarSlots, annyBars, foreignBars, bookingRooms, annyRooms };
 	}
 
 	return {

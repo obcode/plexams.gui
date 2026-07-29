@@ -8,7 +8,13 @@
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
 	import { PREPLAN_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 	import PreplanCalendar from '$lib/preplan/PreplanCalendar.svelte';
-	import { DURATION_DEFAULT } from '$lib/preplan/calendar';
+	import {
+		DURATION_DEFAULT,
+		dateKeyOfIso,
+		minutesOfIso,
+		hhmm,
+		dayLabel
+	} from '$lib/preplan/calendar';
 
 	let { data } = $props();
 
@@ -523,6 +529,63 @@
 		findings.filter((/** @type {any} */ f) => f.level === 'WARNING').length
 	);
 
+	// --- Buchungsvorschlag: welche Anny-Räume fehlen noch? -------------------------
+	// Rein lesend — das Backend rechnet mit den in Anny FREIEN Räumen (fremde Buchungen
+	// blockieren) und ändert weder Vorplanung noch Anny.
+	/** @type {{unplacedNow:number, stillUnplacedIDs:number[], suggestions:any[], newlyPlaced:any[], findings:{level:string,message:string}[]}|null} */
+	let proposal = $state(/** @type {any} */ (null));
+	let proposing = $state(false);
+	// true = bestehende Zuordnung behalten und nur ergänzen; false = komplett neu denken
+	let proposeKeepAssigned = $state(true);
+
+	async function proposeBookings() {
+		if (proposing || validating || generating) return;
+		proposing = true;
+		listError = '';
+		try {
+			const res = await fetch('/api/preplan/preplanBookingSuggestions', {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify({ keepAssigned: proposeKeepAssigned })
+			});
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			proposal = result.preplanBookingSuggestions;
+		} catch (err) {
+			listError = err instanceof Error ? err.message : String(err);
+		} finally {
+			proposing = false;
+		}
+	}
+
+	/** Vorschläge als Kalender-Balken (Datum + Minuten seit Mitternacht). */
+	let suggestedBars = $derived(
+		(proposal?.suggestions ?? []).flatMap((/** @type {any} */ s) => {
+			const dateKey = dateKeyOfIso(s.from);
+			const startMin = minutesOfIso(s.from);
+			const endMin = minutesOfIso(s.until);
+			if (dateKey == null || startMin == null || endMin == null) return [];
+			return [{ dateKey, room: s.room, startMin, endMin, modules: s.modules ?? [] }];
+		})
+	);
+
+	/** Vorschläge nach Tag gruppiert (für die Liste unter dem Kalender). */
+	let proposalByDay = $derived(
+		(() => {
+			/** @type {Map<string, any[]>} */
+			const byDay = new Map();
+			for (const s of proposal?.suggestions ?? []) {
+				const dk = dateKeyOfIso(s.from) ?? '';
+				if (!byDay.has(dk)) byDay.set(dk, []);
+				byDay.get(dk)?.push(s);
+			}
+			return [...byDay.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+		})()
+	);
+
 	async function validate() {
 		if (validating || generating) return;
 		validating = true;
@@ -743,6 +806,14 @@
 		>
 			{generating ? 'verteilt …' : '🤖 Automatisch verteilen'}
 		</WriteButton>
+		<button
+			class="btn btn-outline btn-sm"
+			onclick={proposeBookings}
+			disabled={validating || generating || resetting || proposing}
+			title="Schlägt vor, welche Anny-Räume noch gebucht werden sollten, damit alle Prüfungen einen Slot bekommen. Rechnet mit den in Anny noch freien Räumen und ändert nichts."
+		>
+			{proposing ? 'rechnet …' : '🗓 Buchungen vorschlagen'}
+		</button>
 		<WriteButton
 			class="btn btn-outline btn-error btn-sm"
 			onclick={reset}
@@ -945,6 +1016,117 @@
 		</div>
 	{/if}
 
+	<!-- Buchungsvorschlag: welche Anny-Räume noch fehlen (rein lesend) -->
+	{#if proposal}
+		<div class="flex flex-col gap-2 rounded-lg border border-info/40 bg-info/5 p-3">
+			<div class="flex w-full flex-wrap items-center gap-2">
+				<span class="font-medium">🗓 Buchungsvorschlag</span>
+				{#if proposal.suggestions.length}
+					<span class="badge badge-info badge-sm tabular-nums">
+						{proposal.suggestions.length} Buchung{proposal.suggestions.length === 1 ? '' : 'en'}
+					</span>
+				{:else}
+					<span class="badge badge-success badge-sm">nichts zu buchen</span>
+				{/if}
+				{#if proposal.newlyPlaced.length}
+					<span class="badge badge-success badge-sm tabular-nums">
+						+{proposal.newlyPlaced.length} planbar
+					</span>
+				{/if}
+				{#if proposal.stillUnplacedIDs.length}
+					<span class="badge badge-warning badge-sm tabular-nums">
+						{proposal.stillUnplacedIDs.length} bleiben ohne Slot
+					</span>
+				{/if}
+				<label
+					class="flex cursor-pointer items-center gap-1.5 text-xs"
+					title="Aus: die bereits gesetzten Prüfungen bleiben, es wird nur ergänzt. An: alles wird neu gedacht — sinnvoll, wenn noch (fast) nichts gebucht ist."
+				>
+					<input
+						type="checkbox"
+						class="toggle toggle-xs"
+						checked={!proposeKeepAssigned}
+						onchange={(e) => {
+							proposeKeepAssigned = !(/** @type {HTMLInputElement} */ (e.currentTarget).checked);
+							proposeBookings();
+						}}
+					/>
+					<span class="text-base-content/70">komplett neu planen</span>
+				</label>
+				<div class="flex-1"></div>
+				<button class="btn btn-ghost btn-xs" onclick={() => (proposal = null)}>schließen</button>
+			</div>
+
+			{#if proposal.findings.length}
+				<ul class="flex w-full flex-col gap-1 text-sm">
+					{#each proposal.findings as f}
+						<li class="flex items-start gap-2 rounded border px-2 py-1 {findingClass(f.level)}">
+							<span class="mt-0.5">{findingIcon(f.level)}</span>
+							<span class="min-w-0 break-words">{f.message}</span>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+
+			{#if proposalByDay.length}
+				<div class="text-xs text-base-content/60">
+					In Anny zu buchen (die Zeiten enthalten Vor-/Nachlauf; im Kalender gestrichelt).
+					{#if !proposeKeepAssigned}
+						Die Vorschläge gehören zu einer <strong>gedachten</strong> Neuverteilung — die Vorplanung
+						selbst bleibt unverändert, bis nach dem Buchen &amp; Importieren „Automatisch verteilen"
+						läuft.
+					{/if}
+				</div>
+				<div class="flex flex-col gap-1 text-sm">
+					{#each proposalByDay as [dk, subs]}
+						<div class="flex flex-wrap items-start gap-x-2 gap-y-1 border-t border-info/20 pt-1.5">
+							<span class="w-24 shrink-0 font-medium tabular-nums">{dayLabel(dk)}</span>
+							<div class="flex min-w-0 flex-wrap gap-x-3 gap-y-1">
+								{#each subs as s}
+									<span
+										class="flex items-center gap-1 rounded border border-base-300 bg-base-100 px-2 py-0.5"
+										title={s.modules?.join(', ')}
+									>
+										<span class="font-mono font-medium">{s.room}</span>
+										<span class="tabular-nums">
+											{hhmm(minutesOfIso(s.from) ?? 0)}–{hhmm(minutesOfIso(s.until) ?? 0)}
+										</span>
+										<span class="text-base-content/50 tabular-nums">{s.seats} Plätze</span>
+										{#each s.kinds ?? [] as k}
+											<span class="badge badge-xs {k === 'SEB' ? 'badge-info' : 'badge-error'}">
+												{k}
+											</span>
+										{/each}
+									</span>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
+			{#if proposal.newlyPlaced.length}
+				<div class="flex flex-wrap items-center gap-2 border-t border-info/20 pt-1.5 text-xs">
+					<span class="text-base-content/60">damit zusätzlich einplanbar:</span>
+					{#each proposal.newlyPlaced as n}
+						<span
+							class="flex items-center gap-1 rounded border border-base-300 bg-base-100 px-2 py-0.5"
+						>
+							<span class="badge badge-xs {n.examKind === 'SEB' ? 'badge-info' : 'badge-error'}">
+								{n.examKind}
+							</span>
+							<span class="font-medium">{n.module}</span>
+							<span class="text-base-content/50 tabular-nums">
+								{n.expectedStudents} · {dayLabel(dateKeyOfIso(n.starttime) ?? '')}
+								{hhmm(minutesOfIso(n.starttime) ?? 0)}
+							</span>
+						</span>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	{/if}
+
 	<!-- sameSlot-Gruppen, die noch nicht vollständig verbunden sind -->
 	{#if incompleteGroups.length}
 		<div class="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
@@ -1018,7 +1200,10 @@
 				exams={calendarExams}
 				calendarSlots={cal.calendarSlots}
 				annyBars={cal.annyBars}
+				foreignBars={cal.foreignBars}
 				bookingRooms={cal.bookingRooms}
+				annyRooms={cal.annyRooms}
+				{suggestedBars}
 				{selectedPrograms}
 			/>
 		{:catch err}

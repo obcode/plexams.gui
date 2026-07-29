@@ -26,9 +26,19 @@
 		/** @type {any[]} */ calendarSlots = [],
 		/** @type {{ dateKey: string, room: string, startMin: number, endMin: number }[]} */
 		annyBars = [],
+		/** @type {{ dateKey: string, room: string, startMin: number, endMin: number, who: string }[]} */
+		foreignBars = [],
+		/** @type {{ dateKey: string, room: string, startMin: number, endMin: number, modules?: string[] }[]} */
+		suggestedBars = [],
 		/** @type {string[]} */ bookingRooms = [],
+		/** @type {{ name: string, seats: number }[]} */ annyRooms = [],
 		/** @type {string[]} */ selectedPrograms = []
 	} = $props();
+
+	// Fremde Anny-Buchungen einblenden: dann bekommt jeder Tag eine Spalte je Anny-Raum
+	// und die fremden Buchungen erscheinen schwach schraffiert — die Lücken sind genau
+	// das, was noch gebucht werden kann.
+	let showForeign = $state(false);
 
 	// Lesemodus: die Breite trägt keine Kapazitäts-Information mehr, sondern jede
 	// gleichzeitige Prüfung bekommt eine gleich breite, lesbare Spur. Dafür braucht
@@ -42,9 +52,16 @@
 	// kurzen Prüfung (60 Min → 48 px) die letzten Textzeilen ab.
 	let pxPerMin = $derived(readable ? 1.3 : 0.8);
 
-	let roomColors = $derived(roomColorMap(bookingRooms));
+	let roomColors = $derived(roomColorMap([...bookingRooms, ...annyRooms.map((r) => r.name)]));
 	/** @param {string} r */
 	const colorOf = (r) => roomColors[r] ?? '#94a3b8';
+
+	// eingeblendete Fremdbuchungen (leer, solange der Schalter aus ist)
+	let shownForeign = $derived(showForeign ? (foreignBars ?? []) : []);
+
+	let seatsByRoom = $derived(new Map(annyRooms.map((r) => [r.name, r.seats])));
+	/** @param {string} r */
+	const seatsOf = (r) => seatsByRoom.get(r) ?? 0;
 
 	let blocks = $derived(examBlocks(exams));
 
@@ -72,11 +89,13 @@
 		return roomStatus(b.examKind === 'SEB' ? s.seb : s.exahm);
 	}
 
-	// gemeinsame Zeitachse über Prüfungsfenster + Buchungen
+	// gemeinsame Zeitachse über Prüfungsfenster + Buchungen (fremde nur, wenn eingeblendet)
 	let range = $derived(
 		timeRange([
 			...blocks.map((/** @type {any} */ b) => ({ start: b.winStart, end: b.winEnd })),
-			...(annyBars ?? []).map((b) => ({ start: b.startMin, end: b.endMin }))
+			...(annyBars ?? []).map((b) => ({ start: b.startMin, end: b.endMin })),
+			...shownForeign.map((b) => ({ start: b.startMin, end: b.endMin })),
+			...(suggestedBars ?? []).map((b) => ({ start: b.startMin, end: b.endMin }))
 		])
 	);
 	let totalHeight = $derived((range.hi - range.lo) * pxPerMin);
@@ -95,7 +114,9 @@
 	let weeks = $derived(
 		weekGroups([
 			...blocks.map((/** @type {any} */ b) => b.dateKey),
-			...(annyBars ?? []).map((b) => b.dateKey)
+			...(annyBars ?? []).map((b) => b.dateKey),
+			...shownForeign.map((b) => b.dateKey),
+			...(suggestedBars ?? []).map((b) => b.dateKey)
 		])
 	);
 
@@ -139,10 +160,18 @@
 		const placed = lanesPacked ? lanesPacked.placed : packByCapacity(dayBlocks);
 		const lanes = lanesPacked ? lanesPacked.lanes : 1;
 		const bars = (annyBars ?? []).filter((b) => b.dateKey === dateKey);
-		const rooms = roomOrder(bars.map((b) => b.room));
+		const foreign = shownForeign.filter((b) => b.dateKey === dateKey);
+		const suggested = (suggestedBars ?? []).filter((b) => b.dateKey === dateKey);
+		// Spalten: normal nur die Räume mit eigener Buchung/Vorschlag; mit eingeblendeten
+		// Fremdbuchungen ALLE Anny-Räume, damit eine leere Spalte „noch frei" zeigt.
+		const rooms = roomOrder(
+			showForeign && annyRooms.length
+				? annyRooms.map((r) => r.name)
+				: [...bars, ...suggested].map((b) => b.room)
+		);
 		/** @type {Map<string, number>} */
 		const roomCol = new Map(rooms.map((r, i) => [r, i]));
-		return { blocks: placed, bars, rooms, roomCol, lanes };
+		return { blocks: placed, bars, foreign, suggested, rooms, roomCol, lanes };
 	}
 
 	/** @param {any} b passt die Prüfung zum aktiven Studiengang-Filter? */
@@ -157,8 +186,15 @@
 	const windowClass = (kind) =>
 		kind === 'SEB' ? 'border-info/40 bg-info/10' : 'border-error/40 bg-error/10';
 
-	// Räume mit tatsächlich gezeichneten Balken (für die Legende)
-	let legendRooms = $derived(roomOrder((annyBars ?? []).map((b) => b.room)));
+	// Räume mit tatsächlich gezeichneten Balken (für die Legende); mit eingeblendeten
+	// Fremdbuchungen sind das alle Anny-Räume, weil jeder eine Spalte bekommt.
+	let legendRooms = $derived(
+		roomOrder(
+			showForeign && annyRooms.length
+				? annyRooms.map((r) => r.name)
+				: (annyBars ?? []).map((b) => b.room)
+		)
+	);
 
 	// Offene Buchungen (gelb/rot) als knappe, handlungsleitende Liste unter dem Kalender
 	let openNeeds = $derived(
@@ -220,8 +256,15 @@
 			<input type="checkbox" class="toggle toggle-xs" bind:checked={readable} />
 			<span class="text-base-content/70">Lesemodus</span>
 		</label>
+		<label
+			class="flex cursor-pointer items-center gap-1.5"
+			title="Buchungen anderer Personen schwach schraffiert einblenden; jeder Anny-Raum bekommt dann eine eigene Spalte — freie Fläche = der Raum ist zu der Zeit noch buchbar."
+		>
+			<input type="checkbox" class="toggle toggle-xs" bind:checked={showForeign} />
+			<span class="text-base-content/70">fremde Buchungen</span>
+		</label>
 		<span class="text-base-content/30">|</span>
-		<span class="text-base-content/50">gebuchte Räume:</span>
+		<span class="text-base-content/50">{showForeign ? 'Anny-Räume:' : 'gebuchte Räume:'}</span>
 		{#each legendRooms as r}
 			<span class="flex items-center gap-1">
 				<span class="inline-block h-3 w-3 rounded-sm" style="background:{colorOf(r)}"></span>
@@ -230,6 +273,24 @@
 		{:else}
 			<span class="text-base-content/40">— keine T-Raum-Buchung im Zeitraum</span>
 		{/each}
+		{#if showForeign}
+			<span class="flex items-center gap-1" title="Buchung einer anderen Person — für uns belegt">
+				<span
+					class="inline-block h-3 w-3 rounded-sm opacity-40"
+					style="background:repeating-linear-gradient(45deg,#94a3b8 0 1.5px,transparent 1.5px 5px)"
+				></span>
+				fremd (belegt) · leere Spalte = frei
+			</span>
+		{/if}
+		{#if suggestedBars.length}
+			<span class="flex items-center gap-1" title="Vorschlag: diesen Raum in Anny buchen">
+				<span
+					class="inline-block h-3 w-3 rounded-sm border-2 border-dashed"
+					style="border-color:#94a3b8"
+				></span>
+				Buchungsvorschlag
+			</span>
+		{/if}
 	</div>
 
 	{#snippet dayColumn(/** @type {{ dateKey: string, label: string }} */ day)}
@@ -355,6 +416,49 @@
 							style="top:{top(h * 60)}px"
 						></div>
 					{/each}
+					<!-- eine Spalte je Raum (nur beschriftet über den Tooltip, 16 px sind zu
+					     schmal für Text): die freie Fläche darin ist genau das Buchbare -->
+					{#each d.rooms as r}
+						{@const col = d.roomCol.get(r) ?? 0}
+						<div
+							class="absolute inset-y-0 border-l border-base-300/50"
+							style="left:{col * ROOM_COL_PX}px; width:{ROOM_COL_PX}px"
+							title={`${r}${seatsOf(r) ? ' · ' + seatsOf(r) + ' Plätze' : ''} — freie Fläche = in Anny noch buchbar`}
+						></div>
+					{/each}
+					<!-- fremde Buchungen zuerst (liegen unter unseren): schwach schraffiert -->
+					{#each d.foreign as bar}
+						{@const col = d.roomCol.get(bar.room) ?? 0}
+						<div
+							class="absolute rounded-sm opacity-40"
+							style="top:{top(bar.startMin)}px; height:{Math.max(
+								(bar.endMin - bar.startMin) * pxPerMin,
+								3
+							)}px; left:{col * ROOM_COL_PX + 1}px; width:{ROOM_COL_PX -
+								2}px; background:repeating-linear-gradient(45deg, {colorOf(
+								bar.room
+							)} 0 1.5px, transparent 1.5px 5px)"
+							title={`${bar.room} · ${hhmm(bar.startMin)}–${hhmm(bar.endMin)} · fremd${
+								bar.who ? ' (' + bar.who + ')' : ''
+							} — für uns belegt`}
+						></div>
+					{/each}
+					<!-- Buchungsvorschläge: gestrichelter Rahmen in der Raumfarbe -->
+					{#each d.suggested as bar}
+						{@const col = d.roomCol.get(bar.room) ?? 0}
+						<div
+							class="absolute rounded-sm border-2 border-dashed"
+							style="top:{top(bar.startMin)}px; height:{Math.max(
+								(bar.endMin - bar.startMin) * pxPerMin,
+								6
+							)}px; left:{col * ROOM_COL_PX}px; width:{ROOM_COL_PX}px; border-color:{colorOf(
+								bar.room
+							)}"
+							title={`Vorschlag: ${bar.room} in Anny buchen · ${hhmm(bar.startMin)}–${hhmm(
+								bar.endMin
+							)}${bar.modules?.length ? ' · ' + bar.modules.join(', ') : ''}`}
+						></div>
+					{/each}
 					{#each d.bars as bar}
 						{@const col = d.roomCol.get(bar.room) ?? 0}
 						<div
@@ -365,7 +469,7 @@
 							)}px; left:{col * ROOM_COL_PX + 1}px; width:{ROOM_COL_PX - 2}px; background:{colorOf(
 								bar.room
 							)}"
-							title={`${bar.room} · ${hhmm(bar.startMin)}–${hhmm(bar.endMin)}`}
+							title={`${bar.room} · ${hhmm(bar.startMin)}–${hhmm(bar.endMin)} · unsere Buchung`}
 						></div>
 					{/each}
 				</div>
