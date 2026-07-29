@@ -9,16 +9,19 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
-      # Svelte-Ökosystem zusammen (Kit/vite-plugin/svelte müssen kompatibel sein)
+      # Svelte-Ökosystem zusammen (Kit/vite-plugin/svelte müssen kompatibel sein).
+      # `vite` gehört hier mit hinein und NICHT zu `tooling`: die Peer-Ranges von
+      # @sveltejs/vite-plugin-svelte sind an die Vite-Major gekoppelt, ein
+      # Alleingang des Plugins bricht den Dev-Server (siehe #71).
       svelte:
         patterns:
           - 'svelte'
           - '@sveltejs/*'
           - 'svelte-*'
+          - 'vite'
       # Build-/Test-Toolchain zusammen
       tooling:
         patterns:
-          - 'vite'
           - 'vitest'
           - '@vitest/*'
           - 'eslint*'
