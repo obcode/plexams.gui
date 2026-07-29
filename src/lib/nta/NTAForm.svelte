@@ -165,8 +165,7 @@
 		<textarea
 			class="textarea textarea-bordered"
 			placeholder="Kompensation"
-			bind:value={form.compensation}
-		></textarea>
+			bind:value={form.compensation}></textarea>
 	</label>
 
 	<label class="flex flex-col gap-1">

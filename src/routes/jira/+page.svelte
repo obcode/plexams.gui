@@ -372,8 +372,7 @@
 						class="textarea textarea-bordered textarea-sm w-full"
 						rows="5"
 						bind:value={cDescription}
-						placeholder="optional"
-					></textarea>
+						placeholder="optional"></textarea>
 				</label>
 				<div class="text-xs text-base-content/50">
 					Projekt FK07PP, Typ „Task" (Backend-Default).
@@ -453,8 +452,7 @@
 						class="textarea textarea-bordered textarea-sm w-full"
 						rows="2"
 						bind:value={commentBody}
-						placeholder="Kommentar hinzufügen"
-					></textarea>
+						placeholder="Kommentar hinzufügen"></textarea>
 					<div class="flex items-center gap-2">
 						<button
 							class="btn btn-sm"
