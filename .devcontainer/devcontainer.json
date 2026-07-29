@@ -1,5 +1,5 @@
 {
-  "name": "plexams.go",
+  "name": "plexams.gui",
   "build": {
     "dockerfile": "Dockerfile"
   },
