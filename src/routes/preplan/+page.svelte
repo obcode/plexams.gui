@@ -355,7 +355,7 @@
 		const rc = c.roomConstraints || {};
 		conEditing = e;
 		// Für Pre-Exams nimmt setPreplanExamConstraints nur sameSlot + allowedRooms an;
-		// dazu der verlängerte Vor-/Nachlauf (leer = Standard 15 Min), der beim
+		// dazu der verlängerte Vor-/Nachlauf (leer = Standard 30 Min), der beim
 		// Verbinden mit dem ZPA-Ancode automatisch übernommen wird.
 		conForm = {
 			allowedRooms: (rc.allowedRooms || []).join(', '),
@@ -443,7 +443,7 @@
 		conSaving = true;
 		conError = '';
 		// Pre-Exams: das Backend übernimmt sameSlot + allowedRooms + Vor-/Nachlauf
-		// (Rest ignoriert). Vor-/Nachlauf leer = Standard 15 Min (null).
+		// (Rest ignoriert). Vor-/Nachlauf leer = Standard 30 Min (null).
 		const constraints = {
 			sameSlot: conForm.sameSlot.map(Number),
 			allowedRooms: conForm.allowedRooms
@@ -1476,7 +1476,7 @@
 						placeholder="z. B. R1.046, R1.049"
 					/>
 				</label>
-				<!-- Vor-/Nachlauf für die Raumbelegung; leer = Standard 15 Min. -->
+				<!-- Vor-/Nachlauf für die Raumbelegung; leer = Standard 30 Min (EXaHM/SEB-Vorplanung). -->
 				<div class="flex flex-wrap items-end gap-3">
 					<label class="flex flex-col gap-1">
 						<span class="text-xs font-medium text-base-content/60">Vorlauf (Min.)</span>
@@ -1484,8 +1484,8 @@
 							type="number"
 							class="input input-bordered input-sm w-28"
 							bind:value={conForm.preExamMinutes}
-							placeholder="15"
-							title="Gesamter Vorlauf vor der Prüfung (ersetzt Standard 15 Min); leer = 15"
+							placeholder="30"
+							title="Gesamter Vorlauf vor der Prüfung (ersetzt Standard 30 Min); leer = 30"
 						/>
 					</label>
 					<label class="flex flex-col gap-1">
@@ -1494,11 +1494,11 @@
 							type="number"
 							class="input input-bordered input-sm w-28"
 							bind:value={conForm.postExamMinutes}
-							placeholder="15"
-							title="Gesamter Nachlauf nach der Prüfung (ersetzt Standard 15 Min); leer = 15"
+							placeholder="30"
+							title="Gesamter Nachlauf nach der Prüfung (ersetzt Standard 30 Min); leer = 30"
 						/>
 					</label>
-					<span class="pb-2 text-xs text-base-content/40">leer = Standard 15 Min.</span>
+					<span class="pb-2 text-xs text-base-content/40">leer = Standard 30 Min.</span>
 				</div>
 			</div>
 

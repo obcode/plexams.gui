@@ -108,6 +108,18 @@ describe('examBlocks', () => {
 		expect(b.winStart).toBe(9 * 60 - PRE_DEFAULT);
 		expect(b.winEnd).toBe(9 * 60 + DURATION_DEFAULT + POST_DEFAULT);
 	});
+	it('rechnet in der Vorplanung mit ±30 Min Vor-/Nachlauf', () => {
+		// EXaHM/SEB-Vorplanung: 30 Min (Anny-Buchungen tragen ±30), nicht die 15
+		// der gewöhnlichen Raumplanung.
+		expect(PRE_DEFAULT).toBe(30);
+		expect(POST_DEFAULT).toBe(30);
+		const [b] = examBlocks([
+			{ id: 4, plannedStarttime: '2026-07-13T10:00', duration: null, examKind: 'SEB', module: 'Y' }
+		]);
+		// 10:00 − 30 = 09:30 … 10:00 + 90 + 30 = 12:00
+		expect(b.winStart).toBe(9 * 60 + 30);
+		expect(b.winEnd).toBe(12 * 60);
+	});
 	it('lässt nicht eingeplante Prüfungen weg', () => {
 		expect(examBlocks([{ id: 3, plannedStarttime: null, module: 'x' }])).toHaveLength(0);
 	});

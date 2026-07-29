@@ -18,10 +18,12 @@ export const ROOM_PALETTE = [
 	'#facc15'
 ];
 
-// Standardwerte, wenn am Backend nichts gesetzt ist (Vor-/Nachlauf: „ersetzt den
-// Default 15"; Dauer kann null sein → Annahme für die Darstellung).
-export const PRE_DEFAULT = 15;
-export const POST_DEFAULT = 15;
+// Standardwerte, wenn am Backend nichts gesetzt ist (Dauer kann null sein →
+// Annahme für die Darstellung). In der EXaHM/SEB-Vorplanung gilt ein Vor-/Nachlauf
+// von 30 Min (die Anny-Raumbuchungen tragen ±30) — nicht die 15 Min, die für die
+// gewöhnlichen Prüfungen der Raumplanung gelten.
+export const PRE_DEFAULT = 30;
+export const POST_DEFAULT = 30;
 export const DURATION_DEFAULT = 90;
 
 // Feste Reihenfolge der T-Bau-Prüfungsräume: die vier „normalen" Räume zuerst,
