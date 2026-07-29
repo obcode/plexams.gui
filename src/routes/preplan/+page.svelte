@@ -8,6 +8,7 @@
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
 	import { PREPLAN_CONFIG_FIELDS } from '$lib/semester/generationConfig';
 	import PreplanCalendar from '$lib/preplan/PreplanCalendar.svelte';
+	import { DURATION_DEFAULT } from '$lib/preplan/calendar';
 
 	let { data } = $props();
 
@@ -65,7 +66,8 @@
 			module: '',
 			programs: [],
 			expectedStudents: 0,
-			duration: '',
+			// Dauer ist Pflicht; 90 Min ist der Normalfall und steht als Vorgabe drin.
+			duration: DURATION_DEFAULT,
 			notes: ''
 		};
 		isNew = true;
@@ -81,7 +83,8 @@
 			module: e.module,
 			programs: [...(e.programs ?? [])],
 			expectedStudents: e.expectedStudents,
-			duration: e.duration ?? '',
+			// Altbestand ohne Dauer bekommt beim nächsten Speichern die 90 Min.
+			duration: e.duration ?? DURATION_DEFAULT,
 			notes: e.notes ?? ''
 		};
 		isNew = false;
@@ -111,13 +114,17 @@
 			editError = 'Modul ist Pflicht.';
 			return;
 		}
+		if (!(Number(editing.duration) > 0)) {
+			editError = 'Dauer ist Pflicht (Standard 90 Min).';
+			return;
+		}
 		const input = {
 			examKind: editing.examKind,
 			examerID: Number(editing.examerID),
 			module: editing.module.trim(),
 			programs: editing.programs,
 			expectedStudents: Number(editing.expectedStudents) || 0,
-			duration: editing.duration === '' ? null : Number(editing.duration),
+			duration: Number(editing.duration),
 			notes: (editing.notes ?? '').trim() || null
 		};
 		saving = true;
@@ -1270,11 +1277,14 @@
 						/>
 					</label>
 					<label class="flex flex-col gap-1">
-						<span class="text-xs font-medium text-base-content/60">Dauer (Min., optional)</span>
+						<span class="text-xs font-medium text-base-content/60">Dauer (Min.)</span>
 						<input
 							type="number"
+							min="1"
+							required
 							class="input input-bordered input-sm w-28"
 							bind:value={editing.duration}
+							title="Dauer der Prüfung in Minuten; Vorgabe 90"
 						/>
 					</label>
 				</div>
