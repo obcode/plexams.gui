@@ -26,7 +26,7 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@graphql-codegen/cli": "^7.2.0",
-		"@graphql-codegen/typescript": "^4.1.6",
+		"@graphql-codegen/typescript": "^6.1.0",
 		"@graphql-codegen/typescript-operations": "^6.0.5",
 		"@playwright/test": "1.61.1",
 		"@svelte-plugins/tooltips": "^3.0.3",
