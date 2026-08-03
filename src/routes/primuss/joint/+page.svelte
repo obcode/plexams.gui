@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
 	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
+	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 
 	let { data } = $props();
@@ -378,6 +379,18 @@
 				Enthält die Verknüpfungen der gemeinsamen Studiengänge. Der Upload überschreibt die
 				Verknüpfungen.
 			</DatasetTransfer>
+		</div>
+	</details>
+
+	<details class="w-fit">
+		<summary class="cursor-pointer text-sm text-base-content/60">
+			📄 CSV Export / Import (Verknüpfungen)
+		</summary>
+		<div class="mt-2">
+			<DatasetCsvTransfer name="joint-links" title="Verknüpfungen gemeinsamer Studiengänge">
+				Die Verknüpfungen der gemeinsamen Studiengänge (Studiengang + Primuss-Ancode → Prüfung). Der
+				Upload aktualisiert je Zeile; nicht enthaltene Verknüpfungen bleiben unverändert.
+			</DatasetCsvTransfer>
 		</div>
 	</details>
 
