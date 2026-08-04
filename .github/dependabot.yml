@@ -34,6 +34,12 @@ updates:
           - minor
           - patch
 
+  # Dockerfile-Base-Images (node:24-alpine in beiden Stages).
+  - package-ecosystem: docker
+    directory: '/'
+    schedule:
+      interval: weekly
+
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
