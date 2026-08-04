@@ -1,5 +1,5 @@
 # pnpm via Corepack (Version aus dem "packageManager"-Feld der package.json).
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 WORKDIR /app
@@ -27,7 +27,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # --- Runtime ---
-FROM node:24-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 # adapter-node lauscht per Default auf 0.0.0.0:3000; explizit gesetzt, damit der
