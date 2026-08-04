@@ -6,8 +6,11 @@ import { browser } from '$app/environment';
 // weist dann dezent auf das fällige Backup hin. lastDumpAt = Zeitpunkt des
 // letzten Dumps (null = noch nie), lastChangeAt = Zeitpunkt der letzten Änderung.
 //
-// Der Server stempelt lastDumpAt beim Download von /download/semester-dump.zip;
-// nach dem Download also refetchStatus() aufrufen, dann verschwindet der Hinweis.
+// Achtung: lastDumpAt wird derzeit von niemandem gestempelt. Der Stempel hing am
+// Download von /download/semester-dump.zip, und der ist mit der MongoDB-Schicht
+// entfallen (er las Collections als rohe Dokumente). Bis die Gesamtsicherung als
+// pg_dump zurückkommt, bleibt der Hinweis also stehen — checkBackupStatus() nach
+// dem neuen Download wieder aufrufen, dann verschwindet er.
 
 /**
  * @typedef {{ hasUnsavedChanges: boolean, lastDumpAt: string | null, lastChangeAt: string | null }} BackupStatus

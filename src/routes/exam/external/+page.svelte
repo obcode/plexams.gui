@@ -1,7 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import ExternalExamRow from '$lib/exam/ExternalExamRow.svelte';
-	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import { buildGroups, hasTime } from '$lib/exam/otherFkGroups';
 
@@ -43,18 +42,6 @@
 			{total} Prüfungen{#if missing}, <span class="text-warning">{missing} ohne Termin</span>{/if}
 		</span>
 	</div>
-
-	<details class="w-fit">
-		<summary class="cursor-pointer text-sm text-base-content/60">
-			💾 Externe Prüfungen sichern / wiederherstellen
-		</summary>
-		<div class="mt-2">
-			<DatasetTransfer name="external-exams" title="Externe Prüfungen">
-				Enthält die externen Prüfungen und ihre Zeiten. Der Upload überschreibt nur diese
-				Einträge/Zeiten, nicht den übrigen Plan.
-			</DatasetTransfer>
-		</div>
-	</details>
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">

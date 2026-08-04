@@ -1,32 +1,18 @@
 import { backendBase } from '$lib/backend.js';
 
 // Sichern/Wiederherstellen von Semesterdaten über die REST-Routen von plexams.go
-// (kein GraphQL). Drei Ebenen:
-//   • kompletter Semester-Dump (ZIP)  – /download/semester-dump.zip, /upload/semester-dump.zip
-//   • einzelne Datensätze (JSON)      – /download/dataset?name=…, /upload/dataset
-//   • einzelne Datensätze (CSV)       – /download/dataset-csv?name=…, /upload/dataset-csv
-//                                       plus /download/my-inputs-csv.zip (alle als CSV)
+// (kein GraphQL):
+//   • einzelne Datensätze (CSV)      – /download/dataset-csv?name=…, /upload/dataset-csv
+//                                      plus /download/my-inputs-csv.zip (alle als CSV)
+//
+// Der komplette Semester-Dump (ZIP) und die JSON-Datensätze sind mit der
+// MongoDB-Schicht entfallen: beide lasen Collections als rohe Dokumente. Die
+// CSV-Ebene deckt dieselben Datensätze typisiert ab; die Gesamtsicherung kommt
+// als pg_dump zurück.
 //
 // Anders als bei den E-Mail-Anhängen (postUpload) wird der Fehlertext auch bei
 // HTTP 409 durchgereicht: der Server nennt dort die blockierende Collection bzw.
 // „read-only" — das soll der Nutzer sehen.
-
-/**
- * Download-URL für einen einzelnen Datensatz (JSON, Content-Disposition gesetzt).
- * @param {string} name
- * @returns {string}
- */
-export function datasetDownloadUrl(name) {
-	return `${backendBase()}/download/dataset?name=${encodeURIComponent(name)}`;
-}
-
-/**
- * Download-URL für den kompletten Semester-Dump (ZIP, Content-Disposition gesetzt).
- * @returns {string}
- */
-export function semesterDumpDownloadUrl() {
-	return `${backendBase()}/download/semester-dump.zip`;
-}
 
 /**
  * Download-URL für einen einzelnen Datensatz als CSV (Content-Disposition gesetzt).
@@ -46,24 +32,9 @@ export function myInputsCsvDownloadUrl() {
 }
 
 /**
- * @typedef {{ restored?: Record<string, number>, total?: number }} RestoreResult
  * @typedef {{ dataset?: string, applied?: number, skipped?: string[] }} CsvImportResult
  * @typedef {{ ok: true, result: any } | { ok: false, status: number, error: string }} TransferResult
  */
-
-/**
- * Einen einzelnen Datensatz hochladen. Überschreibt nur diesen Datensatz, nicht
- * den übrigen Plan.
- * @param {string} name
- * @param {File} file
- * @returns {Promise<TransferResult>}
- */
-export async function uploadDataset(name, file) {
-	const fd = new FormData();
-	fd.append('name', name);
-	fd.append('file', file);
-	return postTransfer(`${backendBase()}/upload/dataset`, fd);
-}
 
 /**
  * Einen einzelnen Datensatz als CSV hochladen. Aktualisiert/ergänzt pro Zeile
@@ -77,18 +48,6 @@ export async function uploadDatasetCsv(name, file) {
 	fd.append('name', name);
 	fd.append('file', file);
 	return postTransfer(`${backendBase()}/upload/dataset-csv`, fd);
-}
-
-/**
- * Kompletten Semester-Dump wiederherstellen. Nur in eine frische Workspace-DB
- * sinnvoll (Server blockt mit 409, wenn die DB nicht leer bzw. read-only ist).
- * @param {File} file
- * @returns {Promise<TransferResult>}
- */
-export async function restoreSemesterDump(file) {
-	const fd = new FormData();
-	fd.append('file', file);
-	return postTransfer(`${backendBase()}/upload/semester-dump.zip`, fd);
 }
 
 /**

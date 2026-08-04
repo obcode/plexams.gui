@@ -3,7 +3,6 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
-	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import StreamAction from '$lib/zpa/StreamAction.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
@@ -458,19 +457,6 @@
 				actionLabel="Laden"
 				ondone={() => invalidateAll()}
 			/>
-		</div>
-	</details>
-
-	<details class="w-fit">
-		<summary class="cursor-pointer text-sm text-base-content/60">
-			💾 Constraints sichern / wiederherstellen
-		</summary>
-		<div class="mt-2">
-			<DatasetTransfer name="constraints" title="Constraints">
-				Enthält alle Prüfungs-Constraints. Auch das Feld „nicht von mir geplant" (notPlannedByMe)
-				gehört zu den Constraints — es ist kein eigener Datensatz. Der Upload überschreibt die
-				Constraints.
-			</DatasetTransfer>
 		</div>
 	</details>
 

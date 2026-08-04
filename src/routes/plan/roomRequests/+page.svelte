@@ -5,7 +5,6 @@
 	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
 	import EmailSender from '$lib/email/EmailSender.svelte';
 	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { starttimeHHMM } from '$lib/exam/setExamTime';
@@ -348,17 +347,6 @@
 			{/each}
 		</div>
 	</div>
-
-	<details class="w-fit">
-		<summary class="cursor-pointer text-sm text-base-content/60">
-			💾 Raumanfragen sichern / wiederherstellen
-		</summary>
-		<div class="mt-2">
-			<DatasetTransfer name="room-requests" title="Raumanfragen">
-				Enthält die Raumanfragen (Gebäudemanagement). Der Upload überschreibt die Raumanfragen.
-			</DatasetTransfer>
-		</div>
-	</details>
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">

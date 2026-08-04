@@ -11,10 +11,7 @@
 	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
 	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
 	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
-	import { semesterDumpUrl } from '$lib/download/downloads.js';
 	import { isViewer, isAdmin, displayName, roleOf } from '$lib/auth';
-
-	const dumpUrl = semesterDumpUrl();
 
 	// Angemeldete Identität + Rolle (SSR aus dem Layout-Load; kein Flackern).
 	// null = kein Auth-Backend (lokal/Dev) → voller Zugriff.
@@ -79,13 +76,6 @@
 			? `Letztes Backup: ${agoIso($backupStatus.lastDumpAt)}`
 			: 'Letztes Backup: noch nie'
 	);
-
-	// Semester-Dump herunterladen: der Server stempelt beim Ausliefern lastDumpAt,
-	// daher kurz danach den Backup-Status neu holen → der Hinweis verschwindet.
-	function onDumpDownload() {
-		setTimeout(checkBackupStatus, 2000);
-		setTimeout(checkBackupStatus, 6000);
-	}
 
 	function statusTitle(
 		name: string,
@@ -520,7 +510,6 @@
 							{:else if isGroup(item)}
 								{@const groupActive = item.items.some((s) => isLink(s) && s.href === activeHref)}
 								<li class="group/flyout relative">
-									<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 									<div
 										tabindex="0"
 										role="button"
@@ -646,11 +635,9 @@
 		</div>
 
 		<!-- Backup/Dump: dauerhaft erreichbar; wird hervorgehoben (Badge-Punkt), wenn
-		     seit dem letzten Backup Änderungen anstehen. Klick lädt den Semester-Dump. -->
+		     seit dem letzten Backup Änderungen anstehen. Führt auf die Download-Seite. -->
 		<a
-			href={dumpUrl}
-			download
-			onclick={onDumpDownload}
+			href="/download"
 			class="btn btn-ghost btn-sm btn-circle relative {$backupStatus.hasUnsavedChanges
 				? 'text-warning'
 				: 'text-base-content/60'}"
@@ -1055,9 +1042,7 @@
 			<span class="font-medium">Seit dem letzten Backup geändert</span>
 			<span class="opacity-70">— {lastBackupLabel}</span>
 			<div class="flex-1"></div>
-			<a class="btn btn-info btn-xs" href={dumpUrl} download onclick={onDumpDownload}>
-				⬇️ Sicherung herunterladen
-			</a>
+			<a class="btn btn-info btn-xs" href="/download">→ Sicherung</a>
 		</div>
 	{/if}
 

@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
-	datasetDownloadUrl,
-	semesterDumpDownloadUrl,
 	datasetCsvDownloadUrl,
 	myInputsCsvDownloadUrl,
 	interpretTransferResponse
@@ -26,23 +24,15 @@ function fakeResponse({ ok, status, json = {}, text = '' }) {
 }
 
 describe('download URLs', () => {
-	it('baut die Dataset-URL mit encodetem name auf /download/dataset', () => {
-		expect(datasetDownloadUrl('external-exams')).toBe(
-			'http://backend:8080/download/dataset?name=external-exams'
+	it('baut die CSV-Dataset-URL mit encodetem name auf /download/dataset-csv', () => {
+		expect(datasetCsvDownloadUrl('exam-times')).toBe(
+			'http://backend:8080/download/dataset-csv?name=exam-times'
 		);
 	});
 
 	it('encodet Sonderzeichen im name', () => {
-		expect(datasetDownloadUrl('a b&c')).toBe('http://backend:8080/download/dataset?name=a%20b%26c');
-	});
-
-	it('baut die Semester-Dump-URL', () => {
-		expect(semesterDumpDownloadUrl()).toBe('http://backend:8080/download/semester-dump.zip');
-	});
-
-	it('baut die CSV-Dataset-URL mit encodetem name auf /download/dataset-csv', () => {
-		expect(datasetCsvDownloadUrl('exam-times')).toBe(
-			'http://backend:8080/download/dataset-csv?name=exam-times'
+		expect(datasetCsvDownloadUrl('a b&c')).toBe(
+			'http://backend:8080/download/dataset-csv?name=a%20b%26c'
 		);
 	});
 
@@ -69,25 +59,25 @@ describe('interpretTransferResponse (CSV-Erfolg)', () => {
 });
 
 describe('interpretTransferResponse', () => {
-	it('gibt bei Erfolg das JSON (restored/total) zurück', async () => {
+	it('gibt bei Erfolg das JSON zurück', async () => {
 		const r = await interpretTransferResponse(
-			fakeResponse({ ok: true, status: 200, json: { restored: { constraints: 3 }, total: 3 } })
+			fakeResponse({ ok: true, status: 200, json: { dataset: 'preplan', applied: 3 } })
 		);
-		expect(r).toEqual({ ok: true, result: { restored: { constraints: 3 }, total: 3 } });
+		expect(r).toEqual({ ok: true, result: { dataset: 'preplan', applied: 3 } });
 	});
 
-	it('reicht den Fehlertext bei 409 (blockierende Collection / read-only) durch', async () => {
+	it('reicht den Fehlertext bei 409 (laufende Operation / read-only) durch', async () => {
 		const r = await interpretTransferResponse(
-			fakeResponse({ ok: false, status: 409, text: 'DB not empty: constraints\n' })
+			fakeResponse({ ok: false, status: 409, text: 'semester is read-only\n' })
 		);
-		expect(r).toEqual({ ok: false, status: 409, error: 'DB not empty: constraints' });
+		expect(r).toEqual({ ok: false, status: 409, error: 'semester is read-only' });
 	});
 
-	it('reicht den Fehlertext bei 400 (kaputte ZIP/JSON) durch', async () => {
+	it('reicht den Fehlertext bei 400 (kaputte CSV) durch', async () => {
 		const r = await interpretTransferResponse(
-			fakeResponse({ ok: false, status: 400, text: 'invalid zip' })
+			fakeResponse({ ok: false, status: 400, text: 'header mismatch' })
 		);
-		expect(r).toEqual({ ok: false, status: 400, error: 'invalid zip' });
+		expect(r).toEqual({ ok: false, status: 400, error: 'header mismatch' });
 	});
 
 	it('fällt ohne Fehlertext auf HTTP <status> zurück', async () => {

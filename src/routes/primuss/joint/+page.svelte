@@ -1,7 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 
@@ -369,18 +368,6 @@
 			/>
 		</label>
 	</div>
-
-	<details class="w-fit">
-		<summary class="cursor-pointer text-sm text-base-content/60">
-			💾 Verknüpfungen gemeinsamer Studiengänge sichern / wiederherstellen
-		</summary>
-		<div class="mt-2">
-			<DatasetTransfer name="joint-links" title="Verknüpfungen gemeinsamer Studiengänge">
-				Enthält die Verknüpfungen der gemeinsamen Studiengänge. Der Upload überschreibt die
-				Verknüpfungen.
-			</DatasetTransfer>
-		</div>
-	</details>
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">

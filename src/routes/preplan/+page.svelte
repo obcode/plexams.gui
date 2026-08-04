@@ -2,7 +2,6 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetTransfer from '$lib/backup/DatasetTransfer.svelte';
 	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
 	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
 	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
@@ -827,17 +826,6 @@
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			💾 Vorplanung sichern / wiederherstellen
-		</summary>
-		<div class="mt-2">
-			<DatasetTransfer name="preplan" title="SEB/EXaHM-Vorplanung">
-				Enthält die SEB/EXaHM-Vorplanung. Der Upload überschreibt die Vorplanung des Semesters.
-			</DatasetTransfer>
-		</div>
-	</details>
-
-	<details class="w-fit">
-		<summary class="cursor-pointer text-sm text-base-content/60">
 			📄 CSV Export / Import (Vorplanung)
 		</summary>
 		<div class="mt-2">
@@ -1073,8 +1061,7 @@
 					In Anny zu buchen (die Zeiten enthalten Vor-/Nachlauf; im Kalender gestrichelt).
 					{#if !proposeKeepAssigned}
 						Die Vorschläge gehören zu einer <strong>gedachten</strong> Neuverteilung — die Vorplanung
-						selbst bleibt unverändert, bis nach dem Buchen &amp; Importieren „Automatisch verteilen"
-						läuft.
+						selbst bleibt unverändert, bis nach dem Buchen &amp; Importieren „Automatisch verteilen" läuft.
 					{/if}
 				</div>
 				<div class="flex flex-col gap-1 text-sm">
