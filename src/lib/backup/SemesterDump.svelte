@@ -3,9 +3,9 @@
 
 	Der komplette Semester-Dump (ZIP-Download + Restore in eine frische
 	Workspace-DB) ist mit der MongoDB-Schicht entfallen — er las und schrieb
-	Collections als rohe Dokumente. Die Gesamtsicherung kommt als pg_dump
-	zurück; bis dahin bleibt hier der CSV-Export der handgepflegten Daten,
-	der als einziger Weg typisiert ist und den Backend-Wechsel übersteht.
+	Collections als rohe Dokumente. Die Gesamtsicherung der Datenbank läuft
+	jetzt als Cronjob auf dem Host (pg_dump); hier bleibt der CSV-Export der
+	handgepflegten Daten, und sein Download stempelt lastDumpAt.
 
 	Die einzelnen Datensätze werden weiterhin auf ihrer jeweiligen Seite
 	als CSV exportiert/importiert (DatasetCsvTransfer).

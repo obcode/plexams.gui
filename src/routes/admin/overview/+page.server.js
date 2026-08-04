@@ -19,8 +19,8 @@ export const load = async () => {
 					server {
 						version
 						commit
-						mongoHost
-						mongoDatabase
+						dbHost
+						workspace
 						releaseURL
 					}
 					activeSemester

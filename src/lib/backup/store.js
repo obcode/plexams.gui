@@ -1,16 +1,18 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-// Backup-/Dump-Status des aktuellen Semesters. hasUnsavedChanges=true → seit dem
-// letzten Semester-Dump gab es Mutationen (mutation_log-Einträge); die NavBar
-// weist dann dezent auf das fällige Backup hin. lastDumpAt = Zeitpunkt des
-// letzten Dumps (null = noch nie), lastChangeAt = Zeitpunkt der letzten Änderung.
+// Backup-Status des aktuellen Semesters. hasUnsavedChanges=true → seit der letzten
+// Sicherung gab es Mutationen (mutation_log-Einträge); die NavBar weist dann dezent
+// auf das fällige Backup hin. lastDumpAt = Zeitpunkt der letzten Sicherung
+// (null = noch nie), lastChangeAt = Zeitpunkt der letzten Änderung.
 //
-// Achtung: lastDumpAt wird derzeit von niemandem gestempelt. Der Stempel hing am
-// Download von /download/semester-dump.zip, und der ist mit der MongoDB-Schicht
-// entfallen (er las Collections als rohe Dokumente). Bis die Gesamtsicherung als
-// pg_dump zurückkommt, bleibt der Hinweis also stehen — checkBackupStatus() nach
-// dem neuen Download wieder aufrufen, dann verschwindet er.
+// Der Server stempelt lastDumpAt beim Download von /download/my-inputs-csv.zip;
+// nach dem Download also checkBackupStatus() aufrufen, dann verschwindet der Hinweis.
+//
+// Bewusst der CSV-Export und nicht die Gesamtsicherung: die läuft als Cronjob auf dem
+// Host (pg_dump über die ganze Datenbank) und könnte diesen Stempel gar nicht setzen.
+// Das ist die Sicherung der Maschine — dieser Hinweis richtet sich an den Planer, und
+// der CSV-Export ist die Sicherung, die er selbst auslöst.
 
 /**
  * @typedef {{ hasUnsavedChanges: boolean, lastDumpAt: string | null, lastChangeAt: string | null }} BackupStatus

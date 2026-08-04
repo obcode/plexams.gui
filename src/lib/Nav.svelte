@@ -11,7 +11,10 @@
 	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
 	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
 	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
+	import { myInputsCsvDownloadUrl } from '$lib/backup/transfer.js';
 	import { isViewer, isAdmin, displayName, roleOf } from '$lib/auth';
+
+	const backupUrl = myInputsCsvDownloadUrl();
 
 	// Angemeldete Identität + Rolle (SSR aus dem Layout-Load; kein Flackern).
 	// null = kein Auth-Backend (lokal/Dev) → voller Zugriff.
@@ -68,6 +71,13 @@
 		const t = new Date(iso).getTime();
 		if (Number.isNaN(t)) return null;
 		return ago(t);
+	}
+
+	// Sicherung herunterladen: der Server stempelt beim Ausliefern lastDumpAt, daher
+	// kurz danach den Backup-Status neu holen → der Hinweis verschwindet.
+	function onBackupDownload() {
+		setTimeout(checkBackupStatus, 2000);
+		setTimeout(checkBackupStatus, 6000);
 	}
 
 	// „Letztes Backup: …" — Kontext für den Backup-Hinweis.
@@ -634,16 +644,19 @@
 			</button>
 		</div>
 
-		<!-- Backup/Dump: dauerhaft erreichbar; wird hervorgehoben (Badge-Punkt), wenn
-		     seit dem letzten Backup Änderungen anstehen. Führt auf die Download-Seite. -->
+		<!-- Backup: dauerhaft erreichbar; wird hervorgehoben (Badge-Punkt), wenn seit der
+		     letzten Sicherung Änderungen anstehen. Lädt die eigenen Eingaben als CSV-ZIP —
+		     die Gesamtsicherung der Datenbank macht ein Cronjob auf dem Host. -->
 		<a
-			href="/download"
+			href={backupUrl}
+			download
+			onclick={onBackupDownload}
 			class="btn btn-ghost btn-sm btn-circle relative {$backupStatus.hasUnsavedChanges
 				? 'text-warning'
 				: 'text-base-content/60'}"
 			title={$backupStatus.hasUnsavedChanges
-				? `Seit dem letzten Backup geändert — Sicherung herunterladen · ${lastBackupLabel}`
-				: `Semester-Sicherung herunterladen · ${lastBackupLabel}`}
+				? `Seit der letzten Sicherung geändert — eigene Eingaben herunterladen · ${lastBackupLabel}`
+				: `Eigene Eingaben als CSV sichern · ${lastBackupLabel}`}
 			aria-label="Semester-Sicherung herunterladen"
 		>
 			<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
@@ -1042,7 +1055,9 @@
 			<span class="font-medium">Seit dem letzten Backup geändert</span>
 			<span class="opacity-70">— {lastBackupLabel}</span>
 			<div class="flex-1"></div>
-			<a class="btn btn-info btn-xs" href="/download">→ Sicherung</a>
+			<a class="btn btn-info btn-xs" href={backupUrl} download onclick={onBackupDownload}>
+				⬇️ Eingaben sichern
+			</a>
 		</div>
 	{/if}
 

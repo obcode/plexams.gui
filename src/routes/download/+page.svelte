@@ -17,6 +17,12 @@
 
 	onMount(checkBackupStatus);
 
+	// Der Server stempelt lastDumpAt beim Ausliefern → danach den Status neu holen.
+	function onBackupDownload() {
+		setTimeout(checkBackupStatus, 2000);
+		setTimeout(checkBackupStatus, 6000);
+	}
+
 	// Gemeinsame Studiengang-Auswahl für Entwurf-CSV und ICS-Kalender.
 	let program = $state('');
 
@@ -48,14 +54,16 @@
 			{/if}
 		</h2>
 		<p class="text-sm text-base-content/60">
-			Alle handgepflegten Eingaben als ZIP mit je einer CSV pro Datensatz. Die Gesamtsicherung des
-			Semesters kommt als pg_dump zurück; bis dahin ist dies der Weg, die eigenen Eingaben zu
-			sichern — die Daten aus ZPA, Primuss und Anny sind ohnehin nachimportierbar.
+			Alle handgepflegten Eingaben als ZIP mit je einer CSV pro Datensatz. Das ist die Sicherung,
+			die dir gehört — die Daten aus ZPA, Primuss und Anny sind ohnehin nachimportierbar. Die
+			Gesamtsicherung der Datenbank läuft nächtlich auf dem Server.
 		</p>
 		<div class="flex flex-wrap items-center gap-2">
 			<a
 				class="btn btn-sm {$backupStatus.hasUnsavedChanges ? 'btn-info' : 'btn-outline'}"
 				href={myInputsCsvDownloadUrl()}
+				download
+				onclick={onBackupDownload}
 			>
 				⬇️ Meine Eingaben als CSV
 			</a>

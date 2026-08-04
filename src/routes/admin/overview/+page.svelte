@@ -133,10 +133,10 @@
 						<dd class="font-mono text-xs break-all">{server?.commit || '—'}</dd>
 						<dt class="text-base-content/60">Aktives Semester</dt>
 						<dd class="font-medium">{overview.activeSemester || '—'}</dd>
-						<dt class="text-base-content/60">MongoDB-Host</dt>
-						<dd class="font-mono text-xs break-all">{server?.mongoHost || '—'}</dd>
-						<dt class="text-base-content/60">Datenbank</dt>
-						<dd class="font-mono text-xs break-all">{server?.mongoDatabase || '—'}</dd>
+						<dt class="text-base-content/60">Datenbank-Host</dt>
+						<dd class="font-mono text-xs break-all">{server?.dbHost || '—'}</dd>
+						<dt class="text-base-content/60">Workspace</dt>
+						<dd class="font-mono text-xs break-all">{server?.workspace || '—'}</dd>
 					</dl>
 				</div>
 			</section>
