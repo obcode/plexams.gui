@@ -81,16 +81,14 @@ type AdminOverview {
   """Zeitpunkt, zu dem diese Übersicht erhoben wurde."""
   generatedAt: Time!
 
-  """Build-Version und verbundene MongoDB des laufenden Servers."""
+  """Build-Version und verbundene Datenbank des laufenden Servers."""
   server: ServerInfo!
 
-  """Das aktuell aktive Semester (Workspace), z. B. "2026 SS"."""
+  """Das aktuell aktive Semester, z. B. "2026-SS"."""
   activeSemester: String!
 
-  """
-  Alle bekannten Workspaces (Semester-Datenbanken) mit Read-only-/Schema-Stand.
-  """
-  workspaces: [Semester!]!
+  """Alle bekannten Semester mit Read-only-/Schema-Stand."""
+  semesters: [Semester!]!
 
   """Die Zugriffsliste (alle bekannten Login-Identitäten)."""
   users: [User!]!
@@ -102,29 +100,29 @@ type AdminOverview {
   scheduler: SchedulerStatus!
 
   """
-  Backup-Fälligkeit des aktiven Workspace (Änderungen seit dem letzten Dump).
+  Backup-Fälligkeit des aktiven Semesters (Änderungen seit dem letzten Dump).
   """
   backup: BackupStatus!
 
   """
-  Laufzeit-Status: ob gerade geschrieben werden darf und ob der Workspace schreibgeschützt ist.
+  Laufzeit-Status: ob gerade geschrieben werden darf und ob das Semester schreibgeschützt ist.
   """
   live: LiveStatus!
 
   """
-  Aktivitäts-Kennzahlen aus dem Audit-Log des aktiven Workspace (24h/7d/Fehler/aktive Nutzer + Top-Operationen).
+  Aktivitäts-Kennzahlen aus dem Audit-Log des aktiven Semesters (24h/7d/Fehler/aktive Nutzer + Top-Operationen).
   """
   activity: ActivitySummary!
 
-  """Die jüngsten Audit-Einträge (neueste zuerst) des aktiven Workspace."""
+  """Die jüngsten Audit-Einträge (neueste zuerst) des aktiven Semesters."""
   recentActivity: [MutationLogEntry!]!
 
   """
-  Die jüngsten fehlgeschlagenen Operationen (neueste zuerst) des aktiven Workspace.
+  Die jüngsten fehlgeschlagenen Operationen (neueste zuerst) des aktiven Semesters.
   """
   recentErrors: [MutationLogEntry!]!
 
-  """Die jüngsten externen Transfers (ZPA/Anny) des aktiven Workspace."""
+  """Die jüngsten externen Transfers (ZPA/Anny) des aktiven Semesters."""
   recentSyncs: [SyncLogEntry!]!
 }
 
@@ -1456,7 +1454,7 @@ type LiveStatus {
   """
   writesAllowed: Boolean!
 
-  """Ob der aktive Workspace schreibgeschützt ist (read-only)."""
+  """Ob das aktive Semester schreibgeschützt ist (read-only)."""
   readOnly: Boolean!
 }
 
@@ -1965,37 +1963,24 @@ type Mutation {
   setSemesterConfigInput(input: SemesterConfigInputData!): SaveSemesterConfigResult!
 
   """
-  Create a new semester (in its own database) with the given config. The
-  semester must match YYYY-SS / YYYY-WS and must not already have a config.
-  Use setSemester to switch the running server to it afterwards.
+  Create a new semester with the given config. The semester must match
+  YYYY-SS / YYYY-WS and must not already have a config. Use setSemester to switch
+  the running server to it afterwards.
   """
   createSemester(semester: String!, input: SemesterConfigInputData!): SaveSemesterConfigResult!
 
   """
-  Switch the running server to another database (workspace) at runtime. `name` is
-  the database name from allSemesterNames (id), e.g. "2026-SS" or "test-v2". The
-  logical semester used against external systems (ZPA) is the database's own stored
-  semester — independent of the database name. `semester` is an optional override,
-  only needed for a database that has no stored semester yet (then it is
-  remembered). The target may be empty (config null until created/imported).
-  Refused while an operation is running. The GUI must refetch all data afterwards.
+  Switch the running server to another semester at runtime. `name` is a semester
+  id from allSemesterNames, e.g. "2026-SS". The target may have no config yet
+  (then it is null until created/imported). Refused while an operation is running.
+  The GUI must refetch all data afterwards.
   """
-  setSemester(name: String!, semester: String): Semester!
+  setSemester(name: String!): Semester!
 
   """
-  Create a new, independent database (workspace) for the logical semester of
-  `fromSemester` (e.g. "2026-SS"), copying that semester's config (dates/slots/
-  emails) so it matches. `database` is the new database name (e.g. "test-v2"); it
-  must not exist yet. The data stays empty — switch to it and import (e.g. from ZPA,
-  which uses the logical semester). Returns the new workspace.
-  """
-  createWorkspace(database: String!, fromSemester: String!): Semester!
-
-  """
-  Protect or unprotect the current database: when read-only, all data-changing
+  Protect or unprotect the current semester: when read-only, all data-changing
   operations (mutations and imports/generation/uploads) are rejected, but the
-  semester can still be viewed and validated, and you can switch away. Useful to
-  guard the real semester while replaying in a clone.
+  semester can still be viewed and validated, and you can switch away.
   """
   setSemesterReadOnly(readOnly: Boolean!): Semester!
 
@@ -2712,7 +2697,7 @@ type Query {
   additionalExams: [AdditionalExam!]!
 
   """
-  Plattform-Überblick für Admins (Zugriff/Rollen, Auto-Sync, Aktivität/Audit, Backup, Workspaces). Erfordert Rolle ADMIN.
+  Plattform-Überblick für Admins (Zugriff/Rollen, Auto-Sync, Aktivität/Audit, Backup, Semester). Erfordert Rolle ADMIN.
   """
   adminOverview: AdminOverview!
 
@@ -2749,10 +2734,13 @@ type Query {
   users: [User!]!
 
   """
-  Whether the current semester has changes that are not yet captured in a
-  downloaded full ZIP dump, plus the relevant timestamps. Used by the GUI to
-  prominently offer the semester-dump download once something changed since the
-  last backup.
+  Whether the current semester has changes the planner has not yet downloaded a
+  backup of, plus the relevant timestamps. Used by the GUI to prominently offer
+  the CSV export once something changed since the last one.
+  
+  lastDumpAt is stamped by /download/my-inputs-csv.zip. The whole-database
+  pg_dump is a cron job on the host and deliberately does not touch this: it is
+  the machine's backup, while this hint is aimed at the planner.
   """
   backupStatus: BackupStatus!
   constraintForAncode(ancode: Int!): Constraints
@@ -3062,7 +3050,7 @@ type Query {
 
   """
   Runtime information about the running plexams.go server: its build version
-  and the MongoDB it is connected to. Used e.g. for the GUI footer.
+  and the database it is connected to. Used e.g. for the GUI footer.
   """
   serverInfo: ServerInfo!
 
@@ -3414,7 +3402,7 @@ type SchedulerStatus {
   """
   lastTrigger: String!
 
-  """Workspace, den der letzte Lauf abgeglichen hat."""
+  """Semester, das der letzte Lauf abgeglichen hat."""
   lastSemester: String!
 
   """Anzahl der im letzten Lauf gefundenen Änderungen."""
@@ -3431,27 +3419,24 @@ type SchedulerStatus {
 
 type Semester {
   """
-  the database label (e.g. '2026 SS' or a clone '2026 SS-Test'); selects the database.
+  the semester, e.g. '2026-SS'. There is no second, logical semester next to it
+  any more: the form external systems use ('2026 SS') is this one with the dash replaced.
   """
   id: String!
 
   """
-  the logical semester used against external systems (ZPA), e.g. '2026 SS' — for
-  a clone this stays the real semester, not the database name.
-  """
-  semester: String
-
-  """
-  false for databases that cannot be used with this code (no semester config).
+  false for semesters that cannot be used with this code (no semester config).
   """
   compatible: Boolean!
 
   """
-  true when the database is protected: it can be selected, but all mutations fail.
+  true when the semester is protected: it can be selected, but all mutations fail.
   """
   readOnly: Boolean!
 
-  """data schema version of the database (null when unknown/never stamped)."""
+  """
+  data schema version of the semester's rows (null when unknown/never stamped).
+  """
   schemaVersion: Int
 }
 
@@ -3608,12 +3593,9 @@ type ServerInfo {
   releaseURL: String
 
   """
-  The MongoDB host:port the server is connected to (credentials redacted).
+  The database host:port the server is connected to (credentials redacted).
   """
-  mongoHost: String!
-
-  """The MongoDB database (workspace) currently in use, e.g. "2026-SS"."""
-  mongoDatabase: String!
+  dbHost: String!
 }
 
 type Slot {

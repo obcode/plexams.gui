@@ -20,13 +20,11 @@ export const load = async () => {
 						version
 						commit
 						dbHost
-						workspace
 						releaseURL
 					}
 					activeSemester
-					workspaces {
+					semesters {
 						id
-						semester
 						readOnly
 						schemaVersion
 					}

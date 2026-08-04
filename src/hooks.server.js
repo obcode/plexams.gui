@@ -11,11 +11,10 @@ import { authContext, backendRequest } from '$lib/server/backend';
  * @type {Set<string>}
  */
 const READ_POST_PATHS = new Set([
-	// Ausnahmen: dürfen den Schutz selbst ändern, das Semester wechseln bzw. eine
-	// neue Workspace-DB anlegen — auch wenn die aktuelle DB read-only ist.
+	// Ausnahmen: dürfen den Schutz selbst ändern bzw. das Semester wechseln —
+	// auch wenn das aktuelle Semester read-only ist.
 	'/api/semester/setSemester',
 	'/api/semester/setSemesterReadOnly',
-	'/api/semester/createWorkspace',
 	// Benutzerverwaltung ist global (OIDC-Auth), nicht semesterbezogen — der
 	// Semester-Schutz darf sie nicht blockieren. Zugriff regelt das Backend (ADMIN).
 	'/api/admin/setUser',

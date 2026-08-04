@@ -12,8 +12,8 @@ type PermanentNonInvigilator = {
 type InvigilatorCandidate = { id: number; shortname: string; fullname: string };
 type Semester = { id: string };
 
-// A "real" semester label like 2026-SS / 2025-WS (excludes test/clone workspaces),
-// so the validity dropdowns only offer meaningful semesters.
+// A "real" semester like 2026-SS / 2025-WS, so the validity dropdowns only offer
+// meaningful ones. The backend enforces the same shape; this also sorts them.
 const SEM_RE = /^(\d{4})-(SS|WS)$/;
 const semKey = (id: string) => {
 	const m = SEM_RE.exec(id);

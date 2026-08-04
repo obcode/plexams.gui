@@ -2,7 +2,7 @@
 	Globaler Bereich „Eigene Eingaben sichern" (REST an plexams.go).
 
 	Der komplette Semester-Dump (ZIP-Download + Restore in eine frische
-	Workspace-DB) ist mit der MongoDB-Schicht entfallen — er las und schrieb
+	Datenbank) ist mit der MongoDB-Schicht entfallen — er las und schrieb
 	Collections als rohe Dokumente. Die Gesamtsicherung der Datenbank läuft
 	jetzt als Cronjob auf dem Host (pg_dump); hier bleibt der CSV-Export der
 	handgepflegten Daten, und sein Download stempelt lastDumpAt.

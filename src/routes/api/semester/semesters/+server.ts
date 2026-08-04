@@ -10,14 +10,12 @@ export const GET: RequestHandler = async () => {
 			query {
 				semester {
 					id
-					semester
 					compatible
 					readOnly
 					schemaVersion
 				}
 				allSemesterNames {
 					id
-					semester
 					compatible
 					readOnly
 					schemaVersion

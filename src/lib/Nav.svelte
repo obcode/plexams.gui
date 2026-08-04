@@ -110,7 +110,6 @@
 
 	type Sem = {
 		id: string;
-		semester: string;
 		compatible: boolean;
 		readOnly: boolean;
 		schemaVersion: number | null;
@@ -121,16 +120,6 @@
 	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
-	// logisches Semester, falls es vom DB-Label abweicht (Test-DB → echtes Semester).
-	// Reine Trenner-Unterschiede (z.B. "2026 WS" vs. "2026-WS") gelten als gleich und
-	// werden nur einmal angezeigt.
-	let logicalSem = $derived.by(() => {
-		const sem = currentSem?.semester;
-		if (!sem) return '';
-		const norm = sem.replace(/[\s-]+/g, '').toUpperCase();
-		const normId = (currentSem?.id ?? '').replace(/[\s-]+/g, '').toUpperCase();
-		return norm !== normId ? sem : '';
-	});
 	async function getSemester() {
 		const response = await fetch('/api/semester/semesters', { method: 'GET' });
 		const d = await response.json().catch(() => ({}));
@@ -173,19 +162,15 @@
 	let semesterError = $state('');
 	let semesterErrorTitle = $state('Aktion fehlgeschlagen');
 
-	// Workspace = Datenbank. id ist der DB-Name (Schaltschlüssel), semester das
-	// logische Semester (Anzeige). schemaVersion == null ⇒ DB ohne Daten.
+	// id ist das Semester („2026-SS") und zugleich der Schaltschlüssel.
+	// schemaVersion == null ⇒ Semester ohne Daten.
 	/** @param s {Sem} */
 	const noData = (s: Sem | null) => !!s && s.compatible && s.schemaVersion == null;
 
-	/**
-	 * @param name DB-Name (= id aus allSemesterNames)
-	 * @param override optionaler logischer Semester-Override (nur für noch nicht
-	 *   gestempelte DB)
-	 */
-	async function switchSemester(name: string, override?: string) {
+	/** @param name Semester (= id aus allSemesterNames) */
+	async function switchSemester(name: string) {
 		if (switchingSemester) return;
-		if (!override && name === currentSem?.id) return;
+		if (name === currentSem?.id) return;
 		switchingSemester = true;
 		semesterError = '';
 		semesterErrorTitle = 'Semesterwechsel fehlgeschlagen';
@@ -193,7 +178,7 @@
 			const res = await fetch('/api/semester/setSemester', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name, semester: override || null })
+				body: JSON.stringify({ name })
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
@@ -205,45 +190,6 @@
 			semesterError = e instanceof Error ? e.message : String(e);
 		} finally {
 			switchingSemester = false;
-		}
-	}
-
-	// Neuen Test-Workspace (DB) anlegen und hineinwechseln.
-	let wsOpen = $state(false);
-	let wsName = $state('');
-	let wsFromSemester = $state('');
-	let wsCreating = $state(false);
-	let wsNameValid = $derived(/^[A-Za-z0-9 _-]+$/.test(wsName.trim()));
-
-	function openNewWorkspace() {
-		wsName = '';
-		wsFromSemester = currentSem?.id ?? allSemesters[0]?.id ?? '';
-		semesterError = '';
-		wsOpen = true;
-	}
-	async function createWorkspace() {
-		if (wsCreating || !wsNameValid || !wsFromSemester) return;
-		wsCreating = true;
-		semesterError = '';
-		semesterErrorTitle = 'Workspace anlegen fehlgeschlagen';
-		try {
-			const res = await fetch('/api/semester/createWorkspace', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ database: wsName.trim(), fromSemester: wsFromSemester })
-			});
-			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) {
-				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
-				return;
-			}
-			// angelegt → dorthin wechseln (setSemester + voller Reload)
-			wsOpen = false;
-			await switchSemester(wsName.trim());
-		} catch (e) {
-			semesterError = e instanceof Error ? e.message : String(e);
-		} finally {
-			wsCreating = false;
 		}
 	}
 
@@ -813,9 +759,8 @@
 					<span class="loading loading-spinner loading-xs"></span>
 				{/if}
 				<span class="tabular-nums">{semester}</span>
-				{#if logicalSem}<span class="opacity-70" title="logisches Semester">· {logicalSem}</span
+				{#if noData(currentSem)}<span class="text-warning" title="Semester ohne Daten">· ⚠</span
 					>{/if}
-				{#if noData(currentSem)}<span class="text-warning" title="DB ohne Daten">· ⚠</span>{/if}
 				{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 				<svg
 					class="h-3 w-3 opacity-60"
@@ -851,10 +796,9 @@
 									<span class="font-medium tabular-nums">{s.id}</span>
 									{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 								</span>
-								<span class="text-xs text-base-content/50">
-									{#if s.semester}Semester {s.semester}{:else}— kein Semester{/if}
-									{#if noData(s)}· <span class="text-warning">⚠ keine Daten</span>{/if}
-								</span>
+								{#if noData(s)}
+									<span class="text-xs text-warning">⚠ keine Daten</span>
+								{/if}
 							</button>
 						{/if}
 					</li>
@@ -873,16 +817,9 @@
 							<button
 								class="rounded-lg"
 								disabled={togglingReadOnly}
-								onclick={() => toggleReadOnly(true)}>🔒 Diese DB schützen</button
+								onclick={() => toggleReadOnly(true)}>🔒 Dieses Semester schützen</button
 							>
 						{/if}
-					</li>
-
-					<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
-					<li>
-						<button class="rounded-lg" disabled={switchingSemester} onclick={openNewWorkspace}>
-							🧪 Neuen Workspace anlegen …
-						</button>
 					</li>
 				{/if}
 			</ul>
@@ -900,7 +837,7 @@
 				tabindex="0"
 				class="menu dropdown-content z-50 mt-3 max-h-[80vh] w-72 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
 			>
-				<!-- Semester-/Workspace-Steuerung (nur Phone; ab sm gibt es den Topbar-Umschalter) -->
+				<!-- Semester-Steuerung (nur Phone; ab sm gibt es den Topbar-Umschalter) -->
 				<li class="sm:hidden">
 					<details>
 						<summary class="font-medium">
@@ -931,10 +868,9 @@
 												<span class="font-medium tabular-nums">{s.id}</span>
 												{#if s.readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 											</span>
-											<span class="text-xs text-base-content/50">
-												{#if s.semester}Semester {s.semester}{:else}— kein Semester{/if}
-												{#if noData(s)}· <span class="text-warning">⚠ keine Daten</span>{/if}
-											</span>
+											{#if noData(s)}
+												<span class="text-xs text-warning">⚠ keine Daten</span>
+											{/if}
 										</button>
 									{/if}
 								</li>
@@ -948,15 +884,9 @@
 										>
 									{:else}
 										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}
-											>🔒 Diese DB schützen</button
+											>🔒 Dieses Semester schützen</button
 										>
 									{/if}
-								</li>
-								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Workspace</li>
-								<li>
-									<button disabled={switchingSemester} onclick={openNewWorkspace}>
-										🧪 Neuen Workspace anlegen …
-									</button>
 								</li>
 							{/if}
 						</ul>
@@ -1091,57 +1021,6 @@
 		</div>
 	{/if}
 </header>
-
-<!-- Neuen Test-Workspace (DB) anlegen -->
-{#if wsOpen}
-	<div class="modal modal-open">
-		<div class="modal-box max-w-md">
-			<h2 class="text-lg font-semibold">Neuen Workspace anlegen</h2>
-			<p class="mt-1 text-sm text-base-content/60">
-				Legt eine neue (leere) Datenbank an, die auf einem vorhandenen Semester basiert. Danach wird
-				direkt hineingewechselt — die Daten müssen noch importiert werden. Funktioniert auch,
-				während das Quell-Semester geschützt ist.
-			</p>
-			<div class="mt-3 flex flex-col gap-3">
-				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">Name der neuen DB</span>
-					<input
-						type="text"
-						class="input input-bordered input-sm"
-						bind:value={wsName}
-						placeholder="z. B. test-v2"
-					/>
-					{#if wsName.trim() && !wsNameValid}
-						<span class="text-xs text-error">
-							Erlaubt: Buchstaben, Ziffern, Leerzeichen, „-" und „_".
-						</span>
-					{/if}
-				</label>
-				<label class="flex flex-col gap-1">
-					<span class="text-xs font-medium text-base-content/60">für Semester</span>
-					<select class="select select-bordered select-sm" bind:value={wsFromSemester}>
-						{#each allSemesters as s}
-							<option value={s.id} disabled={!s.compatible}>
-								{s.id}{s.semester ? ` · ${s.semester}` : ''}{!s.compatible ? ' (inkompatibel)' : ''}
-							</option>
-						{/each}
-					</select>
-				</label>
-			</div>
-			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={() => (wsOpen = false)}>Abbrechen</button>
-				<button
-					class="btn btn-primary btn-sm"
-					disabled={wsCreating || switchingSemester || !wsNameValid || !wsFromSemester}
-					onclick={createWorkspace}
-				>
-					{wsCreating || switchingSemester ? 'legt an …' : 'anlegen & wechseln'}
-				</button>
-			</div>
-		</div>
-		<button class="modal-backdrop" aria-label="schließen" onclick={() => (wsOpen = false)}></button>
-	</div>
-{/if}
 
 <!-- Semester-Wechsel: Fehler-Dialog -->
 {#if semesterError}

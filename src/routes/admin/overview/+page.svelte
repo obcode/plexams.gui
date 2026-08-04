@@ -79,7 +79,7 @@
 	let backup = $derived(overview?.backup ?? null);
 	let live = $derived(overview?.live ?? null);
 	let users = $derived(overview?.users ?? []);
-	let workspaces = $derived(overview?.workspaces ?? []);
+	let semesters = $derived(overview?.semesters ?? []);
 	let recentActivity = $derived(overview?.recentActivity ?? []);
 	let recentErrors = $derived(overview?.recentErrors ?? []);
 	let recentSyncs = $derived(overview?.recentSyncs ?? []);
@@ -112,10 +112,10 @@
 		</div>
 	{:else}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-			<!-- Server & Workspace -->
+			<!-- Server -->
 			<section class="card border border-base-300 bg-base-100 shadow-sm">
 				<div class="card-body gap-3 p-4">
-					<h2 class="text-sm font-semibold text-base-content/70">🖥️ Server &amp; Workspace</h2>
+					<h2 class="text-sm font-semibold text-base-content/70">🖥️ Server</h2>
 					<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
 						<dt class="text-base-content/60">Version</dt>
 						<dd class="font-medium">
@@ -135,8 +135,6 @@
 						<dd class="font-medium">{overview.activeSemester || '—'}</dd>
 						<dt class="text-base-content/60">Datenbank-Host</dt>
 						<dd class="font-mono text-xs break-all">{server?.dbHost || '—'}</dd>
-						<dt class="text-base-content/60">Workspace</dt>
-						<dd class="font-mono text-xs break-all">{server?.workspace || '—'}</dd>
 					</dl>
 				</div>
 			</section>
@@ -154,7 +152,7 @@
 							</span>
 						{/if}
 						{#if live?.readOnly}
-							<span class="badge badge-warning">Workspace schreibgeschützt</span>
+							<span class="badge badge-warning">Semester schreibgeschützt</span>
 						{:else}
 							<span class="badge badge-ghost">nicht schreibgeschützt</span>
 						{/if}
@@ -400,22 +398,21 @@
 				</div>
 			</section>
 
-			<!-- Workspaces -->
+			<!-- Semester -->
 			<section class="card border border-base-300 bg-base-100 shadow-sm">
 				<div class="card-body gap-3 p-4">
-					<h2 class="text-sm font-semibold text-base-content/70">🗂️ Workspaces</h2>
+					<h2 class="text-sm font-semibold text-base-content/70">🗂️ Semester</h2>
 					<div class="overflow-x-auto rounded-lg border border-base-300">
 						<table class="table table-sm">
 							<thead>
 								<tr>
-									<th>Datenbank</th>
 									<th>Semester</th>
 									<th class="text-right">Schema</th>
 									<th></th>
 								</tr>
 							</thead>
 							<tbody>
-								{#each workspaces as w (w.id)}
+								{#each semesters as w (w.id)}
 									<tr class={w.id === overview.activeSemester ? 'bg-primary/10' : ''}>
 										<td class="font-medium">
 											{w.id}
@@ -423,7 +420,6 @@
 												<span class="badge badge-primary badge-xs ml-1">aktiv</span>
 											{/if}
 										</td>
-										<td class="text-base-content/70">{w.semester || '—'}</td>
 										<td class="text-right tabular-nums text-base-content/60"
 											>{w.schemaVersion ?? '—'}</td
 										>

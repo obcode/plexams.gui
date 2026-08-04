@@ -1,10 +1,5 @@
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string; }
@@ -12,7 +7,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  Time: { input: any; output: any; }
+  Time: { input: unknown; output: unknown; }
 };
 
 /** Aktivitäts-Kennzahlen aus dem Audit-Log (bezogen auf das aktive Semester). */
@@ -69,32 +64,32 @@ export type AdditionalExamRoomInput = {
 /** Plattform-Überblick für Admins. */
 export type AdminOverview = {
   __typename?: 'AdminOverview';
-  /** Das aktuell aktive Semester (Workspace), z. B. "2026 SS". */
+  /** Das aktuell aktive Semester, z. B. "2026-SS". */
   activeSemester: Scalars['String']['output'];
-  /** Aktivitäts-Kennzahlen aus dem Audit-Log des aktiven Workspace (24h/7d/Fehler/aktive Nutzer + Top-Operationen). */
+  /** Aktivitäts-Kennzahlen aus dem Audit-Log des aktiven Semesters (24h/7d/Fehler/aktive Nutzer + Top-Operationen). */
   activity: ActivitySummary;
-  /** Backup-Fälligkeit des aktiven Workspace (Änderungen seit dem letzten Dump). */
+  /** Backup-Fälligkeit des aktiven Semesters (Änderungen seit dem letzten Dump). */
   backup: BackupStatus;
   /** Zeitpunkt, zu dem diese Übersicht erhoben wurde. */
   generatedAt: Scalars['Time']['output'];
-  /** Laufzeit-Status: ob gerade geschrieben werden darf und ob der Workspace schreibgeschützt ist. */
+  /** Laufzeit-Status: ob gerade geschrieben werden darf und ob das Semester schreibgeschützt ist. */
   live: LiveStatus;
-  /** Die jüngsten Audit-Einträge (neueste zuerst) des aktiven Workspace. */
+  /** Die jüngsten Audit-Einträge (neueste zuerst) des aktiven Semesters. */
   recentActivity: Array<MutationLogEntry>;
-  /** Die jüngsten fehlgeschlagenen Operationen (neueste zuerst) des aktiven Workspace. */
+  /** Die jüngsten fehlgeschlagenen Operationen (neueste zuerst) des aktiven Semesters. */
   recentErrors: Array<MutationLogEntry>;
-  /** Die jüngsten externen Transfers (ZPA/Anny) des aktiven Workspace. */
+  /** Die jüngsten externen Transfers (ZPA/Anny) des aktiven Semesters. */
   recentSyncs: Array<SyncLogEntry>;
   /** Anzahl der Nutzer je Rolle. */
   roleCounts: RoleCounts;
   /** Zustand des Auto-Syncs und des Admin-Digests. */
   scheduler: SchedulerStatus;
-  /** Build-Version und verbundene MongoDB des laufenden Servers. */
+  /** Alle bekannten Semester mit Read-only-/Schema-Stand. */
+  semesters: Array<Semester>;
+  /** Build-Version und verbundene Datenbank des laufenden Servers. */
   server: ServerInfo;
   /** Die Zugriffsliste (alle bekannten Login-Identitäten). */
   users: Array<User>;
-  /** Alle bekannten Workspaces (Semester-Datenbanken) mit Read-only-/Schema-Stand. */
-  workspaces: Array<Semester>;
 };
 
 export type AnCode = {
@@ -1195,7 +1190,7 @@ export type JointProgramTimesInput = {
 /** Laufzeit-Status der Schreibsperren. */
 export type LiveStatus = {
   __typename?: 'LiveStatus';
-  /** Ob der aktive Workspace schreibgeschützt ist (read-only). */
+  /** Ob das aktive Semester schreibgeschützt ist (read-only). */
   readOnly: Scalars['Boolean']['output'];
   /** Ob Schreiboperationen aktuell erlaubt sind (keine Validierung/kein exklusiver Transfer läuft). */
   writesAllowed: Scalars['Boolean']['output'];
@@ -1293,19 +1288,11 @@ export type Mutation = {
    */
   createJiraIssue: JiraIssue;
   /**
-   * Create a new semester (in its own database) with the given config. The
-   * semester must match YYYY-SS / YYYY-WS and must not already have a config.
-   * Use setSemester to switch the running server to it afterwards.
+   * Create a new semester with the given config. The semester must match
+   * YYYY-SS / YYYY-WS and must not already have a config. Use setSemester to switch
+   * the running server to it afterwards.
    */
   createSemester: SaveSemesterConfigResult;
-  /**
-   * Create a new, independent database (workspace) for the logical semester of
-   * `fromSemester` (e.g. "2026-SS"), copying that semester's config (dates/slots/
-   * emails) so it matches. `database` is the new database name (e.g. "test-v2"); it
-   * must not exist yet. The data stays empty — switch to it and import (e.g. from ZPA,
-   * which uses the logical semester). Returns the new workspace.
-   */
-  createWorkspace: Semester;
   /** Delete an additional exam by ancode. Returns false if there was none. */
   deleteAdditionalExam: Scalars['Boolean']['output'];
   /** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
@@ -1558,13 +1545,10 @@ export type Mutation = {
   /** Set the approved flag of a room request (key: room + starttime). */
   setRoomRequestApproved: RoomRequest;
   /**
-   * Switch the running server to another database (workspace) at runtime. `name` is
-   * the database name from allSemesterNames (id), e.g. "2026-SS" or "test-v2". The
-   * logical semester used against external systems (ZPA) is the database's own stored
-   * semester — independent of the database name. `semester` is an optional override,
-   * only needed for a database that has no stored semester yet (then it is
-   * remembered). The target may be empty (config null until created/imported).
-   * Refused while an operation is running. The GUI must refetch all data afterwards.
+   * Switch the running server to another semester at runtime. `name` is a semester
+   * id from allSemesterNames, e.g. "2026-SS". The target may have no config yet
+   * (then it is null until created/imported). Refused while an operation is running.
+   * The GUI must refetch all data afterwards.
    */
   setSemester: Semester;
   /**
@@ -1574,10 +1558,9 @@ export type Mutation = {
    */
   setSemesterConfigInput: SaveSemesterConfigResult;
   /**
-   * Protect or unprotect the current database: when read-only, all data-changing
+   * Protect or unprotect the current semester: when read-only, all data-changing
    * operations (mutations and imports/generation/uploads) are rejected, but the
-   * semester can still be viewed and validated, and you can switch away. Useful to
-   * guard the real semester while replaying in a clone.
+   * semester can still be viewed and validated, and you can switch away.
    */
   setSemesterReadOnly: Semester;
   /**
@@ -1719,12 +1702,6 @@ export type MutationCreateJiraIssueArgs = {
 export type MutationCreateSemesterArgs = {
   input: SemesterConfigInputData;
   semester: Scalars['String']['input'];
-};
-
-
-export type MutationCreateWorkspaceArgs = {
-  database: Scalars['String']['input'];
-  fromSemester: Scalars['String']['input'];
 };
 
 
@@ -2053,7 +2030,6 @@ export type MutationSetRoomRequestApprovedArgs = {
 
 export type MutationSetSemesterArgs = {
   name: Scalars['String']['input'];
-  semester?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2696,7 +2672,7 @@ export type Query = {
    * but are not part of the normal plan (replaces publish.additionalExams).
    */
   additionalExams: Array<AdditionalExam>;
-  /** Plattform-Überblick für Admins (Zugriff/Rollen, Auto-Sync, Aktivität/Audit, Backup, Workspaces). Erfordert Rolle ADMIN. */
+  /** Plattform-Überblick für Admins (Zugriff/Rollen, Auto-Sync, Aktivität/Audit, Backup, Semester). Erfordert Rolle ADMIN. */
   adminOverview: AdminOverview;
   allAnnyBookings: Array<AnnyBooking>;
   allProgramsInPlan?: Maybe<Array<Scalars['String']['output']>>;
@@ -2717,10 +2693,13 @@ export type Query = {
   assembledExamsState: AssembledExamsState;
   awkwardSlots: Array<Slot>;
   /**
-   * Whether the current semester has changes that are not yet captured in a
-   * downloaded full ZIP dump, plus the relevant timestamps. Used by the GUI to
-   * prominently offer the semester-dump download once something changed since the
-   * last backup.
+   * Whether the current semester has changes the planner has not yet downloaded a
+   * backup of, plus the relevant timestamps. Used by the GUI to prominently offer
+   * the CSV export once something changed since the last one.
+   *
+   * lastDumpAt is stamped by /download/my-inputs-csv.zip. The whole-database
+   * pg_dump is a cron job on the host and deliberately does not touch this: it is
+   * the machine's backup, while this hint is aimed at the planner.
    */
   backupStatus: BackupStatus;
   /** All rooms blocked for a specific slot (not usable there, e.g. otherwise occupied). */
@@ -2974,7 +2953,7 @@ export type Query = {
   semesterConfigInput?: Maybe<SemesterConfigInput>;
   /**
    * Runtime information about the running plexams.go server: its build version
-   * and the MongoDB it is connected to. Used e.g. for the GUI footer.
+   * and the database it is connected to. Used e.g. for the GUI footer.
    */
   serverInfo: ServerInfo;
   /** Special-interest groups (named ancode lists) used for the Studierenden-Info PDFs. */
@@ -3492,7 +3471,7 @@ export type SchedulerStatus = {
   lastFinished?: Maybe<Scalars['Time']['output']>;
   /** Beginn des letzten Auto-Sync-Laufs; null wenn nie gelaufen. */
   lastFireAt?: Maybe<Scalars['Time']['output']>;
-  /** Workspace, den der letzte Lauf abgeglichen hat. */
+  /** Semester, das der letzte Lauf abgeglichen hat. */
   lastSemester: Scalars['String']['output'];
   /** Ergebnis des letzten Laufs: ok | errors | skipped | panic (leer wenn nie gelaufen). */
   lastStatus: Scalars['String']['output'];
@@ -3506,19 +3485,17 @@ export type SchedulerStatus = {
 
 export type Semester = {
   __typename?: 'Semester';
-  /** false for databases that cannot be used with this code (no semester config). */
+  /** false for semesters that cannot be used with this code (no semester config). */
   compatible: Scalars['Boolean']['output'];
-  /** the database label (e.g. '2026 SS' or a clone '2026 SS-Test'); selects the database. */
-  id: Scalars['String']['output'];
-  /** true when the database is protected: it can be selected, but all mutations fail. */
-  readOnly: Scalars['Boolean']['output'];
-  /** data schema version of the database (null when unknown/never stamped). */
-  schemaVersion?: Maybe<Scalars['Int']['output']>;
   /**
-   * the logical semester used against external systems (ZPA), e.g. '2026 SS' — for
-   * a clone this stays the real semester, not the database name.
+   * the semester, e.g. '2026-SS'. There is no second, logical semester next to it
+   * any more: the form external systems use ('2026 SS') is this one with the dash replaced.
    */
-  semester?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  /** true when the semester is protected: it can be selected, but all mutations fail. */
+  readOnly: Scalars['Boolean']['output'];
+  /** data schema version of the semester's rows (null when unknown/never stamped). */
+  schemaVersion?: Maybe<Scalars['Int']['output']>;
 };
 
 export type SemesterConfig = {
@@ -3616,10 +3593,8 @@ export type ServerInfo = {
   commit: Scalars['String']['output'];
   /** Build date ("unknown" if not set). */
   date: Scalars['String']['output'];
-  /** The MongoDB database (workspace) currently in use, e.g. "2026-SS". */
-  mongoDatabase: Scalars['String']['output'];
-  /** The MongoDB host:port the server is connected to (credentials redacted). */
-  mongoHost: Scalars['String']['output'];
+  /** The database host:port the server is connected to (credentials redacted). */
+  dbHost: Scalars['String']['output'];
   /**
    * Link to the GitHub release for this version, or null for dev/unreleased
    * builds where no matching release exists.

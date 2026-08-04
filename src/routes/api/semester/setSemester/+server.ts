@@ -3,19 +3,17 @@ import { gqlProxy } from '$lib/server/gqlProxy';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
-	// name = DB-Label (aus allSemesterNames), semester = optionaler logischer
-	// Override (nur nötig, wenn die Ziel-DB noch kein Semester gespeichert hat).
+	// name = Semester (aus allSemesterNames), z. B. „2026-SS".
 	// z. B. „läuft gerade eine Operation" → GraphQL-Error (400)
-	const { name, semester } = await request.json();
+	const { name } = await request.json();
 	return gqlProxy(
 		gql`
-			mutation ($name: String!, $semester: String) {
-				setSemester(name: $name, semester: $semester) {
+			mutation ($name: String!) {
+				setSemester(name: $name) {
 					id
-					semester
 				}
 			}
 		`,
-		{ name: String(name), semester: semester ? String(semester).trim() : null }
+		{ name: String(name) }
 	);
 };
