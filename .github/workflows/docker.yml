@@ -53,28 +53,34 @@ jobs:
           build-args: |
             APP_VERSION=${{ github.event.release.tag_name }}
 
-  # Rollt das frisch gepushte Image auf dem Deploy-Host aus. Spiegelbildlich zum
-  # Backend (plexams.go): derselbe Self-hosted-Runner (Label `plexams-deploy`),
-  # derselbe on-host Stack — dieser Job fasst aber nur den `gui`-Service an, das
-  # Backend nur seinen. Die docker-compose.yml synct weiterhin das Backend-Repo.
-  deploy:
+  # Übergibt das frisch gepushte Image an den Deploy-Workflow.
+  #
+  # Die Deploy-Artefakte (compose, Caddyfile, deploy.sh, die Pfade auf dem Host und
+  # dessen Name) liegen im PRIVATEN Repo obcode/plexams.dev — dieses hier ist öffentlich.
+  # Vorher lag der Deploy-Job hier, mit einem eigenen Self-hosted-Runner je öffentlichem
+  # Repo; der Dispatch ersetzt beide durch einen Runner am privaten Repo.
+  #
+  # Läuft auf ubuntu-latest: es ist ein AUSGEHENDER Aufruf an api.github.com und braucht
+  # keinen Zugang zum VPN-internen Host.
+  dispatch-deploy:
     needs: build-and-push-image
-    # Gate wie beim Backend: erst deployen, wenn der GUI-Runner existiert (Repo-Variable
-    # AUTO_DEPLOY=true). Vorher wird nur gebaut+gepusht, dieser Job übersprungen.
-    if: ${{ vars.AUTO_DEPLOY == 'true' }}
-    runs-on: [self-hosted, plexams-deploy]
-    env:
-      DEPLOY_DIR: ${{ vars.DEPLOY_DIR || '/home/plexams/plexams.go/deploy' }}
+    # Gate wie AUTO_DEPLOY in plexams.dev: ohne DISPATCH_TOKEN bricht `gh api` an einem
+    # leeren GH_TOKEN ab und färbt den Release-Lauf rot. Beide zusammen scharfstellen.
+    if: ${{ vars.DEPLOY_DISPATCH_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Deploy pinned GUI image
+      - name: Deploy in plexams.dev auslösen
+        env:
+          # Fine-grained PAT mit ausschließlich "contents: write" auf obcode/plexams.dev —
+          # die Berechtigung, die repository_dispatch verlangt. Er kann dieses Repo nicht
+          # lesen, und an einen Fork wird er nie gereicht: Secrets stehen Workflows aus
+          # Fork-Pull-Requests nicht zur Verfügung.
+          GH_TOKEN: ${{ secrets.DISPATCH_TOKEN }}
         run: |
           set -euo pipefail
           # release-Event → github.ref ist refs/tags/vX.Y.Z. Das "v" MUSS bleiben:
           # docker/metadata-action taggt das Image mit dem rohen Ref (v1.97.0), wie die
           # ganze Registry-Historie — ohne v läuft der Pull in ein "not found".
-          VERSION="${GITHUB_REF#refs/tags/}"
-          cd "$DEPLOY_DIR"
-          sed -i "s/^GUI_TAG=.*/GUI_TAG=$VERSION/" .env
-          docker compose pull gui
-          docker compose up -d gui
-          docker image prune -f
+          gh api repos/obcode/plexams.dev/dispatches \
+            -f event_type=deploy-gui \
+            -F "client_payload[tag]=${GITHUB_REF#refs/tags/}"
