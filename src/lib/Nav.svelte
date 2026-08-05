@@ -451,7 +451,7 @@
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<ul
 						tabindex="0"
-						class="menu dropdown-content z-50 mt-3 w-64 gap-0.5 rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+						class="menu dropdown-content z-50 mt-3 w-max min-w-64 max-w-[min(32rem,calc(100vw-2rem))] gap-0.5 rounded-2xl border border-base-200 bg-base-100 p-2 whitespace-normal shadow-xl"
 					>
 						{#each menu.items as item}
 							{#if isLink(item)}
@@ -483,7 +483,7 @@
 										</svg>
 									</div>
 									<ul
-										class="invisible absolute top-0 left-full z-[60] max-h-[75vh] w-64 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 opacity-0 shadow-xl transition-opacity !ml-1 before:!hidden group-focus-within/flyout:visible group-focus-within/flyout:opacity-100 group-hover/flyout:visible group-hover/flyout:opacity-100"
+										class="invisible absolute top-0 left-full z-[60] max-h-[75vh] w-max min-w-64 max-w-[min(32rem,calc(100vw-2rem))] flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 whitespace-normal! opacity-0 shadow-xl transition-opacity !ml-1 before:!hidden group-focus-within/flyout:visible group-focus-within/flyout:opacity-100 group-hover/flyout:visible group-hover/flyout:opacity-100"
 									>
 										{#each item.items as sub}
 											{#if isLink(sub)}
@@ -835,7 +835,7 @@
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
 				tabindex="0"
-				class="menu dropdown-content z-50 mt-3 max-h-[80vh] w-72 flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl"
+				class="menu dropdown-content z-50 mt-3 max-h-[80vh] w-max min-w-72 max-w-[calc(100vw-1.5rem)] flex-nowrap gap-0.5 overflow-y-auto rounded-2xl border border-base-200 bg-base-100 p-2 shadow-xl [&_ul]:whitespace-normal!"
 			>
 				<!-- Semester-Steuerung (nur Phone; ab sm gibt es den Topbar-Umschalter) -->
 				<li class="sm:hidden">
