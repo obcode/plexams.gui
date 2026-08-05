@@ -356,6 +356,10 @@
 	// Einmalige Init beim Laden — der Namens-Lookup ist bewusst ein Momentanwert.
 	if (data.focus) {
 		const fid = Number(data.focus);
+		// Der svelte-ignore unterdrückt eine echte svelte-check-Warnung (`lookups`),
+		// eslint-plugin-svelte hält ihn trotzdem für ungenutzt — deshalb hier gezielt
+		// abgeschaltet statt den Kommentar zu entfernen.
+		// eslint-disable-next-line svelte/no-unused-svelte-ignore
 		// svelte-ignore state_referenced_locally
 		selectPerson(fid, lookups.teacherName.get(fid) ?? String(fid));
 	}

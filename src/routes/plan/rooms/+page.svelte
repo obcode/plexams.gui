@@ -408,7 +408,6 @@
 							</button>
 							{#if showDays[day.number]}
 								<!-- Klick auf freie Fläche (nicht auf Karten/Slots) klappt den Tag zu -->
-								<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 								<div
 									class="flex flex-col gap-3 border-t border-base-300 p-3"
 									transition:slide

@@ -43,14 +43,11 @@
 			/>
 		</label>
 		{#each data.semesterConfig.days as day}
-			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			{#if day.number == data.day}
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab tab-active" href="./{day.number}">
 					{mkDate(day.date)}
 				</a>
 			{:else}
-				<!-- svelte-ignore a11y_missing_attribute -->
 				<a data-sveltekit-reload class="tab" href="./{day.number}">
 					{mkDateShort(day.date)}
 				</a>
