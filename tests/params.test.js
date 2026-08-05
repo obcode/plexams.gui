@@ -6,6 +6,9 @@ import { expect, test } from '@playwright/test';
 // Test unabhängig von fest verdrahteten Beispiel-IDs.
 // (Die frühere Route /exam/examGroups/[code] wurde entfernt — ihr GraphQL-Feld
 // `examGroup` existiert nicht mehr im Schema.)
+// (Ebenso /nta/[mtknr]: die Detailseite ist entfallen, weil die URL selbst eine
+// Matrikelnummer war. Damit fällt auch die `ntasWithRegs`-Abfrage weg — sie holte
+// eine echte Matrikelnummer nur, um sie in eine URL zu schreiben.)
 
 const BACKEND = process.env.PLEXAMS_SERVER || 'http://localhost:8080/query';
 
@@ -24,18 +27,16 @@ async function gql(query) {
 	return json.data;
 }
 
-/** @type {{ ancode: number, mtknr: string, day: number }} */
+/** @type {{ ancode: number, day: number }} */
 let ids;
 
 test.beforeAll(async () => {
-	const [exams, ntas, cfg] = await Promise.all([
+	const [exams, cfg] = await Promise.all([
 		gql('{ plannedExams { ancode } }'),
-		gql('{ ntasWithRegs { mtknr } }'),
 		gql('{ semesterConfig { days { number } } }')
 	]);
 	ids = {
 		ancode: exams.plannedExams[0].ancode,
-		mtknr: ntas.ntasWithRegs[0].mtknr,
 		day: cfg.semesterConfig.days[0].number
 	};
 });
@@ -53,10 +54,6 @@ async function expectRenders(page, path) {
 
 test('rendert /exam/assembledExams/[ancode]', async ({ page }) => {
 	await expectRenders(page, `/exam/assembledExams/${ids.ancode}`);
-});
-
-test('rendert /nta/[mtknr]', async ({ page }) => {
-	await expectRenders(page, `/nta/${ids.mtknr}`);
 });
 
 test('rendert /plan/invigilation/[day]', async ({ page }) => {
