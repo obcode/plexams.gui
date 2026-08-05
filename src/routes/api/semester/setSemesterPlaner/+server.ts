@@ -5,18 +5,21 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = async ({ request }) => {
 	const { name, email, testMail, cc, noreplyMail, noreplyName } = await request.json();
 
-	// name/email sind Pflicht; die vier Overrides sind optional — leer (null) lässt
-	// das Backend auf den abgeleiteten Default zurückfallen.
+	// Setzt den Planer des AKTUELLEN Semesters. Name und E-Mail gehören zusammen:
+	// beide gesetzt = eigener Planer, beide leer (null) = der Default aus der
+	// Serverkonfiguration gilt; nur eines von beiden lehnt das Backend ab. Die vier
+	// Overrides sind einzeln optional — leer (null) lässt das Backend auf smtp.* und
+	// dann auf den abgeleiteten Default zurückfallen.
 	const mutation = gql`
 		mutation (
-			$name: String!
-			$email: String!
+			$name: String
+			$email: String
 			$testMail: String
 			$cc: String
 			$noreplyMail: String
 			$noreplyName: String
 		) {
-			setPlaner(
+			setSemesterPlaner(
 				name: $name
 				email: $email
 				testMail: $testMail
@@ -26,6 +29,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			) {
 				name
 				email
+				inherited
 				testMail
 				cc
 				noreplyMail
@@ -35,8 +39,8 @@ export const POST: RequestHandler = async ({ request }) => {
 	`;
 
 	return gqlProxy(mutation, {
-		name,
-		email,
+		name: name || null,
+		email: email || null,
 		testMail: testMail || null,
 		cc: cc || null,
 		noreplyMail: noreplyMail || null,

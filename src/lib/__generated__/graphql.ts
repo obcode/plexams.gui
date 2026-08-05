@@ -1437,6 +1437,8 @@ export type Mutation = {
    * re-assignment re-applies it. Blocked while the room plan is published.
    */
   resetRoomsForExams: Scalars['Boolean']['output'];
+  /** Drop this semester's planner override, so the server default applies again. */
+  resetSemesterPlaner: Planer;
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
   /**
@@ -1500,13 +1502,6 @@ export type Mutation = {
    * validUntil to retire it without deleting the record (so past semesters stay correct).
    */
   setPermanentNonInvigilator: PermanentNonInvigilator;
-  /**
-   * Set the planner, stored in the global DB. name + email are required; the remaining
-   * fields are optional sender-identity overrides — pass null/empty to fall back to the
-   * derived default (testMail/cc = email with +plexams, noreplyMail = noreply+plexams@hm.edu,
-   * noreplyName = "Prüfungsplanung FK07 (NOREPLY)").
-   */
-  setPlaner: Planer;
   /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
   setPlanningCondition: PlanningState;
   /**
@@ -1557,6 +1552,18 @@ export type Mutation = {
    * invalidate an existing plan (the change is still applied).
    */
   setSemesterConfigInput: SaveSemesterConfigResult;
+  /**
+   * Set the planner of the CURRENT semester.
+   *
+   * name and email are one identity: pass both to give this semester its own planner, or
+   * neither to inherit the one configured on the server. Passing only one is an error.
+   *
+   * The remaining fields are optional sender-identity overrides — pass null/empty to fall
+   * back to the configured value and then to the derived default (testMail/cc = email with
+   * +plexams, noreplyMail = noreply+plexams@hm.edu, noreplyName = "Prüfungsplanung FK07
+   * (NOREPLY)").
+   */
+  setSemesterPlaner: Planer;
   /**
    * Protect or unprotect the current semester: when read-only, all data-changing
    * operations (mutations and imports/generation/uploads) are rejected, but the
@@ -1960,16 +1967,6 @@ export type MutationSetPermanentNonInvigilatorArgs = {
 };
 
 
-export type MutationSetPlanerArgs = {
-  cc?: InputMaybe<Scalars['String']['input']>;
-  email: Scalars['String']['input'];
-  name: Scalars['String']['input'];
-  noreplyMail?: InputMaybe<Scalars['String']['input']>;
-  noreplyName?: InputMaybe<Scalars['String']['input']>;
-  testMail?: InputMaybe<Scalars['String']['input']>;
-};
-
-
 export type MutationSetPlanningConditionArgs = {
   done: Scalars['Boolean']['input'];
   key: Scalars['String']['input'];
@@ -2035,6 +2032,16 @@ export type MutationSetSemesterArgs = {
 
 export type MutationSetSemesterConfigInputArgs = {
   input: SemesterConfigInputData;
+};
+
+
+export type MutationSetSemesterPlanerArgs = {
+  cc?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  noreplyMail?: InputMaybe<Scalars['String']['input']>;
+  noreplyName?: InputMaybe<Scalars['String']['input']>;
+  testMail?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2289,8 +2296,12 @@ export type Planer = {
   __typename?: 'Planer';
   /** Override for the Cc added to every real send; null/empty => defaultMail. */
   cc?: Maybe<Scalars['String']['output']>;
+  /** The server default email (planer.email) — the GUI shows it as the placeholder. */
+  defaultEmail: Scalars['String']['output'];
   /** Derived default for testMail/cc: the planner email with +plexams (e.g. x+plexams@hm.edu). */
   defaultMail: Scalars['String']['output'];
+  /** The server default name (planer.name) — the GUI shows it as the placeholder. */
+  defaultName: Scalars['String']['output'];
   /** The Cc actually added to real sends (override → config → defaultMail). */
   effectiveCc: Scalars['String']['output'];
   /** The noreply address actually used (override → config → noreply+plexams@hm.edu). */
@@ -2299,7 +2310,11 @@ export type Planer = {
   effectiveNoreplyName: Scalars['String']['output'];
   /** The address dry-run mails actually go to (override → config → defaultMail). */
   effectiveTestMail: Scalars['String']['output'];
+  /** Resolved email: this semester's own, or the server default when inherited. */
   email: Scalars['String']['output'];
+  /** True when this semester has no planner of its own and name/email come from the server config. */
+  inherited: Scalars['Boolean']['output'];
+  /** Resolved name: this semester's own, or the server default when inherited. */
   name: Scalars['String']['output'];
   /** Override for the noreply From/Reply-To address of JIRA-answered mails; null/empty => noreply+plexams@hm.edu. */
   noreplyMail?: Maybe<Scalars['String']['output']>;
@@ -2872,7 +2887,11 @@ export type Query = {
    * DB), carries over between semesters; always implies isNotInvigilator.
    */
   permanentNonInvigilators: Array<PermanentNonInvigilator>;
-  /** The planner (name + email + sender-identity overrides). Stored globally in the DB; the config is only a fallback. */
+  /**
+   * The planner in force for the current semester: the resolved name + email plus the
+   * semester's sender-identity overrides. The server config (planer.*) supplies the
+   * default; a semester may override it (setSemesterPlaner).
+   */
   planer: Planer;
   plannedExam?: Maybe<PlannedExam>;
   plannedExams: Array<PlannedExam>;

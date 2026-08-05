@@ -11,6 +11,9 @@ export const load: PageServerLoad = async () => {
 			planer {
 				name
 				email
+				inherited
+				defaultName
+				defaultEmail
 				testMail
 				cc
 				noreplyMail
@@ -91,7 +94,9 @@ export const load: PageServerLoad = async () => {
 	return {
 		semester: data.semester?.id ?? '',
 		// global (semesterübergreifend) in der DB
-		planer: data.planer ?? { name: '', email: '' },
+		// inherited: true ist der richtige Fallback — ohne Antwort vom Backend hat das
+		// Semester nachweislich keinen eigenen Planer, den das Formular vorbelegen könnte.
+		planer: data.planer ?? { name: '', email: '', inherited: true },
 		// null = frisches Semester ohne Config → leeres Formular
 		config: data.semesterConfigInput ?? null,
 		days,

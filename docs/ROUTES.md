@@ -82,7 +82,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                           |
 | `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                                          |
 | `api/preplan/`      |        14 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung, Buchungsvorschlag)                                       |
-| `api/semester/`     |         9 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer, Generierungs-Config                                                    |
+| `api/semester/`     |        10 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer (setzen/zurücksetzen), Generierungs-Config                              |
 | `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                      |
 | `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                           |
 | `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                             |

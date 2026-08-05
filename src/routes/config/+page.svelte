@@ -15,9 +15,11 @@
 	let showWarnings = $state(false);
 	let savedAt = $state('');
 
-	// Planer (global, semesterübergreifend in der DB)
-	let planerName = $state(data.planer?.name ?? '');
-	let planerEmail = $state(data.planer?.email ?? '');
+	// Planer des Semesters. Der Default steht in der Serverkonfiguration; hat dieses
+	// Semester keinen eigenen (inherited), bleiben die Felder leer und der Default
+	// steht als Platzhalter darin.
+	let planerName = $state(data.planer?.inherited ? '' : (data.planer?.name ?? ''));
+	let planerEmail = $state(data.planer?.inherited ? '' : (data.planer?.email ?? ''));
 	// Optionale Sender-Identität-Overrides: leer = Default (Backend leitet ab).
 	// Vorbelegt mit dem gesetzten Override (nicht dem Effektivwert) — der
 	// Effektivwert steht als Platzhalter darunter.
@@ -31,16 +33,28 @@
 
 	async function savePlaner() {
 		if (planerSaving) return;
+
+		// Name und E-Mail gehören zusammen: beide leer = Default der Serverkonfiguration,
+		// beide gefüllt = eigener Planer. Nur eines von beiden würde als
+		// "Prüfungsplanung FK07 <jemand.anders@hm.edu>" verschickt — das Backend lehnt es
+		// ab, hier fangen wir es vor der Runde ab.
+		const name = planerName.trim();
+		const email = planerEmail.trim();
+		if (!name !== !email) {
+			planerError = 'Name und E-Mail zusammen ausfüllen — oder beide leer lassen für den Default.';
+			return;
+		}
+
 		planerSaving = true;
 		planerError = '';
 		planerSavedAt = '';
 		try {
-			const res = await fetch('/api/semester/setPlaner', {
+			const res = await fetch('/api/semester/setSemesterPlaner', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
-					name: planerName.trim(),
-					email: planerEmail.trim(),
+					name,
+					email,
 					testMail: planerTestMail.trim(),
 					cc: planerCc.trim(),
 					noreplyMail: planerNoreplyMail.trim(),
@@ -54,6 +68,35 @@
 			}
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
 			// Effektivwerte/Platzhalter neu laden (können sich durch die Overrides ändern)
+			await invalidateAll();
+		} catch (e) {
+			planerError = e instanceof Error ? e.message : String(e);
+		} finally {
+			planerSaving = false;
+		}
+	}
+
+	// Verwirft den eigenen Planer des Semesters komplett — Identität und alle vier
+	// Sender-Overrides. Danach gilt wieder der Default aus der Serverkonfiguration.
+	async function resetPlaner() {
+		if (planerSaving) return;
+		planerSaving = true;
+		planerError = '';
+		planerSavedAt = '';
+		try {
+			const res = await fetch('/api/semester/resetSemesterPlaner', { method: 'POST' });
+			const result = await res.json().catch(() => ({}));
+			if (!res.ok || result?.error) {
+				planerError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			planerName = '';
+			planerEmail = '';
+			planerTestMail = '';
+			planerCc = '';
+			planerNoreplyMail = '';
+			planerNoreplyName = '';
+			planerSavedAt = new Date().toLocaleTimeString('de-DE');
 			await invalidateAll();
 		} catch (e) {
 			planerError = e instanceof Error ? e.message : String(e);
@@ -108,22 +151,42 @@
 		<a class="btn btn-outline btn-sm" href="/config/new">+ Neues Semester anlegen</a>
 	</div>
 
-	<!-- Planer (global, semesterübergreifend) -->
+	<!-- Planer: gilt für dieses Semester. Leere Felder = Default aus der
+	     Serverkonfiguration, der jeweils als Platzhalter dahintersteht. -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-		<div class="flex items-center gap-2">
+		<div class="flex flex-wrap items-center gap-2">
 			<span class="font-semibold">Planer</span>
-			<span class="text-sm text-base-content/50">global, semesterübergreifend</span>
+			<span class="text-sm text-base-content/50">
+				gilt für {data.semester || 'dieses Semester'}
+			</span>
+			{#if data.planer?.inherited}
+				<span class="badge badge-ghost badge-sm">Default der Serverkonfiguration</span>
+			{/if}
 		</div>
 		<div class="flex flex-wrap items-end gap-3">
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Name</span>
-				<input type="text" class="input input-bordered input-sm w-72" bind:value={planerName} />
+				<input
+					type="text"
+					class="input input-bordered input-sm w-full sm:w-72"
+					placeholder={data.planer?.defaultName ?? ''}
+					bind:value={planerName}
+				/>
 			</label>
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">E-Mail</span>
-				<input type="email" class="input input-bordered input-sm w-72" bind:value={planerEmail} />
+				<input
+					type="email"
+					class="input input-bordered input-sm w-full sm:w-72"
+					placeholder={data.planer?.defaultEmail ?? ''}
+					bind:value={planerEmail}
+				/>
 			</label>
 		</div>
+		<span class="text-xs text-base-content/50">
+			Name und E-Mail zusammen ausfüllen, um diesem Semester einen eigenen Planer zu geben — oder
+			beide leer lassen für den Default aus der Serverkonfiguration (steht als Platzhalter da).
+		</span>
 
 		<!-- Optionale Sender-Identität-Overrides: leer = Default. Der Platzhalter
 		     zeigt jeweils den aktuell effektiven Wert (das, was bei leer benutzt wird). -->
@@ -174,6 +237,9 @@
 		<div class="flex flex-wrap items-center gap-3">
 			<WriteButton class="btn btn-primary btn-sm" disabled={planerSaving} onclick={savePlaner}>
 				{planerSaving ? 'speichert …' : 'Planer speichern'}
+			</WriteButton>
+			<WriteButton class="btn btn-outline btn-sm" disabled={planerSaving} onclick={resetPlaner}>
+				Auf Serverdefault zurücksetzen
 			</WriteButton>
 			{#if planerSavedAt}
 				<span class="text-xs text-success">gespeichert ({planerSavedAt})</span>
