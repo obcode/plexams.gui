@@ -136,6 +136,20 @@ function allowContexts(contexts) {
 }
 
 /**
+ * Zeigt die URL auf die Fehler-Telemetrie selbst? Erkannt am Protokollpfad
+ * (`/api/<n>/envelope/`) und am Tunnelpfad — beides unabhängig davon, unter
+ * welchem Hostnamen die Installation läuft.
+ *
+ * @param {unknown} url
+ * @returns {boolean}
+ */
+function isTelemetryUpload(url) {
+	if (typeof url !== 'string') return false;
+	const path = url.split(/[?#]/)[0];
+	return path.endsWith('/envelope/') || path.endsWith('/monitoring');
+}
+
+/**
  * `beforeBreadcrumb`. Breadcrumbs sind hier die gefährlichste Spur: das SDK
  * legt für jeden `fetch` und jede Navigation einen an, samt vollständiger URL —
  * und die `/api`-Aufrufe der Seite laufen alle durch `fetch`.
@@ -150,6 +164,13 @@ export function scrubBreadcrumb(breadcrumb) {
 	// Fehlerbericht nichts zu suchen, den ein Server außerhalb der Hochschule
 	// niemals sehen soll.
 	if (breadcrumb.category === 'console') return null;
+
+	// Das SDK protokolliert seine eigenen Uploads. Über den Tunnel
+	// (src/routes/monitoring) sind das serverseitig zwei bis drei
+	// http-Breadcrumbs pro getunneltem Browser-Event, die dann im nächsten
+	// echten Bericht stehen und das Breadcrumb-Budget auffressen — sichtbar
+	// geworden beim Gegentest, nicht hergeleitet.
+	if (isTelemetryUpload(breadcrumb.data?.url)) return null;
 
 	if (breadcrumb.message) breadcrumb.message = redact(breadcrumb.message);
 

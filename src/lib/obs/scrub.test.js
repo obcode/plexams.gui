@@ -183,6 +183,24 @@ describe('scrubBreadcrumb', () => {
 		expect(crumb?.data).toEqual({ from: '/nta/all', to: '/nta/[mtknr]' });
 	});
 
+	// Sonst protokolliert die Telemetrie sich selbst: über den Tunnel sind das
+	// pro getunneltem Browser-Event zwei bis drei http-Breadcrumbs, die im
+	// nächsten echten Bericht stehen und das Budget auffressen.
+	it.each([
+		'http://localhost:8000/api/2/envelope/?sentry_key=abc',
+		'https://glitchtip.example/api/2/envelope/',
+		'/monitoring'
+	])('verwirft den eigenen Upload: %s', (url) => {
+		expect(scrubBreadcrumb(/** @type {any} */ ({ category: 'http', data: { url } }))).toBeNull();
+	});
+
+	it('behält einen gewöhnlichen /api-Aufruf', () => {
+		const crumb = scrubBreadcrumb(
+			/** @type {any} */ ({ category: 'http', data: { url: '/api/exam/examLookup' } })
+		);
+		expect(crumb?.data?.url).toBe('/api/exam/examLookup');
+	});
+
 	it('verwirft Konsolenausgaben ganz', () => {
 		expect(scrubBreadcrumb(/** @type {any} */ ({ category: 'console', message: MAIL }))).toBeNull();
 	});
