@@ -12,8 +12,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2
       dotenv:
-        specifier: ^16.6.0
-        version: 16.6.0
+        specifier: ^17.4.2
+        version: 17.4.2
       graphql:
         specifier: ^16.14.2
         version: 16.14.2
@@ -1697,8 +1697,8 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dotenv@16.6.0:
-    resolution: {integrity: sha512-Omf1L8paOy2VJhILjyhrhqwLIdstqm1BvcDPKg4NGAlkwEu9ODyrFbvk8UymUOMCT+HXo31jg1lArIrVAAhuGA==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   electron-to-chromium@1.5.392:
@@ -4525,7 +4525,7 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dotenv@16.6.0: {}
+  dotenv@17.4.2: {}
 
   electron-to-chromium@1.5.392: {}
 
