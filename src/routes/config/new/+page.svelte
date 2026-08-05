@@ -62,9 +62,9 @@
 	<div class="alert alert-info py-2 text-sm">
 		<span>
 			Der laufende <strong>plexams</strong>-Server bleibt an sein aktuelles Semester
-			{#if data.currentSemester}(<strong>{data.currentSemester}</strong>){/if} gebunden. Das Anlegen
-			schreibt nur die Config für das neue Semester — um es zu <strong>beplanen</strong>, muss
-			plexams für das neue Semester (neu) gestartet werden.
+			{#if data.currentSemester}(<strong>{data.currentSemester}</strong>){/if} gebunden. Das Anlegen schreibt
+			nur die Config für das neue Semester — um es zu <strong>beplanen</strong>, muss plexams für
+			das neue Semester (neu) gestartet werden.
 		</span>
 	</div>
 

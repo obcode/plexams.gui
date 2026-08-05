@@ -1088,8 +1088,8 @@
 			<strong>HARD-Modus</strong>
 			landen zu spät/früh gezwungene Prüfungen als „ungeplant" mit Begründung im Terminplan-Report (statt
 			einer harten Verletzung); im <strong>SOFT-Modus</strong> ist eine Abweichung erlaubt, wird aber
-			über die Fenster-Strafe bewertet und gemeldet. Gebuchte, klimatisierte T-Bau-Räume (EXaHM/SEB)
-			sind vom Sommer-Cutoff ausgenommen. Erscheint unten in „Angewandte Constraints".
+			über die Fenster-Strafe bewertet und gemeldet. Gebuchte, klimatisierte T-Bau-Räume (EXaHM/SEB) sind
+			vom Sommer-Cutoff ausgenommen. Erscheint unten in „Angewandte Constraints".
 		</span>
 	</div>
 
