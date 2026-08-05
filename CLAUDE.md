@@ -40,6 +40,12 @@ The backend URL comes from `.env`:
 
 All data flows through this one GraphQL endpoint. `schema.graphql` is the committed copy of the backend schema; regenerate it with `update-schema.graphql` when the backend changes.
 
+### Error reporting
+
+With `SENTRY_DSN` / `PUBLIC_SENTRY_DSN` set, server and browser errors are reported to a Sentry-compatible backend (GlitchTip); unset (the default, and all of local development) it is a complete no-op. Browser events go through the same-origin tunnel at `/monitoring`, never straight to the monitoring host.
+
+Everything that sends passes the fail-closed scrubber in [src/lib/obs/scrub.js](src/lib/obs/scrub.js) — **read it before touching anything that reports.** Tags, headers and contexts are allow-lists; the request body, query string and cookies are never included (128 of the 134 `/api` proxies forward a browser body that carries `mtknr`, names and mail addresses). Deliberately absent: `sentrySvelteKit()` in `vite.config.js` (so stack traces stay minified) and Session Replay. See [.claude/memory/error-reporting-obs.md](.claude/memory/error-reporting-obs.md) for the four traps, in particular that `ORIGIN` must be set for adapter-node or SvelteKit's CSRF check drops browser reports silently.
+
 ## Data-fetching architecture
 
 There are **two GraphQL access patterns**, both using the `graphql-request` library directly (there is no normalized cache):

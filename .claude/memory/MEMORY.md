@@ -19,4 +19,5 @@
 - [Svelte runes migration](svelte-runes-migration.md) — **DONE**: `runes: true` ist global gesetzt, Legacy-Syntax ist ein Compile-Fehler; enthält die Mapping-Tabelle als Referenz
 - [Always commit and push](always-commit-push.md) — user wants every finished, verified change committed+pushed to main immediately, without asking
 - [Check before commit](check-before-commit.md) — run `pnpm run check` and ensure it passes before every commit
+- [Fehler-Telemetrie](error-reporting-obs.md) — Scrubber in src/lib/obs (Positivliste, Bodies+Breadcrumbs sind hier der Leckweg), Tunnel über /monitoring; die vier Fallen: ORIGIN/CSRF killt den Tunnel lautlos, GlitchTip braucht sentry_key, das SDK protokolliert sich selbst, `$env/dynamic/public` liest im Dev aus .env
 - [Responsive baseline](responsive-baseline.md) — app is Tablet-first responsive (done 2026-07-08); conventions + how to verify 375px overflow with Playwright
