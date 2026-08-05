@@ -2,5 +2,10 @@
 # Native Postinstall-Builds sind aus Sicherheitsgründen standardmäßig blockiert;
 # hier werden die für Vite/Tailwind nötigen Pakete explizit erlaubt.
 allowBuilds:
+  # false, nicht "noch nicht entschieden": das Postinstall lädt nur die
+  # sentry-cli-Binärdatei, und die braucht ausschließlich der Source-Map-Upload
+  # über sentrySvelteKit() — das ist bewusst nicht eingebunden (vite.config.js).
+  # Kommt @sentry/cli über @sentry/vite-plugin nur als Transitivabhängigkeit mit.
+  '@sentry/cli': false
   '@tailwindcss/oxide': true
   esbuild: true
