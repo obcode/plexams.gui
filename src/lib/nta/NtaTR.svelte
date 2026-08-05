@@ -19,7 +19,7 @@
 			<i class="text-base-content/40">fehlt</i>
 		{/if}
 	</td>
-	<td><a class="link font-mono" href="/nta/{nta.mtknr}">{nta.mtknr}</a></td>
+	<td class="font-mono">{nta.mtknr}</td>
 	<td class={maybeColor}>{nta.compensation}</td>
 	<td>{nta.from}</td>
 	<td>{nta.until}</td>

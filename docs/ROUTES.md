@@ -62,7 +62,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 |                       | Neues Semester anlegen          | `config/new/`                    | `config/`                     | `api/semester/`                                |
 | **Stammdaten**        | Studiengänge                    | `studyprograms/`                 | —                             | `api/studyprogram/`                            |
 |                       | Räume                           | `rooms/`                         | `room/`                       | `api/room/`                                    |
-|                       | NTAs (Stammdaten)               | `nta/all/` (`[mtknr]`)           | `nta/`                        | `api/nta/`                                     |
+|                       | NTAs (Stammdaten)               | `nta/all/`                       | `nta/`                        | `api/nta/`                                     |
 |                       | Permanente Nicht-Aufsichten     | `invigilators/`                  | `invigilator/`                | `api/invigilator/`                             |
 | _Pille_               | Validierung (global)            | `validate/`                      | `validation/`                 | —                                              |
 | _Pille_               | ZPA-Status                      | `zpa/publish/`                   | `zpa/`                        | `api/zpaexams/`                                |
