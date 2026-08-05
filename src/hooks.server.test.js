@@ -9,7 +9,7 @@ vi.mock('$lib/server/backend', () => ({
 	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v)
 }));
 
-import { handle } from './hooks.server.js';
+import { authHandle } from './hooks.server.js';
 
 /**
  * @param {string} pathname
@@ -32,10 +32,10 @@ beforeEach(() => {
 	okResolve.mockClear();
 });
 
-describe('handle — Zugangs-Riegel', () => {
+describe('authHandle — Zugangs-Riegel', () => {
 	it('ohne X-Remote-User (Dev): kein me-Check, Seite wird ausgeliefert', async () => {
 		const event = makeEvent('/plan/exams');
-		const res = await handle({ event, resolve: okResolve });
+		const res = await authHandle({ event, resolve: okResolve });
 		expect(mockBackendRequest).not.toHaveBeenCalled();
 		expect(okResolve).toHaveBeenCalled();
 		expect(res.status).toBe(200);
@@ -44,7 +44,7 @@ describe('handle — Zugangs-Riegel', () => {
 	it('freigeschaltete Kennung (me.email vorhanden): Seite wird ausgeliefert', async () => {
 		mockBackendRequest.mockResolvedValue({ me: { email: 'ok@hm.edu' } });
 		const event = makeEvent('/plan/exams', { 'x-remote-user': 'ok@hm.edu' });
-		const res = await handle({ event, resolve: okResolve });
+		const res = await authHandle({ event, resolve: okResolve });
 		expect(okResolve).toHaveBeenCalled();
 		expect(res.status).toBe(200);
 	});
@@ -52,7 +52,7 @@ describe('handle — Zugangs-Riegel', () => {
 	it('Backend lehnt ab (ClientError mit response): 403-„Kein Zutritt"-HTML, kein resolve', async () => {
 		mockBackendRequest.mockRejectedValue({ response: { errors: [{ message: 'forbidden' }] } });
 		const event = makeEvent('/plan/exams', { 'x-remote-user': 'nope@hm.edu' });
-		const res = await handle({ event, resolve: okResolve });
+		const res = await authHandle({ event, resolve: okResolve });
 		expect(okResolve).not.toHaveBeenCalled();
 		expect(res.status).toBe(403);
 		expect(res.headers.get('content-type')).toContain('text/html');
@@ -62,7 +62,7 @@ describe('handle — Zugangs-Riegel', () => {
 	it('abgelehnt auf /api: 403-JSON statt HTML', async () => {
 		mockBackendRequest.mockRejectedValue({ response: { errors: [{ message: 'forbidden' }] } });
 		const event = makeEvent('/api/exam/foo', { 'x-remote-user': 'apinope@hm.edu' });
-		const res = await handle({ event, resolve: okResolve });
+		const res = await authHandle({ event, resolve: okResolve });
 		expect(okResolve).not.toHaveBeenCalled();
 		expect(res.status).toBe(403);
 		expect(res.headers.get('content-type')).toContain('application/json');
@@ -71,7 +71,7 @@ describe('handle — Zugangs-Riegel', () => {
 	it('Backend nicht erreichbar (Netzwerkfehler ohne response): NICHT sperren', async () => {
 		mockBackendRequest.mockRejectedValue(new Error('ECONNREFUSED'));
 		const event = makeEvent('/plan/exams', { 'x-remote-user': 'netdown@hm.edu' });
-		const res = await handle({ event, resolve: okResolve });
+		const res = await authHandle({ event, resolve: okResolve });
 		expect(okResolve).toHaveBeenCalled();
 		expect(res.status).toBe(200);
 	});

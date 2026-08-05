@@ -31,7 +31,14 @@ export default ts.config(
 	...svelte.configs['flat/prettier'],
 	{
 		languageOptions: {
-			globals: { ...globals.browser, ...globals.node }
+			globals: {
+				...globals.browser,
+				...globals.node,
+				// Von Vite via `define` eingebacken (siehe vite.config.js) und in
+				// src/app.d.ts deklariert — für ESLint sind es trotzdem Globals.
+				__APP_VERSION__: 'readonly',
+				__BUILD_TIME__: 'readonly'
+			}
 		}
 	},
 	{

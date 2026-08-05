@@ -1,6 +1,12 @@
 declare global {
 	namespace App {
-		// interface Error {}
+		// Was `handleError` (hooks.server.js/hooks.client.js) an +error.svelte
+		// weitergibt. eventId ist die Referenz auf den Fehlerbericht — damit
+		// wird aus „bei mir ging was kaputt" eine auffindbare Meldung.
+		interface Error {
+			message: string;
+			eventId?: string;
+		}
 		interface Locals {
 			// Vom Auth-Proxy (nginx/Shibboleth) injizierte Identität; in
 			// hooks.server.js aus X-Remote-User/-Displayname gesetzt.

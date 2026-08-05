@@ -1,6 +1,27 @@
+import * as Sentry from '@sentry/sveltekit';
 import { gql } from 'graphql-request';
 import { json } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { env } from '$env/dynamic/private';
 import { authContext, backendRequest } from '$lib/server/backend';
+import { commonOptions } from '$lib/obs/options';
+
+// Fehler-Telemetrie, auf Modulebene: bis der erste Request kommt, muss sie
+// stehen. Ohne SENTRY_DSN passiert gar nichts — das ist der Normalfall in der
+// Entwicklung und macht diese Datei dort zu genau dem, was sie vorher war.
+if (env.SENTRY_DSN) {
+	Sentry.init({
+		...commonOptions,
+		dsn: env.SENTRY_DSN,
+		environment: env.SENTRY_ENVIRONMENT,
+		release: __APP_VERSION__,
+		// Kein OpenTelemetry. Es würde hier ohnehin nur halb greifen (das SDK
+		// startet erst, wenn SvelteKit die Module schon geladen hat, also nach
+		// dem Zeitpunkt, zu dem OTel http/fetch instrumentieren müsste) — und
+		// gebraucht wird es nur für Tracing, das aus ist.
+		skipOpenTelemetrySetup: true
+	});
+}
 
 /**
  * POST-Proxys unter /api, die in Wahrheit Lese-Abfragen sind (Suche, Slot-Lookups,
@@ -179,8 +200,14 @@ async function isReadOnly() {
 	return roCache.value;
 }
 
-/** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ event, resolve }) {
+/**
+ * Der Zugangs-Riegel. Exportiert, weil er einzeln getestet wird: `handle` ist
+ * unten eine `sequence`, und die verlangt SvelteKits Request-Store, den ein
+ * Unit-Test nicht hat.
+ *
+ * @type {import('@sveltejs/kit').Handle}
+ */
+export async function authHandle({ event, resolve }) {
 	// Vom Auth-Proxy (nginx/Shibboleth) autoritativ injizierte Identität. Wird
 	// als AsyncLocalStorage-Kontext gesetzt, damit jeder serverseitige GraphQL-
 	// Call (SSR-load()s, /api-Proxys, isReadOnly unten) sie als X-Remote-User an
@@ -215,3 +242,29 @@ export async function handle({ event, resolve }) {
 		return resolve(event);
 	});
 }
+
+// sentryHandle zuerst: es setzt den Isolations-Scope, in dem alles Weitere
+// meldet. Läuft der Zugangs-Riegel davor und wirft, gehörte der Fehler zu
+// keinem Request.
+export const handle = sequence(Sentry.sentryHandle(), authHandle);
+
+/**
+ * Letzte Instanz für alles, was ein `load()` oder ein Endpunkt nicht selbst
+ * abfängt. Vorher gab es sie gar nicht: ein solcher Fehler wurde von SvelteKit
+ * auf die Konsole geschrieben, landete im Docker-Log-Ring und war weg.
+ *
+ * 4xx meldet `handleErrorWithSentry` nicht — ein Tippfehler in der URL ist
+ * kein Vorfall.
+ *
+ * @type {import('@sveltejs/kit').HandleServerError}
+ */
+function describeError({ error }) {
+	console.error(error);
+	return {
+		message: 'Unerwarteter Fehler. Die Prüfungsplanung wurde benachrichtigt.',
+		// Die Referenz, mit der man aus einem Screenshot den Bericht findet.
+		eventId: Sentry.lastEventId()
+	};
+}
+
+export const handleError = Sentry.handleErrorWithSentry(describeError);

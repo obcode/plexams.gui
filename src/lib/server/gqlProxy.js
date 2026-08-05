@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/sveltekit';
 import { json } from '@sveltejs/kit';
 import { gqlErrorMessage } from '$lib/gqlError';
 import { backendRequest } from '$lib/server/backend';
@@ -24,7 +25,18 @@ export async function gqlProxy(document, variables) {
 	try {
 		const data = await backendRequest(document, variables);
 		return json(data);
-	} catch (e) {
+	} catch (/** @type {any} */ e) {
+		// Hier endeten bisher 128 der 134 /api-Routen im Fehlerfall — ohne dass
+		// irgendetwas davon irgendwo auftauchte. Der Benutzer sah eine Meldung,
+		// sonst niemand etwas.
+		//
+		// Die Unterscheidung ist dieselbe, die der Zugangs-Riegel in
+		// hooks.server.js schon trifft: `.response` heißt, das Backend hat
+		// geantwortet und abgelehnt — oft völlig legitim („Semester ist
+		// read-only", „forbidden"), also eine Warnung. Ohne `.response` war das
+		// Backend nicht erreichbar oder etwas ist unterwegs zerbrochen: das ist
+		// ein Vorfall.
+		Sentry.captureException(e, { level: e?.response ? 'warning' : 'error' });
 		return json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
 }
