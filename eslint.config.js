@@ -10,7 +10,19 @@ import globals from 'globals';
 export default ts.config(
 	{
 		// Generierter Code, Build-Artefakte und totes Scaffolding nicht linten.
-		ignores: ['build/', '.svelte-kit/', 'package/', 'src/lib/__generated__/', 'src/client.ts']
+		// Die Playwright-Artefakte müssen mit: `pnpm test:e2e` legt einen HTML-Report
+		// mit gebündeltem Fremdcode ab, den ESLint sonst mitlintet — danach meldet
+		// `pnpm lint` ein paar tausend Fehler, die niemandem gehören.
+		ignores: [
+			'build/',
+			'.svelte-kit/',
+			'package/',
+			'src/lib/__generated__/',
+			'src/client.ts',
+			'playwright-report/',
+			'test-results/',
+			'playwright/.cache/'
+		]
 	},
 	js.configs.recommended,
 	...ts.configs.recommended,
