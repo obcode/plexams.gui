@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 
 // Eigene GUI-Version für den Footer, zur Buildzeit eingebacken.
@@ -36,7 +37,10 @@ const appVersion = process.env.APP_VERSION?.trim() || gitDescribe() || pkg.versi
 const buildTime = process.env.BUILD_TIME?.trim() || new Date().toISOString();
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	// Tailwind v4 als Vite-Plugin, nicht über postcss.config: seit Vite 8 läuft
+	// Vites eingebautes postcss-import über `@import 'tailwindcss'`, bevor das
+	// PostCSS-Plugin es ersetzen kann, und sucht dann eine Datei dieses Namens.
+	plugins: [tailwindcss(), sveltekit()],
 	define: {
 		__APP_VERSION__: JSON.stringify(appVersion),
 		__BUILD_TIME__: JSON.stringify(buildTime)
