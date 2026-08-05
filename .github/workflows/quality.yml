@@ -28,6 +28,12 @@ jobs:
       - name: check (svelte-check, blockierend)
         run: pnpm run check
 
+      # prettier --check + eslint. Seit 2026-08-05 fehlerfrei und damit ein
+      # echtes Gate: vorher hätten zwei unformatierte Dateien und ein paar
+      # veraltete svelte-ignore-Kommentare den Job dauerhaft rot gehalten.
+      - name: lint (prettier + eslint, blockierend)
+        run: pnpm lint
+
       - name: unit tests
         run: pnpm test
       - name: build
