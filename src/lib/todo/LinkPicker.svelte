@@ -1,7 +1,11 @@
 <!--
-	Einen Link für ein Todo auswählen: Art wählen, dann aus Vorschlägen des Backends
-	(todoLinkSuggestions) wählen oder — bei URL/Jira — frei eingeben. Geprüft wird
-	im Backend; hier wird nur der Schlüssel ermittelt.
+	Einen Link für ein Todo auswählen: Art wählen, dann nach Name, Kürzel oder
+	Nummer suchen und einen Vorschlag des Backends (todoLinkSuggestions) wählen —
+	bei URL/Jira frei eingeben. Verlinkt wird der Schlüssel (z. B. die ZPA-Nummer
+	einer/eines Prüfenden), gesucht wird über den Anzeigenamen.
+
+	Bewusst kein <datalist>: dessen Option-Wert ist der Schlüssel, und je nach
+	Browser wird nur danach gefiltert — die Suche nach „Braun" fände dann nichts.
 -->
 <script>
 	import { fetchLinkSuggestions } from './client.js';
@@ -20,6 +24,8 @@
 	let input = $state('');
 	/** @type {{ key: string, label: string }[]} */
 	let suggestions = $state([]);
+	let open = $state(false);
+	let highlight = $state(-1);
 	let error = $state('');
 	const listId = `todo-link-suggestions-${Math.random().toString(36).slice(2)}`;
 
@@ -31,6 +37,7 @@
 		clearTimeout(timer);
 		if (freeText) {
 			suggestions = [];
+			open = false;
 			return;
 		}
 		const k = kind;
@@ -38,7 +45,10 @@
 		timer = setTimeout(async () => {
 			try {
 				const s = await fetchLinkSuggestions(k, q);
-				if (k === kind) suggestions = s;
+				if (k !== kind || q !== input) return; // veraltete Antwort
+				suggestions = s;
+				highlight = s.length ? 0 : -1;
+				open = true;
 			} catch (e) {
 				error = e instanceof Error ? e.message : String(e);
 			}
@@ -48,22 +58,57 @@
 	function changeKind() {
 		input = '';
 		error = '';
-		loadSuggestions();
+		suggestions = [];
+		open = false;
 	}
 
-	async function pick() {
-		const value = input.trim();
-		if (!value) return;
-		// Eingetippt wurde evtl. der Anzeigename statt des Schlüssels.
-		const match =
-			suggestions.find((s) => s.key === value) ??
-			suggestions.find((s) => s.label.toLowerCase() === value.toLowerCase());
+	/** @param {{ key: string, label: string }} s */
+	async function choose(s) {
 		error = '';
+		open = false;
 		try {
-			await onpick({ kind, key: match?.key ?? value, label: match?.label ?? value });
+			await onpick({ kind, key: s.key, label: s.label || s.key });
 			input = '';
+			suggestions = [];
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
+		}
+	}
+
+	async function submit() {
+		const value = input.trim();
+		if (!value) return;
+		if (freeText) {
+			await choose({ key: value, label: value });
+			return;
+		}
+		if (open && highlight >= 0 && suggestions[highlight]) {
+			await choose(suggestions[highlight]);
+			return;
+		}
+		const exact = suggestions.find((s) => s.key === value);
+		if (exact) {
+			await choose(exact);
+		} else {
+			error = 'Bitte einen Eintrag aus der Liste wählen.';
+		}
+	}
+
+	/** @param {KeyboardEvent} e */
+	function onkeydown(e) {
+		if (e.key === 'ArrowDown' && suggestions.length) {
+			e.preventDefault();
+			open = true;
+			highlight = (highlight + 1) % suggestions.length;
+		} else if (e.key === 'ArrowUp' && suggestions.length) {
+			e.preventDefault();
+			open = true;
+			highlight = (highlight - 1 + suggestions.length) % suggestions.length;
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			submit();
+		} else if (e.key === 'Escape') {
+			open = false;
 		}
 	}
 </script>
@@ -80,35 +125,64 @@
 				<option value={k.kind}>{k.icon} {k.label}</option>
 			{/each}
 		</select>
-		<input
-			type="text"
-			class="input input-bordered input-sm w-full flex-1 sm:w-auto"
-			list={freeText ? undefined : listId}
-			placeholder={kind === 'URL'
-				? 'https://…'
-				: kind === 'JIRA'
-					? 'z. B. PLEX-42'
-					: 'suchen (Name, Kürzel, Nummer …)'}
-			bind:value={input}
-			oninput={loadSuggestions}
-			onfocus={loadSuggestions}
-			onkeydown={(e) => {
-				if (e.key === 'Enter') {
-					e.preventDefault();
-					pick();
-				}
-			}}
-			{disabled}
-		/>
-		<button class="btn btn-outline btn-sm" onclick={pick} disabled={disabled || !input.trim()}>
+		<div class="relative w-full flex-1 sm:w-auto">
+			<input
+				type="text"
+				class="input input-bordered input-sm w-full"
+				role="combobox"
+				aria-expanded={open}
+				aria-controls={listId}
+				aria-autocomplete="list"
+				autocomplete="off"
+				placeholder={kind === 'URL'
+					? 'https://…'
+					: kind === 'JIRA'
+						? 'z. B. PLEX-42'
+						: 'suchen nach Name, Kürzel, Nummer …'}
+				bind:value={input}
+				oninput={() => {
+					error = '';
+					loadSuggestions();
+				}}
+				onfocus={loadSuggestions}
+				onblur={() => setTimeout(() => (open = false), 150)}
+				{onkeydown}
+				{disabled}
+			/>
+			{#if open && !freeText}
+				<ul
+					id={listId}
+					role="listbox"
+					class="absolute top-full left-0 z-50 mt-1 max-h-64 w-full min-w-64 overflow-y-auto rounded-lg border border-base-300 bg-base-100 p-1 shadow-lg"
+				>
+					{#each suggestions as s, i (s.key)}
+						<li role="option" aria-selected={i === highlight}>
+							<button
+								type="button"
+								class="flex w-full items-baseline gap-2 rounded px-2 py-1 text-left text-sm {i ===
+								highlight
+									? 'bg-primary/15 text-primary'
+									: 'hover:bg-base-200'}"
+								onmousedown={(e) => e.preventDefault()}
+								onclick={() => choose(s)}
+								onmouseenter={() => (highlight = i)}
+							>
+								<span class="flex-1">{s.label || s.key}</span>
+								{#if s.label && s.label !== s.key && !s.label.startsWith(s.key)}
+									<span class="font-mono text-xs text-base-content/50">{s.key}</span>
+								{/if}
+							</button>
+						</li>
+					{:else}
+						<li class="px-2 py-1 text-sm text-base-content/50">Keine Treffer.</li>
+					{/each}
+				</ul>
+			{/if}
+		</div>
+		<button class="btn btn-outline btn-sm" onclick={submit} disabled={disabled || !input.trim()}>
 			+ Link
 		</button>
 	</div>
-	<datalist id={listId}>
-		{#each suggestions as s (s.key)}
-			<option value={s.key}>{s.label}</option>
-		{/each}
-	</datalist>
 	{#if error}
 		<span class="text-xs text-error">{error}</span>
 	{/if}
