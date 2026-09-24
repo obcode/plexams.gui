@@ -1264,6 +1264,8 @@ export type Mutation = {
    * Blocked while a validation or transfer/email is running.
    */
   addStudentReg: Scalars['Boolean']['output'];
+  addTodoComment: TodoComment;
+  addTodoLink: Todo;
   addZpaExamToPlan: Scalars['Boolean']['output'];
   /**
    * Generate room requests from the current plan and REPLACE all existing ones
@@ -1276,6 +1278,13 @@ export type Mutation = {
   blockRoomAt: BlockedRoom;
   /** Block a room at several times at once (e.g. a whole day or a time range). Returns the stored blocks. */
   blockRoomAtTimes: Array<BlockedRoom>;
+  /**
+   * Copy the open and the recurring todos of fromSemester into the active semester.
+   * Links to exams and days and the due date are dropped (they belong to that
+   * semester); originals that are still open are closed with a comment. Idempotent.
+   * Returns the number of todos copied.
+   */
+  carryOverTodos: Scalars['Int']['output'];
   clearEmailAttachments: Scalars['Int']['output'];
   /**
    * Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
@@ -1293,6 +1302,7 @@ export type Mutation = {
    * the running server to it afterwards.
    */
   createSemester: SaveSemesterConfigResult;
+  createTodo: Todo;
   /** Delete an additional exam by ancode. Returns false if there was none. */
   deleteAdditionalExam: Scalars['Boolean']['output'];
   /** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
@@ -1302,6 +1312,8 @@ export type Mutation = {
   deleteSpecialInterest: Scalars['Boolean']['output'];
   /** Delete a study program by its shortname. Returns false if there was none. */
   deleteStudyProgram: Scalars['Boolean']['output'];
+  /** Only the creator or an ADMIN may delete a todo. */
+  deleteTodo: Scalars['Boolean']['output'];
   /** Remove the ZPA link from a pre-exam. */
   disconnectPreplanExam: PreplanExam;
   exahm: Scalars['Boolean']['output'];
@@ -1395,6 +1407,7 @@ export type Mutation = {
    * while a validation or transfer/email is running.
    */
   removeStudentReg: Scalars['Int']['output'];
+  removeTodoLink: Todo;
   /** Remove a user from the allow-list, so they can no longer log in. Requires role ADMIN. */
   removeUser: Scalars['Boolean']['output'];
   /**
@@ -1575,6 +1588,7 @@ export type Mutation = {
    * VETO forces it to count despite an automatic repeat down-weighting).
    */
   setStudentConflictDecision: Scalars['Boolean']['output'];
+  setTodoDone: Todo;
   /**
    * Create or update a user (upsert by email). Admin surface for opening access to a
    * wider circle with restricted rights (seed VIEWER users here). Requires role ADMIN.
@@ -1598,6 +1612,9 @@ export type Mutation = {
    * (key: room + starttime). Errors if it does not exist.
    */
   updateRoomRequestTime: RoomRequest;
+  updateTodo: Todo;
+  /** Only the author may edit a comment. */
+  updateTodoComment: TodoComment;
   /** Create or update an additional exam (key: ancode). */
   upsertAdditionalExam: AdditionalExam;
   /** Create or update a special-interest group (key: name). */
@@ -1663,6 +1680,18 @@ export type MutationAddStudentRegArgs = {
 };
 
 
+export type MutationAddTodoCommentArgs = {
+  body: Scalars['String']['input'];
+  todoId: Scalars['Int']['input'];
+};
+
+
+export type MutationAddTodoLinkArgs = {
+  link: TodoLinkInput;
+  todoId: Scalars['Int']['input'];
+};
+
+
 export type MutationAddZpaExamToPlanArgs = {
   ancode: Scalars['Int']['input'];
 };
@@ -1684,6 +1713,11 @@ export type MutationBlockRoomAtTimesArgs = {
   reason?: InputMaybe<Scalars['String']['input']>;
   room: Scalars['String']['input'];
   starttimes: Array<Scalars['Time']['input']>;
+};
+
+
+export type MutationCarryOverTodosArgs = {
+  fromSemester: Scalars['String']['input'];
 };
 
 
@@ -1712,6 +1746,11 @@ export type MutationCreateSemesterArgs = {
 };
 
 
+export type MutationCreateTodoArgs = {
+  input: TodoInput;
+};
+
+
 export type MutationDeleteAdditionalExamArgs = {
   ancode: Scalars['Int']['input'];
 };
@@ -1734,6 +1773,11 @@ export type MutationDeleteSpecialInterestArgs = {
 
 export type MutationDeleteStudyProgramArgs = {
   shortname: Scalars['String']['input'];
+};
+
+
+export type MutationDeleteTodoArgs = {
+  id: Scalars['Int']['input'];
 };
 
 
@@ -1861,6 +1905,12 @@ export type MutationRemoveStudentRegArgs = {
   ancode: Scalars['Int']['input'];
   mtknr: Scalars['String']['input'];
   program: Scalars['String']['input'];
+};
+
+
+export type MutationRemoveTodoLinkArgs = {
+  link: TodoLinkInput;
+  todoId: Scalars['Int']['input'];
 };
 
 
@@ -2058,6 +2108,12 @@ export type MutationSetStudentConflictDecisionArgs = {
 };
 
 
+export type MutationSetTodoDoneArgs = {
+  done: Scalars['Boolean']['input'];
+  id: Scalars['Int']['input'];
+};
+
+
 export type MutationSetUserArgs = {
   email: Scalars['String']['input'];
   name: Scalars['String']['input'];
@@ -2104,6 +2160,18 @@ export type MutationUpdateRoomRequestTimeArgs = {
   room: Scalars['String']['input'];
   starttime: Scalars['Time']['input'];
   until: Scalars['Time']['input'];
+};
+
+
+export type MutationUpdateTodoArgs = {
+  id: Scalars['Int']['input'];
+  input: TodoInput;
+};
+
+
+export type MutationUpdateTodoCommentArgs = {
+  body: Scalars['String']['input'];
+  id: Scalars['Int']['input'];
 };
 
 
@@ -2882,6 +2950,8 @@ export type Query = {
   ntaRoomAloneWaivers: Array<NtaRoomAloneWaiver>;
   ntas?: Maybe<Array<Nta>>;
   ntasWithRegs?: Maybe<Array<Student>>;
+  /** Number of open todos per link key of a kind, e.g. per phase. */
+  openTodoCountsByLink: Array<TodoLinkCount>;
   /**
    * Teachers who never do invigilation duty again (e.g. retired). Global (plexams
    * DB), carries over between semesters; always implies isNotInvigilator.
@@ -3000,6 +3070,15 @@ export type Query = {
   syncLog: Array<SyncLogEntry>;
   teacher?: Maybe<Teacher>;
   teachers: Array<Teacher>;
+  todo?: Maybe<Todo>;
+  /** How many todos carryOverTodos(fromSemester) would copy into the active semester. */
+  todoCarryOverCandidates: Scalars['Int']['output'];
+  /** All labels used in the semester, for autocompletion. */
+  todoLabels: Array<Scalars['String']['output']>;
+  /** Up to 20 link targets of a kind matching the query, for the link picker. */
+  todoLinkSuggestions: Array<TodoLink>;
+  /** The todos of the semester: open first, then by priority, due date and age. */
+  todos: Array<Todo>;
   /**
    * Students that could not be assigned a real room in their slot during the last
    * room generation (the replacement for the old 'No Room' placeholder).
@@ -3123,6 +3202,11 @@ export type QueryNtaArgs = {
 };
 
 
+export type QueryOpenTodoCountsByLinkArgs = {
+  kind: TodoLinkKind;
+};
+
+
 export type QueryPlannedExamArgs = {
   ancode: Scalars['Int']['input'];
 };
@@ -3223,6 +3307,27 @@ export type QueryTeacherArgs = {
 
 export type QueryTeachersArgs = {
   fromZPA?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryTodoArgs = {
+  id: Scalars['Int']['input'];
+};
+
+
+export type QueryTodoCarryOverCandidatesArgs = {
+  fromSemester: Scalars['String']['input'];
+};
+
+
+export type QueryTodoLinkSuggestionsArgs = {
+  kind: TodoLinkKind;
+  query: Scalars['String']['input'];
+};
+
+
+export type QueryTodosArgs = {
+  filter?: InputMaybe<TodoFilter>;
 };
 
 
@@ -4180,6 +4285,113 @@ export type Teacher = {
   shortname: Scalars['String']['output'];
 };
 
+export type Todo = {
+  __typename?: 'Todo';
+  /** The semester this todo was carried over from, if any. */
+  carriedFromSemester?: Maybe<Scalars['String']['output']>;
+  commentCount: Scalars['Int']['output'];
+  comments: Array<TodoComment>;
+  createdAt: Scalars['Time']['output'];
+  createdBy: Scalars['String']['output'];
+  createdByName: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  done: Scalars['Boolean']['output'];
+  doneAt?: Maybe<Scalars['Time']['output']>;
+  doneBy?: Maybe<Scalars['String']['output']>;
+  doneByName?: Maybe<Scalars['String']['output']>;
+  /** ISO date (YYYY-MM-DD). */
+  dueDate?: Maybe<Scalars['String']['output']>;
+  id: Scalars['Int']['output'];
+  labels: Array<Scalars['String']['output']>;
+  links: Array<TodoLink>;
+  priority: TodoPriority;
+  /** Comes back (open) in every following semester on carry-over. */
+  recurring: Scalars['Boolean']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['Time']['output'];
+};
+
+export type TodoComment = {
+  __typename?: 'TodoComment';
+  /** Email of the author. */
+  author: Scalars['String']['output'];
+  authorName: Scalars['String']['output'];
+  body: Scalars['String']['output'];
+  createdAt: Scalars['Time']['output'];
+  editedAt?: Maybe<Scalars['Time']['output']>;
+  id: Scalars['Int']['output'];
+  todoId: Scalars['Int']['output'];
+};
+
+export type TodoFilter = {
+  /** true = done only, false = open only, null = all. */
+  done?: InputMaybe<Scalars['Boolean']['input']>;
+  label?: InputMaybe<Scalars['String']['input']>;
+  link?: InputMaybe<TodoLinkInput>;
+};
+
+export type TodoInput = {
+  description?: InputMaybe<Scalars['String']['input']>;
+  /** ISO date (YYYY-MM-DD); null or empty = no due date. */
+  dueDate?: InputMaybe<Scalars['String']['input']>;
+  labels?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** On create: the initial links. On update: replaces all links when given. */
+  links?: InputMaybe<Array<TodoLinkInput>>;
+  priority?: InputMaybe<TodoPriority>;
+  recurring?: InputMaybe<Scalars['Boolean']['input']>;
+  title: Scalars['String']['input'];
+};
+
+export type TodoLink = {
+  __typename?: 'TodoLink';
+  /** Where the GUI should link to, if anywhere (a GUI path or an external URL). */
+  href?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  kind: TodoLinkKind;
+  /** Display text, resolved on read (the key if the target no longer exists). */
+  label: Scalars['String']['output'];
+};
+
+export type TodoLinkCount = {
+  __typename?: 'TodoLinkCount';
+  count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+};
+
+export type TodoLinkInput = {
+  key: Scalars['String']['input'];
+  kind: TodoLinkKind;
+};
+
+export enum TodoLinkKind {
+  /** key: planning condition key, e.g. roomPlanPublished */
+  Condition = 'CONDITION',
+  /** key: ISO date, e.g. 2026-07-13 */
+  Day = 'DAY',
+  /** key: ancode */
+  Exam = 'EXAM',
+  /** key: Jira issue key, e.g. PLEX-42 */
+  Jira = 'JIRA',
+  /** key: mtknr */
+  Nta = 'NTA',
+  /** key: phase key, e.g. phase1 */
+  Phase = 'PHASE',
+  /** key: room name */
+  Room = 'ROOM',
+  /** key: study program shortname */
+  StudyProgram = 'STUDY_PROGRAM',
+  /** key: ZPA person id */
+  Teacher = 'TEACHER',
+  /** key: http(s) URL */
+  Url = 'URL'
+}
+
+export enum TodoPriority {
+  High = 'HIGH',
+  Low = 'LOW',
+  Normal = 'NORMAL'
+}
+
 /**
  * Students of an exam that could not be assigned a real room in their slot during
  * room generation (kept out of the planned rooms).
@@ -4204,8 +4416,8 @@ export type UnplacedExamReason = {
 /**
  * A user is a login identity supplied by the auth proxy (Shibboleth/OIDC, matched by
  * email) together with a role. Users live in the global plexams DB and are the
- * authorization allow-list. Kept strictly separate from the planer (the shared email
- * sender identity).
+ * authorization allow-list. Kept strictly separate from the planer (the per-semester
+ * email sender identity).
  */
 export type User = {
   __typename?: 'User';

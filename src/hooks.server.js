@@ -65,6 +65,24 @@ const READ_POST_PATHS = new Set([
 	'/api/preplan/preplanExamAncodeSuggestions'
 ]);
 
+/**
+ * Präfixe von POST-Proxys, die auch in einem geschützten Semester erlaubt sind.
+ * Todos ändern keine Planungsdaten — die Todos eines alten Semesters sollen sich
+ * auch dann noch abarbeiten lassen (das Backend nimmt die Todo-Mutationen ebenso
+ * vom Semesterschutz aus, nicht aber von der VIEWER-Sperre).
+ *
+ * @type {string[]}
+ */
+const READ_ONLY_EXEMPT_PREFIXES = ['/api/todo/'];
+
+/** @param {string} pathname */
+export function allowedOnReadOnlySemester(pathname) {
+	return (
+		READ_POST_PATHS.has(pathname) ||
+		READ_ONLY_EXEMPT_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+	);
+}
+
 /** HTML-escape für die Einblendung der E-Mail in die „Kein Zutritt"-Seite. */
 function escapeHtml(/** @type {string} */ s) {
 	return s
@@ -231,7 +249,7 @@ export async function authHandle({ event, resolve }) {
 
 		const { method } = event.request;
 		const { pathname } = event.url;
-		if (method === 'POST' && pathname.startsWith('/api/') && !READ_POST_PATHS.has(pathname)) {
+		if (method === 'POST' && pathname.startsWith('/api/') && !allowedOnReadOnlySemester(pathname)) {
 			if (await isReadOnly()) {
 				return json(
 					{ error: 'Semester ist geschützt (nur lesen) — Schreibvorgang abgelehnt.' },

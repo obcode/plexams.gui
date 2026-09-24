@@ -28,7 +28,9 @@
 			'/api/exam/generateAssembledExams',
 			'/api/primuss/studentRegsState',
 			'/api/primuss/generateStudentRegs',
-			'/api/log/mutationLog'
+			'/api/log/mutationLog',
+			// Todos ändern keine Planungsdaten.
+			'/api/todo/'
 		];
 		window.fetch = async (/** @type {any} */ input, /** @type {any} */ init) => {
 			const res = await origFetch(input, init);

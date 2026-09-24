@@ -9,7 +9,7 @@ vi.mock('$lib/server/backend', () => ({
 	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v)
 }));
 
-import { authHandle } from './hooks.server.js';
+import { authHandle, allowedOnReadOnlySemester } from './hooks.server.js';
 
 /**
  * @param {string} pathname
@@ -74,5 +74,15 @@ describe('authHandle — Zugangs-Riegel', () => {
 		const res = await authHandle({ event, resolve: okResolve });
 		expect(okResolve).toHaveBeenCalled();
 		expect(res.status).toBe(200);
+	});
+});
+
+describe('allowedOnReadOnlySemester', () => {
+	it('lässt Todo-Proxys und reine Lese-Abfragen durch, sonst nichts', () => {
+		expect(allowedOnReadOnlySemester('/api/todo/createTodo')).toBe(true);
+		expect(allowedOnReadOnlySemester('/api/todo/addTodoComment')).toBe(true);
+		expect(allowedOnReadOnlySemester('/api/semester/setSemester')).toBe(true);
+		expect(allowedOnReadOnlySemester('/api/exam/addExam')).toBe(false);
+		expect(allowedOnReadOnlySemester('/api/todos-fake')).toBe(false);
 	});
 });
