@@ -57,6 +57,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 |                       | NTA (Semester)                  | `nta/semester/`                  | `nta/`                        | `api/nta/`                                     |
 |                       | Downloads & Exporte             | `download/`                      | `download/`                   | — (REST `/download/*`, kein GraphQL)           |
 |                       | Jira                            | `jira/`                          | `jira/`                       | `api/jira/` (+ REST `/upload/jira-attachment`) |
+|                       | Todos (+ Detail `todos/[id]`)   | `todos/`                         | `todo/`                       | `api/todo/`                                    |
 |                       | Mutations-Log                   | `log/`                           | —                             | `api/log/`                                     |
 |                       | Semester-Konfiguration          | `config/`                        | `config/`                     | `api/semester/`                                |
 |                       | Neues Semester anlegen          | `config/new/`                    | `config/`                     | `api/semester/`                                |
@@ -66,6 +67,7 @@ Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array 
 |                       | Permanente Nicht-Aufsichten     | `invigilators/`                  | `invigilator/`                | `api/invigilator/`                             |
 | _Pille_               | Validierung (global)            | `validate/`                      | `validation/`                 | —                                              |
 | _Pille_               | ZPA-Status                      | `zpa/publish/`                   | `zpa/`                        | `api/zpaexams/`                                |
+| _Pille_               | Todos (offene, ab `sm`)         | `todos/`                         | `todo/`                       | `api/todo/`                                    |
 
 ¹ **2026-07-05 verschoben** aus `plan/`; alte URLs leiten per `308` weiter
 (`plan/external/+page.ts`, `plan/annyBookings/+page.ts`).
@@ -91,6 +93,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                                         |
 | `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                                        |
 | `api/log/`          |         1 | Mutations-Log                                                                                                                         |
+| `api/todo/`         |        12 | Todos: Liste/Labels/Link-Vorschläge (Lesen), Anlegen/Ändern/Erledigen/Löschen, Kommentare, Links, Übernahme aus dem Vorsemester       |
 | `api/jira/`         |         7 | Jira: Verbindung/Issue-Detail/offene Issues/Transitions (Lesen), Issue anlegen/kommentieren/Status (Mutation); Anhang per REST-Upload |
 | `api/plan/`         |        11 | **Read-Lookups fürs Plan-Grid** (Slot/Raum/Aufsicht-Abfragen, interaktiv per `fetch`) — bewusst als eigene Gruppe belassen            |
 
@@ -98,6 +101,8 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 geschützten (read-only) Semester laufen — die Allowlist steht in
 [`src/hooks.server.js`](../src/hooks.server.js) (`READ_POST_PATHS`) und muss beim
 Umbenennen eines solchen Endpunkts mitgeführt werden.
+`api/todo/*` ist dort als Präfix ausgenommen (`READ_ONLY_EXEMPT_PREFIXES`): Todos
+ändern keine Planungsdaten und bleiben auch im geschützten Semester bearbeitbar.
 
 ---
 

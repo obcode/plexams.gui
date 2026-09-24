@@ -47,6 +47,22 @@ export const load: LayoutServerLoad = async () => {
 		// Älteres Backend ohne Auth → keine Rolle, GUI verhält sich wie bisher.
 	}
 
+	// Zahl der offenen Todos für die Nav-Pille. Eigener try/catch wie oben: ein
+	// Backend ohne Todos darf den Semester-Status nicht mitreißen.
+	let openTodoCount = null;
+	try {
+		const t = await backendRequest(gql`
+			query OpenTodos {
+				todos(filter: { done: false }) {
+					id
+				}
+			}
+		`);
+		openTodoCount = t?.todos?.length ?? null;
+	} catch {
+		// älteres Backend ohne Todos → keine Pille
+	}
+
 	try {
 		const data = await backendRequest(gql`
 			query {
@@ -63,6 +79,7 @@ export const load: LayoutServerLoad = async () => {
 			semesterStatus: s,
 			readOnly: !!s?.readOnly,
 			me,
+			openTodoCount,
 			serverInfo,
 			guiVersion: __APP_VERSION__,
 			buildTime: __BUILD_TIME__
@@ -73,6 +90,7 @@ export const load: LayoutServerLoad = async () => {
 			semesterStatus: null,
 			readOnly: false,
 			me,
+			openTodoCount,
 			serverInfo,
 			guiVersion: __APP_VERSION__,
 			buildTime: __BUILD_TIME__

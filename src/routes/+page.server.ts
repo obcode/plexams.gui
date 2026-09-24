@@ -1,5 +1,6 @@
 import { gql } from 'graphql-request';
 import { backendRequest } from '$lib/server/backend';
+import { TODO_FIELDS } from '$lib/server/todoFields';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -25,8 +26,25 @@ export const load: PageServerLoad = async () => {
 		}
 	`);
 
+	// Eigener Request mit eigenem try/catch: ein Backend ohne Todos darf die
+	// Planungs-Checkliste nicht mitreißen.
+	let todos = [];
+	try {
+		const t = await backendRequest(gql`
+			query {
+				todos(filter: { done: false }) {
+					${TODO_FIELDS}
+				}
+			}
+		`);
+		todos = t.todos;
+	} catch {
+		// älteres Backend ohne Todos
+	}
+
 	return {
 		semester: data.semester.id,
-		planningState: data.planningState
+		planningState: data.planningState,
+		todos
 	};
 };

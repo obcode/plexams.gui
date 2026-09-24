@@ -45,6 +45,7 @@ const ROUTES = [
 	'/rooms',
 	'/students',
 	'/studyprograms',
+	'/todos',
 	'/validate',
 	'/zpa/additionalExams',
 	'/zpa/publish',

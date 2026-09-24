@@ -278,6 +278,7 @@
 						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 						{ href: '/nta/semester', label: '♿ NTA' },
 						{ href: '/download', label: '⬇️ Downloads & Exporte' },
+						{ href: '/todos', label: '☑️ Todos' },
 						{ href: '/jira', label: '🎫 Jira' },
 						{ href: '/log', label: '🧾 Mutations-Log' },
 						{ section: 'Konfiguration' },
@@ -511,6 +512,27 @@
 		</nav>
 
 		<div class="flex-1"></div>
+
+		<!-- Todos: Zahl der offenen Todos, verlinkt auf die Liste. Erst ab sm — auf dem
+		     Handy ist die Kopfzeile schon zu breit; dort bleiben Menü und Startseite. -->
+		{#if page.data?.openTodoCount != null}
+			<a
+				class="btn btn-ghost btn-sm hidden gap-1 rounded-full border border-base-300 font-medium sm:inline-flex {pathname.startsWith(
+					'/todos'
+				)
+					? 'bg-primary/10 text-primary'
+					: 'text-base-content/80'}"
+				href="/todos"
+				title="{page.data.openTodoCount} offene Todos"
+				aria-label="Todos"
+			>
+				<span class="hidden 2xl:inline">Todos</span>
+				<span class="2xl:hidden" aria-hidden="true">☑</span>
+				{#if page.data.openTodoCount > 0}
+					<span class="badge badge-primary badge-sm tabular-nums">{page.data.openTodoCount}</span>
+				{/if}
+			</a>
+		{/if}
 
 		<!-- Validierungs-Pille mit Status -->
 		<div

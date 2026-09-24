@@ -1,6 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import { checkStudentRegs } from '$lib/studentRegs/store.js';
+	import LinkedTodos from '$lib/todo/LinkedTodos.svelte';
 
 	let { data } = $props();
 
@@ -152,6 +153,12 @@
 					>{/if}
 			</div>
 		</div>
+
+		<LinkedTodos
+			kind="EXAM"
+			key={String(exam.ancode)}
+			label="{exam.ancode}. {exam.zpaExam.module} ({exam.zpaExam.mainExamer})"
+		/>
 
 		<!-- Konflikte -->
 		{#if (exam.conflicts ?? []).length}

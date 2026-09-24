@@ -1,5 +1,10 @@
 <script>
+	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
+	import WriteButton from '$lib/WriteButton.svelte';
+	import TodoEditor from '$lib/todo/TodoEditor.svelte';
+	import TodoList from '$lib/todo/TodoList.svelte';
+	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '$lib/todo/todo.js';
 
 	let { data } = $props();
 
@@ -46,6 +51,13 @@
 		}
 	}
 
+	// Todos: die dringendsten offenen oben, dazu die Zahl je Phase auf den Karten.
+	const TODOS_SHOWN = 8;
+	let openTodos = $derived(overdueFirst(data.todos ?? [], todayISO()));
+	let todosPerPhase = $derived(openTodosPerPhase(data.todos ?? [], planningState.phases));
+	/** @type {{ kind: string, key: string, label: string }[] | null} */
+	let newTodoLinks = $state(null);
+
 	let doneCount = $derived(
 		planningState.phases
 			.flatMap((/** @type {any} */ p) => p.conditions)
@@ -76,6 +88,24 @@
 		<div class="alert alert-error py-2 text-sm"><span>{errorMsg}</span></div>
 	{/if}
 
+	<section class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">
+		<div class="flex flex-wrap items-center gap-2">
+			<h2 class="font-semibold">Offene Todos</h2>
+			<span class="badge badge-primary badge-sm tabular-nums">{openTodos.length}</span>
+			<div class="flex-1"></div>
+			<a class="link link-hover text-sm text-base-content/60" href="/todos">alle Todos →</a>
+			<WriteButton class="btn btn-outline btn-xs" onclick={() => (newTodoLinks = [])}>
+				+ Todo
+			</WriteButton>
+		</div>
+		<TodoList todos={openTodos.slice(0, TODOS_SHOWN)} empty="Nichts offen. 🎉" />
+		{#if openTodos.length > TODOS_SHOWN}
+			<a class="link link-hover text-sm text-base-content/60" href="/todos"
+				>… und {openTodos.length - TODOS_SHOWN} weitere</a
+			>
+		{/if}
+	</section>
+
 	<div class="grid grid-cols-[repeat(auto-fit,minmax(min(14rem,100%),1fr))] gap-3">
 		{#each planningState.phases as phase}
 			{@const total = phase.conditions.length}
@@ -83,7 +113,28 @@
 			{@const complete = total > 0 && done === total}
 			<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-4">
 				<div class="flex items-start justify-between gap-2">
-					<div class="font-semibold">{phase.title}</div>
+					<div class="flex flex-col items-start gap-1">
+						<div class="font-semibold">{phase.title}</div>
+						<div class="flex items-center gap-1">
+							{#if todosPerPhase[phase.key]}
+								<a
+									class="badge badge-warning badge-sm"
+									href="/todos?link={encodeURIComponent(
+										linkParam({ kind: 'PHASE', key: phase.key })
+									)}"
+									title="offene Todos zu dieser Phase (auch zu ihren Schritten)"
+									>{todosPerPhase[phase.key]} Todo{todosPerPhase[phase.key] === 1 ? '' : 's'}</a
+								>
+							{/if}
+							<WriteButton
+								class="btn btn-ghost btn-xs px-1 text-base-content/50"
+								title="Todo zu dieser Phase anlegen"
+								onclick={() =>
+									(newTodoLinks = [{ kind: 'PHASE', key: phase.key, label: phase.title }])}
+								>+ Todo</WriteButton
+							>
+						</div>
+					</div>
 					<!-- Fortschritts-Ring (Things3-Stil): füllt im Uhrzeigersinn; fertig = grün + Haken -->
 					<div
 						class="radial-progress shrink-0 text-xs font-semibold {complete
@@ -151,3 +202,14 @@
 		generieren und wieder setzen.
 	</p>
 </div>
+
+{#if newTodoLinks}
+	<TodoEditor
+		presetLinks={newTodoLinks}
+		onclose={() => (newTodoLinks = null)}
+		onsaved={async () => {
+			newTodoLinks = null;
+			await invalidateAll();
+		}}
+	/>
+{/if}
