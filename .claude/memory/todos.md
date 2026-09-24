@@ -19,8 +19,8 @@ Backend side: `go/todos.md`. Decided with Oliver 2026-09-24.
 - `<LinkedTodos kind key label>` (`src/lib/todo/`) loads itself; so far only on
   `exam/assembledExams/[ancode]`. Other pages = one line each once they exist
   (teachers and rooms have no detail pages yet).
-- Nav: pill with the open count (hidden below `sm` -- the header already overflowed
-  375px by ~35px before), plus a menu entry under Daten → Semesterdaten → Weitere.
+- Nav: compact pill (☑ + count, from `sm` up) plus a menu entry under Daten →
+  Semesterdaten → Weitere. See [[nav-header-width]] -- the header has no slack.
 
 **Markdown** (`src/lib/markdown.js`, `src/lib/Markdown.svelte`): marked + DOMPurify.
 DOMPurify needs a DOM, so the component renders in `$effect` (after hydration) and

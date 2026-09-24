@@ -420,7 +420,7 @@
 				P
 			</span>
 			<span
-				class="hidden bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent sm:inline xl:hidden 2xl:inline"
+				class="hidden bg-gradient-to-r from-primary to-secondary bg-clip-text text-xl font-bold tracking-tight text-transparent md:inline xl:hidden min-[1700px]:inline"
 			>
 				Plexams
 			</span>
@@ -517,7 +517,7 @@
 		     Handy ist die Kopfzeile schon zu breit; dort bleiben Menü und Startseite. -->
 		{#if page.data?.openTodoCount != null}
 			<a
-				class="btn btn-ghost btn-sm hidden gap-1 rounded-full border border-base-300 font-medium sm:inline-flex {pathname.startsWith(
+				class="btn btn-ghost btn-sm hidden gap-1 rounded-full px-2 font-medium sm:inline-flex {pathname.startsWith(
 					'/todos'
 				)
 					? 'bg-primary/10 text-primary'
@@ -526,8 +526,7 @@
 				title="{page.data.openTodoCount} offene Todos"
 				aria-label="Todos"
 			>
-				<span class="hidden 2xl:inline">Todos</span>
-				<span class="2xl:hidden" aria-hidden="true">☑</span>
+				<span aria-hidden="true">☑</span>
 				{#if page.data.openTodoCount > 0}
 					<span class="badge badge-primary badge-sm tabular-nums">{page.data.openTodoCount}</span>
 				{/if}
@@ -641,8 +640,9 @@
 			{/if}
 		</a>
 
-		<!-- Theme-Auswahl -->
-		<div class="dropdown dropdown-end">
+		<!-- Theme-Auswahl (ab sm; auf dem Handy im Hamburger-Menü — die Kopfzeile
+		     wäre sonst breiter als der Bildschirm) -->
+		<div class="dropdown dropdown-end hidden sm:block">
 			<div
 				tabindex="0"
 				role="button"
@@ -663,7 +663,6 @@
 						d="M9.53 16.12a3 3 0 0 0-5.78 1.13 2.25 2.25 0 0 1-2.4 2.24 4.5 4.5 0 0 0 8.4-2.24c0-.4-.08-.78-.22-1.13Zm0 0a16 16 0 0 0 3.39-1.62m-5.04-.03a16 16 0 0 1 1.62-3.39m3.42 3.42a16 16 0 0 0 4.76-4.65l3.88-5.81a1.15 1.15 0 0 0-1.6-1.6l-5.81 3.88a16 16 0 0 0-4.65 4.76m3.42 3.42a6.78 6.78 0 0 0-3.42-3.42"
 					/>
 				</svg>
-				<span class="hidden capitalize 2xl:inline">{currentTheme}</span>
 			</div>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 			<ul
@@ -704,7 +703,7 @@
 					>
 						{(meName || '?').charAt(0)}
 					</span>
-					<span class="hidden max-w-32 truncate lg:inline">{meName}</span>
+					<span class="hidden max-w-32 truncate 2xl:inline">{meName}</span>
 					{#if viewer}<span class="badge badge-warning badge-xs">nur lesen</span>{/if}
 					<svg
 						class="h-3 w-3 opacity-60"
@@ -774,7 +773,7 @@
 				tabindex="0"
 				role="button"
 				title="Semester wechseln"
-				class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20"
+				class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2 py-1.5 text-sm font-medium whitespace-nowrap md:px-3 text-primary hover:bg-primary/20"
 			>
 				<span class="inline-block h-1.5 w-1.5 rounded-full bg-primary"></span>
 				{#if switchingSemester}
@@ -911,6 +910,32 @@
 									{/if}
 								</li>
 							{/if}
+						</ul>
+					</details>
+				</li>
+				<!-- Theme-Auswahl (nur Phone; ab sm gibt es den Topbar-Button) -->
+				<li class="sm:hidden">
+					<details>
+						<summary class="font-medium">
+							<span class="flex items-center gap-1.5">
+								Theme <span class="capitalize opacity-70">{currentTheme}</span>
+							</span>
+						</summary>
+						<ul class="max-h-64 flex-nowrap overflow-y-auto">
+							{#each themes as theme}
+								<li>
+									<button
+										class="flex items-center justify-between capitalize {theme === currentTheme
+											? 'bg-primary/15 text-primary'
+											: ''}"
+										data-set-theme={theme}
+										onclick={() => (currentTheme = theme)}
+									>
+										<span>{theme}</span>
+										{#if theme === currentTheme}<span aria-hidden="true">✓</span>{/if}
+									</button>
+								</li>
+							{/each}
 						</ul>
 					</details>
 				</li>
