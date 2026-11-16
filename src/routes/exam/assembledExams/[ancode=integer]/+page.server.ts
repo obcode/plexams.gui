@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
 import { backendRequest } from '$lib/server/backend';
 import { NTA_FIELDS } from '$lib/gql/fragments';
@@ -87,8 +88,56 @@ export const load: PageServerLoad = async ({ params }) => {
 	`;
 
 	const data = await backendRequest(query);
+	if (data.assembledExam) {
+		return { assembledExam: data.assembledExam, notAssembled: false };
+	}
 
+	// Before the exams are assembled (e.g. during the Vorplanung) there is no
+	// assembled exam yet — todo links point here all the same. Show what is known
+	// without registrations: the ZPA exam and its constraints.
+	const fallback = await backendRequest(gql`
+		query {
+			zpaExam(ancode: ${params.ancode}) {
+				ancode
+				module
+				mainExamer
+				examTypeFull
+				duration
+				isRepeaterExam
+				groups
+				primussAncodes {
+					program
+					ancode
+				}
+			}
+			constraintForAncode(ancode: ${params.ancode}) {
+				notPlannedByMe
+				excludeDays
+				possibleDays
+				sameSlot
+				online
+				roomConstraints {
+					placesWithSocket
+					lab
+					exahm
+					seb
+					preExamMinutes
+					postExamMinutes
+				}
+			}
+		}
+	`);
+	if (!fallback.zpaExam) {
+		error(404, `Prüfung ${params.ancode} gibt es in diesem Semester nicht.`);
+	}
 	return {
-		assembledExam: data.assembledExam
+		assembledExam: {
+			ancode: fallback.zpaExam.ancode,
+			zpaExam: fallback.zpaExam,
+			constraints: fallback.constraintForAncode,
+			primussExams: [],
+			conflicts: []
+		},
+		notAssembled: true
 	};
 };

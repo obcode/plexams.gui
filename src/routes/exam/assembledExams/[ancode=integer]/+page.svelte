@@ -122,7 +122,9 @@
 			</div>
 
 			<div class="mt-1 flex flex-wrap items-center gap-1.5">
-				<span class="badge badge-primary tabular-nums">{studentCount} Anmeldungen</span>
+				{#if !data.notAssembled}
+					<span class="badge badge-primary tabular-nums">{studentCount} Anmeldungen</span>
+				{/if}
 				{#if c?.notPlannedByMe}<span class="badge badge-neutral badge-sm"
 						>nicht von mir geplant</span
 					>{/if}
@@ -153,6 +155,15 @@
 					>{/if}
 			</div>
 		</div>
+
+		{#if data.notAssembled}
+			<div class="alert alert-info">
+				<span class="text-sm">
+					Diese Prüfung ist noch nicht zusammengestellt — Anmeldungen, Konflikte und NTAs erscheinen
+					nach „Prüfungen zusammenstellen".
+				</span>
+			</div>
+		{/if}
 
 		<LinkedTodos
 			kind="EXAM"
