@@ -23,7 +23,7 @@ aller Repos und hängt die beiden Repo-Memories zusätzlich unter dem geteilten
 Verzeichnis als `go/` und `gui/` ein.
 
 Ebenfalls im kombinierten Container: eine gemeinsame `CLAUDE.md` auf Workspace-Ebene
-(`/workspace/CLAUDE.md`, verlinkt aus `plexams.dev`) mit Layout, Glossar,
+(`/plexams/CLAUDE.md`, verlinkt aus `plexams.dev`) mit Layout, Glossar,
 Cross-Repo-Workflow und Git-Konventionen. Die `CLAUDE.md` dieses Repos ergänzt sie und
 bleibt eigenständig lesbar.
 

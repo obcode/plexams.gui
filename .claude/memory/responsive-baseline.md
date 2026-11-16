@@ -19,7 +19,7 @@ Ansicht, dichte Plan-Raster scrollen bewusst horizontal). Erledigt in 4 Commits 
    (`validationSummary`), Einzelpunkte erst ab `sm`.
 3. **Quick-Wins**: kdprooms-Tabellen in `overflow-x-auto`, SlotExam `w-96`→`w-full sm:w-96`,
    nicht-responsive `grid-cols-N` mit Mobile-Fallback.
-4. Doku in [CLAUDE.md](../../../workspace/plexams.gui/CLAUDE.md) („Conventions").
+4. Doku in [CLAUDE.md](../../../plexams/plexams.gui/CLAUDE.md) („Conventions").
 
 **Konvention** (siehe [[ui-design-language]]): Padding kommt aus dem Layout-Wrapper (keine
 eigenen `p-8`); mehrspaltige Grids immer `grid-cols-1 sm:grid-cols-N`; breite Tabellen/Raster

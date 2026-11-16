@@ -7,7 +7,7 @@ metadata:
   originSessionId: 5f20f88d-0e03-4eb6-8474-57fc728ad006
 ---
 
-Die `/jira`-Seite ([src/routes/jira/](../../../workspace/plexams.gui/src/routes/jira/), Nav: *Semesterdaten → Weitere*) ist das GUI zur on-prem-Jira `jira.cc.hm.edu`, Service-Desk-Projekt **FK07PP**. Backend: plexams.go, Branch `feat/jira-integration`, per PAT (Config serverseitig: jira.baseurl/token/project — GUI konfiguriert nichts).
+Die `/jira`-Seite ([src/routes/jira/](../../../plexams/plexams.gui/src/routes/jira/), Nav: *Semesterdaten → Weitere*) ist das GUI zur on-prem-Jira `jira.cc.hm.edu`, Service-Desk-Projekt **FK07PP**. Backend: plexams.go, Branch `feat/jira-integration`, per PAT (Config serverseitig: jira.baseurl/token/project — GUI konfiguriert nichts).
 
 **Aufbau:** Liste (3 Sichten: flach / nach Typ / nach Anfragetyp) links, Detail-Panel rechts (Beschreibung, Autor, Kommentar-Thread, Aktionen Kommentar/Status/Anhang). Verbindungs-Badge aus `jiraConnection`.
 
