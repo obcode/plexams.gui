@@ -41,7 +41,7 @@ const ROUTES = [
 	'/plan/rooms/validate',
 	'/preplan',
 	'/primuss/exams',
-	'/primuss/mucdai',
+	'/primuss/joint',
 	'/rooms',
 	'/students',
 	'/studyprograms',

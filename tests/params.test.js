@@ -33,11 +33,13 @@ let ids;
 test.beforeAll(async () => {
 	const [exams, cfg] = await Promise.all([
 		gql('{ plannedExams { ancode } }'),
-		gql('{ semesterConfig { days { number } } }')
+		gql('{ semesterConfig { days { date } } }')
 	]);
+	// ExamDay has no `number` anymore; the route uses the 1-based position.
+	expect(cfg.semesterConfig.days.length, 'semester has no exam days').toBeGreaterThan(0);
 	ids = {
 		ancode: exams.plannedExams[0].ancode,
-		day: cfg.semesterConfig.days[0].number
+		day: 1
 	};
 });
 
