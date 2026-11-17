@@ -22,8 +22,32 @@ export const load: PageServerLoad = async () => {
 				}
 			}
 		`);
-		return { account: data.myAccount ?? null, available: !!data.myAccount, loadError: '' };
+		// Benachrichtigung über Eingaben im Portal; ein älteres Backend kennt sie nicht.
+		let notificationMode: string | null = null;
+		try {
+			const n = await backendRequest<{ myNotificationSetting: { mode: string } }>(gql`
+				query {
+					myNotificationSetting {
+						mode
+					}
+				}
+			`);
+			notificationMode = n.myNotificationSetting?.mode ?? null;
+		} catch {
+			notificationMode = null;
+		}
+		return {
+			account: data.myAccount ?? null,
+			available: !!data.myAccount,
+			loadError: '',
+			notificationMode
+		};
 	} catch (e) {
-		return { account: null, available: false, loadError: gqlErrorMessage(e) };
+		return {
+			account: null,
+			available: false,
+			loadError: gqlErrorMessage(e),
+			notificationMode: null as string | null
+		};
 	}
 };

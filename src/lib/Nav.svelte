@@ -291,6 +291,9 @@
 		{
 			label: 'Vorbereitung',
 			items: [
+				{ section: 'Portal für Prüfende' },
+				{ href: '/inquiries', label: '📨 Abfragen an Prüfende' },
+				{ href: '/inquiries/activity', label: '🔔 Änderungen im Portal' },
 				{ section: 'SEB/EXaHM-Prüfungen' },
 				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
 				{ section: 'ZPA-Prüfungen' },

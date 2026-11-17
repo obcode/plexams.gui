@@ -36,6 +36,29 @@
 		return d;
 	}
 
+	// ── Benachrichtigung über Eingaben im Portal ─────────────────────────────────
+	const MODES = [
+		{ value: 'IMMEDIATE', label: 'Sofort', hint: 'gebündelt, wenige Minuten nach einer Eingabe' },
+		{ value: 'DAILY', label: 'Tagesmail', hint: 'einmal morgens, nur wenn es etwas gibt' },
+		{ value: 'OFF', label: 'Aus', hint: 'nur die Änderungsübersicht' }
+	];
+	let notifyMode = $derived(data.notificationMode);
+	let notifyBusy = $state(false);
+	let notifyError = $state('');
+	/** @param {string} mode */
+	async function setNotify(mode) {
+		notifyBusy = true;
+		notifyError = '';
+		try {
+			await post('/api/account/setNotificationMode', { mode });
+			await invalidateAll();
+		} catch (e) {
+			notifyError = errMsg(e);
+		} finally {
+			notifyBusy = false;
+		}
+	}
+
 	// ── Kürzel ──────────────────────────────────────────────────────────────────
 	let shortname = $state(data.account?.shortname ?? '');
 	// Vorbefüllung an den geladenen Wert koppeln (z. B. nach invalidateAll), solange
@@ -244,6 +267,38 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if notifyMode && account?.role !== 'VIEWER'}
+			<!-- Benachrichtigung über Eingaben im Portal -->
+			<div class="card mb-6 border border-base-300 bg-base-100 shadow-sm">
+				<div class="card-body gap-3 p-4">
+					<h2 class="text-sm font-semibold text-base-content/70">Eingaben im Portal</h2>
+					<p class="text-xs text-base-content/50">
+						Wie du erfährst, was Prüfende im Portal eintragen. Alles steht außerdem in der
+						<a class="link" href="/inquiries/activity">Änderungsübersicht</a>.
+					</p>
+					{#if notifyError}
+						<div class="alert alert-error alert-sm"><span>{notifyError}</span></div>
+					{/if}
+					<div class="flex flex-col gap-2">
+						{#each MODES as m (m.value)}
+							<label class="flex items-center gap-2">
+								<input
+									type="radio"
+									class="radio radio-sm"
+									name="notificationMode"
+									checked={notifyMode === m.value}
+									disabled={notifyBusy}
+									onchange={() => setNotify(m.value)}
+								/>
+								<span class="text-sm">{m.label}</span>
+								<span class="text-xs text-base-content/50">– {m.hint}</span>
+							</label>
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
 
 		<!-- Jira-PAT -->
 		<div class="card border border-base-300 bg-base-100 shadow-sm">

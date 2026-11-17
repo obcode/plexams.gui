@@ -54,6 +54,9 @@ const READ_POST_PATHS = new Set([
 	'/api/account/setShortname',
 	'/api/account/setJiraToken',
 	'/api/account/removeJiraToken',
+	'/api/account/setNotificationMode',
+	// Lesestand der Änderungsübersicht des Portals: persönlich, global.
+	'/api/inquiry/markActivitySeen',
 	// reine Lese-Abfragen:
 	'/api/email/renderEmailTemplatePreview',
 	'/api/exam/conflictingAncodes',
