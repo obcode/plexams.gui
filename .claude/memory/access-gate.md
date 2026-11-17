@@ -1,20 +1,29 @@
 ---
-name: ""
-metadata: 
-  node_type: memory
-  originSessionId: 430c8551-9ee5-44c4-971d-406bea5cc0aa
+name: access-gate
+description: hooks.server.js access gate — staff vs portal vs denied vs unavailable, per-user cache, stale-on-outage; replaces the old fail-open gate
+metadata:
+  type: project
 ---
 
-Seit 2026-07-14 (main, Commit c7a8d7e). Problem davor: eine am Auth-Proxy angemeldete Kennung, deren E-Mail **nicht** in der Backend-Allowlist steht, blieb „drin" — die Nav wurde gerendert, aber jede SSR-`load()` lief ins 401→500 (auf jeder Seite ein Fehler).
+The gate in `src/hooks.server.js` decides per request what a login (X-Remote-User) may
+reach. Pure logic in `src/lib/server/accessCheck.js` (tested in `accessCheck.test.js`).
+Rewritten 2026-11 for the examiner portal (M1); the original 2026-07 version was fail-open
+on backend errors — that is gone.
 
-**Fix in `src/hooks.server.js`** (Riegel läuft innerhalb `authContext.run`, VOR dem read-only-Riegel):
-- `isAuthorized(remoteUser)`: fragt `me { email }` ab, Ergebnis ~30s **pro Kennung** gecacht (`authCache`).
-  - Erfolg mit `me.email` → freigeschaltet.
-  - Fehler **mit** `err.response` (graphql-request ClientError = Backend hat geantwortet, z. B. forbidden) → **sperren**.
-  - Fehler **ohne** `.response` (Netzwerkfehler, Backend down) → **NICHT sperren** (fail-open, niemand aussperren wegen Backend-Hickser).
-- Bei Sperre: `denyResponse(event, remoteUser)` — für `/api/*` ein **403-JSON**, sonst eine **eigenständige HTML-Seite** (kein Nav, kein Layout, keine SSR-loads; inline-CSS, light/dark, zeigt die E-Mail). Die Seiten-`load()`s laufen dann gar nicht erst.
-- Greift nur wenn `remoteUser` (X-Remote-User-Header) gesetzt ist → lokal/Dev unverändert.
+- Two probes **in parallel, never in one document**: `me { email }` on `/query` and
+  `session` on `/query/portal` (`portalProbe` in `backend.js`). `me: User!` is non-null and
+  would tear down a combined response; an older backend rejects the unknown field.
+- `combine(me, session)` → `staff` | `portal` | `denied` | `unavailable`. Only a 4xx or a
+  GraphQL error counts as rejection; 5xx and network errors are "unavailable" (graphql-request
+  attaches `.response` to every non-2xx, also to a 500). A 404 from `/query/portal` (portal not
+  mounted) is a rejection, so with `portal.enabled: false` everything behaves as before.
+- `decide(access, path)`: staff → everything; portal → only `/portal/**` and `/monitoring`,
+  `/` redirects (303) to `/portal`, the rest gets the portal-only page/403 JSON; denied →
+  "Kein Zutritt"; unavailable → 503 page.
+- Cache per login: 30 s, concurrent requests coalesced, max 500 entries. On an outage a
+  known login keeps its last result for up to 10 min; a denied login stays denied.
+- `locals.access` carries `{access, session}` for the layouts.
+- Without X-Remote-User (local dev) the gate does nothing.
 
-Warum `me` non-nullable relevant ist: `me: User!` im Schema — bei nicht freigeschalteter Kennung kann das Backend nicht `me: null` liefern, sondern wirft → deshalb 500 überall (und deshalb im Layout `me = null` via catch, aber Nav trotzdem da).
-
-Tests: `src/hooks.server.test.js` (mockt `$lib/server/backend`; 5 Fälle: Dev/kein Header, freigeschaltet, abgelehnt HTML, abgelehnt /api-JSON, Backend down = fail-open).
+**Why:** with portal logins there are two audiences; "let through on doubt" is no longer
+defined, and a backend restart must not lock anyone out.

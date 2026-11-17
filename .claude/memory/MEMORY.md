@@ -1,7 +1,8 @@
 - [Versioning policy](versioning-policy.md) — client major tracks plexams-server major (now v3); bump client major on every server breaking change; version via semantic-release tags, not package.json
 - [OIDC auth](oidc-auth.md) — Identität/Rolle/VIEWER-Ausblendung/Benutzerverwaltung; am 2026-07-11 nach main gemergt
 - [Auth header forwarding](auth-header-forwarding.md) — GUI reicht X-Remote-User auf jedem SSR/api-Hop ans Backend; interner Hop plexams:8080 vs. öffentliche Shibboleth-URL; AsyncLocalStorage in $lib/server/backend
-- [Access gate](access-gate.md) — hooks.server.js sperrt nicht freigeschaltete (aber am Proxy angemeldete) Kennungen mit eigenständiger „Kein Zutritt"-Seite statt 500ern; fail-open bei Backend down
+- [Access gate](access-gate.md) — hooks.server.js: `me` + portal `session` in parallel → staff/portal/denied/unavailable; per-user cache, stale-on-outage, 503 page
+- [Portal routes](portal-routes.md) — (planner) route group, src/routes/portal with own layout, portalRequest to /query/portal, form actions instead of /api
 - [Account page](account-page.md) — /account „Mein Account": Identität read-only + Kürzel (setMyShortname) + Jira-PAT write-only (setMyJiraToken/removeMyJiraToken); Verbindungstest via api/jira/connection
 - [Validation write-lock](validation-write-lock.md) — backend blocks all mutations while any validation runs; why the nav indicator is on-demand, not polled
 - [Validation architecture](validation-architecture.md) — where the validation/generation UI lives and how to add a validator group
