@@ -8,7 +8,13 @@ const MESSAGES = {
 	READ_ONLY_TOKEN: 'Dieses Token darf nur lesen.',
 	INVALID_INPUT: 'Die Eingabe ist ungültig.',
 	NOT_FOUND: 'Nicht gefunden.',
-	INVALID_TOKEN: 'Das Token ist ungültig, abgelaufen oder widerrufen.'
+	INVALID_TOKEN: 'Das Token ist ungültig, abgelaufen oder widerrufen.',
+	NOT_AFFECTED: 'Diese Abfrage betrifft Sie nicht.',
+	INQUIRY_CLOSED:
+		'Die Abfrage ist geschlossen; Änderungen nimmt jetzt nur noch die Prüfungsplanung vor.',
+	SEMESTER_READ_ONLY: 'Das Semester ist schreibgeschützt.',
+	REVISION_CONFLICT:
+		'Der Eintrag wurde inzwischen geändert (z. B. in einem anderen Fenster). Bitte laden Sie die Seite neu.'
 };
 
 /**
