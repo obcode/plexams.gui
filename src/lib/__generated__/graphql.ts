@@ -917,6 +917,29 @@ export type GenerationConfigInput = {
   weightPreferExamDays: Scalars['Float']['input'];
 };
 
+/** Something that keeps a person from reaching the portal, or lets a login be the wrong person. */
+export type IdentityProblem = {
+  __typename?: 'IdentityProblem';
+  /** The address involved, if any. */
+  email: Scalars['String']['output'];
+  /** Whether the person is main examiner of an exam in the active semester. */
+  hasExams: Scalars['Boolean']['output'];
+  kind: IdentityProblemKind;
+  teacherID: Scalars['Int']['output'];
+  teacherName: Scalars['String']['output'];
+};
+
+export enum IdentityProblemKind {
+  /** An alias points to a person who is in no recent teacher mirror. */
+  AliasUnknownTeacher = 'ALIAS_UNKNOWN_TEACHER',
+  /** The ZPA address is not an @hm.edu address, so the SSO login cannot match it. */
+  ExternalAddress = 'EXTERNAL_ADDRESS',
+  /** The person has exams but no e-mail address in ZPA. */
+  NoAddress = 'NO_ADDRESS',
+  /** Several ZPA persons share the address; the login would be all of them. */
+  SharedAddress = 'SHARED_ADDRESS'
+}
+
 export type ImportJointResult = {
   __typename?: 'ImportJointResult';
   /** new non-ZPA exams created (non-FK07, not existing yet). */
@@ -1227,6 +1250,18 @@ export type LogLine = {
   validation?: Maybe<ValidationReport>;
 };
 
+/** A login whose SSO address differs from the address ZPA has for the person. */
+export type LoginAlias = {
+  __typename?: 'LoginAlias';
+  createdAt: Scalars['Time']['output'];
+  createdBy: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  note: Scalars['String']['output'];
+  teacherID: Scalars['Int']['output'];
+  /** Name from the newest teacher mirror; empty if the person is in none. */
+  teacherName: Scalars['String']['output'];
+};
+
 /** MinutesReport: distribution of assigned vs. target minutes around the tolerance band. */
 export type MinutesReport = {
   __typename?: 'MinutesReport';
@@ -1384,12 +1419,14 @@ export type Mutation = {
   removeExamsCanShareSlot: Scalars['Boolean']['output'];
   /** Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection. */
   removeJointLink: JointExam;
+  removeLoginAlias: Scalars['Boolean']['output'];
   /** Remove the current user's stored Jira PAT. */
   removeMyJiraToken: MyAccount;
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
   removePermanentNonInvigilator: Scalars['Boolean']['output'];
+  removePortalLoginBlock: Scalars['Boolean']['output'];
   /** Remove a pre-planned invigilation (key: starttime/roomName; roomName null = the reserve). */
   removePrePlannedInvigilation: Scalars['Boolean']['output'];
   /** Remove a pre-planned room from an exam (key: ancode/roomName/mtknr). mtknr null = the room for normal students. */
@@ -1452,6 +1489,7 @@ export type Mutation = {
   resetRoomsForExams: Scalars['Boolean']['output'];
   /** Drop this semester's planner override, so the server default applies again. */
   resetSemesterPlaner: Planer;
+  revokePortalAccessToken: Scalars['Boolean']['output'];
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
   /**
@@ -1496,6 +1534,7 @@ export type Mutation = {
    * for the unresolved/wrong FK07 cases. Stored as a manual link that survives re-imports.
    */
   setJointZpaLink: JointExam;
+  setLoginAlias: LoginAlias;
   /**
    * Store the current user's Jira Personal Access Token, AES-256-GCM encrypted in the
    * DB. Write-only: the token is never returned by any query. Requires secrets.key to
@@ -1517,6 +1556,7 @@ export type Mutation = {
   setPermanentNonInvigilator: PermanentNonInvigilator;
   /** Set or clear a planning condition by hand (e.g. mark/unmark a plan as published). Returns the new state. */
   setPlanningCondition: PlanningState;
+  setPortalLoginBlock: PortalLoginBlock;
   /**
    * Mark (canShare=true) or unmark (false) another pre-exam as "may run at the same time /
    * right after" this one despite a shared study program (no common students). The link is
@@ -1864,6 +1904,12 @@ export type MutationRemoveJointLinkArgs = {
 };
 
 
+export type MutationRemoveLoginAliasArgs = {
+  email: Scalars['String']['input'];
+  teacherID: Scalars['Int']['input'];
+};
+
+
 export type MutationRemoveNtaRoomAloneWaiverArgs = {
   ancode: Scalars['Int']['input'];
   mtknr: Scalars['String']['input'];
@@ -1872,6 +1918,11 @@ export type MutationRemoveNtaRoomAloneWaiverArgs = {
 
 export type MutationRemovePermanentNonInvigilatorArgs = {
   teacherID: Scalars['Int']['input'];
+};
+
+
+export type MutationRemovePortalLoginBlockArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -1921,6 +1972,11 @@ export type MutationRemoveUserArgs = {
 
 export type MutationResetEmailTemplateArgs = {
   name: Scalars['String']['input'];
+};
+
+
+export type MutationRevokePortalAccessTokenArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -1992,6 +2048,13 @@ export type MutationSetJointZpaLinkArgs = {
 };
 
 
+export type MutationSetLoginAliasArgs = {
+  email: Scalars['String']['input'];
+  note?: InputMaybe<Scalars['String']['input']>;
+  teacherID: Scalars['Int']['input'];
+};
+
+
 export type MutationSetMyJiraTokenArgs = {
   token: Scalars['String']['input'];
 };
@@ -2020,6 +2083,12 @@ export type MutationSetPermanentNonInvigilatorArgs = {
 export type MutationSetPlanningConditionArgs = {
   done: Scalars['Boolean']['input'];
   key: Scalars['String']['input'];
+};
+
+
+export type MutationSetPortalLoginBlockArgs = {
+  email: Scalars['String']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -2461,6 +2530,28 @@ export type PlanningState = {
   phases: Array<PlanningPhase>;
 };
 
+/** A personal access token of the portal, as an admin sees it -- never the secret. */
+export type PortalAccessToken = {
+  __typename?: 'PortalAccessToken';
+  createdAt: Scalars['Time']['output'];
+  description: Scalars['String']['output'];
+  expiresAt: Scalars['Time']['output'];
+  id: Scalars['String']['output'];
+  lastUsedAt?: Maybe<Scalars['Time']['output']>;
+  ownerEmail: Scalars['String']['output'];
+  revokedAt?: Maybe<Scalars['Time']['output']>;
+  scope: Scalars['String']['output'];
+};
+
+/** A login whose portal access is withdrawn. A planner role is unaffected. */
+export type PortalLoginBlock = {
+  __typename?: 'PortalLoginBlock';
+  createdAt: Scalars['Time']['output'];
+  createdBy: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  reason: Scalars['String']['output'];
+};
+
 export type PreExam = {
   __typename?: 'PreExam';
   constraints?: Maybe<Constraints>;
@@ -2750,6 +2841,9 @@ export type ProgramSpread = {
 
 export type Query = {
   __typename?: 'Query';
+  /** Problems with the identities of the active semester's teachers and with the aliases. */
+  accessIdentityReport: Array<IdentityProblem>;
+  accessResolveLogin: ResolvedLogin;
   /**
    * Additional exams: fully specified entries that are appended to the ZPA upload
    * but are not part of the normal plan (replaces publish.additionalExams).
@@ -2924,6 +3018,7 @@ export type Query = {
    * module, then either. For the GUI to confirm/correct the link.
    */
   jointZpaCandidates: Array<ZpaExam>;
+  loginAliases: Array<LoginAlias>;
   /**
    * The currently authenticated user — from the auth-proxy header, or the local dev
    * fallback when auth is disabled. The GUI uses it to show identity/role and adapt
@@ -2972,6 +3067,8 @@ export type Query = {
   plannedRoomsAt?: Maybe<Array<PlannedRoom>>;
   /** The planning state (phases, conditions, currently locked areas). */
   planningState: PlanningState;
+  portalAccessTokens: Array<PortalAccessToken>;
+  portalLoginBlocks: Array<PortalLoginBlock>;
   preExamsAt?: Maybe<Array<PreExam>>;
   prePlannedInvigilations: Array<PrePlannedInvigilation>;
   prePlannedRooms: Array<PrePlannedRoom>;
@@ -3012,6 +3109,7 @@ export type Query = {
   primussExam: PrimussExam;
   primussExams?: Maybe<Array<Maybe<PrimussExamByProgram>>>;
   primussExamsForAnCode?: Maybe<Array<PrimussExam>>;
+  rejectedLogins: Array<RejectedLogin>;
   /**
    * Render the given Markdown for the named template against representative sample data and
    * return the HTML/text preview. Does not save. Used for the live preview + validation while
@@ -3084,7 +3182,7 @@ export type Query = {
    * room generation (the replacement for the old 'No Room' placeholder).
    */
   unplacedExams: Array<UnplacedExam>;
-  /** All known users (the authorization allow-list). Admin view for managing who may log in. */
+  /** All known users (the authorization allow-list). Admin view for managing who may log in. Requires role ADMIN. */
   users: Array<User>;
   /** Validate the current slot assignment of the pre-exams (unassigned, capacity, program overlaps). */
   validatePreplanAssignment: PreplanValidation;
@@ -3095,6 +3193,11 @@ export type Query = {
   zpaExamsNotToPlan: Array<ZpaExam>;
   zpaExamsPlaningStatusUnknown: Array<ZpaExam>;
   zpaExamsToPlanWithConstraints: Array<ZpaExamWithConstraints>;
+};
+
+
+export type QueryAccessResolveLoginArgs = {
+  email: Scalars['String']['input'];
 };
 
 
@@ -3356,6 +3459,26 @@ export type RegWithProgram = {
   primussAncode: Scalars['Int']['output'];
   program: Scalars['String']['output'];
   zpaAncode: Scalars['Int']['output'];
+};
+
+/** A login the server turned away recently (in memory, cleared on restart). */
+export type RejectedLogin = {
+  __typename?: 'RejectedLogin';
+  at: Scalars['Time']['output'];
+  count: Scalars['Int']['output'];
+  email: Scalars['String']['output'];
+};
+
+/** How the server would resolve a login right now. */
+export type ResolvedLogin = {
+  __typename?: 'ResolvedLogin';
+  actsFor: Array<Scalars['Int']['output']>;
+  blocked: Scalars['Boolean']['output'];
+  email: Scalars['String']['output'];
+  /** Whether the login gets into the portal (with portal.enabled). */
+  portalAccess: Scalars['Boolean']['output'];
+  role?: Maybe<Role>;
+  teachers: Array<Teacher>;
 };
 
 /**

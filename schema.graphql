@@ -1159,6 +1159,37 @@ input GenerationConfigInput {
   roomHeatBaselineHour: Float!
 }
 
+"""
+Something that keeps a person from reaching the portal, or lets a login be the wrong person.
+"""
+type IdentityProblem {
+  kind: IdentityProblemKind!
+  teacherID: Int!
+  teacherName: String!
+
+  """The address involved, if any."""
+  email: String!
+
+  """Whether the person is main examiner of an exam in the active semester."""
+  hasExams: Boolean!
+}
+
+enum IdentityProblemKind {
+  """The person has exams but no e-mail address in ZPA."""
+  NO_ADDRESS
+
+  """
+  The ZPA address is not an @hm.edu address, so the SSO login cannot match it.
+  """
+  EXTERNAL_ADDRESS
+
+  """Several ZPA persons share the address; the login would be all of them."""
+  SHARED_ADDRESS
+
+  """An alias points to a person who is in no recent teacher mirror."""
+  ALIAS_UNKNOWN_TEACHER
+}
+
 type ImportJointResult {
   """programs (Studiengruppen) found in the CSV."""
   programs: [String!]!
@@ -1459,6 +1490,20 @@ type LiveStatus {
 }
 
 """
+A login whose SSO address differs from the address ZPA has for the person.
+"""
+type LoginAlias {
+  email: String!
+  teacherID: Int!
+
+  """Name from the newest teacher mirror; empty if the person is in none."""
+  teacherName: String!
+  note: String!
+  createdBy: String!
+  createdAt: Time!
+}
+
+"""
 LogLevel classifies a streamed LogLine. PROGRESS lines are throttled optimizer
 snapshots and should be rendered in-place (like a spinner) instead of appended.
 DONE marks the final line of a stream.
@@ -1499,6 +1544,12 @@ type MinutesReport {
 }
 
 type Mutation {
+  setLoginAlias(email: String!, teacherID: Int!, note: String): LoginAlias!
+  removeLoginAlias(email: String!, teacherID: Int!): Boolean!
+  setPortalLoginBlock(email: String!, reason: String): PortalLoginBlock!
+  removePortalLoginBlock(email: String!): Boolean!
+  revokePortalAccessToken(id: String!): Boolean!
+
   """
   Set the current user's Kürzel override. An empty string resets to the ZPA default.
   """
@@ -2380,6 +2431,30 @@ type PlanningState {
   blockedAreas: [PlanningGate!]!
 }
 
+"""
+A personal access token of the portal, as an admin sees it -- never the secret.
+"""
+type PortalAccessToken {
+  id: String!
+  ownerEmail: String!
+  description: String!
+  scope: String!
+  createdAt: Time!
+  expiresAt: Time!
+  lastUsedAt: Time
+  revokedAt: Time
+}
+
+"""
+A login whose portal access is withdrawn. A planner role is unaffected.
+"""
+type PortalLoginBlock {
+  email: String!
+  reason: String!
+  createdBy: String!
+  createdAt: Time!
+}
+
 type PreExam {
   zpaExam: ZPAExam!
   constraints: Constraints
@@ -2738,6 +2813,16 @@ type Query {
   config (slots/emails/go-slots carry over; the planner adjusts the dates).
   """
   newSemesterConfigDefaults: SemesterConfigInput!
+  loginAliases: [LoginAlias!]!
+  portalLoginBlocks: [PortalLoginBlock!]!
+  rejectedLogins: [RejectedLogin!]!
+  portalAccessTokens: [PortalAccessToken!]!
+
+  """
+  Problems with the identities of the active semester's teachers and with the aliases.
+  """
+  accessIdentityReport: [IdentityProblem!]!
+  accessResolveLogin(email: String!): ResolvedLogin!
 
   """The current user's account (identity + Kürzel + Jira-token status)."""
   myAccount: MyAccount!
@@ -2781,7 +2866,7 @@ type Query {
   me: User!
 
   """
-  All known users (the authorization allow-list). Admin view for managing who may log in.
+  All known users (the authorization allow-list). Admin view for managing who may log in. Requires role ADMIN.
   """
   users: [User!]!
 
@@ -3206,6 +3291,27 @@ type RegWithProgram {
   program: String!
   primussAncode: Int!
   zpaAncode: Int!
+}
+
+"""
+A login the server turned away recently (in memory, cleared on restart).
+"""
+type RejectedLogin {
+  email: String!
+  at: Time!
+  count: Int!
+}
+
+"""How the server would resolve a login right now."""
+type ResolvedLogin {
+  email: String!
+  role: Role
+  teachers: [Teacher!]!
+  actsFor: [Int!]!
+  blocked: Boolean!
+
+  """Whether the login gets into the portal (with portal.enabled)."""
+  portalAccess: Boolean!
 }
 
 """
