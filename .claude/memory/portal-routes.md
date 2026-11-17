@@ -21,4 +21,13 @@ Since M1 of the examiner portal (2026-11):
   `/query/portal`.
 - Admin side: `(planner)/admin/access` + `api/access/*` (all in `READ_POST_PATHS`).
 
+- M2 (2026-11): `portal/[semester=semester]/exahm-seb` (matcher `src/params/semester.js`),
+  `$lib/portal/PreplanForm.svelte`, `$lib/portal/inquiry.js` (labels, `inquiryPath`,
+  `preplanInputFromForm`). Planner side: `(planner)/inquiries` (setup + inbox with
+  `$lib/inquiry/diff.js`), `(planner)/inquiries/activity`, notification mode on `/account`.
+  The planner pages work on the ACTIVE semester; the inbox summary and the activity log span
+  all semesters.
+- Dev-mode e2e gotcha: in `pnpm dev` a freshly navigated page needs a moment to hydrate;
+  a Playwright click before that does nothing. Wait for `networkidle` (plus a short pause).
+
 See [[access-gate]] for who gets where, and `docs/ROUTES.md` for the route map.
