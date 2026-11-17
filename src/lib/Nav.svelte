@@ -744,6 +744,10 @@
 							href="/account">👤 Mein Account</a
 						>
 					</li>
+					<li>
+						<!-- Das Portal für Prüfende – Planende sind meist auch Prüfende. -->
+						<a class="rounded-lg" href="/portal">🎓 Mein Portal</a>
+					</li>
 					{#if admin}
 						<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Administration</li>
 						<li>
