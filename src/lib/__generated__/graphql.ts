@@ -1518,6 +1518,12 @@ export type Mutation = {
    */
   prePlanInvigilationAt: Scalars['Boolean']['output'];
   prePlanRoom: Scalars['Boolean']['output'];
+  /**
+   * Write the current revision of an EXaHM/SEB submission into the pre-planning again (the
+   * examiner's statement wins over later edits; a deleted pre-exam is created again) and mark
+   * it as reviewed.
+   */
+  reapplyInquirySubmission: Scalars['Boolean']['output'];
   /** Remove the duration override for an ancode. Returns false if there was none. */
   removeExamDuration: Scalars['Boolean']['output'];
   removeExamsCanShareSlot: Scalars['Boolean']['output'];
@@ -2012,6 +2018,11 @@ export type MutationPrePlanRoomArgs = {
   reserve: Scalars['Boolean']['input'];
   roomName: Scalars['String']['input'];
   seats?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type MutationReapplyInquirySubmissionArgs = {
+  id: Scalars['Int']['input'];
 };
 
 

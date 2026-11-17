@@ -5,6 +5,7 @@
 	import TodoEditor from '$lib/todo/TodoEditor.svelte';
 	import TodoList from '$lib/todo/TodoList.svelte';
 	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '$lib/todo/todo.js';
+	import { KIND_LABEL } from '$lib/inquiry/diff';
 
 	let { data } = $props();
 
@@ -73,6 +74,20 @@
 		<h1 class="text-2xl font-semibold">Prüfungsplanung {data.semester}</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{doneCount}/{totalCount}</span>
 	</div>
+
+	{#if data.portal?.inbox?.length > 0 || data.portal?.unseen > 0}
+		<div class="alert alert-info flex flex-wrap gap-x-4 py-2 text-sm" role="status">
+			<span class="font-medium">📨 Portal für Prüfende:</span>
+			{#each data.portal.inbox as e (e.semester + e.kind)}
+				<a class="link" href="/inquiries"
+					>{e.open} ungesichtet ({e.semester}, {KIND_LABEL[e.kind] ?? e.kind})</a
+				>
+			{/each}
+			{#if data.portal.unseen > 0}
+				<a class="link" href="/inquiries/activity">{data.portal.unseen} neue Eingaben</a>
+			{/if}
+		</div>
+	{/if}
 
 	{#if planningState.blockedAreas.length}
 		<div class="flex flex-col gap-1">

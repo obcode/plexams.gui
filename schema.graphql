@@ -1802,6 +1802,13 @@ type Mutation {
   reviewInquirySubmission(id: Int!, revision: Int!, state: InquiryReviewState!, note: String): Boolean!
 
   """
+  Write the current revision of an EXaHM/SEB submission into the pre-planning again (the
+  examiner's statement wins over later edits; a deleted pre-exam is created again) and mark
+  it as reviewed.
+  """
+  reapplyInquirySubmission(id: Int!): Boolean!
+
+  """
   How the caller hears about portal changes: OFF, IMMEDIATE or DAILY (default).
   """
   setMyNotificationMode(mode: NotificationMode!): NotificationSetting!

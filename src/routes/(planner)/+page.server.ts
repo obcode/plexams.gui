@@ -42,7 +42,41 @@ export const load: PageServerLoad = async () => {
 		// älteres Backend ohne Todos
 	}
 
+	// Portal für Prüfende: ungesichtete Meldungen (alle Semester) und neue Eingaben
+	// seit dem letzten Blick in die Änderungsübersicht. Ein älteres Backend kennt das
+	// nicht – dann eben ohne.
+	let portal: { inbox: { semester: string; kind: string; open: number }[]; unseen: number } = {
+		inbox: [],
+		unseen: 0
+	};
+	try {
+		const p = await backendRequest<{
+			inquiryInboxSummary: { semester: string; kind: string; open: number }[];
+			myNotificationSetting: { unseen: { count: number }[] };
+		}>(gql`
+			query {
+				inquiryInboxSummary {
+					semester
+					kind
+					open
+				}
+				myNotificationSetting {
+					unseen {
+						count
+					}
+				}
+			}
+		`);
+		portal = {
+			inbox: p.inquiryInboxSummary,
+			unseen: p.myNotificationSetting.unseen.reduce((n, u) => n + u.count, 0)
+		};
+	} catch {
+		// älteres Backend ohne Portal
+	}
+
 	return {
+		portal,
 		semester: data.semester.id,
 		planningState: data.planningState,
 		todos

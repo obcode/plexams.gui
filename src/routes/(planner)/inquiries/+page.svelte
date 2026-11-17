@@ -259,6 +259,14 @@
 								>
 									Gesichtet
 								</button>
+								<button
+									class="btn btn-ghost btn-sm"
+									disabled={busy || s.withdrawn}
+									title="Die Angaben der Meldung erneut in die Vorplanung schreiben – überschreibt spätere Änderungen an diesen Feldern"
+									onclick={() => post('/api/inquiry/reapplySubmission', { id: s.id })}
+								>
+									Erneut übernehmen
+								</button>
 								<input
 									class="input input-bordered input-sm w-full sm:w-72"
 									placeholder="Begründung für die Ablehnung"
