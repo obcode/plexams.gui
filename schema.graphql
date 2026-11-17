@@ -1212,6 +1212,106 @@ type ImportJointResult {
   examsRemoved: Int!
 }
 
+type Inquiry {
+  semester: String!
+  kind: InquiryKind!
+  state: InquiryState!
+  deadline: Time
+  intro: String!
+  openedAt: Time
+  openedBy: String
+  closedAt: Time
+  closedBy: String
+
+  """Number of submissions, and of those not yet looked at."""
+  submissions: Int!
+  openSubmissions: Int!
+
+  """Examiners who said there is nothing to report."""
+  nothingToReport: Int!
+}
+
+type InquiryActivity {
+  id: Int!
+  semester: String!
+  at: Time!
+  actor: String!
+  channel: String!
+  teacherID: Int!
+  teacherName: String!
+  kind: InquiryKind!
+  action: String!
+  submissionID: Int
+  revision: Int
+  label: String!
+  changes: [InquiryActivityChange!]!
+}
+
+type InquiryActivityChange {
+  field: String!
+  old: String!
+  new: String!
+}
+
+type InquiryInboxEntry {
+  semester: String!
+  kind: InquiryKind!
+  open: Int!
+}
+
+input InquiryInput {
+  deadline: Time
+  intro: String!
+}
+
+enum InquiryKind {
+  PREPLAN
+  EXAMS_TO_PLAN
+  CONSTRAINTS
+  DRAFT_FEEDBACK
+  INVIGILATION
+}
+
+enum InquiryReviewState {
+  """new or changed since a planner last looked at it"""
+  OPEN
+  APPLIED
+  APPLIED_MODIFIED
+  REJECTED
+  DONE
+}
+
+enum InquiryState {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+type InquirySubmission {
+  id: Int!
+  kind: InquiryKind!
+  revision: Int!
+  teacherID: Int!
+  teacherName: String!
+  createdBy: String!
+  submittedBy: String!
+  submittedAt: Time!
+
+  """WEB or TOKEN."""
+  channel: String!
+  withdrawn: Boolean!
+
+  """The pre-exam the entry became; null when the planners deleted it."""
+  preplanExamID: Int
+  review: InquiryReviewState!
+  reviewNote: String!
+  reviewedRevision: Int
+  preplan: PreplanEntry
+
+  """The entry as a planner last reviewed it -- for the comparison."""
+  reviewedPreplan: PreplanEntry
+}
+
 type Invigilation {
   roomName: String
   duration: Int!
@@ -1689,6 +1789,27 @@ type Mutation {
   setGenerationConfig(input: GenerationConfigInput!): GenerationConfig!
 
   """
+  Create or update an inquiry of the active semester (deadline, introduction).
+  """
+  setInquiry(kind: InquiryKind!, input: InquiryInput!): Inquiry!
+  openInquiry(kind: InquiryKind!): Inquiry!
+  closeInquiry(kind: InquiryKind!): Inquiry!
+
+  """
+  Mark a submission revision as looked at (APPLIED, APPLIED_MODIFIED, DONE) or reject
+  it (REJECTED, note required). Fails when a newer revision arrived in the meantime.
+  """
+  reviewInquirySubmission(id: Int!, revision: Int!, state: InquiryReviewState!, note: String): Boolean!
+
+  """
+  How the caller hears about portal changes: OFF, IMMEDIATE or DAILY (default).
+  """
+  setMyNotificationMode(mode: NotificationMode!): NotificationSetting!
+
+  """Mark the overview as read up to the given change."""
+  markInquiryActivitySeen(upTo: Int!): Boolean!
+
+  """
   Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at an exam time.
   """
   prePlanInvigilation(invigilatorID: Int!, starttime: Time!, roomName: String): Boolean!
@@ -2160,6 +2281,20 @@ type MyAccount {
   jiraTokenUpdatedAt: Time
 }
 
+enum NotificationMode {
+  OFF
+  IMMEDIATE
+  DAILY
+}
+
+type NotificationSetting {
+  mode: NotificationMode!
+
+  """The last change shown in the overview."""
+  seenUpTo: Int!
+  unseen: [UnseenActivity!]!
+}
+
 type NTA {
   name: String!
   email: String
@@ -2499,6 +2634,16 @@ type PreplanBookingSuggestion {
 
   """Exam kinds in these slots (EXaHM/SEB)."""
   kinds: [String!]!
+}
+
+"""The content of an EXaHM/SEB entry."""
+type PreplanEntry {
+  examKind: String!
+  module: String!
+  programs: [String!]!
+  expectedStudents: Int!
+  durationMin: Int
+  remark: String!
 }
 
 """
@@ -2961,6 +3106,23 @@ type Query {
   moved to the per-semester config as timelagMin.)
   """
   generationConfig: GenerationConfig!
+
+  """
+  Every kind of inquiry in the active semester; kinds not set up yet come back as DRAFT.
+  """
+  inquiries: [Inquiry!]!
+
+  """Submissions not looked at yet, per semester and kind -- all semesters."""
+  inquiryInboxSummary: [InquiryInboxEntry!]!
+
+  """Submissions of a kind in the active semester."""
+  inquirySubmissions(kind: InquiryKind!, onlyOpen: Boolean): [InquirySubmission!]!
+
+  """
+  Changes through the portal, newest first. All semesters unless filtered.
+  """
+  inquiryActivity(semester: String, kind: InquiryKind, teacherID: Int, before: Int, first: Int): [InquiryActivity!]!
+  myNotificationSetting: NotificationSetting!
   invigilatorTodos: InvigilationTodos
   invigilatorsWithReq: [Invigilator!]!
 
@@ -4376,6 +4538,11 @@ UnplacedExamReason is the reason a single exam ended up unplaced in a generation
 type UnplacedExamReason {
   ancode: Int!
   reason: String!
+}
+
+type UnseenActivity {
+  semester: String!
+  count: Int!
 }
 
 """

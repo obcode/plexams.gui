@@ -956,6 +956,106 @@ export type ImportJointResult = {
   programs: Array<Scalars['String']['output']>;
 };
 
+export type Inquiry = {
+  __typename?: 'Inquiry';
+  closedAt?: Maybe<Scalars['Time']['output']>;
+  closedBy?: Maybe<Scalars['String']['output']>;
+  deadline?: Maybe<Scalars['Time']['output']>;
+  intro: Scalars['String']['output'];
+  kind: InquiryKind;
+  /** Examiners who said there is nothing to report. */
+  nothingToReport: Scalars['Int']['output'];
+  openSubmissions: Scalars['Int']['output'];
+  openedAt?: Maybe<Scalars['Time']['output']>;
+  openedBy?: Maybe<Scalars['String']['output']>;
+  semester: Scalars['String']['output'];
+  state: InquiryState;
+  /** Number of submissions, and of those not yet looked at. */
+  submissions: Scalars['Int']['output'];
+};
+
+export type InquiryActivity = {
+  __typename?: 'InquiryActivity';
+  action: Scalars['String']['output'];
+  actor: Scalars['String']['output'];
+  at: Scalars['Time']['output'];
+  changes: Array<InquiryActivityChange>;
+  channel: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  kind: InquiryKind;
+  label: Scalars['String']['output'];
+  revision?: Maybe<Scalars['Int']['output']>;
+  semester: Scalars['String']['output'];
+  submissionID?: Maybe<Scalars['Int']['output']>;
+  teacherID: Scalars['Int']['output'];
+  teacherName: Scalars['String']['output'];
+};
+
+export type InquiryActivityChange = {
+  __typename?: 'InquiryActivityChange';
+  field: Scalars['String']['output'];
+  new: Scalars['String']['output'];
+  old: Scalars['String']['output'];
+};
+
+export type InquiryInboxEntry = {
+  __typename?: 'InquiryInboxEntry';
+  kind: InquiryKind;
+  open: Scalars['Int']['output'];
+  semester: Scalars['String']['output'];
+};
+
+export type InquiryInput = {
+  deadline?: InputMaybe<Scalars['Time']['input']>;
+  intro: Scalars['String']['input'];
+};
+
+export enum InquiryKind {
+  Constraints = 'CONSTRAINTS',
+  DraftFeedback = 'DRAFT_FEEDBACK',
+  ExamsToPlan = 'EXAMS_TO_PLAN',
+  Invigilation = 'INVIGILATION',
+  Preplan = 'PREPLAN'
+}
+
+export enum InquiryReviewState {
+  Applied = 'APPLIED',
+  AppliedModified = 'APPLIED_MODIFIED',
+  Done = 'DONE',
+  /** new or changed since a planner last looked at it */
+  Open = 'OPEN',
+  Rejected = 'REJECTED'
+}
+
+export enum InquiryState {
+  Closed = 'CLOSED',
+  Draft = 'DRAFT',
+  Open = 'OPEN'
+}
+
+export type InquirySubmission = {
+  __typename?: 'InquirySubmission';
+  /** WEB or TOKEN. */
+  channel: Scalars['String']['output'];
+  createdBy: Scalars['String']['output'];
+  id: Scalars['Int']['output'];
+  kind: InquiryKind;
+  preplan?: Maybe<PreplanEntry>;
+  /** The pre-exam the entry became; null when the planners deleted it. */
+  preplanExamID?: Maybe<Scalars['Int']['output']>;
+  review: InquiryReviewState;
+  reviewNote: Scalars['String']['output'];
+  /** The entry as a planner last reviewed it -- for the comparison. */
+  reviewedPreplan?: Maybe<PreplanEntry>;
+  reviewedRevision?: Maybe<Scalars['Int']['output']>;
+  revision: Scalars['Int']['output'];
+  submittedAt: Scalars['Time']['output'];
+  submittedBy: Scalars['String']['output'];
+  teacherID: Scalars['Int']['output'];
+  teacherName: Scalars['String']['output'];
+  withdrawn: Scalars['Boolean']['output'];
+};
+
 export type Invigilation = {
   __typename?: 'Invigilation';
   duration: Scalars['Int']['output'];
@@ -1321,6 +1421,7 @@ export type Mutation = {
    */
   carryOverTodos: Scalars['Int']['output'];
   clearEmailAttachments: Scalars['Int']['output'];
+  closeInquiry: Inquiry;
   /**
    * Link the pre-exam to a real ZPA exam (its ancode). The ancode must exist and
    * must not already be linked by another pre-exam.
@@ -1402,9 +1503,12 @@ export type Mutation = {
    */
   importJointExams: ImportJointResult;
   lab: Scalars['Boolean']['output'];
+  /** Mark the overview as read up to the given change. */
+  markInquiryActivitySeen: Scalars['Boolean']['output'];
   /** Mark an exam as planned by another faculty; inFK is that faculty (e.g. "FK10"). */
   notPlannedByMe: Scalars['Boolean']['output'];
   online: Scalars['Boolean']['output'];
+  openInquiry: Inquiry;
   /** Pre-plan (fix) an invigilator for a room (roomName) or the reserve (roomName == null) at an exam time. */
   prePlanInvigilation: Scalars['Boolean']['output'];
   /**
@@ -1489,6 +1593,11 @@ export type Mutation = {
   resetRoomsForExams: Scalars['Boolean']['output'];
   /** Drop this semester's planner override, so the server default applies again. */
   resetSemesterPlaner: Planer;
+  /**
+   * Mark a submission revision as looked at (APPLIED, APPLIED_MODIFIED, DONE) or reject
+   * it (REJECTED, note required). Fails when a newer revision arrived in the meantime.
+   */
+  reviewInquirySubmission: Scalars['Boolean']['output'];
   revokePortalAccessToken: Scalars['Boolean']['output'];
   rmZpaExamFromPlan: Scalars['Boolean']['output'];
   seb: Scalars['Boolean']['output'];
@@ -1527,6 +1636,8 @@ export type Mutation = {
   setExternalExamTime: Scalars['Boolean']['output'];
   /** Store the generation config (global). Returns the saved config. */
   setGenerationConfig: GenerationConfig;
+  /** Create or update an inquiry of the active semester (deadline, introduction). */
+  setInquiry: Inquiry;
   /** Create or replace the whole constraints record of one invigilator (key: teacherID). */
   setInvigilatorConstraints: InvigilatorConstraints;
   /**
@@ -1541,6 +1652,8 @@ export type Mutation = {
    * be configured on the server.
    */
   setMyJiraToken: MyAccount;
+  /** How the caller hears about portal changes: OFF, IMMEDIATE or DAILY (default). */
+  setMyNotificationMode: NotificationSetting;
   /** Set the current user's Kürzel override. An empty string resets to the ZPA default. */
   setMyShortname: MyAccount;
   /** Activate/deactivate an NTA (key: mtknr). A deactivated NTA is not applied to exams. */
@@ -1766,6 +1879,11 @@ export type MutationClearEmailAttachmentsArgs = {
 };
 
 
+export type MutationCloseInquiryArgs = {
+  kind: InquiryKind;
+};
+
+
 export type MutationConnectPreplanExamToAncodeArgs = {
   ancode: Scalars['Int']['input'];
   id: Scalars['Int']['input'];
@@ -1854,6 +1972,11 @@ export type MutationLabArgs = {
 };
 
 
+export type MutationMarkInquiryActivitySeenArgs = {
+  upTo: Scalars['Int']['input'];
+};
+
+
 export type MutationNotPlannedByMeArgs = {
   ancode: Scalars['Int']['input'];
   inFK?: InputMaybe<Scalars['String']['input']>;
@@ -1862,6 +1985,11 @@ export type MutationNotPlannedByMeArgs = {
 
 export type MutationOnlineArgs = {
   ancode: Scalars['Int']['input'];
+};
+
+
+export type MutationOpenInquiryArgs = {
+  kind: InquiryKind;
 };
 
 
@@ -1975,6 +2103,14 @@ export type MutationResetEmailTemplateArgs = {
 };
 
 
+export type MutationReviewInquirySubmissionArgs = {
+  id: Scalars['Int']['input'];
+  note?: InputMaybe<Scalars['String']['input']>;
+  revision: Scalars['Int']['input'];
+  state: InquiryReviewState;
+};
+
+
 export type MutationRevokePortalAccessTokenArgs = {
   id: Scalars['String']['input'];
 };
@@ -2036,6 +2172,12 @@ export type MutationSetGenerationConfigArgs = {
 };
 
 
+export type MutationSetInquiryArgs = {
+  input: InquiryInput;
+  kind: InquiryKind;
+};
+
+
 export type MutationSetInvigilatorConstraintsArgs = {
   input: InvigilatorConstraintsInput;
 };
@@ -2057,6 +2199,11 @@ export type MutationSetLoginAliasArgs = {
 
 export type MutationSetMyJiraTokenArgs = {
   token: Scalars['String']['input'];
+};
+
+
+export type MutationSetMyNotificationModeArgs = {
+  mode: NotificationMode;
 };
 
 
@@ -2352,6 +2499,20 @@ export type NtaWithRegsByExamAndTeacher = {
   teacher: Teacher;
 };
 
+export enum NotificationMode {
+  Daily = 'DAILY',
+  Immediate = 'IMMEDIATE',
+  Off = 'OFF'
+}
+
+export type NotificationSetting = {
+  __typename?: 'NotificationSetting';
+  mode: NotificationMode;
+  /** The last change shown in the overview. */
+  seenUpTo: Scalars['Int']['output'];
+  unseen: Array<UnseenActivity>;
+};
+
 export type NtaRoomAloneWaiver = {
   __typename?: 'NtaRoomAloneWaiver';
   ancode: Scalars['Int']['output'];
@@ -2611,6 +2772,17 @@ export type PreplanBookingSuggestion = {
   /** Slot start times this booking covers. */
   starttimes: Array<Scalars['Time']['output']>;
   until: Scalars['Time']['output'];
+};
+
+/** The content of an EXaHM/SEB entry. */
+export type PreplanEntry = {
+  __typename?: 'PreplanEntry';
+  durationMin?: Maybe<Scalars['Int']['output']>;
+  examKind: Scalars['String']['output'];
+  expectedStudents: Scalars['Int']['output'];
+  module: Scalars['String']['output'];
+  programs: Array<Scalars['String']['output']>;
+  remark: Scalars['String']['output'];
 };
 
 /**
@@ -2969,6 +3141,14 @@ export type Query = {
    * moved to the per-semester config as timelagMin.)
    */
   generationConfig: GenerationConfig;
+  /** Every kind of inquiry in the active semester; kinds not set up yet come back as DRAFT. */
+  inquiries: Array<Inquiry>;
+  /** Changes through the portal, newest first. All semesters unless filtered. */
+  inquiryActivity: Array<InquiryActivity>;
+  /** Submissions not looked at yet, per semester and kind -- all semesters. */
+  inquiryInboxSummary: Array<InquiryInboxEntry>;
+  /** Submissions of a kind in the active semester. */
+  inquirySubmissions: Array<InquirySubmission>;
   invigilator?: Maybe<Teacher>;
   /**
    * All teachers in the invigilator pool, including the ones currently excluded
@@ -3035,6 +3215,7 @@ export type Query = {
   mutationLogNames: Array<Scalars['String']['output']>;
   /** The current user's account (identity + Kürzel + Jira-token status). */
   myAccount: MyAccount;
+  myNotificationSetting: NotificationSetting;
   /**
    * A template for creating a new semester, seeded from the current semester's
    * config (slots/emails/go-slots carry over; the planner adjusts the dates).
@@ -3243,6 +3424,21 @@ export type QueryEmailAttachmentsArgs = {
 
 export type QueryExamsAtArgs = {
   starttime: Scalars['Time']['input'];
+};
+
+
+export type QueryInquiryActivityArgs = {
+  before?: InputMaybe<Scalars['Int']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  kind?: InputMaybe<InquiryKind>;
+  semester?: InputMaybe<Scalars['String']['input']>;
+  teacherID?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryInquirySubmissionsArgs = {
+  kind: InquiryKind;
+  onlyOpen?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -4534,6 +4730,12 @@ export type UnplacedExamReason = {
   __typename?: 'UnplacedExamReason';
   ancode: Scalars['Int']['output'];
   reason: Scalars['String']['output'];
+};
+
+export type UnseenActivity = {
+  __typename?: 'UnseenActivity';
+  count: Scalars['Int']['output'];
+  semester: Scalars['String']['output'];
 };
 
 /**
