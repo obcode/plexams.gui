@@ -41,6 +41,14 @@ const READ_POST_PATHS = new Set([
 	// Semester-Schutz darf sie nicht blockieren. Zugriff regelt das Backend (ADMIN).
 	'/api/admin/setUser',
 	'/api/admin/removeUser',
+	// Zugang zum Portal für Prüfende (Aliase, Sperren, Tokens): global, nicht
+	// semesterbezogen. Zugriff regelt das Backend (ADMIN).
+	'/api/access/setLoginAlias',
+	'/api/access/removeLoginAlias',
+	'/api/access/setPortalLoginBlock',
+	'/api/access/removePortalLoginBlock',
+	'/api/access/revokePortalAccessToken',
+	'/api/access/resolveLogin',
 	// Persönliche Kontoeinstellungen (OIDC-Auth) sind global, nicht semesterbezogen
 	// — der Semester-Schutz darf sie nicht blockieren. Identität regelt das Backend.
 	'/api/account/setShortname',

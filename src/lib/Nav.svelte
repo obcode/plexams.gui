@@ -766,6 +766,14 @@
 								href="/admin/users">👥 Benutzerverwaltung</a
 							>
 						</li>
+						<li>
+							<a
+								class="rounded-lg {activeHref === '/admin/access'
+									? 'bg-primary/15 font-medium text-primary'
+									: ''}"
+								href="/admin/access">🔑 Zugang zum Portal</a
+							>
+						</li>
 					{/if}
 				</ul>
 			</div>
