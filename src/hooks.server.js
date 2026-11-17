@@ -3,7 +3,8 @@ import { gql } from 'graphql-request';
 import { json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
-import { authContext, backendRequest } from '$lib/server/backend';
+import { authContext, backendProbe, backendRequest } from '$lib/server/backend';
+import { createAccessCheck } from '$lib/server/accessCheck';
 import { commonOptions } from '$lib/obs/options';
 
 // Fehler-Telemetrie, auf Modulebene: bis der erste Request kommt, muss sie
@@ -161,38 +162,80 @@ function denyResponse(event, remoteUser) {
 	});
 }
 
-/** @type {{ user: string | undefined; authorized: boolean; expires: number }} */
-let authCache = { user: undefined, authorized: false, expires: 0 };
-
 /**
- * Ist die aktuelle (vom Proxy gelieferte) Kennung im Backend freigeschaltet?
- * Ergebnis ~30s pro Kennung gecacht, damit nicht jeder Request ein `me` auslöst.
- *
- * Unterscheidung wichtig:
- * - Erfolgreiche Antwort mit `me.email` → freigeschaltet.
- * - Backend antwortet mit Fehler (ClientError, `.response` gesetzt) → bewusst
- *   abgelehnt (Kennung nicht in der Allowlist) → gesperrt.
- * - Netzwerk-/sonstiger Fehler (keine `.response`) → unklar, NICHT sperren
- *   (ein kurzzeitig nicht erreichbares Backend darf niemanden aussperren).
- *
- * @param {string} remoteUser
+ * Ist die vom Proxy gelieferte Kennung im Backend freigeschaltet? Cache je
+ * Kennung (30 s), gleichzeitige Anfragen zusammengelegt. Ein Ausfall des
+ * Backends ist kein „Kein Zutritt": bekannte Kennungen arbeiten bis zu zehn
+ * Minuten mit dem letzten Stand weiter, unbekannte sehen eine 503-Seite.
+ * Einzelheiten und Begründung in $lib/server/accessCheck.
  */
-async function isAuthorized(remoteUser) {
-	const now = Date.now();
-	if (authCache.user === remoteUser && now < authCache.expires) return authCache.authorized;
-	try {
-		const data = await backendRequest(gql`
+const checkAccess = createAccessCheck({
+	probe: () =>
+		backendProbe(gql`
 			query {
 				me {
 					email
 				}
 			}
-		`);
-		authCache = { user: remoteUser, authorized: !!data?.me?.email, expires: now + 30000 };
-	} catch (/** @type {any} */ err) {
-		authCache = { user: remoteUser, authorized: !err?.response, expires: now + 30000 };
+		`)
+});
+
+/**
+ * Eigenständige Seite für „Backend gerade nicht erreichbar". Lädt sich nach
+ * einigen Sekunden selbst neu – meist ist es ein Neustart beim Deploy.
+ *
+ * @param {import('@sveltejs/kit').RequestEvent} event
+ */
+function unavailableResponse(event) {
+	if (event.url.pathname.startsWith('/api/')) {
+		return json(
+			{
+				error:
+					'Die Prüfungsplanung ist gerade nicht erreichbar. Bitte gleich noch einmal versuchen.'
+			},
+			{ status: 503, headers: { 'retry-after': '10' } }
+		);
 	}
-	return authCache.authorized;
+	const html = `<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="refresh" content="10" />
+<title>Gleich wieder da · Plexams</title>
+<style>
+	:root { color-scheme: light dark; }
+	body {
+		margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 1.5rem;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+		background: #f3f4f6; color: #1f2937;
+	}
+	.card {
+		background: #fff; max-width: 32rem; width: 100%; border-radius: 1rem;
+		padding: 2.5rem 2rem; border: 1px solid #e5e7eb; text-align: center;
+	}
+	h1 { margin: 0 0 .75rem; font-size: 1.5rem; }
+	p { margin: 0 0 1rem; line-height: 1.55; }
+	.muted { color: #6b7280; font-size: .9rem; margin-bottom: 0; }
+	@media (prefers-color-scheme: dark) {
+		body { background: #111827; color: #e5e7eb; }
+		.card { background: #1f2937; border-color: #374151; }
+		.muted { color: #9ca3af; }
+	}
+</style>
+</head>
+<body>
+	<main class="card">
+		<h1>Gleich wieder da</h1>
+		<p>Die Prüfungsplanung ist gerade nicht erreichbar – meist wird sie nur neu gestartet.</p>
+		<p class="muted">Die Seite lädt sich in wenigen Sekunden selbst neu.</p>
+	</main>
+</body>
+</html>`;
+	return new Response(html, {
+		status: 503,
+		headers: { 'content-type': 'text/html; charset=utf-8', 'retry-after': '10' }
+	});
 }
 
 /** @type {{ value: boolean; expires: number }} */
@@ -241,10 +284,13 @@ export async function authHandle({ event, resolve }) {
 		// nicht freigeschaltet, würde jeder Backend-Call 401→500 liefern und die
 		// Nav trotzdem erscheinen. Stattdessen hier zentral abfangen und eine
 		// eigenständige „Kein Zutritt"-Seite ausliefern — die SSR-load()s der
-		// Seiten laufen dann gar nicht erst. Ohne remoteUser (lokal/Dev) greift der
-		// Riegel nicht → Verhalten wie bisher.
-		if (remoteUser && !(await isAuthorized(remoteUser))) {
-			return denyResponse(event, remoteUser);
+		// Seiten laufen dann gar nicht erst. Ist das Backend nicht erreichbar,
+		// gibt es eine eigene 503-Seite statt „Kein Zutritt". Ohne remoteUser
+		// (lokal/Dev) greift der Riegel nicht → Verhalten wie bisher.
+		if (remoteUser) {
+			const access = await checkAccess(remoteUser);
+			if (access === 'denied') return denyResponse(event, remoteUser);
+			if (access === 'unavailable') return unavailableResponse(event);
 		}
 
 		const { method } = event.request;

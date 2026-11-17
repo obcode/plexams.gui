@@ -51,3 +51,20 @@ export function backendClient(ctx) {
 export function backendRequest(document, variables) {
 	return /** @type {Promise<T>} */ (backendClient().request(document, variables));
 }
+
+/**
+ * Wie backendRequest, aber mit Zeitlimit. Für die Zugangsprüfung in
+ * hooks.server.js: ohne Limit hängt jeder Seitenaufruf, solange das Backend
+ * nicht antwortet, und ein Ausfall ist von einem langsamen Backend nicht zu
+ * unterscheiden.
+ *
+ * @template {any} [T=any]
+ * @param {import('graphql-request').RequestDocument} document
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+export function backendProbe(document, timeoutMs = 3000) {
+	return /** @type {Promise<T>} */ (
+		backendClient().request({ document, signal: AbortSignal.timeout(timeoutMs) })
+	);
+}

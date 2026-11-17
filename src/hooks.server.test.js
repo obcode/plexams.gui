@@ -6,7 +6,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const { mockBackendRequest } = vi.hoisted(() => ({ mockBackendRequest: vi.fn() }));
 vi.mock('$lib/server/backend', () => ({
 	authContext: { run: (/** @type {any} */ _store, /** @type {any} */ cb) => cb() },
-	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v)
+	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v),
+	backendProbe: (/** @type {any} */ d) => mockBackendRequest(d)
 }));
 
 import { authHandle, allowedOnReadOnlySemester } from './hooks.server.js';
@@ -68,12 +69,22 @@ describe('authHandle — Zugangs-Riegel', () => {
 		expect(res.headers.get('content-type')).toContain('application/json');
 	});
 
-	it('Backend nicht erreichbar (Netzwerkfehler ohne response): NICHT sperren', async () => {
+	it('Backend nicht erreichbar, Kennung unbekannt: 503-Seite statt „Kein Zutritt"', async () => {
 		mockBackendRequest.mockRejectedValue(new Error('ECONNREFUSED'));
 		const event = makeEvent('/plan/exams', { 'x-remote-user': 'netdown@hm.edu' });
 		const res = await authHandle({ event, resolve: okResolve });
-		expect(okResolve).toHaveBeenCalled();
-		expect(res.status).toBe(200);
+		expect(okResolve).not.toHaveBeenCalled();
+		expect(res.status).toBe(503);
+		expect(await res.text()).not.toContain('Kein Zutritt');
+	});
+
+	it('Serverfehler des Backends (500) ist kein „Kein Zutritt"', async () => {
+		mockBackendRequest.mockRejectedValue(
+			Object.assign(new Error('cannot verify user'), { response: { status: 500 } })
+		);
+		const event = makeEvent('/api/exam/foo', { 'x-remote-user': 'dberror@hm.edu' });
+		const res = await authHandle({ event, resolve: okResolve });
+		expect(res.status).toBe(503);
 	});
 });
 
