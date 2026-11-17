@@ -77,6 +77,22 @@ export function redact(value) {
 }
 
 /**
+ * graphql-request hängt an die Meldung jedes `ClientError` die komplette
+ * Anfrage an: `<Meldung>: {"response":…,"request":{"query":…,"variables":…}}`.
+ * Die Variablen tragen alles, was ein Formular schickt – Namen, Freitext,
+ * Matrikelnummern –, und `redact` erkennt davon nur zwei Muster. Deshalb wird
+ * der angehängte JSON-Teil komplett abgeschnitten; übrig bleibt die Meldung
+ * des Backends.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+export function stripGraphQLPayload(value) {
+	const i = value.indexOf(': {"response":');
+	return i === -1 ? value : value.slice(0, i);
+}
+
+/**
  * Wirft Query-String und Fragment weg und redigiert den Rest. Die Detailseite
  * `/nta/[mtknr]`, bei der die URL selbst die Matrikelnummer war, ist zwar
  * gelöscht — aber eine Download-Route, die morgen ein `?mtknr=` bekommt, ist
@@ -172,7 +188,7 @@ export function scrubBreadcrumb(breadcrumb) {
 	// geworden beim Gegentest, nicht hergeleitet.
 	if (isTelemetryUpload(breadcrumb.data?.url)) return null;
 
-	if (breadcrumb.message) breadcrumb.message = redact(breadcrumb.message);
+	if (breadcrumb.message) breadcrumb.message = redact(stripGraphQLPayload(breadcrumb.message));
 
 	if (breadcrumb.data && typeof breadcrumb.data === 'object') {
 		/** @type {Record<string, any>} */
@@ -203,11 +219,11 @@ export function scrubBreadcrumb(breadcrumb) {
 export function scrubEvent(event) {
 	if (!event) return null;
 
-	if (event.message) event.message = redact(event.message);
+	if (event.message) event.message = redact(stripGraphQLPayload(event.message));
 	if (event.transaction) event.transaction = redactUrl(event.transaction);
 
 	for (const value of event.exception?.values ?? []) {
-		if (value.value) value.value = redact(value.value);
+		if (value.value) value.value = redact(stripGraphQLPayload(value.value));
 		if (value.type) value.type = redact(value.type);
 	}
 

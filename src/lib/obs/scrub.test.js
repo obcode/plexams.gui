@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { redact, redactUrl, scrubBreadcrumb, scrubEvent } from './scrub';
+import { ClientError } from 'graphql-request';
+import { redact, redactUrl, scrubBreadcrumb, scrubEvent, stripGraphQLPayload } from './scrub';
 
 // Erfundene Werte. Nichts hier stammt aus dem semester-Repo — siehe CLAUDE.md.
 const MTKNR = '12345678';
@@ -212,5 +213,47 @@ describe('scrubBreadcrumb', () => {
 
 		expect(crumb?.data).toEqual({ ancode: '1234' });
 		expectClean(crumb);
+	});
+});
+
+describe('GraphQL-Anfragen in Fehlerberichten', () => {
+	// Ein echter ClientError aus graphql-request: seine Meldung trägt die ganze
+	// Anfrage samt Variablen. Gebaut wie in der Bibliothek, nicht nachgeahmt.
+	const clientError = new ClientError(
+		/** @type {any} */ ({
+			errors: [{ message: 'semester is read-only' }],
+			status: 200,
+			headers: new Headers()
+		}),
+		{
+			query: 'mutation ($n: String!) { addNTA(name: $n) { mtknr } }',
+			variables: { n: 'Erika Musterfrau', remark: 'Freitext mit Gesundheitsdaten' }
+		}
+	);
+
+	it('schneidet die Anfrage aus der Exception-Meldung', () => {
+		const event = /** @type {any} */ ({
+			exception: { values: [{ type: 'ClientError', value: clientError.message }] }
+		});
+		const out = /** @type {any} */ (scrubEvent(event));
+		expect(out.exception.values[0].value).toBe('semester is read-only');
+		expect(JSON.stringify(out)).not.toContain('Musterfrau');
+		expect(JSON.stringify(out)).not.toContain('Freitext');
+	});
+
+	it('schneidet sie auch aus Meldung und Breadcrumbs', () => {
+		const event = /** @type {any} */ ({
+			message: clientError.message,
+			breadcrumbs: [{ category: 'http', message: clientError.message }]
+		});
+		const out = JSON.stringify(scrubEvent(event));
+		expect(out).not.toContain('Musterfrau');
+		expect(out).not.toContain('variables');
+	});
+
+	it('lässt andere Meldungen unverändert', () => {
+		expect(stripGraphQLPayload('cannot reach backend: ECONNREFUSED')).toBe(
+			'cannot reach backend: ECONNREFUSED'
+		);
 	});
 });
