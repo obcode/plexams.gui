@@ -68,3 +68,51 @@ export function backendProbe(document, timeoutMs = 3000) {
 		backendClient().request({ document, signal: AbortSignal.timeout(timeoutMs) })
 	);
 }
+
+/**
+ * Der GraphQL-Endpunkt des Portals: PLEXAMS_PORTAL_SERVER, sonst aus
+ * PLEXAMS_SERVER abgeleitet (…/query → …/query/portal). Ein eigener Server im
+ * Backend mit eigenem Schema; die Planungs-API ist von dort nicht erreichbar.
+ */
+export function portalEndpoint() {
+	if (env.PLEXAMS_PORTAL_SERVER) return env.PLEXAMS_PORTAL_SERVER;
+	return String(env.PLEXAMS_SERVER ?? '').replace(/\/query\/?$/, '/query/portal');
+}
+
+/**
+ * @param {AuthContext} [ctx]
+ */
+function portalClient(ctx) {
+	const { remoteUser, remoteDisplayname } = ctx ?? authContext.getStore() ?? {};
+	/** @type {Record<string, string>} */
+	const headers = {};
+	if (remoteUser) headers['X-Remote-User'] = remoteUser;
+	if (remoteDisplayname) headers['X-Remote-Displayname'] = remoteDisplayname;
+	return new GraphQLClient(portalEndpoint(), { headers });
+}
+
+/**
+ * Eine Anfrage an die Portal-API, mit der Identität des laufenden Requests.
+ *
+ * @template {any} [T=any]
+ * @param {import('graphql-request').RequestDocument} document
+ * @param {Record<string, any>} [variables]
+ * @returns {Promise<T>}
+ */
+export function portalRequest(document, variables) {
+	return /** @type {Promise<T>} */ (portalClient().request(document, variables));
+}
+
+/**
+ * Wie portalRequest, mit Zeitlimit – für die Zugangsprüfung.
+ *
+ * @template {any} [T=any]
+ * @param {import('graphql-request').RequestDocument} document
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+export function portalProbe(document, timeoutMs = 3000) {
+	return /** @type {Promise<T>} */ (
+		portalClient().request({ document, signal: AbortSignal.timeout(timeoutMs) })
+	);
+}

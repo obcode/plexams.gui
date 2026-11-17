@@ -3,8 +3,8 @@ import { gql } from 'graphql-request';
 import { json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
-import { authContext, backendProbe, backendRequest } from '$lib/server/backend';
-import { createAccessCheck } from '$lib/server/accessCheck';
+import { authContext, backendProbe, backendRequest, portalProbe } from '$lib/server/backend';
+import { combine, createAccessCheck, decide } from '$lib/server/accessCheck';
 import { commonOptions } from '$lib/obs/options';
 
 // Fehler-Telemetrie, auf Modulebene: bis der erste Request kommt, muss sie
@@ -170,15 +170,83 @@ function denyResponse(event, remoteUser) {
  * Einzelheiten und Begründung in $lib/server/accessCheck.
  */
 const checkAccess = createAccessCheck({
-	probe: () =>
-		backendProbe(gql`
-			query {
-				me {
-					email
+	probe: async () => {
+		const [me, session] = await Promise.allSettled([
+			backendProbe(gql`
+				query {
+					me {
+						email
+					}
 				}
-			}
-		`)
+			`),
+			portalProbe(gql`
+				query {
+					session {
+						email
+						name
+						isStaff
+						teachers {
+							id
+							fullname
+						}
+					}
+				}
+			`)
+		]);
+		return combine(
+			me.status === 'fulfilled' ? { ok: true, data: me.value } : { ok: false, error: me.reason },
+			session.status === 'fulfilled'
+				? { ok: true, data: session.value }
+				: { ok: false, error: session.reason }
+		);
+	}
 });
+
+/**
+ * Antwort für eine Portal-Kennung, die eine Seite der Planung aufruft: für /api
+ * ein 403-JSON, sonst eine kleine Seite mit dem Weg ins Portal.
+ *
+ * @param {import('@sveltejs/kit').RequestEvent} event
+ */
+function portalOnlyResponse(event) {
+	if (event.url.pathname.startsWith('/api/')) {
+		return json({ error: 'Kein Zutritt zur Prüfungsplanung.' }, { status: 403 });
+	}
+	const html = `<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kein Zutritt · Plexams</title>
+<style>
+	:root { color-scheme: light dark; }
+	body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 1.5rem;
+		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f3f4f6; color: #1f2937; }
+	.card { background: #fff; max-width: 32rem; width: 100%; border-radius: 1rem; padding: 2.5rem 2rem;
+		border: 1px solid #e5e7eb; text-align: center; }
+	h1 { margin: 0 0 .75rem; font-size: 1.5rem; }
+	p { margin: 0 0 1rem; line-height: 1.55; }
+	a { color: #2563eb; }
+	@media (prefers-color-scheme: dark) {
+		body { background: #111827; color: #e5e7eb; }
+		.card { background: #1f2937; border-color: #374151; }
+		a { color: #60a5fa; }
+	}
+</style>
+</head>
+<body>
+	<main class="card">
+		<h1>Diese Seite gehört zur Prüfungsplanung</h1>
+		<p>Ihre Angaben machen Sie im Portal für Prüfende.</p>
+		<p><a href="/portal">Zum Portal</a></p>
+	</main>
+</body>
+</html>`;
+	return new Response(html, {
+		status: 403,
+		headers: { 'content-type': 'text/html; charset=utf-8' }
+	});
+}
 
 /**
  * Eigenständige Seite für „Backend gerade nicht erreichbar". Lädt sich nach
@@ -288,9 +356,18 @@ export async function authHandle({ event, resolve }) {
 		// gibt es eine eigene 503-Seite statt „Kein Zutritt". Ohne remoteUser
 		// (lokal/Dev) greift der Riegel nicht → Verhalten wie bisher.
 		if (remoteUser) {
-			const access = await checkAccess(remoteUser);
-			if (access === 'denied') return denyResponse(event, remoteUser);
-			if (access === 'unavailable') return unavailableResponse(event);
+			const result = await checkAccess(remoteUser);
+			event.locals.access = result.access;
+			switch (decide(result.access, event.url.pathname)) {
+				case 'deny':
+					return denyResponse(event, remoteUser);
+				case 'unavailable':
+					return unavailableResponse(event);
+				case 'to-portal':
+					return new Response(null, { status: 303, headers: { location: '/portal' } });
+				case 'portal-only':
+					return portalOnlyResponse(event);
+			}
 		}
 
 		const { method } = event.request;

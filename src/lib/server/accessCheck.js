@@ -1,35 +1,58 @@
 // Zugangsprüfung je Kennung, mit Cache. Rein und ohne SvelteKit-Abhängigkeit,
 // damit sie einzeln testbar ist; hooks.server.js verdrahtet sie mit dem Backend.
 //
-// Drei Ergebnisse, nicht zwei:
-// - 'allowed'      das Backend kennt die Kennung
-// - 'denied'       das Backend hat geantwortet und abgelehnt (4xx, GraphQL-Fehler)
+// Die Kennung wird zweimal gefragt, getrennt und parallel: `me` an der
+// Planungs-API und `session` an der Portal-API. Nie in einem Dokument – `me: User!`
+// ist nicht nullbar und risse die Antwort mit, und ein älteres Backend ohne
+// Portal würde das unbekannte Feld ablehnen. Daraus wird eine von vier Antworten:
+//
+// - 'staff'        die Kennung hat eine Rolle in der Planung (und vielleicht Portal)
+// - 'portal'       keine Planungsrolle, aber Zugang zum Portal
+// - 'denied'       das Backend hat geantwortet und abgelehnt
 // - 'unavailable'  keine verwertbare Antwort (Netzwerk, Timeout, 5xx)
 //
-// Früher galt jede Antwort mit `.response` als Ablehnung. graphql-request hängt
-// `.response` aber an jeden Nicht-2xx-Status, auch an das 500 „cannot verify
-// user", das das Backend bei einem Datenbankfehler schickt – ein Ausfall sah also
-// aus wie „Kein Zutritt". Und der Cache hatte genau einen Eintrag: Bei zwei
-// abwechselnden Nutzern lief jeder Request erneut ans Backend.
+// graphql-request hängt `.response` an jeden Nicht-2xx-Status, auch an das 500
+// „cannot verify user". Deshalb zählt nur eine 4xx-Antwort oder ein GraphQL-Fehler
+// als Ablehnung; 5xx und Netzwerkfehler heißen „nicht erreichbar".
 
-/** @typedef {'allowed' | 'denied' | 'unavailable'} Access */
+/** @typedef {'staff' | 'portal' | 'denied' | 'unavailable'} Access */
+/** @typedef {{ access: Access, session?: any }} AccessResult */
+/** @typedef {{ ok: true, data: any } | { ok: false, error: any }} Outcome */
 
 /**
- * Ordnet das Ergebnis einer Probe ein.
- *
- * @param {{ ok: true, data: any } | { ok: false, error: any }} result
- * @returns {Access}
+ * Ordnet einen Fehler ein.
+ * @param {any} error
+ * @returns {'denied' | 'unavailable'}
  */
-export function classify(result) {
-	if (result.ok) return result.data?.me?.email ? 'allowed' : 'denied';
-	const status = result.error?.response?.status;
-	if (result.error?.response && (status === undefined || status < 500)) return 'denied';
+export function classifyError(error) {
+	const status = error?.response?.status;
+	if (error?.response && (status === undefined || status < 500)) return 'denied';
 	return 'unavailable';
 }
 
 /**
+ * Führt die beiden Antworten zusammen.
+ *
+ * @param {Outcome} me Antwort auf `me` (Planungs-API)
+ * @param {Outcome} session Antwort auf `session` (Portal-API)
+ * @returns {AccessResult}
+ */
+export function combine(me, session) {
+	const portalSession = session.ok ? session.data?.session : undefined;
+	if (me.ok) {
+		return me.data?.me?.email ? { access: 'staff', session: portalSession } : { access: 'denied' };
+	}
+	if (classifyError(me.error) === 'unavailable') return { access: 'unavailable' };
+	// Die Planung lehnt ab. Das Portal entscheidet; ein Backend ohne Portal
+	// antwortet dort mit 404 – das ist eine Ablehnung, kein Ausfall.
+	if (session.ok)
+		return portalSession ? { access: 'portal', session: portalSession } : { access: 'denied' };
+	return { access: classifyError(session.error) };
+}
+
+/**
  * @param {{
- *   probe: (user: string) => Promise<any>,
+ *   probe: (user: string) => Promise<AccessResult>,
  *   now?: () => number,
  *   ttlMs?: number,
  *   staleMs?: number,
@@ -45,12 +68,15 @@ export function createAccessCheck({
 	unavailableTtlMs = 5_000,
 	maxEntries = 500
 }) {
-	/** @type {Map<string, { access: Access, expires: number, known?: { access: Access, at: number } }>} */
+	/** @type {Map<string, { result: AccessResult, expires: number, known?: { result: AccessResult, at: number } }>} */
 	const cache = new Map();
-	/** @type {Map<string, Promise<Access>>} */
+	/** @type {Map<string, Promise<AccessResult>>} */
 	const inflight = new Map();
 
-	/** @param {string} user @param {{ access: Access, expires: number, known?: { access: Access, at: number } }} entry */
+	/**
+	 * @param {string} user
+	 * @param {{ result: AccessResult, expires: number, known?: { result: AccessResult, at: number } }} entry
+	 */
 	function remember(user, entry) {
 		cache.delete(user); // neu einfügen = ans Ende, die Map ist nach Alter sortiert
 		cache.set(user, entry);
@@ -61,42 +87,64 @@ export function createAccessCheck({
 		}
 	}
 
-	/** @param {string} user @returns {Promise<Access>} */
+	/** @param {string} user @returns {Promise<AccessResult>} */
 	async function refresh(user) {
-		/** @type {Access} */
-		let access;
+		/** @type {AccessResult} */
+		let result;
 		try {
-			access = classify({ ok: true, data: await probe(user) });
-		} catch (error) {
-			access = classify({ ok: false, error });
+			result = await probe(user);
+		} catch {
+			result = { access: 'unavailable' };
 		}
 		const t = now();
 		const previous = cache.get(user)?.known;
-		if (access === 'unavailable') {
+		if (result.access === 'unavailable') {
 			// Bekannte Kennungen arbeiten mit dem letzten Stand weiter, solange er
 			// nicht zu alt ist – ein Neustart des Backends sperrt niemanden aus.
 			if (previous && t - previous.at <= staleMs) {
-				remember(user, { access: previous.access, expires: t + unavailableTtlMs, known: previous });
-				return previous.access;
+				remember(user, { result: previous.result, expires: t + unavailableTtlMs, known: previous });
+				return previous.result;
 			}
-			remember(user, { access, expires: t + unavailableTtlMs, known: previous });
-			return access;
+			remember(user, { result, expires: t + unavailableTtlMs, known: previous });
+			return result;
 		}
-		remember(user, { access, expires: t + ttlMs, known: { access, at: t } });
-		return access;
+		remember(user, { result, expires: t + ttlMs, known: { result, at: t } });
+		return result;
 	}
 
 	/**
 	 * @param {string} user
-	 * @returns {Promise<Access>}
+	 * @returns {Promise<AccessResult>}
 	 */
 	return async function check(user) {
 		const entry = cache.get(user);
-		if (entry && now() < entry.expires) return entry.access;
+		if (entry && now() < entry.expires) return entry.result;
 		const running = inflight.get(user);
 		if (running) return running;
 		const p = refresh(user).finally(() => inflight.delete(user));
 		inflight.set(user, p);
 		return p;
 	};
+}
+
+/**
+ * Wohin eine Kennung mit der gegebenen Antwort auf diesem Pfad darf.
+ *
+ * @param {Access} access
+ * @param {string} pathname
+ * @returns {'pass' | 'deny' | 'unavailable' | 'to-portal' | 'portal-only'}
+ */
+export function decide(access, pathname) {
+	if (access === 'unavailable') return 'unavailable';
+	if (access === 'denied') return 'deny';
+	if (access === 'staff') return 'pass';
+	// access === 'portal': nur das Portal und der Telemetrie-Tunnel.
+	if (isPortalPath(pathname) || pathname === '/monitoring') return 'pass';
+	if (pathname === '/') return 'to-portal';
+	return 'portal-only';
+}
+
+/** @param {string} pathname */
+export function isPortalPath(pathname) {
+	return pathname === '/portal' || pathname.startsWith('/portal/');
 }

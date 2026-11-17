@@ -1,20 +1,68 @@
 import { describe, expect, it, vi } from 'vitest';
-import { classify, createAccessCheck } from './accessCheck';
+import { classifyError, combine, createAccessCheck, decide } from './accessCheck';
 
-const allowed = { me: { email: 'a@hm.edu' } };
 const rejected = Object.assign(new Error('forbidden'), { response: { status: 403 } });
+const notMounted = Object.assign(new Error('not found'), { response: { status: 404 } });
 const serverError = Object.assign(new Error('cannot verify user'), { response: { status: 500 } });
 const graphQLError = Object.assign(new Error('x'), { response: { status: 200, errors: [{}] } });
 const network = new Error('ECONNREFUSED');
 
-describe('classify', () => {
+/** @param {any} data */
+const ok = (data) => /** @type {const} */ ({ ok: true, data });
+/** @param {any} error */
+const fail = (error) => /** @type {const} */ ({ ok: false, error });
+
+const me = ok({ me: { email: 'a@hm.edu' } });
+const session = ok({ session: { email: 'a@hm.edu', teachers: [{ id: 1 }] } });
+
+describe('classifyError', () => {
 	it('unterscheidet Ablehnung von Ausfall', () => {
-		expect(classify({ ok: true, data: allowed })).toBe('allowed');
-		expect(classify({ ok: true, data: {} })).toBe('denied');
-		expect(classify({ ok: false, error: rejected })).toBe('denied');
-		expect(classify({ ok: false, error: graphQLError })).toBe('denied');
-		expect(classify({ ok: false, error: serverError })).toBe('unavailable');
-		expect(classify({ ok: false, error: network })).toBe('unavailable');
+		expect(classifyError(rejected)).toBe('denied');
+		expect(classifyError(notMounted)).toBe('denied');
+		expect(classifyError(graphQLError)).toBe('denied');
+		expect(classifyError(serverError)).toBe('unavailable');
+		expect(classifyError(network)).toBe('unavailable');
+	});
+});
+
+describe('combine', () => {
+	it('Planungsrolle, mit oder ohne Portal', () => {
+		expect(combine(me, session)).toEqual({ access: 'staff', session: session.data.session });
+		expect(combine(me, fail(notMounted))).toEqual({ access: 'staff', session: undefined });
+	});
+	it('nur Portal', () => {
+		expect(combine(fail(rejected), session)).toEqual({
+			access: 'portal',
+			session: session.data.session
+		});
+	});
+	it('ein Backend ohne Portal (404) heißt Ablehnung, nicht Ausfall', () => {
+		expect(combine(fail(rejected), fail(notMounted)).access).toBe('denied');
+	});
+	it('ein Ausfall der Planung ist ein Ausfall', () => {
+		expect(combine(fail(serverError), session).access).toBe('unavailable');
+		expect(combine(fail(rejected), fail(network)).access).toBe('unavailable');
+	});
+});
+
+describe('decide', () => {
+	it('Planung darf alles', () => {
+		for (const path of ['/', '/plan/exams', '/api/exam/x', '/portal']) {
+			expect(decide('staff', path)).toBe('pass');
+		}
+	});
+	it('Portal-Kennungen nur ins Portal', () => {
+		expect(decide('portal', '/portal')).toBe('pass');
+		expect(decide('portal', '/portal/2027-SS/exahm-seb')).toBe('pass');
+		expect(decide('portal', '/monitoring')).toBe('pass');
+		expect(decide('portal', '/')).toBe('to-portal');
+		expect(decide('portal', '/plan/exams')).toBe('portal-only');
+		expect(decide('portal', '/api/exam/x')).toBe('portal-only');
+		expect(decide('portal', '/portalx')).toBe('portal-only');
+	});
+	it('Ablehnung und Ausfall', () => {
+		expect(decide('denied', '/portal')).toBe('deny');
+		expect(decide('unavailable', '/')).toBe('unavailable');
 	});
 });
 
@@ -26,9 +74,11 @@ function setup(probe) {
 	return { check, clock };
 }
 
+const staff = { access: 'staff' };
+
 describe('createAccessCheck', () => {
 	it('fragt je Kennung höchstens einmal in 30 s', async () => {
-		const probe = vi.fn(async () => allowed);
+		const probe = vi.fn(async () => staff);
 		const { check, clock } = setup(probe);
 		for (const user of ['a', 'b', 'a', 'b', 'a']) await check(user);
 		expect(probe).toHaveBeenCalledTimes(2);
@@ -43,42 +93,42 @@ describe('createAccessCheck', () => {
 		const probe = vi.fn(() => new Promise((r) => (resolve = r)));
 		const { check } = setup(probe);
 		const results = Promise.all([check('a'), check('a'), check('a')]);
-		resolve(allowed);
-		expect(await results).toEqual(['allowed', 'allowed', 'allowed']);
+		resolve(staff);
+		expect((await results).map((r) => r.access)).toEqual(['staff', 'staff', 'staff']);
 		expect(probe).toHaveBeenCalledTimes(1);
 	});
 
-	it('ein Serverfehler ist kein „Kein Zutritt"', async () => {
+	it('ein Wurf der Probe heißt nicht erreichbar', async () => {
 		const { check } = setup(async () => {
-			throw serverError;
+			throw network;
 		});
-		expect(await check('a')).toBe('unavailable');
+		expect((await check('a')).access).toBe('unavailable');
 	});
 
 	it('bekannte Kennung arbeitet bei einem Ausfall mit dem letzten Stand weiter', async () => {
-		const probe = vi.fn(async () => allowed);
+		const probe = vi.fn(
+			async () => /** @type {any} */ ({ access: 'portal', session: { email: 'a' } })
+		);
 		const { check, clock } = setup(probe);
-		expect(await check('a')).toBe('allowed');
-		probe.mockRejectedValue(network);
+		expect((await check('a')).access).toBe('portal');
+		probe.mockResolvedValue({ access: 'unavailable' });
 		clock.advance(60_000);
-		expect(await check('a')).toBe('allowed');
+		expect((await check('a')).access).toBe('portal');
 		clock.advance(10 * 60_000);
-		expect(await check('a')).toBe('unavailable');
+		expect((await check('a')).access).toBe('unavailable');
 	});
 
 	it('eine gesperrte Kennung bleibt auch bei einem Ausfall gesperrt', async () => {
-		const probe = vi.fn(async () => {
-			throw rejected;
-		});
+		const probe = vi.fn(async () => /** @type {any} */ ({ access: 'denied' }));
 		const { check, clock } = setup(probe);
-		expect(await check('x')).toBe('denied');
-		probe.mockRejectedValue(network);
+		expect((await check('x')).access).toBe('denied');
+		probe.mockResolvedValue({ access: 'unavailable' });
 		clock.advance(60_000);
-		expect(await check('x')).toBe('denied');
+		expect((await check('x')).access).toBe('denied');
 	});
 
 	it('hält höchstens maxEntries Kennungen', async () => {
-		const probe = vi.fn(async () => allowed);
+		const probe = vi.fn(async () => staff);
 		const { check } = setup(probe);
 		for (const user of ['a', 'b', 'c', 'd']) await check(user);
 		await check('a'); // verdrängt
