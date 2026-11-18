@@ -6,6 +6,7 @@
 	import TodoList from '$lib/todo/TodoList.svelte';
 	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '$lib/todo/todo.js';
 	import { KIND_LABEL } from '$lib/inquiry/diff';
+	import { conditionLink } from '$lib/semester/conditionLinks';
 
 	let { data } = $props();
 
@@ -174,27 +175,42 @@
 				</div>
 				<div class="flex flex-col gap-1">
 					{#each phase.conditions as cond}
-						<label
-							class="flex items-start gap-2 rounded p-1 {cond.auto
-								? ''
-								: 'cursor-pointer hover:bg-base-200'}"
-							title={cond.auto
-								? 'Dieser Status wird automatisch gesetzt und kann nicht manuell geändert werden'
-								: undefined}
+						{@const href = conditionLink(cond.key)}
+						{@const textClass = `flex-1 text-sm ${cond.done ? 'text-base-content' : 'text-base-content/70'}`}
+						<div
+							class="flex items-start gap-2 rounded p-1 {href || !cond.auto
+								? 'hover:bg-base-200'
+								: ''}"
 						>
-							<!-- Auto-Bedingungen: normaler Haken, aber deaktiviert (Backend setzt sie automatisch) -->
-							<input
-								type="checkbox"
-								class="checkbox checkbox-sm mt-0.5"
-								checked={cond.done}
-								disabled={cond.auto || busy.has(cond.key) || $page.data?.readOnly}
-								onchange={() => toggle(cond)}
-							/>
-							<span
-								class="flex-1 text-sm {cond.done ? 'text-base-content' : 'text-base-content/70'}"
+							<!-- Only the checkbox toggles; the text (if a page is known) navigates there. -->
+							<label
+								class="flex items-start gap-2 {href ? '' : 'flex-1'} {cond.auto
+									? ''
+									: 'cursor-pointer'}"
+								title={cond.auto
+									? 'Dieser Status wird automatisch gesetzt und kann nicht manuell geändert werden'
+									: undefined}
 							>
-								{cond.title}
-							</span>
+								<!-- Auto-Bedingungen: normaler Haken, aber deaktiviert (Backend setzt sie automatisch) -->
+								<input
+									type="checkbox"
+									class="checkbox checkbox-sm mt-0.5"
+									aria-label={cond.title}
+									checked={cond.done}
+									disabled={cond.auto || busy.has(cond.key) || $page.data?.readOnly}
+									onchange={() => toggle(cond)}
+								/>
+								{#if !href}
+									<span class={textClass}>{cond.title}</span>
+								{/if}
+							</label>
+							{#if href}
+								<a
+									{href}
+									class="link-hover {textClass}"
+									title="Zur Seite, auf der das erledigt wird">{cond.title}</a
+								>
+							{/if}
 							{#if cond.gate}
 								<span
 									class="text-base-content/40"
@@ -203,7 +219,7 @@
 									🔒
 								</span>
 							{/if}
-						</label>
+						</div>
 					{/each}
 				</div>
 			</div>

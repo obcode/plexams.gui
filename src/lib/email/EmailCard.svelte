@@ -13,7 +13,7 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col gap-2">
+<div id={email.key} class="flex scroll-mt-20 flex-col gap-2">
 	<EmailSender
 		emailKey={email.key}
 		title={email.title}

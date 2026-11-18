@@ -55,7 +55,10 @@
 	let selectedIds = $derived([...selected]);
 </script>
 
-<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
+<div
+	id="examPlanningInfo"
+	class="flex scroll-mt-20 flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4"
+>
 	<div class="min-w-0">
 		<div class="font-medium">Prüfungsplanungs-Info an Prüfende</div>
 		<div class="text-xs text-base-content/50">

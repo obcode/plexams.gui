@@ -18,6 +18,13 @@ Faustregeln:
 Die maßgebliche Reihenfolge/Beschriftung der Navigation steht im `menus`-Array in
 [`src/lib/Nav.svelte`](../src/lib/Nav.svelte).
 
+Die Planungs-Checkliste auf der Startseite verlinkt jede Aufgabe auf die Seite, auf der
+sie erledigt wird. Die Zuordnung (Schlüssel der Bedingung → Route, E-Mail-Aufgaben
+→ `/email#<emailKey>`) steht in
+[`src/lib/semester/conditionLinks.js`](../src/lib/semester/conditionLinks.js). Bei einer
+neuen Bedingung im Backend oder einer umbenannten Route dort nachziehen. Der Test daneben
+prüft, dass jedes Ziel als Route existiert.
+
 ---
 
 ## NavBar → Route → lib → api
