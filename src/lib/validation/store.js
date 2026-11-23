@@ -1,5 +1,5 @@
 import { writable, derived } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { validationGroups, zpaGroup } from '#lib/validation/validators.js';
 import { getWsClient } from '#lib/validation/wsClient.js';
 

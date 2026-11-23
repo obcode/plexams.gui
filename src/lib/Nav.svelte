@@ -117,7 +117,7 @@
 	let semester = $state('unknown');
 	let currentSem = $state<Sem | null>(null);
 	let allSemesters = $state<Sem[]>([]);
-	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
+	// read-only kommt SSR-korrekt aus dem Layout-load (page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	async function getSemester() {

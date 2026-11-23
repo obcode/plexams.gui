@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { ROLES } from '#lib/auth.js';
 
 	/** @type {{ data: import('./$types').PageData }} */
@@ -44,7 +44,7 @@
 		try {
 			await post('/api/admin/setUser', { email: email.trim(), name: name.trim(), role });
 			resetForm();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -58,7 +58,7 @@
 		error = '';
 		try {
 			await post('/api/admin/setUser', { email: u.email, name: u.name ?? '', role: newRole });
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -73,7 +73,7 @@
 		error = '';
 		try {
 			await post('/api/admin/removeUser', { email: u.email });
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {

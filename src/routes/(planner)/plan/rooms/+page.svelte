@@ -8,18 +8,18 @@
 	import SubscriptionTerminal from '#lib/SubscriptionTerminal.svelte';
 	import { slide } from 'svelte/transition';
 	import { tick } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 	let { data } = $props();
 
-	// nach einer Zuordnung neu laden: invalidateAll frischt die Load-Daten
+	// nach einer Zuordnung neu laden: refreshAll frischt die Load-Daten
 	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
 	// client-seitig nachladenden Slot-Komponenten neu ein.
 	let reloadKey = $state(0);
 	async function onGenerated() {
 		needsRegen = false;
 		reloadKey++;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.

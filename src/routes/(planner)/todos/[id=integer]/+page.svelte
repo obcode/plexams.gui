@@ -1,6 +1,6 @@
 <script>
-	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { goto, refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { isAdmin, isViewer } from '#lib/auth.js';
 	import Markdown from '#lib/Markdown.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -20,7 +20,7 @@
 	let { data } = $props();
 
 	let todo = $derived(data.todo);
-	let me = $derived($page.data?.me);
+	let me = $derived(page.data?.me);
 	let viewer = $derived(isViewer(me));
 	// Löschen dürfen Ersteller:in und ADMIN (das Backend prüft es ohnehin); ohne
 	// Anmeldung (lokal) gibt es keine Einschränkung.
@@ -36,7 +36,7 @@
 		error = '';
 		try {
 			await fn();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -150,7 +150,7 @@
 				disabled={busy}
 				onpick={async (link) => {
 					await addTodoLink(todo.id, link);
-					await invalidateAll();
+					await refreshAll();
 				}}
 			/>
 		{/if}
@@ -168,7 +168,7 @@
 		onclose={() => (editing = false)}
 		onsaved={async () => {
 			editing = false;
-			await invalidateAll();
+			await refreshAll();
 		}}
 	/>
 {/if}

@@ -1,7 +1,7 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
@@ -170,7 +170,7 @@
 					running = false;
 					done = true;
 					// nach dem Schreiblauf die Raumplan-Daten (Zähler, Warnungen) auffrischen
-					if (writeRun) invalidateAll();
+					if (writeRun) refreshAll();
 				}
 			}
 		);
@@ -219,7 +219,7 @@
 			}
 			resetInfo = 'Raumzuteilung zurückgesetzt (vorgeplante Räume bleiben).';
 			roomReport = null;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			resetError = e instanceof Error ? e.message : String(e);
 		} finally {

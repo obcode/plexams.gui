@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { formatBerlin } from '#lib/portal/time.js';
 	import { KIND_LABEL, STATE_LABEL, preplanDiff } from '#lib/inquiry/diff.js';
 	import { REVIEW_LABEL } from '#lib/portal/inquiry.js';
@@ -36,7 +36,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
-			await invalidateAll();
+			await refreshAll();
 			return true;
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);

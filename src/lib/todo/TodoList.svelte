@@ -1,11 +1,11 @@
 <!--
 	Kompakte Todo-Liste: Haken zum Erledigen, Titel (→ Detailseite), Priorität,
 	Fälligkeit, Labels, Links, Kommentarzahl. Nach einer Änderung ruft sie
-	onchange (Standard: invalidateAll).
+	onchange (Standard: refreshAll).
 -->
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
 	import LinkChip from './LinkChip.svelte';
 	import { setTodoDone } from './client.js';
@@ -20,10 +20,10 @@
 	 */
 
 	/** @type {Props} */
-	let { todos, showLinks = true, onchange = invalidateAll, empty = 'Keine Todos.' } = $props();
+	let { todos, showLinks = true, onchange = refreshAll, empty = 'Keine Todos.' } = $props();
 
 	const today = todayISO();
-	let viewer = $derived(isViewer($page.data?.me));
+	let viewer = $derived(isViewer(page.data?.me));
 	/** @type {Set<number>} */
 	let busy = $state(new Set());
 	let error = $state('');

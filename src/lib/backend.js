@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/public';
+import * as env from '$app/env/public';
 
 // Basis-URL von plexams.go (derselbe Host wie /query, aber ohne den /query-Pfad).
 // plexams.go bietet neben GraphQL auch REST-Routen (/upload/*, /download/*) an,

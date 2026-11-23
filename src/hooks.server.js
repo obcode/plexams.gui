@@ -1,8 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import { gql } from 'graphql-request';
-import { json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
-import { env } from '$env/dynamic/private';
+import * as env from '$app/env/private';
 import { authContext, backendProbe, backendRequest, portalProbe } from '#lib/server/backend.js';
 import { combine, createAccessCheck, decide } from '#lib/server/accessCheck.js';
 import { commonOptions } from '#lib/obs/options.js';
@@ -115,7 +114,7 @@ function escapeHtml(/** @type {string} */ s) {
  */
 function denyResponse(event, remoteUser) {
 	if (event.url.pathname.startsWith('/api/')) {
-		return json(
+		return Response.json(
 			{ error: 'Kein Zutritt — diese Kennung ist nicht freigeschaltet.' },
 			{ status: 403 }
 		);
@@ -221,7 +220,7 @@ const checkAccess = createAccessCheck({
  */
 function portalOnlyResponse(event) {
 	if (event.url.pathname.startsWith('/api/')) {
-		return json({ error: 'Kein Zutritt zur Prüfungsplanung.' }, { status: 403 });
+		return Response.json({ error: 'Kein Zutritt zur Prüfungsplanung.' }, { status: 403 });
 	}
 	const html = `<!doctype html>
 <html lang="de">
@@ -267,7 +266,7 @@ function portalOnlyResponse(event) {
  */
 function unavailableResponse(event) {
 	if (event.url.pathname.startsWith('/api/')) {
-		return json(
+		return Response.json(
 			{
 				error:
 					'Die Prüfungsplanung ist gerade nicht erreichbar. Bitte gleich noch einmal versuchen.'
@@ -345,7 +344,7 @@ async function isReadOnly() {
  * unten eine `sequence`, und die verlangt SvelteKits Request-Store, den ein
  * Unit-Test nicht hat.
  *
- * @type {import('@sveltejs/kit').Handle}
+ * @type {import('@sveltejs/kit/hooks').Handle}
  */
 export async function authHandle({ event, resolve }) {
 	// Vom Auth-Proxy (nginx/Shibboleth) autoritativ injizierte Identität. Wird
@@ -385,7 +384,7 @@ export async function authHandle({ event, resolve }) {
 		const { pathname } = event.url;
 		if (method === 'POST' && pathname.startsWith('/api/') && !allowedOnReadOnlySemester(pathname)) {
 			if (await isReadOnly()) {
-				return json(
+				return Response.json(
 					{ error: 'Semester ist geschützt (nur lesen) — Schreibvorgang abgelehnt.' },
 					{ status: 423 }
 				);
@@ -408,9 +407,13 @@ export const handle = sequence(Sentry.sentryHandle(), authHandle);
  * 4xx meldet `handleErrorWithSentry` nicht — ein Tippfehler in der URL ist
  * kein Vorfall.
  *
- * @type {import('@sveltejs/kit').HandleServerError}
+ * @type {import('@sveltejs/kit/hooks').HandleServerError}
  */
-function describeError({ error }) {
+function describeError({ kind, error }) {
+	// Since SvelteKit 3 every error passes through here, including those thrown with `error()`
+	// (portal 403/404, a missing todo) and SvelteKit's own 404s. Those are answers, not
+	// failures: they keep their status and message and get no reference.
+	if (kind !== 'unknown') return;
 	console.error(error);
 	return {
 		message: 'Unerwarteter Fehler. Die Prüfungsplanung wurde benachrichtigt.',

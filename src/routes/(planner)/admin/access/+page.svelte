@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { formatBerlin } from '#lib/portal/time.js';
 
 	/** @type {{ data: any }} */
@@ -43,7 +43,7 @@
 		error = '';
 		try {
 			await fn();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {

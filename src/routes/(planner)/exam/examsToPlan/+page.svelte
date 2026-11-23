@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import ConstraintsModal from '#lib/exam/ConstraintsModal.svelte';
 	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
 	import StreamAction from '#lib/zpa/StreamAction.svelte';
@@ -456,7 +456,7 @@
 				description="Prüfungen aus dem ZPA holen und cachen — danach wird die Liste neu geladen."
 				accent="info"
 				actionLabel="Laden"
-				ondone={() => invalidateAll()}
+				ondone={() => refreshAll()}
 			/>
 		</div>
 	</details>

@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/public';
+import * as env from '$app/env/public';
 
 // Geteilte, lazy erzeugte Instanzen für alle Validierungs-Gruppen: ein einziger
 // WebSocket (graphql-ws) und ein ANSI->HTML-Konverter. Mit lazy:true schliesst

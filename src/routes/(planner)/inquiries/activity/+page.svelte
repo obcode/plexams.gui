@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { formatBerlin } from '#lib/portal/time.js';
 	import { ACTION_LABEL, FIELD_LABEL, KIND_LABEL } from '#lib/inquiry/diff.js';
 
@@ -25,7 +25,7 @@
 		});
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) error = d?.error || `Fehler (HTTP ${res.status})`;
-		else await invalidateAll();
+		else await refreshAll();
 	}
 
 	/** @param {Record<string, string | null>} change */

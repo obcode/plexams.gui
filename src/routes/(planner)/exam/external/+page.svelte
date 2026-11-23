@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import ExternalExamRow from '#lib/exam/ExternalExamRow.svelte';
 	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
 	import { buildGroups, hasTime } from '#lib/exam/otherFkGroups.ts';
@@ -32,7 +32,7 @@
 		).length
 	);
 
-	const onSaved = () => invalidateAll();
+	const onSaved = () => refreshAll();
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">

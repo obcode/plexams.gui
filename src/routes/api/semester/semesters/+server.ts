@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
 import { backendRequest } from '#lib/server/backend.js';
 import { gqlErrorMessage } from '#lib/gqlError.js';
@@ -22,8 +21,8 @@ export const GET: RequestHandler = async () => {
 				}
 			}
 		`);
-		return json({ current: data.semester ?? null, all: data.allSemesterNames ?? [] });
+		return Response.json({ current: data.semester ?? null, all: data.allSemesterNames ?? [] });
 	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
+		return Response.json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
 };

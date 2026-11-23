@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 // Zustand der „aufbereiteten Prüfungen" (Cache). dirty=true → veraltet, der
 // NavBar-Banner weist darauf hin. reason = zuletzt invalidierende Operation,

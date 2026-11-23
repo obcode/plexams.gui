@@ -1,6 +1,6 @@
 <script>
-	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { goto, refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import LinkChip from '#lib/todo/LinkChip.svelte';
 	import TodoEditor from '#lib/todo/TodoEditor.svelte';
@@ -12,7 +12,7 @@
 
 	// Filter stehen in der URL, damit sich eine gefilterte Ansicht verlinken lässt
 	// (z. B. „Todos zu Phase 1" von der Startseite).
-	let params = $derived($page.url.searchParams);
+	let params = $derived(page.url.searchParams);
 	let status = $derived(/** @type {'open' | 'done' | 'all'} */ (params.get('status') ?? 'open'));
 	let label = $derived(params.get('label') ?? '');
 	let priority = $derived(params.get('priority') ?? '');
@@ -25,10 +25,10 @@
 	 * @param {string} value leer = Filter entfernen
 	 */
 	function setParam(name, value) {
-		const url = new URL($page.url);
+		const url = new URL(page.url.href);
 		if (value) url.searchParams.set(name, value);
 		else url.searchParams.delete(name);
-		goto(url, { replaceState: true, keepFocus: true, noScroll: true });
+		goto(url, { replace: true, reset: false });
 	}
 
 	let todos = $derived(filterTodos(data.todos, { status, label, priority, kind, link, text }));
@@ -62,7 +62,7 @@
 		try {
 			const n = await carryOverTodos(data.fromSemester);
 			message = `${n} Todos aus ${data.fromSemester} übernommen.`;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -169,7 +169,7 @@
 		onclose={() => (creating = false)}
 		onsaved={async () => {
 			creating = false;
-			await invalidateAll();
+			await refreshAll();
 		}}
 	/>
 {/if}

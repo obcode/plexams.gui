@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import RoomRequestToggles from '#lib/room/RoomRequestToggles.svelte';
 	import RoomRequestPlanned from '#lib/room/RoomRequestPlanned.svelte';
@@ -138,7 +138,7 @@
 				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -236,7 +236,7 @@
 				return;
 			}
 			modalOpen = false;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			mError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -311,7 +311,7 @@
 				return;
 			}
 			applyMsg = `${result.applyRoomRequestsPreview} Anfragen übernommen.`;
-			await invalidateAll();
+			await refreshAll();
 			section = 'manage';
 		} catch (e) {
 			applyError = e instanceof Error ? e.message : String(e);

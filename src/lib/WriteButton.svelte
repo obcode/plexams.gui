@@ -13,7 +13,7 @@
 	  </WriteButton>
 -->
 <script>
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
 
 	/**
@@ -29,8 +29,8 @@
 	let { class: cls = '', disabled = false, title = '', onclick, children, ...rest } = $props();
 
 	// VIEWER = nur lesen → Schreib-Button komplett ausblenden.
-	let viewer = $derived(isViewer($page.data?.me));
-	let readOnly = $derived($page.data?.readOnly ?? false);
+	let viewer = $derived(isViewer(page.data?.me));
+	let readOnly = $derived(page.data?.readOnly ?? false);
 	let isDisabled = $derived(disabled || readOnly);
 	let tip = $derived(readOnly ? 'Semester ist geschützt (nur lesen)' : title);
 </script>

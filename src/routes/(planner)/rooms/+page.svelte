@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import RoomForm from '#lib/room/RoomForm.svelte';
 
@@ -21,7 +21,7 @@
 	}
 	async function onSaved() {
 		showModal = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// Eigenschaften eines Raums (Feldname → Anzeige); dienen als Badges UND als
@@ -90,7 +90,7 @@
 				toggleError = result?.error ?? `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			toggleError = err instanceof Error ? err.message : String(err);
 		}

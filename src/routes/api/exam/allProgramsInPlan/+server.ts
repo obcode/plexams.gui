@@ -1,4 +1,3 @@
-import { json } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
 import { backendRequest } from '#lib/server/backend.js';
 import type { RequestHandler } from './$types';
@@ -12,5 +11,5 @@ export const GET: RequestHandler = async () => {
 
 	const data = await backendRequest(query);
 
-	return json(data.allProgramsInPlan);
+	return Response.json(data.allProgramsInPlan);
 };

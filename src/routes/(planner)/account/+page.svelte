@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();
@@ -51,7 +51,7 @@
 		notifyError = '';
 		try {
 			await post('/api/account/setNotificationMode', { mode });
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			notifyError = errMsg(e);
 		} finally {
@@ -61,7 +61,7 @@
 
 	// ── Kürzel ──────────────────────────────────────────────────────────────────
 	let shortname = $state(data.account?.shortname ?? '');
-	// Vorbefüllung an den geladenen Wert koppeln (z. B. nach invalidateAll), solange
+	// Vorbefüllung an den geladenen Wert koppeln (z. B. nach refreshAll), solange
 	// der Nutzer nicht gerade tippt.
 	let shortnameDirty = $state(false);
 	$effect(() => {
@@ -84,7 +84,7 @@
 			await post('/api/account/setShortname', { shortname: shortname.trim() });
 			shortnameDirty = false;
 			shortMsg = 'Kürzel gespeichert.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			shortError = errMsg(e);
 		} finally {
@@ -101,7 +101,7 @@
 			await post('/api/account/setShortname', { shortname: '' });
 			shortnameDirty = false;
 			shortMsg = 'Auf ZPA-Kürzel zurückgesetzt.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			shortError = errMsg(e);
 		} finally {
@@ -125,7 +125,7 @@
 			await post('/api/account/setJiraToken', { token: tokenInput.trim() });
 			tokenInput = '';
 			tokenMsg = 'Jira-Token gespeichert.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			tokenError = errMsg(e);
 		} finally {
@@ -142,7 +142,7 @@
 		try {
 			await post('/api/account/removeJiraToken');
 			tokenMsg = 'Jira-Token entfernt.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			tokenError = errMsg(e);
 		} finally {

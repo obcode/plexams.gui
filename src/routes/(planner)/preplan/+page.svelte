@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/state';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
 	import SubscriptionTerminal from '#lib/SubscriptionTerminal.svelte';
@@ -148,7 +148,7 @@
 				return;
 			}
 			closeEdit();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			editError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -171,7 +171,7 @@
 				listError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		}
@@ -192,7 +192,7 @@
 			if (!res.ok || result?.error) {
 				listError = result?.error || `Fehler (HTTP ${res.status})`;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -218,7 +218,7 @@
 			if (!res.ok || result?.error) {
 				listError = result?.error || `Fehler (HTTP ${res.status})`;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -289,7 +289,7 @@
 				return;
 			}
 			closeSuggest();
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			suggestError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -312,7 +312,7 @@
 				listError = result?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		}
@@ -406,7 +406,7 @@
 				conError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 			syncConPairs();
 		} catch (e) {
 			conNotSame = prev;
@@ -442,7 +442,7 @@
 				conError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 			syncConPairs();
 		} catch (e) {
 			conCanShare = prev;
@@ -477,7 +477,7 @@
 				return;
 			}
 			closeConstraints();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			conError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -631,7 +631,7 @@
 			}
 			validation = result.generatePreplanAssignment;
 			validationKind = 'generate';
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -668,7 +668,7 @@
 				n > 0
 					? `${n} ${n === 1 ? 'Prüfung' : 'Prüfungen'} zurückgesetzt.`
 					: 'Keine nicht-fixierten Zeiten vorhanden.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			listError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -838,7 +838,7 @@
 	<!-- 🔌 Anny importieren → danach Übersicht (seatsBooked) neu laden -->
 	<SubscriptionTerminal
 		actions={[{ field: 'importAnnyBookings', label: '🔌 Anny-Buchungen importieren' }]}
-		ondone={() => invalidateAll()}
+		ondone={() => refreshAll()}
 	/>
 
 	<div class="alert alert-info py-2 text-sm">

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 // Gemeinsame, einmalig geladene Nachschlage-Karte ancode → { module, mainExamer }.
 // Die Validierungs-Findings tragen nur strukturierte Ancodes; damit reichern die

@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/sveltekit';
-import { env } from '$env/dynamic/public';
+import * as env from '$app/env/public';
 import { commonOptions } from '#lib/obs/options.js';
 
 // Fehler-Telemetrie im Browser. Ohne PUBLIC_SENTRY_DSN passiert nichts.
@@ -30,9 +30,12 @@ if (env.PUBLIC_SENTRY_DSN) {
  * Was im Browser niemand abfängt. Gibt dieselbe Form zurück wie die
  * serverseitige Fassung, damit +error.svelte nur einen Fall kennt.
  *
- * @type {import('@sveltejs/kit').HandleClientError}
+ * @type {import('@sveltejs/kit/hooks').HandleClientError}
  */
-function describeError({ error }) {
+function describeError({ kind, error }) {
+	// Since SvelteKit 3, errors thrown with `error()` and SvelteKit's own 404s pass through
+	// here as well. They keep their status and message and are not reported.
+	if (kind !== 'unknown') return;
 	console.error(error);
 	return {
 		message: 'Unerwarteter Fehler. Die Prüfungsplanung wurde benachrichtigt.',

@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { checkStudentRegs } from '#lib/studentRegs/store.js';
 	import LinkedTodos from '#lib/todo/LinkedTodos.svelte';
 
@@ -32,7 +32,7 @@
 				error = d?.error || `Fehler (HTTP ${res.status})`;
 				return false;
 			}
-			await invalidateAll();
+			await refreshAll();
 			checkStudentRegs();
 			return true;
 		} catch (e) {

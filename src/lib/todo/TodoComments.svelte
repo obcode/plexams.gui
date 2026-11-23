@@ -3,8 +3,8 @@
 	lassen sich bearbeiten. Neue Kommentare unten.
 -->
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
 	import Markdown from '#lib/Markdown.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -27,7 +27,7 @@
 	let editingId = $state(null);
 	let editBody = $state('');
 
-	let myEmail = $derived($page.data?.me?.email ?? null);
+	let myEmail = $derived(page.data?.me?.email ?? null);
 
 	async function add() {
 		if (!body.trim()) return;
@@ -36,7 +36,7 @@
 		try {
 			await addTodoComment(todoId, body);
 			body = '';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -57,7 +57,7 @@
 		try {
 			await updateTodoComment(editingId, editBody);
 			editingId = null;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -106,7 +106,7 @@
 		<div class="alert alert-error py-2 text-sm"><span>{error}</span></div>
 	{/if}
 
-	{#if !isViewer($page.data?.me)}
+	{#if !isViewer(page.data?.me)}
 		<div class="flex flex-col gap-2">
 			<textarea
 				class="textarea textarea-bordered textarea-sm min-h-20 w-full"

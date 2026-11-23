@@ -8,7 +8,7 @@ import type { RequestHandler } from './$types';
 //
 // Annahme über das Backend-Schema: setMyShortname(shortname: String!): MyAccount
 // (gibt das aktualisierte Konto zurück). Die Seite lädt danach ohnehin per
-// invalidateAll neu; liefert das Backend hier einen Skalar, muss die Selection weg.
+// refreshAll neu; liefert das Backend hier einen Skalar, muss die Selection weg.
 export const POST: RequestHandler = async ({ request }) => {
 	const { shortname } = await request.json();
 	return gqlProxy(

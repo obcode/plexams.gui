@@ -2,8 +2,8 @@
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
-	// per invalidateAll die Load-Daten.
-	import { invalidateAll } from '$app/navigation';
+	// per refreshAll die Load-Daten.
+	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import { diffMeta } from '#lib/exam/conflictDiff.ts';
 	import { pairKey, isAutoConflict } from '#lib/exam/conflictLoop.ts';
@@ -34,7 +34,7 @@
 
 	// Lokale, patchbare Kopie als writable $derived: folgt dem `conflicts`-Prop
 	// (Lauf-Snapshot examReport.conflicts oder frischer Load) und wird bei jedem
-	// invalidateAll neu aufgesetzt; dazwischen optimistisch per Reassignment
+	// refreshAll neu aufgesetzt; dazwischen optimistisch per Reassignment
 	// gepatcht. $derived läuft — anders als $effect — auch bei SSR, sodass die
 	// Konflikte schon im SSR-HTML stehen.
 	/** @type {any[]} */
@@ -91,7 +91,7 @@
 			// optimistisch die Anzeige aktualisieren (Lauf-Snapshot ändert sich
 			// sonst nicht) und die Load-Daten (Vorschläge/Paare/Bewertungen) neu holen
 			patchFn?.();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : String(e);
 		} finally {

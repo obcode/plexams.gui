@@ -1,7 +1,7 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { env } from '$env/dynamic/public';
+	import * as env from '$app/env/public';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
 	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '#lib/semester/generationConfig.ts';

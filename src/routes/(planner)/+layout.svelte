@@ -3,7 +3,7 @@
 	// CSS, Theme und Titel liegen im Wurzel-Layout, das auch das Portal teilt.
 	import Nav from '#lib/Nav.svelte';
 	import Footer from '#lib/Footer.svelte';
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import { checkAssembledExams } from '#lib/assembledExams/store.js';
 	import { checkStudentRegs } from '#lib/studentRegs/store.js';
 	/**

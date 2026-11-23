@@ -1,5 +1,5 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { backendBase, postUpload } from '#lib/email/attachments.js';
 	import EmailSender from '#lib/email/EmailSender.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -9,7 +9,7 @@
 	let program = $state(data.primussExams.length > 0 ? data.primussExams[0].program : '');
 
 	// --- Sammellisten-Import (ZIP per REST an POST /upload/primuss-zip) ---
-	// inkrementell/wiederholbar; nach dem Upload aktualisiert invalidateAll die
+	// inkrementell/wiederholbar; nach dem Upload aktualisiert refreshAll die
 	// Anmeldedaten unten.
 	let uploading = $state(false);
 	let blocked = $state(false);
@@ -37,7 +37,7 @@
 				uploadError = r.error || 'Upload fehlgeschlagen';
 			} else {
 				result = r.result;
-				await invalidateAll(); // Anmeldedaten unten aktualisieren
+				await refreshAll(); // Anmeldedaten unten aktualisieren
 			}
 		} finally {
 			uploading = false;
@@ -74,7 +74,7 @@
 			}
 			resetCleared = json?.resetPrimussData ?? [];
 			result = null;
-			await invalidateAll(); // Primuss-Ansichten neu laden
+			await refreshAll(); // Primuss-Ansichten neu laden
 		} catch (e) {
 			resetError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -213,7 +213,7 @@
 				return;
 			}
 			connectExam = null;
-			await invalidateAll(); // „verbunden"-Flags neu berechnen
+			await refreshAll(); // „verbunden"-Flags neu berechnen
 		} catch (e) {
 			connectError = e instanceof Error ? e.message : String(e);
 		} finally {

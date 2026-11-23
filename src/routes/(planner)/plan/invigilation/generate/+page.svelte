@@ -1,7 +1,7 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { env } from '$env/dynamic/public';
+	import * as env from '$app/env/public';
 	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
 	import { INVIG_METHOD_FIELDS, INVIG_WEIGHT_FIELDS } from '#lib/semester/generationConfig.ts';
 

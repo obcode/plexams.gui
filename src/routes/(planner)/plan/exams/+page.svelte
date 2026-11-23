@@ -15,7 +15,7 @@
 	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
 	import { combineStarttime, isStandardStarttime } from '#lib/exam/setExamTime.ts';
 	import { inPeriod, dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
-	import { invalidateAll } from '$app/navigation';
+	import { refreshAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { errorMessage, postApi } from '#lib/apiClient.js';
 	let { data } = $props();
@@ -248,7 +248,7 @@
 				placeError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 			placeNonce++;
 			handleUnselect();
 		} catch (e) {
