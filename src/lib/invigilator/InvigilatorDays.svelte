@@ -1,5 +1,5 @@
 <script>
-	import { mkDateShort } from '$lib/jshelper/misc';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} semesterConfig

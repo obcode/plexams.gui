@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/sveltekit';
 import { json } from '@sveltejs/kit';
-import { gqlErrorMessage } from '$lib/gqlError';
-import { backendRequest } from '$lib/server/backend';
+import { gqlErrorMessage } from '#lib/gqlError.js';
+import { backendRequest } from '#lib/server/backend.js';
 
 // Serverseitiger Helfer für die /api-Proxy-Endpunkte: führt eine GraphQL-
 // Operation gegen das Backend ($PLEXAMS_SERVER) aus und verpackt das Ergebnis

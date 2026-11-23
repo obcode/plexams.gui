@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { TODO_FIELDS } from '$lib/server/todoFields';
-import { previousSemester } from '$lib/todo/todo.js';
+import { backendRequest } from '#lib/server/backend.js';
+import { TODO_FIELDS } from '#lib/server/todoFields.ts';
+import { previousSemester } from '#lib/todo/todo.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

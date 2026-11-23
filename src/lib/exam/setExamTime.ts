@@ -3,7 +3,7 @@
 // „keine Standard-Anfangszeit" ist rein client-seitig: hier geprüft gegen die
 // Standard-Anfangszeiten des Semesters (semesterConfig.starttimes[].start bzw. die
 // startTimes der Config).
-import { hhmm, minutesOfDay } from '$lib/date/calendar';
+import { hhmm, minutesOfDay } from '#lib/date/calendar.ts';
 
 /** Uhrzeit „HH:MM" (Ortszeit laut ISO-Offset) einer absoluten Startzeit; '' wenn unparsbar. */
 export function starttimeHHMM(iso: string | null | undefined): string {

@@ -2,8 +2,8 @@
 // planningState, see plexams.go/plexams/planning_state.go) is actually done in the GUI.
 // Navigation is a GUI concern, so the backend carries no route. Keep this in sync when
 // a condition or a route is added or renamed — conditionLinks.test.js checks the routes.
-import { EMAIL_CONDITION } from '$lib/email/emailConditions';
-import { emailGroups } from '$lib/email/emails';
+import { EMAIL_CONDITION } from '#lib/email/emailConditions.js';
+import { emailGroups } from '#lib/email/emails.js';
 
 /** @type {Record<string, string>} */
 const PAGE_LINK = {

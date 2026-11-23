@@ -3,9 +3,9 @@ import { gql } from 'graphql-request';
 import { json } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { env } from '$env/dynamic/private';
-import { authContext, backendProbe, backendRequest, portalProbe } from '$lib/server/backend';
-import { combine, createAccessCheck, decide } from '$lib/server/accessCheck';
-import { commonOptions } from '$lib/obs/options';
+import { authContext, backendProbe, backendRequest, portalProbe } from '#lib/server/backend.js';
+import { combine, createAccessCheck, decide } from '#lib/server/accessCheck.js';
+import { commonOptions } from '#lib/obs/options.js';
 
 // Fehler-Telemetrie, auf Modulebene: bis der erste Request kommt, muss sie
 // stehen. Ohne SENTRY_DSN passiert gar nichts — das ist der Normalfall in der
@@ -178,7 +178,7 @@ function denyResponse(event, remoteUser) {
  * Kennung (30 s), gleichzeitige Anfragen zusammengelegt. Ein Ausfall des
  * Backends ist kein „Kein Zutritt": bekannte Kennungen arbeiten bis zu zehn
  * Minuten mit dem letzten Stand weiter, unbekannte sehen eine 503-Seite.
- * Einzelheiten und Begründung in $lib/server/accessCheck.
+ * Einzelheiten und Begründung in #lib/server/accessCheck.
  */
 const checkAccess = createAccessCheck({
 	probe: async () => {
@@ -351,7 +351,7 @@ export async function authHandle({ event, resolve }) {
 	// Vom Auth-Proxy (nginx/Shibboleth) autoritativ injizierte Identität. Wird
 	// als AsyncLocalStorage-Kontext gesetzt, damit jeder serverseitige GraphQL-
 	// Call (SSR-load()s, /api-Proxys, isReadOnly unten) sie als X-Remote-User an
-	// das Backend weiterreicht — siehe $lib/server/backend.
+	// das Backend weiterreicht — siehe #lib/server/backend.
 	const remoteUser = event.request.headers.get('x-remote-user') || undefined;
 	const remoteDisplayname = event.request.headers.get('x-remote-displayname') || undefined;
 	event.locals.remoteUser = remoteUser;

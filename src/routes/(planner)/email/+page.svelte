@@ -1,10 +1,10 @@
 <script>
-	import EmailSender from '$lib/email/EmailSender.svelte';
-	import EmailCard from '$lib/email/EmailCard.svelte';
-	import ExamPlanningInfoSender from '$lib/email/ExamPlanningInfoSender.svelte';
-	import DryRunTestMailPanel from '$lib/email/DryRunTestMailPanel.svelte';
-	import { emailGroups } from '$lib/email/emails';
-	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
+	import EmailSender from '#lib/email/EmailSender.svelte';
+	import EmailCard from '#lib/email/EmailCard.svelte';
+	import ExamPlanningInfoSender from '#lib/email/ExamPlanningInfoSender.svelte';
+	import DryRunTestMailPanel from '#lib/email/DryRunTestMailPanel.svelte';
+	import { emailGroups } from '#lib/email/emails.js';
+	import { EMAIL_CONDITION } from '#lib/email/emailConditions.js';
 
 	let { data } = $props();
 
@@ -30,7 +30,7 @@
 	// nach unten, oben bleibt nur Offenes (oberste Karte = nächster Schritt).
 	// Reaktiv (referenziert conditionsDone), damit sich die Sortierung aktualisiert,
 	// sobald die async geladenen Bedingungen eintreffen.
-	/** @param {import('$lib/email/emails').EmailDef} email */
+	/** @param {import('#lib/email/emails.js').EmailDef} email */
 	let isSent = $derived((/** @type {any} */ email) => {
 		const k = email.conditionKey || EMAIL_CONDITION[email.key];
 		return !!k && conditionsDone[k] === true;

@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// $lib/server/backend mocken: authContext ist ein simpler run(store, cb) => cb()
+// #lib/server/backend mocken: authContext ist ein simpler run(store, cb) => cb()
 // (die echte ALS-Weiterreichung ist hier irrelevant, backendRequest ist gemockt),
 // backendRequest liefert pro Test das gewünschte `me`-Ergebnis bzw. wirft.
 const { mockBackendRequest, mockPortalProbe } = vi.hoisted(() => ({
 	mockBackendRequest: vi.fn(),
 	mockPortalProbe: vi.fn()
 }));
-vi.mock('$lib/server/backend', () => ({
+vi.mock('#lib/server/backend.js', () => ({
 	authContext: { run: (/** @type {any} */ _store, /** @type {any} */ cb) => cb() },
 	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v),
 	backendProbe: (/** @type {any} */ d) => mockBackendRequest(d),

@@ -5,9 +5,9 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
-	import Markdown from '$lib/Markdown.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { isViewer } from '#lib/auth.js';
+	import Markdown from '#lib/Markdown.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import { addTodoComment, updateTodoComment } from './client.js';
 	import { formatDateTime } from './todo.js';
 

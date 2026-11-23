@@ -1,6 +1,6 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { mkStarttime } from '$lib/jshelper/misc.js';
+	import { mkStarttime } from '#lib/jshelper/misc.js';
 	let { exams } = $props();
 
 	let searchTermAncode = $state('');

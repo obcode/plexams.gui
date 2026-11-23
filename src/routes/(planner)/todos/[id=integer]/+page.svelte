@@ -1,21 +1,21 @@
 <script>
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { isAdmin, isViewer } from '$lib/auth';
-	import Markdown from '$lib/Markdown.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import LinkChip from '$lib/todo/LinkChip.svelte';
-	import LinkPicker from '$lib/todo/LinkPicker.svelte';
-	import TodoComments from '$lib/todo/TodoComments.svelte';
-	import TodoEditor from '$lib/todo/TodoEditor.svelte';
-	import { addTodoLink, deleteTodo, removeTodoLink, setTodoDone } from '$lib/todo/client.js';
+	import { isAdmin, isViewer } from '#lib/auth.js';
+	import Markdown from '#lib/Markdown.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import LinkChip from '#lib/todo/LinkChip.svelte';
+	import LinkPicker from '#lib/todo/LinkPicker.svelte';
+	import TodoComments from '#lib/todo/TodoComments.svelte';
+	import TodoEditor from '#lib/todo/TodoEditor.svelte';
+	import { addTodoLink, deleteTodo, removeTodoLink, setTodoDone } from '#lib/todo/client.js';
 	import {
 		formatDate,
 		formatDateTime,
 		isOverdue,
 		PRIORITY_LABEL,
 		todayISO
-	} from '$lib/todo/todo.js';
+	} from '#lib/todo/todo.js';
 
 	let { data } = $props();
 

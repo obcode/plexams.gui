@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-	import { mkStarttime } from '$lib/jshelper/misc.js';
-	import { planningFk, displayAncode } from '$lib/exam/fk';
+	import { mkStarttime } from '#lib/jshelper/misc.js';
+	import { planningFk, displayAncode } from '#lib/exam/fk.ts';
 	import { Tooltip } from '@svelte-plugins/tooltips';
 	let {
 		exam,
@@ -114,7 +114,7 @@
 	// FK-Präfix: Fakultät der Prüfung (MUC.DAI, z. B. „FK03"), sonst die planende
 	// FK bei „nicht von mir geplant": Fakultät der Prüfung, sonst Constraint-Feld
 	// (rein numerisch → „FK"-Präfix). Leer ⇒ eigene Prüfung (FK07). Logik in
-	// $lib/exam/fk (unit-getestet).
+	// #lib/exam/fk (unit-getestet).
 	const notMeFk = planningFk(exam.zpaExam.faculty, exam.constraints?.notPlannedByMeInFK);
 
 	// Externe/fremd-geplante Prüfungen über FK + Primuss-Ancode darstellen, z. B.

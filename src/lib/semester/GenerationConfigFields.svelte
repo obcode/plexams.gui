@@ -4,10 +4,10 @@
 	// toGenerationConfigInput, damit die Felder der anderen Solver erhalten
 	// bleiben). Wird von den Solver-Seiten mit ihrer jeweiligen Feldgruppe
 	// eingebunden (Terminplan, Phase A, Pre-Plan, Aufsichten).
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { toGenerationConfigInput } from '$lib/semester/generationConfig';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { toGenerationConfigInput } from '#lib/semester/generationConfig.ts';
 
-	/** @typedef {import('$lib/semester/generationConfig').GenerationConfigField} GenerationConfigField */
+	/** @typedef {import('#lib/semester/generationConfig.ts').GenerationConfigField} GenerationConfigField */
 	/** @typedef {{ label?: string, cols?: string, fields: GenerationConfigField[] }} ConfigSection */
 
 	/** @type {{ config?: any, sections: ConfigSection[], saveLabel?: string, onsaved?: (() => void) | undefined }} */

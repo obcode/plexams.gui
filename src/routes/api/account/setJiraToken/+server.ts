@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 import type { RequestHandler } from './$types';
 
 // Eigenes Jira-PAT (Personal Access Token) hinterlegen (Backend OIDC-Auth). Das

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
+	import ExamWithNTAsForRoomPlanning from '#lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
-	import { errorMessage, postApi } from '$lib/apiClient';
+	import { errorMessage, postApi } from '#lib/apiClient.js';
 
 	let {
 		day,

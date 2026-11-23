@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
+import { backendRequest } from '#lib/server/backend.js';
+import { CONNECTED_EXAM_FIELDS } from '#lib/exam/connectedFields.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

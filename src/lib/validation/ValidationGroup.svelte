@@ -1,13 +1,13 @@
 <script>
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-	import { setGroupStats } from '$lib/validation/store';
-	import ValidatorCard from '$lib/validation/ValidatorCard.svelte';
+	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
+	import { setGroupStats } from '#lib/validation/store.js';
+	import ValidatorCard from '#lib/validation/ValidatorCard.svelte';
 
 	/**
 	 * @typedef {Object} Props
-	 * @property {import('$lib/validation/validators').ValidatorDef[]} validators
+	 * @property {import('#lib/validation/validators.js').ValidatorDef[]} validators
 	 * @property {string} [title] - optionale Überschrift über der Gruppe
 	 * @property {boolean} [autostart] - automatisch beim Einhängen starten
 	 * @property {string} [storeId] - wenn gesetzt, wird das Ergebnis unter dieser ID in den globalen Store gespiegelt
@@ -103,7 +103,7 @@
 	// das Ergebnis in einen ValidationReport übersetzen — kein WS/LogLine.
 	/**
 	 * @param {number} i
-	 * @param {import('$lib/validation/validators').QuerySpec} query
+	 * @param {import('#lib/validation/validators.js').QuerySpec} query
 	 */
 	async function runQueryValidator(i, query) {
 		started = true;

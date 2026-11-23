@@ -1,13 +1,13 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import RoomRequestToggles from '$lib/room/RoomRequestToggles.svelte';
-	import RoomRequestPlanned from '$lib/room/RoomRequestPlanned.svelte';
-	import EmailSender from '$lib/email/EmailSender.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import { starttimeHHMM } from '$lib/exam/setExamTime';
+	import RoomRequestToggles from '#lib/room/RoomRequestToggles.svelte';
+	import RoomRequestPlanned from '#lib/room/RoomRequestPlanned.svelte';
+	import EmailSender from '#lib/email/EmailSender.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { starttimeHHMM } from '#lib/exam/setExamTime.ts';
 
 	let { data } = $props();
 

@@ -1,9 +1,9 @@
 <script>
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
-	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-	import { EMAIL_CONDITION } from '$lib/email/emailConditions';
-	import { dryRunTestMail, ensureDryRunTestMail } from '$lib/email/dryRunTestMail';
+	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
+	import { EMAIL_CONDITION } from '#lib/email/emailConditions.js';
+	import { dryRunTestMail, ensureDryRunTestMail } from '#lib/email/dryRunTestMail.js';
 
 	// Wiederverwendbare Komponente für genau EINEN E-Mail-Versand-Typ. Kann auf
 	// der Übersichtsseite /email oder einzeln auf anderen Seiten eingebunden

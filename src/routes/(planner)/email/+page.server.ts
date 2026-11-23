@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { conditionsDoneMap } from '$lib/email/emailConditions';
+import { backendRequest } from '#lib/server/backend.js';
+import { conditionsDoneMap } from '#lib/email/emailConditions.js';
 import type { PageServerLoad } from './$types';
 
 // Promises NICHT awaiten → SvelteKit streamt sie: die Seite ist sofort da,

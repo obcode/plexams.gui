@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WriteButton from '$lib/WriteButton.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines Raums. Beim
 	// Bearbeiten ist der name (Schlüssel) gesperrt. deactivated ist NICHT Teil

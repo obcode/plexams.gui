@@ -1,8 +1,8 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { backendBase, postUpload } from '$lib/email/attachments';
-	import EmailSender from '$lib/email/EmailSender.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { backendBase, postUpload } from '#lib/email/attachments.js';
+	import EmailSender from '#lib/email/EmailSender.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 

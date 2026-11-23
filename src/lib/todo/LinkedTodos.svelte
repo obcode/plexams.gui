@@ -8,8 +8,8 @@
 -->
 <script>
 	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { isViewer } from '#lib/auth.js';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import TodoEditor from './TodoEditor.svelte';
 	import TodoList from './TodoList.svelte';
 	import { fetchTodos } from './client.js';

@@ -1,8 +1,8 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import { roomValidators } from '$lib/validation/validators';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import { roomValidators } from '#lib/validation/validators.js';
 	import { onMount } from 'svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	/** @type {any} */
 	let group = $state();

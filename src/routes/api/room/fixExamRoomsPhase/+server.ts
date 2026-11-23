@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 import type { RequestHandler } from './$types';
 
 // EXaHM/SEB-Raumphase fixieren (überlebt Phase B). Gibt die Anzahl fixierter

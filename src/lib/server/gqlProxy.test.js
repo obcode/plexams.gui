@@ -5,7 +5,7 @@ const { mockBackendRequest, mockCaptureException } = vi.hoisted(() => ({
 	mockCaptureException: vi.fn()
 }));
 
-vi.mock('$lib/server/backend', () => ({
+vi.mock('#lib/server/backend.js', () => ({
 	backendRequest: (/** @type {any} */ d, /** @type {any} */ v) => mockBackendRequest(d, v)
 }));
 

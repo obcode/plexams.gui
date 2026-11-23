@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 import type { RequestHandler } from './$types';
 
 // Eigenes Kürzel setzen (Backend OIDC-Auth). Ein leerer String setzt auf den

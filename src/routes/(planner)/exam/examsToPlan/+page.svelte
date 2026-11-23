@@ -2,10 +2,10 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
-	import ConstraintsModal from '$lib/exam/ConstraintsModal.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import ConstraintsModal from '#lib/exam/ConstraintsModal.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 

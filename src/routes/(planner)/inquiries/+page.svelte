@@ -1,8 +1,8 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { formatBerlin } from '$lib/portal/time';
-	import { KIND_LABEL, STATE_LABEL, preplanDiff } from '$lib/inquiry/diff';
-	import { REVIEW_LABEL } from '$lib/portal/inquiry';
+	import { formatBerlin } from '#lib/portal/time.js';
+	import { KIND_LABEL, STATE_LABEL, preplanDiff } from '#lib/inquiry/diff.js';
+	import { REVIEW_LABEL } from '#lib/portal/inquiry.js';
 
 	/** @type {{ data: any }} */
 	let { data } = $props();

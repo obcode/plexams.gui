@@ -1,7 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { checkStudentRegs } from '$lib/studentRegs/store.js';
-	import LinkedTodos from '$lib/todo/LinkedTodos.svelte';
+	import { checkStudentRegs } from '#lib/studentRegs/store.js';
+	import LinkedTodos from '#lib/todo/LinkedTodos.svelte';
 
 	let { data } = $props();
 

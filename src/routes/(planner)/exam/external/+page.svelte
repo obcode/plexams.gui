@@ -1,8 +1,8 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import ExternalExamRow from '$lib/exam/ExternalExamRow.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import { buildGroups, hasTime } from '$lib/exam/otherFkGroups';
+	import ExternalExamRow from '#lib/exam/ExternalExamRow.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import { buildGroups, hasTime } from '#lib/exam/otherFkGroups.ts';
 
 	let { data } = $props();
 
@@ -18,7 +18,7 @@
 	);
 
 	// gefilterte + zu Zeilen aufbereitete Items, nach FK gruppiert
-	// (Logik in $lib/exam/otherFkGroups, unit-getestet).
+	// (Logik in #lib/exam/otherFkGroups, unit-getestet).
 	let groups = $derived(buildGroups(data.items ?? [], { onlyMissing, source, fk: fkFilter }));
 
 	// Gesamtzahlen für die Kopfzeile

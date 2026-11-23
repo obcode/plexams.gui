@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import { combineStarttime } from '$lib/exam/setExamTime';
-	import { errorMessage, postApi } from '$lib/apiClient';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { combineStarttime } from '#lib/exam/setExamTime.ts';
+	import { errorMessage, postApi } from '#lib/apiClient.js';
 
-	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
+	import SlotExam from '#lib/examsInPlan/SlotExam.svelte';
 	let {
 		day,
 		time,

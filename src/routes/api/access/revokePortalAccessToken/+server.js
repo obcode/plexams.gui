@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 export const POST = async ({ request }) => {
 	const { id } = await request.json();

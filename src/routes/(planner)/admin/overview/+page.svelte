@@ -1,5 +1,5 @@
 <script>
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();

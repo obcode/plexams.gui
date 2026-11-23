@@ -4,9 +4,9 @@
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
 	// per invalidateAll die Load-Daten.
 	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { diffMeta } from '$lib/exam/conflictDiff';
-	import { pairKey, isAutoConflict } from '$lib/exam/conflictLoop';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { diffMeta } from '#lib/exam/conflictDiff.ts';
+	import { pairKey, isAutoConflict } from '#lib/exam/conflictLoop.ts';
 
 	/**
 	 * @typedef {Object} Props
@@ -30,7 +30,7 @@
 		sourceLabel = ''
 	} = $props();
 
-	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
+	// pairKey/isAutoConflict leben in #lib/exam/conflictLoop (unit-getestet).
 
 	// Lokale, patchbare Kopie als writable $derived: folgt dem `conflicts`-Prop
 	// (Lauf-Snapshot examReport.conflicts oder frischer Load) und wird bei jedem
@@ -171,7 +171,7 @@
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
 		);
-	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
+	// diffMeta (Konflikt-Diff-Anzeige) lebt in #lib/exam/conflictDiff und ist dort
 	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
 	let hasDiff = $derived(
 		resolvedConflicts.length > 0 || working.some((/** @type {any} */ c) => diffMeta(c.diffStatus))

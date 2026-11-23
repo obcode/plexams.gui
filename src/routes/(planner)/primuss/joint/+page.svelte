@@ -1,8 +1,8 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
 
 	let { data } = $props();
 

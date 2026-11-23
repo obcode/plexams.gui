@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/sveltekit';
 import { env } from '$env/dynamic/public';
-import { commonOptions } from '$lib/obs/options';
+import { commonOptions } from '#lib/obs/options.js';
 
 // Fehler-Telemetrie im Browser. Ohne PUBLIC_SENTRY_DSN passiert nichts.
 

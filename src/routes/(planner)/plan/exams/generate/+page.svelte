@@ -3,15 +3,15 @@
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
 	import { invalidateAll } from '$app/navigation';
-	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
-	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import ExamConflictsPanel from '#lib/exam/ExamConflictsPanel.svelte';
+	import ExamScheduleReportExtras from '#lib/exam/ExamScheduleReportExtras.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
 	import {
 		toGenerationConfigInput,
 		EXAM_SCHEDULE_WEIGHT_FIELDS
-	} from '$lib/semester/generationConfig';
+	} from '#lib/semester/generationConfig.ts';
 
 	let { data } = $props();
 

@@ -1,6 +1,6 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import { invigilationValidators } from '$lib/validation/validators';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import { invigilationValidators } from '#lib/validation/validators.js';
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">

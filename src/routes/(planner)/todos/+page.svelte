@@ -1,12 +1,12 @@
 <script>
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import LinkChip from '$lib/todo/LinkChip.svelte';
-	import TodoEditor from '$lib/todo/TodoEditor.svelte';
-	import TodoList from '$lib/todo/TodoList.svelte';
-	import { carryOverTodos } from '$lib/todo/client.js';
-	import { filterTodos, LINK_KINDS, parseLinkParam, PRIORITY_LABEL } from '$lib/todo/todo.js';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import LinkChip from '#lib/todo/LinkChip.svelte';
+	import TodoEditor from '#lib/todo/TodoEditor.svelte';
+	import TodoList from '#lib/todo/TodoList.svelte';
+	import { carryOverTodos } from '#lib/todo/client.js';
+	import { filterTodos, LINK_KINDS, parseLinkParam, PRIORITY_LABEL } from '#lib/todo/todo.js';
 
 	let { data } = $props();
 

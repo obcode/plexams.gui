@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { examInfo, loadExamInfo } from '$lib/validation/examInfo';
+	import { examInfo, loadExamInfo } from '#lib/validation/examInfo.js';
 
 	/**
 	 * @typedef {Object} Props

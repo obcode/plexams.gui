@@ -1,6 +1,6 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import { schedulingValidators } from '$lib/validation/validators';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import { schedulingValidators } from '#lib/validation/validators.js';
 	let { data } = $props();
 
 	let onlyPlannedByMe = $state(true);

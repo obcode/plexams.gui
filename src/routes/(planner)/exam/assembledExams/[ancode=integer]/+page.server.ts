@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { NTA_FIELDS } from '$lib/gql/fragments';
+import { backendRequest } from '#lib/server/backend.js';
+import { NTA_FIELDS } from '#lib/gql/fragments.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {

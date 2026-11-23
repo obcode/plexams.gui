@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { conditionsDoneMap } from '$lib/email/emailConditions';
-import { NTA_FIELDS } from '$lib/gql/fragments';
+import { backendRequest } from '#lib/server/backend.js';
+import { conditionsDoneMap } from '#lib/email/emailConditions.js';
+import { NTA_FIELDS } from '#lib/gql/fragments.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

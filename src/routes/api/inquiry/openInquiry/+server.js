@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Abfrage des aktiven Semesters öffnen.
 export const POST = async ({ request }) => {

@@ -1,8 +1,8 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
-	import SemesterDump from '$lib/backup/SemesterDump.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
+	import SemesterDump from '#lib/backup/SemesterDump.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 

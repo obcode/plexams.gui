@@ -2,11 +2,11 @@
 	Nutzer-Markdown (Todo-Beschreibungen, Kommentare) sicher anzeigen.
 
 	Gerendert wird erst im Browser: der Sanitizer braucht ein DOM (siehe
-	$lib/markdown.js). Im SSR und bis zum Hydrieren steht der Rohtext da — escaped,
+	#lib/markdown.js). Im SSR und bis zum Hydrieren steht der Rohtext da — escaped,
 	mit erhaltenen Zeilenumbrüchen. So gibt es nie ein ungefiltertes {@html}.
 -->
 <script>
-	import { renderMarkdown } from '$lib/markdown.js';
+	import { renderMarkdown } from '#lib/markdown.js';
 
 	/** @type {{ src: string | null | undefined, class?: string }} */
 	let { src, class: cls = '' } = $props();

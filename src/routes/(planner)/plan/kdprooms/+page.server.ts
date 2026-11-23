@@ -1,5 +1,5 @@
-import { backendRequest } from '$lib/server/backend';
-import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+import { backendRequest } from '#lib/server/backend.js';
+import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
 import type { PageServerLoad } from './$types';
 
 const BOOKING_TIMEZONE = 'Europe/Berlin';

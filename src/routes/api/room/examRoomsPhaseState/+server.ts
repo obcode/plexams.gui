@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 import type { RequestHandler } from './$types';
 
 // Fixierungs-Stand der EXaHM/SEB-Raumphase (Phase A). Client-seitig aufgerufen,

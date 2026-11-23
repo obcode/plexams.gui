@@ -6,7 +6,7 @@
 		clearAttachments,
 		uploadAttachmentsZip,
 		uploadAttachment
-	} from '$lib/email/attachments';
+	} from '#lib/email/attachments.js';
 
 	// Wiederverwendbare Verwaltung des E-Mail-Anhang-Speichers für EINE Art
 	// (kind). Zeigt Anzahl + Liste, erlaubt ZIP-Upload und Leeren und gleicht
@@ -23,7 +23,7 @@
 	 * @property {string} [singleAccept] - accept-Attribut des Einzeldatei-Inputs, z. B. '.pdf'
 	 * @property {{ key: string | number, label: string }[]} [expectedKeys] - optional: erwartete keys für Abgleich, [{ key, label }]
 	 * @property {import('svelte').Snippet} [actions]
-	 * @property {(attachments: import('$lib/email/attachments').Attachment[]) => void} [onchange] - meldet den Anhang-Stand nach oben
+	 * @property {(attachments: import('#lib/email/attachments.js').Attachment[]) => void} [onchange] - meldet den Anhang-Stand nach oben
 	 */
 
 	/** @type {Props} */
@@ -40,7 +40,7 @@
 		onchange
 	} = $props();
 
-	/** @type {import('$lib/email/attachments').Attachment[]} */
+	/** @type {import('#lib/email/attachments.js').Attachment[]} */
 	let attachments = $state([]);
 	let loading = $state(true);
 	/** @type {string | null} */

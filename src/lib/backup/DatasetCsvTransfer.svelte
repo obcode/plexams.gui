@@ -15,8 +15,8 @@
 -->
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { datasetCsvDownloadUrl, uploadDatasetCsv } from '$lib/backup/transfer.js';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { datasetCsvDownloadUrl, uploadDatasetCsv } from '#lib/backup/transfer.js';
 
 	/**
 	 * @typedef {Object} Props

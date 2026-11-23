@@ -1,7 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import { validationGroups, zpaGroup } from '$lib/validation/validators';
-import { getWsClient } from '$lib/validation/wsClient';
+import { validationGroups, zpaGroup } from '#lib/validation/validators.js';
+import { getWsClient } from '#lib/validation/wsClient.js';
 
 // Geteilter Validierungs-Status pro Gruppe. Wird gespeist von den
 // Validierungsseiten (über ValidationGroup mit storeId) und von der
@@ -128,7 +128,7 @@ export async function runZpaCheck() {
 
 /**
  * @param {any} client
- * @param {import('$lib/validation/validators').ValidatorGroup} group
+ * @param {import('#lib/validation/validators.js').ValidatorGroup} group
  */
 function runGroupCheck(client, group) {
 	/** @type {Record<string, { ok: boolean, errorCount: number, warningCount: number, skipped?: boolean, skipReason?: string }>} */

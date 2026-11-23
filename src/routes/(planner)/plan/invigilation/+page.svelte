@@ -1,8 +1,8 @@
 <script>
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { combineStarttime } from '$lib/exam/setExamTime';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { combineStarttime } from '#lib/exam/setExamTime.ts';
 	let { data } = $props();
 
 	let days = $state(data.days);

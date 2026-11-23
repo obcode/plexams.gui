@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+import { backendRequest } from '#lib/server/backend.js';
+import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

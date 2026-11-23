@@ -6,7 +6,7 @@
 	Umschalten braucht keinen erneuten Fetch.
 -->
 <script>
-	import EmailTemplateEditor from '$lib/email/EmailTemplateEditor.svelte';
+	import EmailTemplateEditor from '#lib/email/EmailTemplateEditor.svelte';
 
 	let { data } = $props();
 

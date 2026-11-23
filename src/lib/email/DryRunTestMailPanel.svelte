@@ -1,13 +1,13 @@
 <script>
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import {
 		dryRunTestMail,
 		ensureDryRunTestMail,
 		setDryRunTestMail,
 		resetDryRunTestMail
-	} from '$lib/email/dryRunTestMail';
+	} from '#lib/email/dryRunTestMail.js';
 
 	// Probeläufe-Empfänger anzeigen/setzen/zurücksetzen. Alle „Probelauf"-Buttons
 	// (EmailSender) lesen denselben Store → Änderungen schlagen sofort durch.

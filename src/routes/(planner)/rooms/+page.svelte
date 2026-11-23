@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
-	import RoomForm from '$lib/room/RoomForm.svelte';
+	import RoomForm from '#lib/room/RoomForm.svelte';
 
 	let { data } = $props();
 

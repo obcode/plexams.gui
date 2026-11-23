@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
-import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '$lib/gql/fragments';
+import { backendRequest } from '#lib/server/backend.js';
+import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
+import { ZPA_EXAM_FIELDS as ZPA_FIELDS } from '#lib/gql/fragments.js';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

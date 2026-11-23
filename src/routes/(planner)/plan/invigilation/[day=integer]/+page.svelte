@@ -1,8 +1,8 @@
 <script lang="ts">
-	import InvigilatorsForDay from '$lib/invigilator/InvigilatorsForDay.svelte';
-	import InvigilationDayPlanning from '$lib/invigilator/InvigilationDayPlanning.svelte';
-	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
-	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
+	import InvigilatorsForDay from '#lib/invigilator/InvigilatorsForDay.svelte';
+	import InvigilationDayPlanning from '#lib/invigilator/InvigilationDayPlanning.svelte';
+	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
+	import { mkDate, mkDateShort } from '#lib/jshelper/misc.js';
 	let { data } = $props();
 
 	let selectedInvigilator = $state(0);

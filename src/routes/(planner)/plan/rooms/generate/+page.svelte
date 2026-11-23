@@ -2,10 +2,10 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { invalidateAll } from '$app/navigation';
-	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
-	import { ROOM_GENERATION_FIELDS } from '$lib/semester/generationConfig';
+	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
+	import { ROOM_GENERATION_FIELDS } from '#lib/semester/generationConfig.ts';
 
 	let { data } = $props();
 

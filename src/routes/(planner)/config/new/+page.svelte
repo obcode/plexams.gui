@@ -1,6 +1,6 @@
 <script>
-	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 

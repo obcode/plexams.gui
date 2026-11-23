@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 import type { PageServerLoad } from './$types';
 
 // Verbindung + offene Issues (flach & nach Anfragetyp) in einem Round-Trip

@@ -1,6 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { ROLES } from '$lib/auth';
+	import { ROLES } from '#lib/auth.js';
 
 	/** @type {{ data: import('./$types').PageData }} */
 	let { data } = $props();

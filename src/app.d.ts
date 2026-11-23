@@ -12,7 +12,7 @@ declare global {
 			// hooks.server.js aus X-Remote-User/-Displayname gesetzt.
 			remoteUser?: string;
 			remoteDisplayname?: string;
-			// Ergebnis der Zugangsprüfung ($lib/server/accessCheck): 'staff' oder
+			// Ergebnis der Zugangsprüfung (#lib/server/accessCheck): 'staff' oder
 			// 'portal'. Fehlt lokal ohne Auth-Proxy.
 			access?: 'staff' | 'portal' | 'denied' | 'unavailable';
 		}

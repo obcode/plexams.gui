@@ -1,8 +1,8 @@
 import { error, fail } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { portalRequest } from '$lib/server/backend';
-import { portalErrorMessage } from '$lib/portal/errors';
-import { preplanInputFromForm } from '$lib/portal/inquiry';
+import { portalRequest } from '#lib/server/backend.js';
+import { portalErrorMessage } from '#lib/portal/errors.js';
+import { preplanInputFromForm } from '#lib/portal/inquiry.js';
 
 const ENTRY = `
 	id

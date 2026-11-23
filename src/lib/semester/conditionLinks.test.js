@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CONDITION_LINK, conditionLink } from './conditionLinks';
-import { EMAIL_CONDITION } from '$lib/email/emailConditions';
+import { EMAIL_CONDITION } from '#lib/email/emailConditions.js';
 
 const routesDir = fileURLToPath(new URL('../../routes/(planner)', import.meta.url));
 

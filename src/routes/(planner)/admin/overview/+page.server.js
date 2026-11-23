@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 
 /**
  * Administration / Überblick (Backend: adminOverview). Die Query ist

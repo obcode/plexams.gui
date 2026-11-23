@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 
 // Alle Eingaben über das Portal, neueste zuerst – über alle Semester. Filter über die
 // URL (?semester=…&kind=…&before=…), damit eine gefilterte Ansicht verlinkbar ist.

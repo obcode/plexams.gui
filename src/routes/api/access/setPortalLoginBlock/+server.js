@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Sperrt den Portalzugang einer Kennung; eine Planungsrolle bleibt unberührt.
 export const POST = async ({ request }) => {

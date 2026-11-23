@@ -1,5 +1,5 @@
 <script>
-	import EmailSender from '$lib/email/EmailSender.svelte';
+	import EmailSender from '#lib/email/EmailSender.svelte';
 
 	// „Prüfungsplanungs-Info" an die Prüfenden: erst Empfänger auswählen, dann
 	// senden. Versand via Subscription sendEmailExamPlanningInfo(run, teacherIDs).

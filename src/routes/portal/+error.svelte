@@ -1,5 +1,5 @@
 <script>
-	import ErrorPanel from '$lib/ErrorPanel.svelte';
+	import ErrorPanel from '#lib/ErrorPanel.svelte';
 </script>
 
 <ErrorPanel homeHref="/portal" />

@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { portalRequest } from '$lib/server/backend';
+import { portalRequest } from '#lib/server/backend.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {

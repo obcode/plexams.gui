@@ -1,7 +1,7 @@
 <script>
-	import { pdfDownloadUrl } from '$lib/download/downloads.js';
-	import { mkDateShort } from '$lib/jshelper/misc.js';
-	import { starttimeHHMM } from '$lib/exam/setExamTime';
+	import { pdfDownloadUrl } from '#lib/download/downloads.js';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { starttimeHHMM } from '#lib/exam/setExamTime.ts';
 	import {
 		orderBuckets,
 		bucketTone,
@@ -11,7 +11,7 @@
 		studentBucketTotal,
 		formatShare,
 		formatDecimal
-	} from '$lib/statistics/spreadStatistics.js';
+	} from '#lib/statistics/spreadStatistics.js';
 
 	let { data } = $props();
 

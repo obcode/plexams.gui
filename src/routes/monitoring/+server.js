@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
-import { parseDsn } from '$lib/obs/dsn';
+import { parseDsn } from '#lib/obs/dsn.js';
 
 // Tunnel für die Fehlerberichte des Browsers (Sentry.init({ tunnel })).
 //

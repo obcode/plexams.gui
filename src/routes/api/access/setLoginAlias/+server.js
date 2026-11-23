@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Login-Alias für das Portal: eine SSO-Adresse, die von der ZPA-Adresse der
 // Person abweicht. Nur ADMIN; das Backend erzwingt es.

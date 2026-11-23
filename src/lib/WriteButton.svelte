@@ -14,7 +14,7 @@
 -->
 <script>
 	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
+	import { isViewer } from '#lib/auth.js';
 
 	/**
 	 * @typedef {Object} Props

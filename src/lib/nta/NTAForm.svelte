@@ -1,5 +1,5 @@
 <script lang="ts">
-	import WriteButton from '$lib/WriteButton.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines NTA. Beim Bearbeiten
 	// ist die mtknr (Schlüssel) gesperrt. exams/deactivated/lastSemester sind

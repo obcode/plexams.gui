@@ -1,12 +1,12 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import TodoEditor from '$lib/todo/TodoEditor.svelte';
-	import TodoList from '$lib/todo/TodoList.svelte';
-	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '$lib/todo/todo.js';
-	import { KIND_LABEL } from '$lib/inquiry/diff';
-	import { conditionLink } from '$lib/semester/conditionLinks';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import TodoEditor from '#lib/todo/TodoEditor.svelte';
+	import TodoList from '#lib/todo/TodoList.svelte';
+	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '#lib/todo/todo.js';
+	import { KIND_LABEL } from '#lib/inquiry/diff.js';
+	import { conditionLink } from '#lib/semester/conditionLinks.js';
 
 	let { data } = $props();
 

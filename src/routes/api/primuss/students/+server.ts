@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 import type { RequestHandler } from './$types';
 
 const FIELDS = `

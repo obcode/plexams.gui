@@ -1,19 +1,19 @@
 <script>
 	import { page } from '$app/state';
 	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
-	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
-	import { PREPLAN_CONFIG_FIELDS } from '$lib/semester/generationConfig';
-	import PreplanCalendar from '$lib/preplan/PreplanCalendar.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import SubscriptionTerminal from '#lib/SubscriptionTerminal.svelte';
+	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
+	import { PREPLAN_CONFIG_FIELDS } from '#lib/semester/generationConfig.ts';
+	import PreplanCalendar from '#lib/preplan/PreplanCalendar.svelte';
 	import {
 		DURATION_DEFAULT,
 		dateKeyOfIso,
 		minutesOfIso,
 		hhmm,
 		dayLabel
-	} from '$lib/preplan/calendar';
+	} from '#lib/preplan/calendar.js';
 
 	let { data } = $props();
 

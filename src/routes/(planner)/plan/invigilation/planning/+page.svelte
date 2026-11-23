@@ -1,8 +1,8 @@
 <script>
 	import { fade } from 'svelte/transition';
 
-	import InvigilatorTR from '$lib/invigilator/InvigilatorTR.svelte';
-	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
+	import InvigilatorTR from '#lib/invigilator/InvigilatorTR.svelte';
+	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
 	let { data } = $props();
 
 	let invigilators = data.todos.invigilators;
@@ -216,7 +216,7 @@
 	// the images are sent straight to the server.
 	async function uploadAllPng() {
 		const { toBlob } = await import('html-to-image');
-		const { uploadAttachment } = await import('$lib/email/attachments');
+		const { uploadAttachment } = await import('#lib/email/attachments.js');
 		const cards = /** @type {HTMLElement[]} */ (
 			Array.from(document.querySelectorAll('[data-invig-card]'))
 		);

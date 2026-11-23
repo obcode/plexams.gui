@@ -1,11 +1,11 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
-	import SyncLog from '$lib/zpa/SyncLog.svelte';
-	import { zpaValidators } from '$lib/validation/validators';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
+	import SyncLog from '#lib/zpa/SyncLog.svelte';
+	import { zpaValidators } from '#lib/validation/validators.js';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
+	import { isViewer } from '#lib/auth.js';
 
 	let { data } = $props();
 

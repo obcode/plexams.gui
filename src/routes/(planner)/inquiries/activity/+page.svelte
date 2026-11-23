@@ -1,7 +1,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { formatBerlin } from '$lib/portal/time';
-	import { ACTION_LABEL, FIELD_LABEL, KIND_LABEL } from '$lib/inquiry/diff';
+	import { formatBerlin } from '#lib/portal/time.js';
+	import { ACTION_LABEL, FIELD_LABEL, KIND_LABEL } from '#lib/inquiry/diff.js';
 
 	/** @type {{ data: any }} */
 	let { data } = $props();

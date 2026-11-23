@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Wie ich von Eingaben im Portal erfahre: OFF, IMMEDIATE oder DAILY. Persönlich und
 // global, nicht semesterbezogen (READ_POST_PATHS).

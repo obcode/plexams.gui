@@ -1,6 +1,6 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import { formatBerlin } from '$lib/portal/time';
+	import { formatBerlin } from '#lib/portal/time.js';
 
 	/** @type {{ data: any }} */
 	let { data } = $props();

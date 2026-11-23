@@ -4,7 +4,7 @@
 // Reine Funktion — bewusst aus der .svelte-Komponente extrahiert, damit sie
 // unit-testbar ist.
 
-import type { ExamScheduleConflict } from '$lib/gql/types';
+import type { ExamScheduleConflict } from '#lib/gql/types.ts';
 
 export type DiffMeta = {
 	/** Hintergrund-Tönung der Zeile (daisyUI/Theme-Token) */

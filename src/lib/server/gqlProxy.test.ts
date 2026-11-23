@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // $env (SvelteKit-Virtual) und graphql-request mocken, damit der Helfer ohne
-// Backend testbar ist. gqlProxy geht über $lib/server/backend → GraphQLClient.
+// Backend testbar ist. gqlProxy geht über #lib/server/backend → GraphQLClient.
 vi.mock('$env/dynamic/private', () => ({ env: { PLEXAMS_SERVER: 'http://test/query' } }));
 const requestMock = vi.fn();
 const clientCtor = vi.fn();

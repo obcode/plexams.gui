@@ -6,7 +6,7 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
+	import { isViewer } from '#lib/auth.js';
 	import LinkChip from './LinkChip.svelte';
 	import { setTodoDone } from './client.js';
 	import { formatDate, isOverdue, PRIORITY_LABEL, todayISO } from './todo.js';

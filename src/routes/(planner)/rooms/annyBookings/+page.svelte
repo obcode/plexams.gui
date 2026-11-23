@@ -1,9 +1,9 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import { roomColorMap, roomOrder as sortRooms } from '$lib/preplan/calendar.js';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { roomColorMap, roomOrder as sortRooms } from '#lib/preplan/calendar.js';
 
 	let { data } = $props();
 	let bookings = $derived(data.bookings || []);

@@ -1,15 +1,15 @@
 <script>
 	import { invalidateAll } from '$app/navigation';
-	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import AssembledExamsTable from '#lib/exam/AssembledExamsTable.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import {
 		assembledExamsState,
 		checkAssembledExams,
 		resetAssembledExams,
 		resettingAssembled
-	} from '$lib/assembledExams/store';
-	import { studentRegsState } from '$lib/studentRegs/store';
-	import { preparing, regeneratePreparation } from '$lib/prepare';
+	} from '#lib/assembledExams/store.js';
+	import { studentRegsState } from '#lib/studentRegs/store.js';
+	import { preparing, regeneratePreparation } from '#lib/prepare.js';
 	let { data } = $props();
 
 	// Vorbedingungen: ZPA & Primuss importiert UND die manuellen Haken

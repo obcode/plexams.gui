@@ -1,8 +1,8 @@
 <script>
 	import { fade } from 'svelte/transition';
 	import { invalidateAll } from '$app/navigation';
-	import NtaTr from '$lib/nta/NtaTR.svelte';
-	import NTAForm from '$lib/nta/NTAForm.svelte';
+	import NtaTr from '#lib/nta/NtaTR.svelte';
+	import NTAForm from '#lib/nta/NTAForm.svelte';
 
 	let { data } = $props();
 

@@ -1,9 +1,9 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { getConvert, getWsClient } from '$lib/validation/wsClient';
-	import { checkAssembledExams } from '$lib/assembledExams/store';
-	import { checkStudentRegs } from '$lib/studentRegs/store';
+	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
+	import { checkAssembledExams } from '#lib/assembledExams/store.js';
+	import { checkStudentRegs } from '#lib/studentRegs/store.js';
 
 	// Generische Terminal-Ausgabe für argumentlose Streaming-Subscriptions
 	// (LogLine: level/text, PROGRESS in-place, endet mit DONE). Mehrere Aktionen

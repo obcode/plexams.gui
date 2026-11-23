@@ -2,11 +2,11 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { env } from '$env/dynamic/public';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
-	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '$lib/semester/generationConfig';
-	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
-	import ExamRoomsPhaseBadge from '$lib/exam/ExamRoomsPhaseBadge.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
+	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '#lib/semester/generationConfig.ts';
+	import ExamScheduleReportExtras from '#lib/exam/ExamScheduleReportExtras.svelte';
+	import ExamRoomsPhaseBadge from '#lib/exam/ExamRoomsPhaseBadge.svelte';
 
 	let { data } = $props();
 

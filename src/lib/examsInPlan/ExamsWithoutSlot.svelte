@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
+	import SlotExam from '#lib/examsInPlan/SlotExam.svelte';
 
 	let {
 		examsWithoutSlot,

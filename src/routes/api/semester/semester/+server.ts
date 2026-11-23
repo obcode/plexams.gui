@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
+import { backendRequest } from '#lib/server/backend.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
