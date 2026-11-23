@@ -1,4 +1,4 @@
-import { backendRequest } from '$lib/server/backend';
+import { backendRequest } from '#lib/server/backend.js';
 
 const BOOKING_TIMEZONE = 'Europe/Berlin';
 const SLOT_DURATION_MINUTES = 120;

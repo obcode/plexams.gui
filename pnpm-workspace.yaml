@@ -14,8 +14,6 @@ allowBuilds:
 # (Dependabot alerts, 2026-11-23). Each one is scoped to the parent that pins the
 # vulnerable version; drop it once that parent catches up.
 overrides:
-  # @sveltejs/kit 2.x depends on cookie ^0.6.0; the fix (0.7.0) only ships with kit 3.
-  '@sveltejs/kit>cookie': ^0.7.2
   # @tailwindcss/typography (latest 0.5.20) pins postcss-selector-parser 6.0.10 exactly.
   '@tailwindcss/typography>postcss-selector-parser': ^6.1.6
   # @sentry/bundler-plugins 10.x wants glob ^13; the fix is glob 14.0.2 (Sentry 11 has

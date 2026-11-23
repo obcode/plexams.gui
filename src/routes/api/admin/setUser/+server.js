@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Legt einen Benutzer an bzw. aktualisiert dessen Rolle/Namen (Backend
 // feat/oidc-auth). Nur ADMINs dürfen das — das Backend erzwingt es; ein

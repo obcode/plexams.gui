@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
-import { assembledExamsState } from '$lib/assembledExams/store';
-import { studentRegsState } from '$lib/studentRegs/store';
+import { browser } from '$app/env';
+import { assembledExamsState } from '#lib/assembledExams/store.js';
+import { studentRegsState } from '#lib/studentRegs/store.js';
 
 // Vorbereitung in einem Schritt: aufbereitete Prüfungen + StudentRegs zusammen
 // erzeugen (generatePreparation). Aktualisiert beide Zustands-Stores.

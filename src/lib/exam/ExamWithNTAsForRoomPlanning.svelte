@@ -1,6 +1,6 @@
 <script>
-	import { classifyRoom } from '$lib/room/roomCategories';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { classifyRoom } from '#lib/room/roomCategories.js';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	/**
 	 * @typedef {Object} Props

@@ -4,7 +4,7 @@
 // der Kalendertag matcht einen semesterConfig.days-Eintrag, die Uhrzeit eine
 // semesterConfig.starttimes-Anfangszeit. Das Backend rechnet intern genauso
 // (SlotForTime); hier reicht der lokale Vergleich für Anzeige/Gruppierung/Keys.
-import { starttimeHHMM } from '$lib/exam/setExamTime';
+import { starttimeHHMM } from '#lib/exam/setExamTime.ts';
 
 // ExamDay/Starttime tragen keine `number` mehr (Backend-Zeitmodell). Die frühere
 // 1-basierte Tag-/Slot-Nummer entspricht exakt der Position im (chronologisch

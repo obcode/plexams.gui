@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
+import { backendRequest } from '#lib/server/backend.js';
 import type { PageServerLoad } from './$types';
 
 // Zwei Sichten auf dieselben Semester-NTAs: nach Studierenden (teuer, N+1)

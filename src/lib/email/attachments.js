@@ -7,10 +7,10 @@
 //
 // kind: 'cover-page' (key = Lehrer-ID) | 'invigilation-image' (key = Aufsichts-ID)
 
-// backendBase() lebt jetzt zentral in $lib/backend.js (von mehreren Bereichen
+// backendBase() lebt jetzt zentral in #lib/backend.js (von mehreren Bereichen
 // genutzt); hier re-exportiert, damit bestehende Importe unverändert bleiben.
-export { backendBase } from '$lib/backend.js';
-import { backendBase } from '$lib/backend.js';
+export { backendBase } from '#lib/backend.js';
+import { backendBase } from '#lib/backend.js';
 
 /**
  * @typedef {{ key: string, filename: string, size: number, uploadedAt: string }} Attachment

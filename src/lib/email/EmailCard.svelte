@@ -1,6 +1,6 @@
 <script lang="ts">
-	import EmailSender from '$lib/email/EmailSender.svelte';
-	import type { EmailDef } from '$lib/email/emails';
+	import EmailSender from '#lib/email/EmailSender.svelte';
+	import type { EmailDef } from '#lib/email/emails.js';
 
 	let {
 		email,

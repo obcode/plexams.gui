@@ -11,7 +11,7 @@
 	als CSV exportiert/importiert (DatasetCsvTransfer).
 -->
 <script>
-	import { myInputsCsvDownloadUrl } from '$lib/backup/transfer.js';
+	import { myInputsCsvDownloadUrl } from '#lib/backup/transfer.js';
 </script>
 
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">

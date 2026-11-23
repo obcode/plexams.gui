@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
+import { backendRequest } from '#lib/server/backend.js';
 import type { PageServerLoad } from './$types';
 
 // syncLog NICHT awaiten → gestreamt: die Seite (Im-/Export-Buttons) ist sofort

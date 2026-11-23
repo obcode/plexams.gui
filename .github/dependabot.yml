@@ -13,6 +13,8 @@ updates:
       # `vite` gehört hier mit hinein und NICHT zu `tooling`: die Peer-Ranges von
       # @sveltejs/vite-plugin-svelte sind an die Vite-Major gekoppelt, ein
       # Alleingang des Plugins bricht den Dev-Server (siehe #71).
+      # Since SvelteKit 3 the kit itself also peers on a single Vite major (^8.0.12)
+      # and on vite-plugin-svelte 7, so a Vite major only ever moves with this group.
       svelte:
         patterns:
           - 'svelte'

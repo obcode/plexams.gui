@@ -3,7 +3,7 @@
 // dupliziert waren (siehe Warnung in CLAUDE.md). Einsatz per Template-
 // Interpolation in gql`...` (graphql-request), z. B.:
 //
-//   import { ZPA_EXAM_FIELDS } from '$lib/gql/fragments';
+//   import { ZPA_EXAM_FIELDS } from '#lib/gql/fragments.js';
 //   const query = gql`query { toPlan: zpaExamsToPlanWithConstraints {
 //     zpaExam { ${ZPA_EXAM_FIELDS} } } }`;
 //

@@ -10,20 +10,20 @@
 	als Multipart-POST. Der Import aktualisiert/ergänzt PRO ZEILE (kein Voll-Ersatz
 	der Sammlung) — Ausnahme room-requests (fullReplace). Zeilengenaue Gründe für
 	nicht übernommene Zeilen kommen in `skipped` und werden prominent angezeigt.
-	Nach erfolgreichem Import wird die Seite neu geladen (invalidateAll), es sei
+	Nach erfolgreichem Import wird die Seite neu geladen (refreshAll), es sei
 	denn, ein eigenes `onsuccess` wird übergeben.
 -->
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { datasetCsvDownloadUrl, uploadDatasetCsv } from '$lib/backup/transfer.js';
+	import { refreshAll } from '$app/navigation';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { datasetCsvDownloadUrl, uploadDatasetCsv } from '#lib/backup/transfer.js';
 
 	/**
 	 * @typedef {Object} Props
 	 * @property {string} name Datensatz-Name (z. B. 'constraints')
 	 * @property {string} [title] Überschrift; ohne Angabe wird `name` genutzt
 	 * @property {boolean} [fullReplace] Import ersetzt die ganze Sammlung (room-requests)
-	 * @property {() => void} [onsuccess] statt invalidateAll nach Erfolg
+	 * @property {() => void} [onsuccess] statt refreshAll nach Erfolg
 	 * @property {import('svelte').Snippet} [children] erläuternder Hinweistext
 	 */
 
@@ -61,7 +61,7 @@
 		file = null;
 		if (fileInput) fileInput.value = '';
 		if (onsuccess) onsuccess();
-		else await invalidateAll();
+		else await refreshAll();
 	}
 
 	let skipped = $derived(done?.skipped ?? []);

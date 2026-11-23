@@ -1,6 +1,6 @@
 <script lang="ts">
 	import InvigilationSlotPlanning from './InvigilationSlotPlanning.svelte';
-	import { combineStarttime } from '$lib/exam/setExamTime';
+	import { combineStarttime } from '#lib/exam/setExamTime.ts';
 
 	let {
 		semesterConfig,

@@ -1,7 +1,7 @@
 <script>
-	import AttachmentManager from '$lib/email/AttachmentManager.svelte';
-	import EmailSender from '$lib/email/EmailSender.svelte';
-	import { backendBase } from '$lib/email/attachments';
+	import AttachmentManager from '#lib/email/AttachmentManager.svelte';
+	import EmailSender from '#lib/email/EmailSender.svelte';
+	import { backendBase } from '#lib/email/attachments.js';
 
 	let { data } = $props();
 
@@ -46,13 +46,13 @@
 
 	// Hochgeladene Aufsichtskalender (vom AttachmentManager gemeldet) → steuert,
 	// ob „Veröffentlichte Aufsichten“ versendet werden kann.
-	/** @type {import('$lib/email/attachments').Attachment[]} */
+	/** @type {import('#lib/email/attachments.js').Attachment[]} */
 	let invigAttachments = $state([]);
 	let hasInvigImages = $derived(invigAttachments.length > 0);
 
 	// Hochgeladene Deckblätter (vom AttachmentManager gemeldet) → steuert, ob
 	// versendet werden kann und welche Prüfenden im Einzelversand wählbar sind.
-	/** @type {import('$lib/email/attachments').Attachment[]} */
+	/** @type {import('#lib/email/attachments.js').Attachment[]} */
 	let coverAttachments = $state([]);
 	let uploadedExamerKeys = $derived(new Set(coverAttachments.map((a) => String(a.key))));
 	let hasCovers = $derived(uploadedExamerKeys.size > 0);

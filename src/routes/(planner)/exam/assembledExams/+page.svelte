@@ -1,15 +1,15 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import AssembledExamsTable from '$lib/exam/AssembledExamsTable.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { refreshAll } from '$app/navigation';
+	import AssembledExamsTable from '#lib/exam/AssembledExamsTable.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import {
 		assembledExamsState,
 		checkAssembledExams,
 		resetAssembledExams,
 		resettingAssembled
-	} from '$lib/assembledExams/store';
-	import { studentRegsState } from '$lib/studentRegs/store';
-	import { preparing, regeneratePreparation } from '$lib/prepare';
+	} from '#lib/assembledExams/store.js';
+	import { studentRegsState } from '#lib/studentRegs/store.js';
+	import { preparing, regeneratePreparation } from '#lib/prepare.js';
 	let { data } = $props();
 
 	// Vorbedingungen: ZPA & Primuss importiert UND die manuellen Haken
@@ -48,7 +48,7 @@
 		prepResult = { changes, studentCount };
 		// Load-Daten neu holen, damit die eben erzeugten Prüfungen in der Tabelle
 		// erscheinen (data.plannedExams kommt aus dem SSR-load).
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// --- Aufbereitete Prüfungen zurücksetzen (resetAssembledExams) ---
@@ -78,7 +78,7 @@
 		resetRemoved = removed;
 		prepResult = null;
 		await checkAssembledExams(); // Zustand neu holen (jetzt veraltet/offen)
-		await invalidateAll(); // Assembled-Exams-Views neu laden
+		await refreshAll(); // Assembled-Exams-Views neu laden
 	}
 </script>
 

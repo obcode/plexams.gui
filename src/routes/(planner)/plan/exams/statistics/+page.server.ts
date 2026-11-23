@@ -1,11 +1,11 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 import type { PageServerLoad } from './$types';
 
 // Prüfungsverteilung / Statistik: aggregierte Qualitätskennzahlen des aktuellen
 // (gespeicherten) Terminplans aus examSpreadStatistics. Reine Lese-Query; die
-// Aufbereitung/Darstellung passiert in der Seite bzw. in $lib/statistics.
+// Aufbereitung/Darstellung passiert in der Seite bzw. in #lib/statistics.
 //
 // Die Kennzahlen beziehen sich auf den „normalen Studienverlauf": Studierende mit
 // höchstens maxRegularNonRepeatExams Nicht-Wiederholungsprüfungen. Wiederholungs-

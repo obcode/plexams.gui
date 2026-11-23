@@ -1,8 +1,8 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+	import { refreshAll } from '$app/navigation';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
 
 	let { data } = $props();
 
@@ -196,7 +196,7 @@
 				return;
 			}
 			importResult = d.importJointExams;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			importError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -238,7 +238,7 @@
 			deleteResult = d.deleteJointExams;
 			deleteOpen = false;
 			if (deleteProgram && program === deleteProgram) program = '';
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			deleteError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -285,7 +285,7 @@
 				return;
 			}
 			timeFor = null;
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			timeError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -358,7 +358,7 @@
 				}
 			}
 			closeLink();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			linkError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -384,7 +384,7 @@
 				}
 			}
 			closeLink();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			linkError = e instanceof Error ? e.message : String(e);
 		} finally {

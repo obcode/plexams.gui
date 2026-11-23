@@ -1,25 +1,25 @@
 <script>
-	import ExamsForRoomPlanning from '$lib/slot/ExamsForRoomPlanning.svelte';
-	import RoomNamesInSlot from '$lib/slot/RoomNamesInSlot.svelte';
-	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
-	import { mkDate, mkDateShort } from '$lib/jshelper/misc';
-	import { combineStarttime, starttimeHHMM } from '$lib/exam/setExamTime';
-	import { ROOM_CATEGORIES } from '$lib/room/roomCategories';
-	import SubscriptionTerminal from '$lib/SubscriptionTerminal.svelte';
+	import ExamsForRoomPlanning from '#lib/slot/ExamsForRoomPlanning.svelte';
+	import RoomNamesInSlot from '#lib/slot/RoomNamesInSlot.svelte';
+	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
+	import { mkDate, mkDateShort } from '#lib/jshelper/misc.js';
+	import { combineStarttime, starttimeHHMM } from '#lib/exam/setExamTime.ts';
+	import { ROOM_CATEGORIES } from '#lib/room/roomCategories.js';
+	import SubscriptionTerminal from '#lib/SubscriptionTerminal.svelte';
 	import { slide } from 'svelte/transition';
 	import { tick } from 'svelte';
-	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { refreshAll } from '$app/navigation';
+	import WriteButton from '#lib/WriteButton.svelte';
 	let { data } = $props();
 
-	// nach einer Zuordnung neu laden: invalidateAll frischt die Load-Daten
+	// nach einer Zuordnung neu laden: refreshAll frischt die Load-Daten
 	// (Raster, Zähler, No-Room-Warnung) auf, der reloadKey hängt die
 	// client-seitig nachladenden Slot-Komponenten neu ein.
 	let reloadKey = $state(0);
 	async function onGenerated() {
 		needsRegen = false;
 		reloadKey++;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	// Raumzuteilung verwerfen (destruktiv) — Vorplanung (📌) bleibt.

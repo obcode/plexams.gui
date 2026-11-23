@@ -1,5 +1,5 @@
 <script>
-	import { mkDateShort } from '$lib/jshelper/misc';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
 
 	let { data } = $props();
 	let slots = data.slots;

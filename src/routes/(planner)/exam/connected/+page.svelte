@@ -1,6 +1,6 @@
 <script>
-	import { levelOf, zpaPrograms, primussPrograms } from '$lib/exam/connected.js';
-	import ConnectedRow from '$lib/exam/ConnectedRow.svelte';
+	import { levelOf, zpaPrograms, primussPrograms } from '#lib/exam/connected.js';
+	import ConnectedRow from '#lib/exam/ConnectedRow.svelte';
 
 	let { data } = $props();
 

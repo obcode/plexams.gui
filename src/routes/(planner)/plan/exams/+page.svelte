@@ -1,6 +1,6 @@
 <script>
-	import Slot from '$lib/slot/Slot.svelte';
-	import { normalizeFk, planningFk, displayAncode } from '$lib/exam/fk';
+	import Slot from '#lib/slot/Slot.svelte';
+	import { normalizeFk, planningFk, displayAncode } from '#lib/exam/fk.ts';
 	import {
 		dateObj,
 		isoWeekday,
@@ -9,15 +9,15 @@
 		ddmm,
 		minutesOfDay,
 		hhmm
-	} from '$lib/date/calendar';
-	import { filterPlanned } from '$lib/exam/examFilter';
-	import ExamsWithoutSlot from '$lib/examsInPlan/ExamsWithoutSlot.svelte';
-	import NoSemesterConfig from '$lib/config/NoSemesterConfig.svelte';
-	import { combineStarttime, isStandardStarttime } from '$lib/exam/setExamTime';
-	import { inPeriod, dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
-	import { invalidateAll } from '$app/navigation';
+	} from '#lib/date/calendar.ts';
+	import { filterPlanned } from '#lib/exam/examFilter.ts';
+	import ExamsWithoutSlot from '#lib/examsInPlan/ExamsWithoutSlot.svelte';
+	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
+	import { combineStarttime, isStandardStarttime } from '#lib/exam/setExamTime.ts';
+	import { inPeriod, dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
+	import { refreshAll } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { errorMessage, postApi } from '$lib/apiClient';
+	import { errorMessage, postApi } from '#lib/apiClient.js';
 	let { data } = $props();
 
 	let examsWithoutSlot = $derived(data.examsWithoutSlot ?? []);
@@ -248,7 +248,7 @@
 				placeError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 			placeNonce++;
 			handleUnselect();
 		} catch (e) {
@@ -308,7 +308,7 @@
 	let view = $state('kalender');
 	const WD2 = ['', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-	// Datums-/Kalender-Mathematik lebt in $lib/date/calendar (unit-getestet).
+	// Datums-/Kalender-Mathematik lebt in #lib/date/calendar (unit-getestet).
 
 	// Tage nach ISO-Woche gruppieren; Spalten Mo–Fr (+Sa/So falls genutzt).
 	let weeks = $derived(
@@ -338,7 +338,7 @@
 	// ---- Zeitbasierte Kalenderansicht (Blöcke nach echter Start-Zeit + Dauer) ----
 	const PX_PER_MIN = 1.1;
 
-	// Filter der geplanten Prüfungen (Logik in $lib/exam/examFilter, unit-getestet).
+	// Filter der geplanten Prüfungen (Logik in #lib/exam/examFilter, unit-getestet).
 	// Die Toggle-Variablen stehen hier in der $:-Anweisung, damit sie getrackt werden.
 	let plannedFiltered = $derived(
 		filterPlanned(data.plannedExams, {
@@ -423,7 +423,7 @@
 		// Normalfall: gleiche Farbe wie in der Slotansicht (border-l-success/60)
 		return 'border-l-success/60';
 	};
-	// FK-Formatierung zentral in $lib/exam/fk (unit-getestet).
+	// FK-Formatierung zentral in #lib/exam/fk (unit-getestet).
 	// Externe Prüfungen (zpaExam.faculty gesetzt; leer ⇒ FK07) über faculty +
 	// Primuss-Ancode darstellen, z. B. „FK03: 123".
 	/** @param {any} z zpaExam */

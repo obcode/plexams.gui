@@ -1,7 +1,7 @@
 <script>
-	import { mkStarttime } from '$lib/jshelper/misc.js';
+	import { mkStarttime } from '#lib/jshelper/misc.js';
 	import { slide } from 'svelte/transition';
-	import EmailSender from '$lib/email/EmailSender.svelte';
+	import EmailSender from '#lib/email/EmailSender.svelte';
 
 	// Karte eines/r NTA-Studierenden mit den Anmeldungen im aktuellen Semester
 	// (angereichert um Raum/Zeit/Aufsicht in der load-Funktion der Seite).

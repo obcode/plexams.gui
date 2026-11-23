@@ -1,17 +1,17 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import { env } from '$env/dynamic/public';
-	import { invalidateAll } from '$app/navigation';
-	import ExamConflictsPanel from '$lib/exam/ExamConflictsPanel.svelte';
-	import ExamScheduleReportExtras from '$lib/exam/ExamScheduleReportExtras.svelte';
-	import DatasetCsvTransfer from '$lib/backup/DatasetCsvTransfer.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import GenerationConfigFields from '$lib/semester/GenerationConfigFields.svelte';
+	import * as env from '$app/env/public';
+	import { refreshAll } from '$app/navigation';
+	import ExamConflictsPanel from '#lib/exam/ExamConflictsPanel.svelte';
+	import ExamScheduleReportExtras from '#lib/exam/ExamScheduleReportExtras.svelte';
+	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import GenerationConfigFields from '#lib/semester/GenerationConfigFields.svelte';
 	import {
 		toGenerationConfigInput,
 		EXAM_SCHEDULE_WEIGHT_FIELDS
-	} from '$lib/semester/generationConfig';
+	} from '#lib/semester/generationConfig.ts';
 
 	let { data } = $props();
 
@@ -36,7 +36,7 @@
 	}
 	async function refreshConflictsAndDiff() {
 		const before = conflictSnapshot ?? [];
-		await invalidateAll();
+		await refreshAll();
 		await tick();
 		conflictDiff = computeDiff(before, data.conflicts ?? []);
 	}
@@ -44,7 +44,7 @@
 	// Faustregel: examReport.conflicts/resolvedConflicts (inkl. diffStatus) gehören zu
 	// EINEM Lauf. Sobald sich der Plan ändert (Reset o. Ä.), ist dieser Snapshot
 	// veraltet — verwerfen, damit der Konflikt-Panel wieder die Dauer-Ansicht aus
-	// examScheduleConflicts (data.conflicts, per invalidateAll frisch) zeigt.
+	// examScheduleConflicts (data.conflicts, per refreshAll frisch) zeigt.
 	function discardRunReport() {
 		examReport = null;
 		conflictDiff = null;
@@ -120,7 +120,7 @@
 				return;
 			}
 			gapInfo = 'Zwischenzeit gespeichert.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			gapError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -177,7 +177,7 @@
 				return;
 			}
 			slotTimeInfo = 'Tageszeiten-Einstellung gespeichert.';
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			slotTimeError = err instanceof Error ? err.message : String(err);
 		} finally {
@@ -525,7 +525,7 @@
 			resetInfo = `${fmt(d.resetExamSchedule)} Prüfung(en) aus dem Plan entfernt.`;
 			// Lauf-Report gehört zum alten Plan → verwerfen, danach live nachladen.
 			discardRunReport();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			resetError = e instanceof Error ? e.message : String(e);
 		} finally {

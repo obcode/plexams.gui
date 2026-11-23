@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { combineStarttime } from '$lib/exam/setExamTime';
+import { backendRequest } from '#lib/server/backend.js';
+import { combineStarttime } from '#lib/exam/setExamTime.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ url }) => {

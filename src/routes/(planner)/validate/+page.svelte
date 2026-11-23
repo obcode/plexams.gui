@@ -1,6 +1,6 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import { validationGroups as groups } from '$lib/validation/validators';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import { validationGroups as groups } from '#lib/validation/validators.js';
 
 	/** @type {Record<string, { errors: number, warnings: number, running: boolean, done: boolean, ok: boolean }>} */
 	let stats = $state({});

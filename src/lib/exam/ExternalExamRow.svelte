@@ -1,9 +1,9 @@
 <script lang="ts">
 	// Eine Prüfungszeile mit Inline-Termineingabe (Datum + Zeit, kein Popup).
 	// Setzt die externe Zeit über /api/exam/setExternalExamTime(ancode) und meldet
-	// Erfolg per onsaved-Callback nach oben (dort invalidateAll).
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { inPeriod } from '$lib/slot/derive';
+	// Erfolg per onsaved-Callback nach oben (dort refreshAll).
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { inPeriod } from '#lib/slot/derive.ts';
 
 	let {
 		exam,

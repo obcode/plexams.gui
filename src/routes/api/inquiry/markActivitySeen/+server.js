@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Die Änderungsübersicht bis zu einer Änderung als gelesen markieren. Persönlich und
 // global, nicht semesterbezogen (READ_POST_PATHS).

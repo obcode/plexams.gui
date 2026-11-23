@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 import type { PageServerLoad } from './$types';
 
 // „Prüfungen anderer FKs": Termine für Prüfungen, die eine andere Fakultät plant.
@@ -17,7 +17,7 @@ type PlanEntryTime = {
 };
 
 // Ergebnis-Shape der Query (nur die selektierten Felder — bewusst schlanker als
-// die vollen Schema-Typen aus $lib/gql/types).
+// die vollen Schema-Typen aus #lib/gql/types).
 type QueryResult = {
 	semesterConfig: { days: { date: string }[] } | null;
 	studyPrograms: { shortname: string; jointFaculty: string | null }[];
@@ -49,7 +49,7 @@ type QueryResult = {
 	teachers: { id: number; fk: string }[];
 };
 
-// Die vereinheitlichte Zeile, die die Seite (und $lib/exam/otherFkGroups) konsumiert.
+// Die vereinheitlichte Zeile, die die Seite (und #lib/exam/otherFkGroups) konsumiert.
 export type OtherFkItem = {
 	source: 'zpa' | 'joint';
 	ancode: number;

@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Lese-Abfrage: wie das Backend eine Adresse gerade auflösen würde.
 export const POST = async ({ request }) => {

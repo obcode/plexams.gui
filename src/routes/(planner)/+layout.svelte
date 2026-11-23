@@ -1,11 +1,11 @@
 <script>
 	// Das Layout der Planungsoberfläche: Navigation, Zustands-Polling, Footer.
 	// CSS, Theme und Titel liegen im Wurzel-Layout, das auch das Portal teilt.
-	import Nav from '$lib/Nav.svelte';
-	import Footer from '$lib/Footer.svelte';
-	import { browser } from '$app/environment';
-	import { checkAssembledExams } from '$lib/assembledExams/store';
-	import { checkStudentRegs } from '$lib/studentRegs/store';
+	import Nav from '#lib/Nav.svelte';
+	import Footer from '#lib/Footer.svelte';
+	import { browser } from '$app/env';
+	import { checkAssembledExams } from '#lib/assembledExams/store.js';
+	import { checkStudentRegs } from '#lib/studentRegs/store.js';
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} [children]

@@ -6,9 +6,9 @@
 		icsDownloadUrl,
 		PDF_DOWNLOADS,
 		CSV_DOWNLOADS
-	} from '$lib/download/downloads.js';
-	import { myInputsCsvDownloadUrl } from '$lib/backup/transfer.js';
-	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
+	} from '#lib/download/downloads.js';
+	import { myInputsCsvDownloadUrl } from '#lib/backup/transfer.js';
+	import { backupStatus, checkBackupStatus } from '#lib/backup/store.js';
 
 	let { data } = $props();
 

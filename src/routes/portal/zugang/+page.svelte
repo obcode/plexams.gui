@@ -1,6 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
-	import { formatBerlin } from '$lib/portal/time';
+	import { formatBerlin } from '#lib/portal/time.js';
 
 	/** @type {{ data: any, form: any }} */
 	let { data, form } = $props();

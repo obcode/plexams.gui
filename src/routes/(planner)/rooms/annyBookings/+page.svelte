@@ -1,9 +1,9 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import { roomColorMap, roomOrder as sortRooms } from '$lib/preplan/calendar.js';
+	import { refreshAll } from '$app/navigation';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { roomColorMap, roomOrder as sortRooms } from '#lib/preplan/calendar.js';
 
 	let { data } = $props();
 	let bookings = $derived(data.bookings || []);
@@ -273,7 +273,7 @@
 				namesError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll(); // mine wird beim Query neu berechnet
+			await refreshAll(); // mine wird beim Query neu berechnet
 			names = [...(data.personalizationNames || [])];
 		} catch (e) {
 			namesError = e instanceof Error ? e.message : String(e);
@@ -324,7 +324,7 @@
 			description="Holt die aktuellen Buchungen aus Anny (Log-Stream) und lädt die Ansicht neu."
 			accent="info"
 			actionLabel="Abrufen"
-			ondone={() => invalidateAll()}
+			ondone={() => refreshAll()}
 		/>
 
 		<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">

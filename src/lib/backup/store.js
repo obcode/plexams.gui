@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 // Backup-Status des aktuellen Semesters. hasUnsavedChanges=true → seit der letzten
 // Sicherung gab es Mutationen (mutation_log-Einträge); die NavBar weist dann dezent

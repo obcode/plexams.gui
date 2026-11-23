@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 
 // Entfernt einen Benutzer (Backend feat/oidc-auth). Nur ADMINs; das Backend
 // erzwingt es.

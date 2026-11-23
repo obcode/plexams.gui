@@ -5,6 +5,10 @@
 	"license": "BSD-3-Clause",
 	"private": true,
 	"packageManager": "pnpm@11.9.0",
+	"$comment:imports": "#lib is how src/lib is imported since SvelteKit 3 removed the $lib alias: a Node subpath import, so Vite, TypeScript and Vitest resolve it without any SvelteKit configuration. Imports name the file with its extension (`#lib/apiClient.js`), because subpath imports map paths and do not search for files.",
+	"imports": {
+		"#lib/*": "./src/lib/*"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"devhost": "vite dev --host",
@@ -30,8 +34,8 @@
 		"@graphql-codegen/typescript-operations": "^6.2.0",
 		"@playwright/test": "1.65.1",
 		"@svelte-plugins/tooltips": "^3.0.3",
-		"@sveltejs/adapter-node": "^5.5.8",
-		"@sveltejs/kit": "^2.70.4",
+		"@sveltejs/adapter-node": "^6.0.5",
+		"@sveltejs/kit": "^3.4.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/typography": "^0.5.20",
 		"@tailwindcss/vite": "^4.3.5",

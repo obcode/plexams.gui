@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
+import { backendRequest } from '#lib/server/backend.js';
+import { GENERATION_CONFIG_FIELDS } from '#lib/semester/generationConfig.ts';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {

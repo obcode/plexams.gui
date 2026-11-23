@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
-import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
+import { GENERATION_CONFIG_FIELDS } from '#lib/semester/generationConfig.ts';
 import type { PageServerLoad } from './$types';
 
 // Raumplanung-Generierung (analog zur Terminplan-Generierung): Gate (ROOMS in

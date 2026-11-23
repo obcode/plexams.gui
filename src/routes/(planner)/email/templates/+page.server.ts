@@ -1,5 +1,5 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
+import { backendRequest } from '#lib/server/backend.js';
 import type { PageServerLoad } from './$types';
 
 type Variable = { name: string; description: string; example: string };

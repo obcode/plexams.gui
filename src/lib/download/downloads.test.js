@@ -8,8 +8,8 @@ import {
 } from './downloads.js';
 
 // backendBase liest PUBLIC_PLEXAMS_SERVER und schneidet /query ab.
-vi.mock('$env/dynamic/public', () => ({
-	env: { PUBLIC_PLEXAMS_SERVER: 'http://backend:8080/query' }
+vi.mock('$app/env/public', () => ({
+	PUBLIC_PLEXAMS_SERVER: 'http://backend:8080/query'
 }));
 
 describe('download URLs', () => {

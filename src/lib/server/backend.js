@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { GraphQLClient } from 'graphql-request';
-import { env } from '$env/dynamic/private';
+import * as env from '$app/env/private';
 
 // Identitäts-Weiterreichung an das Backend (Auth-Modell: reiner Proxy-Header).
 //
@@ -35,7 +35,9 @@ export function backendClient(ctx) {
 	const headers = {};
 	if (remoteUser) headers['X-Remote-User'] = remoteUser;
 	if (remoteDisplayname) headers['X-Remote-Displayname'] = remoteDisplayname;
-	return new GraphQLClient(env.PLEXAMS_SERVER, { headers });
+	// Declared optional in src/env.js like every variable; without it every call fails, as
+	// it did before SvelteKit 3 typed the value as possibly undefined.
+	return new GraphQLClient(/** @type {string} */ (env.PLEXAMS_SERVER), { headers });
 }
 
 /**

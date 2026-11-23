@@ -1,6 +1,6 @@
 <script>
-	import { KIND_LABEL, inquiryPath } from '$lib/portal/inquiry';
-	import { formatBerlin } from '$lib/portal/time';
+	import { KIND_LABEL, inquiryPath } from '#lib/portal/inquiry.js';
+	import { formatBerlin } from '#lib/portal/time.js';
 
 	/** @type {{ data: any }} */
 	let { data } = $props();

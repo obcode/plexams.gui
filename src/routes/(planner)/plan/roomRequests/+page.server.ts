@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { conditionsDoneMap } from '$lib/email/emailConditions';
-import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
+import { backendRequest } from '#lib/server/backend.js';
+import { conditionsDoneMap } from '#lib/email/emailConditions.js';
+import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
 import type { PageServerLoad } from './$types';
 
 // Gebäudemanagement-Raumanforderungen (nur diese; Anny/T-Räume haben eine

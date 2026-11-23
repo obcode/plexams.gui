@@ -1,8 +1,8 @@
 <script>
 	import { enhance } from '$app/forms';
-	import PreplanForm from '$lib/portal/PreplanForm.svelte';
-	import { REVIEW_LABEL } from '$lib/portal/inquiry';
-	import { formatBerlin } from '$lib/portal/time';
+	import PreplanForm from '#lib/portal/PreplanForm.svelte';
+	import { REVIEW_LABEL } from '#lib/portal/inquiry.js';
+	import { formatBerlin } from '#lib/portal/time.js';
 
 	/** @type {{ data: any, form: any }} */
 	let { data, form } = $props();

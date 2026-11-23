@@ -7,12 +7,12 @@
 		runValidationCheck,
 		zpaSummary,
 		runZpaCheck
-	} from '$lib/validation/store';
-	import { assembledExamsState, checkAssembledExams } from '$lib/assembledExams/store';
-	import { studentRegsState, checkStudentRegs } from '$lib/studentRegs/store';
-	import { backupStatus, checkBackupStatus } from '$lib/backup/store';
-	import { myInputsCsvDownloadUrl } from '$lib/backup/transfer.js';
-	import { isViewer, isAdmin, displayName, roleOf } from '$lib/auth';
+	} from '#lib/validation/store.js';
+	import { assembledExamsState, checkAssembledExams } from '#lib/assembledExams/store.js';
+	import { studentRegsState, checkStudentRegs } from '#lib/studentRegs/store.js';
+	import { backupStatus, checkBackupStatus } from '#lib/backup/store.js';
+	import { myInputsCsvDownloadUrl } from '#lib/backup/transfer.js';
+	import { isViewer, isAdmin, displayName, roleOf } from '#lib/auth.js';
 
 	const backupUrl = myInputsCsvDownloadUrl();
 
@@ -117,7 +117,7 @@
 	let semester = $state('unknown');
 	let currentSem = $state<Sem | null>(null);
 	let allSemesters = $state<Sem[]>([]);
-	// read-only kommt SSR-korrekt aus dem Layout-load ($page.data); der Client-Fetch
+	// read-only kommt SSR-korrekt aus dem Layout-load (page.data); der Client-Fetch
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	async function getSemester() {

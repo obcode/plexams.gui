@@ -2,11 +2,11 @@
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
-	// per invalidateAll die Load-Daten.
-	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { diffMeta } from '$lib/exam/conflictDiff';
-	import { pairKey, isAutoConflict } from '$lib/exam/conflictLoop';
+	// per refreshAll die Load-Daten.
+	import { refreshAll } from '$app/navigation';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { diffMeta } from '#lib/exam/conflictDiff.ts';
+	import { pairKey, isAutoConflict } from '#lib/exam/conflictLoop.ts';
 
 	/**
 	 * @typedef {Object} Props
@@ -30,11 +30,11 @@
 		sourceLabel = ''
 	} = $props();
 
-	// pairKey/isAutoConflict leben in $lib/exam/conflictLoop (unit-getestet).
+	// pairKey/isAutoConflict leben in #lib/exam/conflictLoop (unit-getestet).
 
 	// Lokale, patchbare Kopie als writable $derived: folgt dem `conflicts`-Prop
 	// (Lauf-Snapshot examReport.conflicts oder frischer Load) und wird bei jedem
-	// invalidateAll neu aufgesetzt; dazwischen optimistisch per Reassignment
+	// refreshAll neu aufgesetzt; dazwischen optimistisch per Reassignment
 	// gepatcht. $derived läuft — anders als $effect — auch bei SSR, sodass die
 	// Konflikte schon im SSR-HTML stehen.
 	/** @type {any[]} */
@@ -91,7 +91,7 @@
 			// optimistisch die Anzeige aktualisieren (Lauf-Snapshot ändert sich
 			// sonst nicht) und die Load-Daten (Vorschläge/Paare/Bewertungen) neu holen
 			patchFn?.();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -171,7 +171,7 @@
 			`a${pairKey(c.ancode1, c.ancode2)}-${s.mtknr}`,
 			() => patch(c.ancode1, c.ancode2, (w) => patchDecision(w, s.mtknr, null))
 		);
-	// diffMeta (Konflikt-Diff-Anzeige) lebt in $lib/exam/conflictDiff und ist dort
+	// diffMeta (Konflikt-Diff-Anzeige) lebt in #lib/exam/conflictDiff und ist dort
 	// unit-getestet. Gibt es überhaupt Diff-Infos? (dann Legende zeigen)
 	let hasDiff = $derived(
 		resolvedConflicts.length > 0 || working.some((/** @type {any} */ c) => diffMeta(c.diffStatus))

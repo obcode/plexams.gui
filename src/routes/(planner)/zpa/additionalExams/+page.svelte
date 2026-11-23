@@ -1,6 +1,6 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { refreshAll } from '$app/navigation';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 
@@ -109,7 +109,7 @@
 				});
 			}
 			closeEdit();
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			editError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -132,7 +132,7 @@
 				listError = d?.error || `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			listError = e instanceof Error ? e.message : String(e);
 		}

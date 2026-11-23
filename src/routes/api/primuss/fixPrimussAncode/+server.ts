@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
-import { CONNECTED_EXAM_FIELDS } from '$lib/exam/connectedFields.js';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
+import { CONNECTED_EXAM_FIELDS } from '#lib/exam/connectedFields.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

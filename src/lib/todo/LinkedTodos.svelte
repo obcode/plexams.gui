@@ -7,9 +7,9 @@
 	Für VIEWER ohne Todos bleibt die Box unsichtbar.
 -->
 <script>
-	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { page } from '$app/state';
+	import { isViewer } from '#lib/auth.js';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import TodoEditor from './TodoEditor.svelte';
 	import TodoList from './TodoList.svelte';
 	import { fetchTodos } from './client.js';
@@ -31,7 +31,7 @@
 	let error = $state('');
 	let creating = $state(false);
 
-	let viewer = $derived(isViewer($page.data?.me));
+	let viewer = $derived(isViewer(page.data?.me));
 
 	async function load() {
 		try {

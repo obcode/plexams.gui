@@ -1,4 +1,4 @@
-import { backendBase } from '$lib/backend.js';
+import { backendBase } from '#lib/backend.js';
 
 // Sichern/Wiederherstellen von Semesterdaten über die REST-Routen von plexams.go
 // (kein GraphQL):

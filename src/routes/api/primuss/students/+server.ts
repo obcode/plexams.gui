@@ -1,7 +1,6 @@
-import { json } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { gqlErrorMessage } from '$lib/gqlError';
+import { backendRequest } from '#lib/server/backend.js';
+import { gqlErrorMessage } from '#lib/gqlError.js';
 import type { RequestHandler } from './$types';
 
 const FIELDS = `
@@ -36,14 +35,14 @@ export const POST: RequestHandler = async ({ request }) => {
 				gql`query ($mtknr: String!) { studentByMtknr(mtknr: $mtknr) { ${FIELDS} } }`,
 				{ mtknr: String(mtknr) }
 			);
-			return json({ students: data.studentByMtknr ? [data.studentByMtknr] : [] });
+			return Response.json({ students: data.studentByMtknr ? [data.studentByMtknr] : [] });
 		}
 		const data = await backendRequest(
 			gql`query ($regex: String!) { studentsByName(regex: $regex) { ${FIELDS} } }`,
 			{ regex: String(regex ?? '') }
 		);
-		return json({ students: data.studentsByName ?? [] });
+		return Response.json({ students: data.studentsByName ?? [] });
 	} catch (e) {
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
+		return Response.json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
 };

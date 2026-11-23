@@ -5,8 +5,8 @@
 -->
 <script>
 	import { untrack } from 'svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import Markdown from '$lib/Markdown.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import Markdown from '#lib/Markdown.svelte';
 	import LinkChip from './LinkChip.svelte';
 	import LinkPicker from './LinkPicker.svelte';
 	import { createTodo, fetchLabels, updateTodo } from './client.js';

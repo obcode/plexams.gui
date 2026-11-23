@@ -4,8 +4,8 @@
 // aus dem Browser). Der Datei-Anhang geht als multipart DIREKT an plexams.go
 // (/upload/jira-attachment) — Binärdaten gehören nicht durch den GraphQL-Layer.
 
-import { backendBase } from '$lib/backend.js';
-import { postUpload } from '$lib/email/attachments.js';
+import { backendBase } from '#lib/backend.js';
+import { postUpload } from '#lib/email/attachments.js';
 
 /**
  * @param {string} path

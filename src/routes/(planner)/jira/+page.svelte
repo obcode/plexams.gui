@@ -8,8 +8,8 @@
 		addComment,
 		runTransition,
 		attachToIssue
-	} from '$lib/jira/client.js';
-	import { connectionStatus, groupByIssueType, formatJiraDate } from '$lib/jira/jira.js';
+	} from '#lib/jira/client.js';
+	import { connectionStatus, groupByIssueType, formatJiraDate } from '#lib/jira/jira.js';
 
 	let { data } = $props();
 
@@ -36,9 +36,9 @@
 	}
 
 	// ── Offene Issues + Sichten ───────────────────────────────────────────────────
-	/** @type {import('$lib/jira/jira.js').JiraIssue[]} */
+	/** @type {import('#lib/jira/jira.js').JiraIssue[]} */
 	let flat = $state(data.openIssues);
-	/** @type {import('$lib/jira/jira.js').JiraRequestTypeGroup[]} */
+	/** @type {import('#lib/jira/jira.js').JiraRequestTypeGroup[]} */
 	let byRequestType = $state(data.byRequestType);
 	let listLoading = $state(false);
 	let listError = $state('');
@@ -80,7 +80,7 @@
 
 	// ── Detailpanel ───────────────────────────────────────────────────────────────
 	let selectedKey = $state('');
-	/** @type {import('$lib/jira/jira.js').JiraIssue | null} */
+	/** @type {import('#lib/jira/jira.js').JiraIssue | null} */
 	let detail = $state(null);
 	let detailLoading = $state(false);
 	let detailError = $state('');
@@ -234,7 +234,7 @@
 	}
 </script>
 
-{#snippet issueRow(/** @type {import('$lib/jira/jira.js').JiraIssue} */ issue)}
+{#snippet issueRow(/** @type {import('#lib/jira/jira.js').JiraIssue} */ issue)}
 	<tr
 		class="hover cursor-pointer {selectedKey === issue.key ? 'bg-primary/10' : ''}"
 		onclick={() => selectIssue(issue.key)}

@@ -1,6 +1,6 @@
 <script>
-	import { mkStarttime } from '$lib/jshelper/misc.js';
-	import NtaCard from '$lib/nta/NTACard.svelte';
+	import { mkStarttime } from '#lib/jshelper/misc.js';
+	import NtaCard from '#lib/nta/NTACard.svelte';
 
 	let { data } = $props();
 

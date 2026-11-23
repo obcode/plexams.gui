@@ -1,22 +1,22 @@
 <script>
-	import ValidationGroup from '$lib/validation/ValidationGroup.svelte';
-	import StreamAction from '$lib/zpa/StreamAction.svelte';
-	import SyncLog from '$lib/zpa/SyncLog.svelte';
-	import { zpaValidators } from '$lib/validation/validators';
-	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { isViewer } from '$lib/auth';
+	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
+	import StreamAction from '#lib/zpa/StreamAction.svelte';
+	import SyncLog from '#lib/zpa/SyncLog.svelte';
+	import { zpaValidators } from '#lib/validation/validators.js';
+	import { refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import { isViewer } from '#lib/auth.js';
 
 	let { data } = $props();
 
 	// nach einem Im-/Export den Sync-Verlauf neu laden
-	const refreshLog = () => invalidateAll();
+	const refreshLog = () => refreshAll();
 
 	// Der komplette Datenabgleich schreibt (überschreibt Importe, verschickt Mails):
 	// für die VIEWER-Rolle ausblenden, bei geschütztem Semester deaktivieren.
 	// Enforcement macht das Backend (lehnt VIEWER/read-only ab) — das ist nur die Politur.
-	let viewer = $derived(isViewer($page.data?.me));
-	let readOnly = $derived($page.data?.readOnly ?? false);
+	let viewer = $derived(isViewer(page.data?.me));
+	let readOnly = $derived(page.data?.readOnly ?? false);
 
 	// Downloads (Import aus ZPA) — ohne Argumente.
 	/** @type {{ field: string, title: string, desc: string }[]} */

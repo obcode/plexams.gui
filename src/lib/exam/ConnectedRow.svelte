@@ -2,8 +2,8 @@
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
 	// Aktionen (add/remove/fix) liefern das aktualisierte ConnectedExam,
 	// das per onupdated-Callback nach oben gereicht und im State ersetzt wird.
-	import { LEVEL, warningsOf } from '$lib/exam/connected.js';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { LEVEL, warningsOf } from '#lib/exam/connected.js';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let {
 		exam,

@@ -10,9 +10,9 @@
 <script>
 	import { tick } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import { lineDiff, diffStat } from '$lib/email/templateDiff';
-	import { highlightGoTemplate } from '$lib/email/templateHighlight';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import { lineDiff, diffStat } from '#lib/email/templateDiff.js';
+	import { highlightGoTemplate } from '#lib/email/templateHighlight.js';
 
 	/**
 	 * @typedef {Object} Variable
@@ -430,7 +430,7 @@
 </div>
 
 <!-- Zeilen-Diff-Ansicht -->
-{#snippet diffBlock(/** @type {import('$lib/email/templateDiff').DiffRow[]} */ rows)}
+{#snippet diffBlock(/** @type {import('#lib/email/templateDiff.js').DiffRow[]} */ rows)}
 	<div class="overflow-x-auto rounded-md border border-base-300 bg-base-100">
 		<table class="w-full border-collapse font-mono text-xs">
 			<tbody>

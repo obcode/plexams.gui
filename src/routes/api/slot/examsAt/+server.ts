@@ -1,6 +1,6 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
-import { NTA_FIELDS } from '$lib/gql/fragments';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
+import { NTA_FIELDS } from '#lib/gql/fragments.js';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {

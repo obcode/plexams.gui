@@ -1,4 +1,4 @@
-import { backendBase } from '$lib/backend.js';
+import { backendBase } from '#lib/backend.js';
 
 // Download-Links auf die REST-Routen von plexams.go (kein GraphQL). Der Server
 // setzt jeweils Content-Disposition (attachment) und streamt die Datei:

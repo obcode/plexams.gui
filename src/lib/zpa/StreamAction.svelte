@@ -1,7 +1,7 @@
 <script>
 	import { onDestroy, tick } from 'svelte';
 	import { slide } from 'svelte/transition';
-	import { getConvert, getWsClient } from '$lib/validation/wsClient';
+	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
 
 	/**
 	 * @typedef {Object} Props

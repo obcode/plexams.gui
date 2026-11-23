@@ -1,6 +1,6 @@
 <script>
 	// Constraints-Editor als Popup. Ersetzt die alte Seite /exam/constraints/<ancode>.
-	import WriteButton from '$lib/WriteButton.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	/**
 	 * @typedef {Object} Props

@@ -1,7 +1,7 @@
 <script>
 	import InvigilatorDays from './InvigilatorDays.svelte';
-	import { mkDateShort } from '$lib/jshelper/misc';
-	import { dayNumberForTime } from '$lib/slot/derive';
+	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import { dayNumberForTime } from '#lib/slot/derive.ts';
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} semesterConfig

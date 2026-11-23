@@ -1,8 +1,8 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import SemesterConfigForm from '$lib/config/SemesterConfigForm.svelte';
-	import SemesterDump from '$lib/backup/SemesterDump.svelte';
-	import WriteButton from '$lib/WriteButton.svelte';
+	import { refreshAll } from '$app/navigation';
+	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
+	import SemesterDump from '#lib/backup/SemesterDump.svelte';
+	import WriteButton from '#lib/WriteButton.svelte';
 
 	let { data } = $props();
 
@@ -68,7 +68,7 @@
 			}
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
 			// Effektivwerte/Platzhalter neu laden (können sich durch die Overrides ändern)
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			planerError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -97,7 +97,7 @@
 			planerNoreplyMail = '';
 			planerNoreplyName = '';
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			planerError = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -131,7 +131,7 @@
 			showWarnings = warnings.length > 0;
 			savedAt = new Date().toLocaleTimeString('de-DE');
 			// Tage/Anfangszeiten/reservierte Zeiten je Studiengang neu berechnet → Config neu laden
-			await invalidateAll();
+			await refreshAll();
 		} catch (e) {
 			errorMsg = e instanceof Error ? e.message : String(e);
 		} finally {
@@ -257,7 +257,7 @@
 		<div class="alert alert-success py-2 text-sm"><span>Gespeichert ({savedAt}).</span></div>
 	{/if}
 
-	<!-- Nach dem Speichern lädt invalidateAll die serverseitig neu berechnete
+	<!-- Nach dem Speichern lädt refreshAll die serverseitig neu berechnete
 	     Config (Tage/Anfangszeiten/reservierte Zeiten je Studiengang). {#key} baut das
 	     Formular dann neu auf, sodass sein interner $state frisch aus der Config
 	     initialisiert wird. -->

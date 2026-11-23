@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/sveltekit';
-import { json } from '@sveltejs/kit';
-import { gqlErrorMessage } from '$lib/gqlError';
-import { backendRequest } from '$lib/server/backend';
+import { gqlErrorMessage } from '#lib/gqlError.js';
+import { backendRequest } from '#lib/server/backend.js';
 
 // Serverseitiger Helfer für die /api-Proxy-Endpunkte: führt eine GraphQL-
 // Operation gegen das Backend ($PLEXAMS_SERVER) aus und verpackt das Ergebnis
@@ -24,7 +23,7 @@ import { backendRequest } from '$lib/server/backend';
 export async function gqlProxy(document, variables) {
 	try {
 		const data = await backendRequest(document, variables);
-		return json(data);
+		return Response.json(data);
 	} catch (/** @type {any} */ e) {
 		// Hier endeten bisher 128 der 134 /api-Routen im Fehlerfall — ohne dass
 		// irgendetwas davon irgendwo auftauchte. Der Benutzer sah eine Meldung,
@@ -37,6 +36,6 @@ export async function gqlProxy(document, variables) {
 		// Backend nicht erreichbar oder etwas ist unterwegs zerbrochen: das ist
 		// ein Vorfall.
 		Sentry.captureException(e, { level: e?.response ? 'warning' : 'error' });
-		return json({ error: gqlErrorMessage(e) }, { status: 400 });
+		return Response.json({ error: gqlErrorMessage(e) }, { status: 400 });
 	}
 }

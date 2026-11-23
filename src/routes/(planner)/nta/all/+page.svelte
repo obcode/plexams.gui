@@ -1,8 +1,8 @@
 <script>
 	import { fade } from 'svelte/transition';
-	import { invalidateAll } from '$app/navigation';
-	import NtaTr from '$lib/nta/NtaTR.svelte';
-	import NTAForm from '$lib/nta/NTAForm.svelte';
+	import { refreshAll } from '$app/navigation';
+	import NtaTr from '#lib/nta/NtaTR.svelte';
+	import NTAForm from '#lib/nta/NTAForm.svelte';
 
 	let { data } = $props();
 
@@ -54,7 +54,7 @@
 	}
 	async function onSaved() {
 		showModal = false;
-		await invalidateAll();
+		await refreshAll();
 	}
 
 	/** @type {string | null} */
@@ -74,7 +74,7 @@
 				toggleError = result?.error ?? `Fehler (HTTP ${res.status})`;
 				return;
 			}
-			await invalidateAll();
+			await refreshAll();
 		} catch (err) {
 			toggleError = err instanceof Error ? err.message : String(err);
 		}

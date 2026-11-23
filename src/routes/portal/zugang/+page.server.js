@@ -1,7 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { portalRequest } from '$lib/server/backend';
-import { portalErrorMessage } from '$lib/portal/errors';
+import { portalRequest } from '#lib/server/backend.js';
+import { portalErrorMessage } from '#lib/portal/errors.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load() {

@@ -1,11 +1,11 @@
 import { gql } from 'graphql-request';
-import { gqlProxy } from '$lib/server/gqlProxy';
+import { gqlProxy } from '#lib/server/gqlProxy.js';
 import type { RequestHandler } from './$types';
 
 // Manuelle Platzierung: setzt die absolute Startzeit einer Prüfung. Tag/Slot leitet
 // das Backend daraus ab (0, wenn außerhalb des Zeitraums). Das Backend akzeptiert jede
 // Zeit; die „keine Standard-Anfangszeit"-Warnung ist rein client-seitig (siehe
-// $lib/exam/setExamTime).
+// #lib/exam/setExamTime).
 export const POST: RequestHandler = async ({ request }) => {
 	const { ancode, starttime } = await request.json();
 	const mutation = gql`

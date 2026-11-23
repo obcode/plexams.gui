@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request';
-import { backendRequest } from '$lib/server/backend';
-import { dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
-import { GENERATION_CONFIG_FIELDS } from '$lib/semester/generationConfig';
+import { backendRequest } from '#lib/server/backend.js';
+import { dayNumberForTime, slotNumberForTime } from '#lib/slot/derive.ts';
+import { GENERATION_CONFIG_FIELDS } from '#lib/semester/generationConfig.ts';
 import type { PageServerLoad } from './$types';
 
 // Die Kalender-Übersicht (preplanOverview) und alle Anny-Buchungen sind die teuren

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { gql } from 'graphql-request';
-import { portalRequest } from '$lib/server/backend';
+import { portalRequest } from '#lib/server/backend.js';
 
 /**
  * Wer bin ich im Portal? Eine Anfrage an die Portal-API – nie an die

@@ -1,12 +1,12 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/stores';
-	import WriteButton from '$lib/WriteButton.svelte';
-	import TodoEditor from '$lib/todo/TodoEditor.svelte';
-	import TodoList from '$lib/todo/TodoList.svelte';
-	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '$lib/todo/todo.js';
-	import { KIND_LABEL } from '$lib/inquiry/diff';
-	import { conditionLink } from '$lib/semester/conditionLinks';
+	import { refreshAll } from '$app/navigation';
+	import { page } from '$app/state';
+	import WriteButton from '#lib/WriteButton.svelte';
+	import TodoEditor from '#lib/todo/TodoEditor.svelte';
+	import TodoList from '#lib/todo/TodoList.svelte';
+	import { linkParam, openTodosPerPhase, overdueFirst, todayISO } from '#lib/todo/todo.js';
+	import { KIND_LABEL } from '#lib/inquiry/diff.js';
+	import { conditionLink } from '#lib/semester/conditionLinks.js';
 
 	let { data } = $props();
 
@@ -199,7 +199,7 @@
 									class="checkbox checkbox-sm mt-0.5"
 									aria-label={cond.title}
 									checked={cond.done}
-									disabled={cond.auto || busy.has(cond.key) || $page.data?.readOnly}
+									disabled={cond.auto || busy.has(cond.key) || page.data?.readOnly}
 									onchange={() => toggle(cond)}
 								/>
 								{#if !href}
@@ -244,7 +244,7 @@
 		onclose={() => (newTodoLinks = null)}
 		onsaved={async () => {
 			newTodoLinks = null;
-			await invalidateAll();
+			await refreshAll();
 		}}
 	/>
 {/if}
