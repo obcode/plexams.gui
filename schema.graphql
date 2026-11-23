@@ -429,6 +429,17 @@ type CoverageReport {
   unfilled: Int!
 }
 
+type DeleteJointResult {
+  """programs whose imported exams were deleted."""
+  programs: [String!]!
+
+  """imported exam rows deleted."""
+  examsDeleted: Int!
+
+  """external (non-ZPA) exams removed together with their plan entries."""
+  externalExamsDeleted: Int!
+}
+
 type DistributionBucket {
   count: Int!
   invigilators: Int!
@@ -1906,6 +1917,14 @@ type Mutation {
   Remove the (manual) link of a MUC.DAI exam and fall back to automatic detection.
   """
   removeJointLink(program: String!, primussAncode: Int!): JointExam!
+
+  """
+  Delete the imported exams of one joint program, or of all joint programs when
+  program is omitted: the imported rows, their links (manual ones too) and the
+  external exams generated from them, incl. their times. FK07 (ZPA) exams are not
+  touched. For undoing a wrong CSV import (e.g. a file of a past semester).
+  """
+  deleteJointExams(program: String): DeleteJointResult!
   addNTA(input: NTAInput!): NTA!
 
   """

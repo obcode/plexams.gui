@@ -205,6 +205,47 @@
 		}
 	}
 
+	// --- Löschen (Korrektur eines falschen Imports) ---
+	let deleteOpen = $state(false);
+	/** @type {string} '' = alle Studiengänge */
+	let deleteProgram = $state('');
+	let deleting = $state(false);
+	let deleteError = $state('');
+	/** @type {any} */
+	let deleteResult = $state(null);
+	/** @param {string} p */
+	const examsOfProgram = (p) =>
+		data.jointExams.filter((/** @type {any} */ e) => e.program === p).length;
+	function openDelete() {
+		deleteProgram = program;
+		deleteError = '';
+		deleteOpen = true;
+	}
+	async function confirmDelete() {
+		deleting = true;
+		deleteError = '';
+		try {
+			const res = await fetch('/api/exam/deleteJointExams', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ program: deleteProgram || null })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				deleteError = d?.error || `Fehler (HTTP ${res.status})`;
+				return;
+			}
+			deleteResult = d.deleteJointExams;
+			deleteOpen = false;
+			if (deleteProgram && program === deleteProgram) program = '';
+			await invalidateAll();
+		} catch (e) {
+			deleteError = e instanceof Error ? e.message : String(e);
+		} finally {
+			deleting = false;
+		}
+	}
+
 	// --- externe Zeit setzen ---
 	/** @type {any} */
 	let timeFor = $state(null);
@@ -357,6 +398,15 @@
 		<h1 class="text-2xl font-semibold">Prüfungen gemeinsamer Studiengänge</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.jointExams.length}</span>
 		<div class="flex-1"></div>
+		{#if data.jointExams.length > 0}
+			<WriteButton
+				class="btn btn-outline btn-error btn-sm"
+				title="importierte Prüfungen löschen, z. B. nach dem Import einer falschen Datei"
+				onclick={openDelete}
+			>
+				Löschen …
+			</WriteButton>
+		{/if}
 		<label class="btn btn-outline btn-sm" class:btn-disabled={importing}>
 			{importing ? 'importiert …' : 'CSV importieren'}
 			<input
@@ -584,6 +634,66 @@
 				<div class="text-xs opacity-80">Studiengänge: {importResult.programs.join(', ')}</div>
 			{/if}
 		</div>
+	</div>
+{/if}
+
+<!-- Lösch-Ergebnis-Toast -->
+{#if deleteResult}
+	<div class="toast toast-end z-50">
+		<div class="alert alert-success flex-col items-start gap-1 shadow-lg">
+			<div class="flex w-full items-center gap-2">
+				<span class="font-medium">Gelöscht: {deleteResult.examsDeleted} Prüfungen</span>
+				<div class="flex-1"></div>
+				<button class="btn btn-ghost btn-xs" onclick={() => (deleteResult = null)}>schließen</button
+				>
+			</div>
+			<div class="text-sm">
+				{deleteResult.externalExamsDeleted} extern angelegte Prüfungen entfernt
+			</div>
+			{#if (deleteResult.programs ?? []).length}
+				<div class="text-xs opacity-80">Studiengänge: {deleteResult.programs.join(', ')}</div>
+			{/if}
+		</div>
+	</div>
+{/if}
+
+<!-- Löschen -->
+{#if deleteOpen}
+	<div class="modal modal-open">
+		<div class="modal-box max-w-md">
+			<h2 class="text-lg font-semibold">Importierte Prüfungen löschen</h2>
+			<label class="mt-3 flex flex-col gap-1">
+				<span class="text-xs font-medium text-base-content/60">Studiengang</span>
+				<select class="select select-bordered select-sm" bind:value={deleteProgram}>
+					<option value="">alle Studiengänge ({data.jointExams.length} Prüfungen)</option>
+					{#each programs as p}
+						<option value={p}>{p} ({examsOfProgram(p)} Prüfungen)</option>
+					{/each}
+				</select>
+			</label>
+			<p class="mt-3 text-sm text-base-content/70">
+				Löscht die importierten Prüfungen, ihre Verknüpfungen (auch manuell gesetzte) und die daraus
+				angelegten externen Prüfungen samt gesetzter Zeiten. FK07-Prüfungen aus dem ZPA bleiben
+				erhalten. Danach kann die richtige CSV neu importiert werden.
+			</p>
+			{#if deleteError}
+				<div class="alert alert-error mt-3 py-2 text-sm"><span>{deleteError}</span></div>
+			{/if}
+			<div class="modal-action">
+				<button
+					class="btn btn-ghost btn-sm"
+					onclick={() => (deleteOpen = false)}
+					disabled={deleting}
+				>
+					Abbrechen
+				</button>
+				<WriteButton class="btn btn-error btn-sm" onclick={confirmDelete} disabled={deleting}>
+					{deleting ? 'löscht …' : deleteProgram ? `${deleteProgram} löschen` : 'alle löschen'}
+				</WriteButton>
+			</div>
+		</div>
+		<button class="modal-backdrop" aria-label="schließen" onclick={() => (deleteOpen = false)}
+		></button>
 	</div>
 {/if}
 

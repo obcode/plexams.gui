@@ -366,6 +366,16 @@ export type CoverageReport = {
   unfilled: Scalars['Int']['output'];
 };
 
+export type DeleteJointResult = {
+  __typename?: 'DeleteJointResult';
+  /** imported exam rows deleted. */
+  examsDeleted: Scalars['Int']['output'];
+  /** external (non-ZPA) exams removed together with their plan entries. */
+  externalExamsDeleted: Scalars['Int']['output'];
+  /** programs whose imported exams were deleted. */
+  programs: Array<Scalars['String']['output']>;
+};
+
 export type DistributionBucket = {
   __typename?: 'DistributionBucket';
   count: Scalars['Int']['output'];
@@ -1443,6 +1453,13 @@ export type Mutation = {
   deleteAdditionalExam: Scalars['Boolean']['output'];
   /** Remove the constraints record of one invigilator (key: teacherID). Returns false if there was none. */
   deleteInvigilatorConstraints: Scalars['Boolean']['output'];
+  /**
+   * Delete the imported exams of one joint program, or of all joint programs when
+   * program is omitted: the imported rows, their links (manual ones too) and the
+   * external exams generated from them, incl. their times. FK07 (ZPA) exams are not
+   * touched. For undoing a wrong CSV import (e.g. a file of a past semester).
+   */
+  deleteJointExams: DeleteJointResult;
   deletePreplanExam: Scalars['Boolean']['output'];
   /** Delete a special-interest group by name. Returns false if there was none. */
   deleteSpecialInterest: Scalars['Boolean']['output'];
@@ -1922,6 +1939,11 @@ export type MutationDeleteAdditionalExamArgs = {
 
 export type MutationDeleteInvigilatorConstraintsArgs = {
   teacherID: Scalars['Int']['input'];
+};
+
+
+export type MutationDeleteJointExamsArgs = {
+  program?: InputMaybe<Scalars['String']['input']>;
 };
 
 
