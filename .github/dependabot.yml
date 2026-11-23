@@ -39,6 +39,11 @@ updates:
     directory: '/'
     schedule:
       interval: weekly
+    # Nur LTS-Linien (gerade Majors). Ungerade Node-Majors leben sechs Monate und
+    # bekommen nie LTS; Dependabot schlug node:25 vor (#99).
+    ignore:
+      - dependency-name: node
+        versions: ['25.x', '27.x', '29.x']
 
   - package-ecosystem: github-actions
     directory: '/'
