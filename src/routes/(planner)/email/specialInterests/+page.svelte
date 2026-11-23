@@ -138,11 +138,12 @@
 								</div>
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(si)}>Bearbeiten</button
-								>
-								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(si)}
-									>Löschen</WriteButton
-								>
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(si)}>
+									Bearbeiten
+								</button>
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(si)}>
+									Löschen
+								</WriteButton>
 							</td>
 						</tr>
 					{/each}
@@ -180,8 +181,9 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>
+					Abbrechen
+				</button>
 				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>

@@ -245,9 +245,9 @@
 		{#if readable}
 			<span class="text-base-content/50">↔ Breite = gleich breite Spuren (Lesemodus)</span>
 		{:else}
-			<span class="text-base-content/50"
-				>↔ Breite = Anteil an den gebuchten Plätzen (freie Breite = frei)</span
-			>
+			<span class="text-base-content/50">
+				↔ Breite = Anteil an den gebuchten Plätzen (freie Breite = frei)
+			</span>
 		{/if}
 		<label
 			class="flex cursor-pointer items-center gap-1.5"
@@ -369,8 +369,9 @@
 										<div class="opacity-90">
 											{#each b.programs as p, i}{i ? ', ' : ''}<span
 													class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}
-													>{p}</span
-												>{/each}
+												>
+													{p}
+												</span>{/each}
 										</div>
 									{/if}
 									{#if b.examerName}
@@ -396,8 +397,9 @@
 										<div class="truncate opacity-90">
 											{#each b.programs as p, i}{i ? ', ' : ''}<span
 													class={selectedPrograms.includes(p) ? 'font-bold underline' : ''}
-													>{p}</span
-												>{/each}
+												>
+													{p}
+												</span>{/each}
 										</div>
 									{/if}
 								{/if}
@@ -503,12 +505,12 @@
 				<div class="flex flex-wrap items-center gap-x-2 tabular-nums">
 					<span>{o.st.dot}</span>
 					<span class="font-medium">{slotLabel(o.starttime)}</span>
-					<span class="badge badge-xs {o.kind === 'SEB' ? 'badge-info' : 'badge-error'}"
-						>{o.kind}</span
-					>
-					<span class="text-base-content/70"
-						>{o.need.seatsBooked}/{o.need.seatsNeeded} Plätze · {o.st.text}</span
-					>
+					<span class="badge badge-xs {o.kind === 'SEB' ? 'badge-info' : 'badge-error'}">
+						{o.kind}
+					</span>
+					<span class="text-base-content/70">
+						{o.need.seatsBooked}/{o.need.seatsNeeded} Plätze · {o.st.text}
+					</span>
 					{#if o.st.toBook?.length}
 						<span class="text-warning">→ {o.st.toBook.join(', ')}</span>
 					{/if}

@@ -819,9 +819,9 @@
 			<!-- harte Verletzungen (sollten 0 sein) -->
 			{#if r.hardViolations > 0}
 				<div class="alert alert-error py-2 text-sm">
-					<span
-						><strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.</span
-					>
+					<span>
+						<strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.
+					</span>
 				</div>
 			{:else}
 				<div class="alert alert-success py-2 text-sm">
@@ -892,9 +892,9 @@
 						title="Überschneidungen (gleichzeitig geprüft) — sollte 0 sein"
 					>
 						<span class="text-base-content/50">Überschneidungen</span>
-						<span class="ml-1 font-medium tabular-nums {d.overlaps > 0 ? 'text-error' : ''}"
-							>{fmt(d.overlaps)}</span
-						>
+						<span class="ml-1 font-medium tabular-nums {d.overlaps > 0 ? 'text-error' : ''}">
+							{fmt(d.overlaps)}
+						</span>
 					</div>
 					<div class="rounded border border-base-200 px-2 py-1">
 						<span class="text-base-content/50">in 3 Tagen</span>
@@ -1079,8 +1079,9 @@
 			{#if slotTimeError}<span class="text-xs text-error">{slotTimeError}</span>{/if}
 		</div>
 		<span class="max-w-3xl text-xs text-base-content/50">
-			Begrenzt die Beginn-Uhrzeit der Prüfungen auf ein Tageszeit-Fenster. <strong>Automatik</strong
-			>
+			Begrenzt die Beginn-Uhrzeit der Prüfungen auf ein Tageszeit-Fenster. <strong>
+				Automatik
+			</strong>
 			folgt dem Semester: im Wintersemester wird ein früher Beginn (vor „Winter: frühester Beginn") vermieden,
 			im Sommersemester ein später Beginn (nach „Sommer: spätester Beginn"). Der Sommer ist jetzt ein
 			<strong>fester Cutoff</strong> auf die Startzeit (nicht mehr „je später desto schlechter");
@@ -1097,9 +1098,9 @@
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Solver-Gewichte
-			<span class="font-normal text-base-content/50"
-				>· global · wirken beim nächsten „Generieren"</span
-			>
+			<span class="font-normal text-base-content/50">
+				· global · wirken beim nächsten „Generieren"
+			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			<div class="max-w-3xl text-xs text-base-content/50">
@@ -1118,9 +1119,9 @@
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			Angewandte Constraints
-			<span class="font-normal text-base-content/50"
-				>· {(data.constraints ?? []).length} · read-only</span
-			>
+			<span class="font-normal text-base-content/50">
+				· {(data.constraints ?? []).length} · read-only
+			</span>
 		</summary>
 		<div class="collapse-content">
 			<div class="overflow-x-auto rounded-lg border border-base-200">

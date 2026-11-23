@@ -210,18 +210,18 @@
 	{#if hasDiff}
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/60">
 			<span class="font-medium text-base-content/70">Diff zum vorigen Plan:</span>
-			<span class="flex items-center gap-1"
-				><span class="badge badge-error badge-xs">neu</span> hinzugekommen</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="badge badge-warning badge-xs">↑ schlimmer</span> mehr Betroffene</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="badge badge-success badge-xs">↓ besser</span> weniger Betroffene</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="badge badge-success badge-outline badge-xs">gelöst</span> nicht mehr im Plan</span
-			>
+			<span class="flex items-center gap-1">
+				<span class="badge badge-error badge-xs">neu</span> hinzugekommen
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="badge badge-warning badge-xs">↑ schlimmer</span> mehr Betroffene
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="badge badge-success badge-xs">↓ besser</span> weniger Betroffene
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="badge badge-success badge-outline badge-xs">gelöst</span> nicht mehr im Plan
+			</span>
 			<span>· ohne Markierung = unverändert</span>
 		</div>
 	{/if}
@@ -230,9 +230,9 @@
 		<details open class="collapse-arrow collapse border border-success/40 bg-success/5">
 			<summary class="collapse-title text-sm font-medium">
 				✅ Im letzten Lauf gelöst
-				<span class="badge badge-success badge-sm ml-1 tabular-nums"
-					>{resolvedConflicts.length}</span
-				>
+				<span class="badge badge-success badge-sm ml-1 tabular-nums">
+					{resolvedConflicts.length}
+				</span>
 			</summary>
 			<div class="collapse-content">
 				<div class="overflow-x-auto rounded-lg border border-base-200">
@@ -279,9 +279,9 @@
 
 	{#if ratable.length}
 		<p class="max-w-3xl text-xs text-base-content/50">
-			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong
-				>pro Studierendem</strong
-			>
+			Nach Schwere sortiert. Studierendenzahl aufklappen, um einen Konflikt <strong>
+				pro Studierendem
+			</strong>
 			zu akzeptieren (z. B. Wiederholer:innen) — das entfernt beim nächsten „Generieren" nur deren Nähe-Strafe.
 			„darf zeitgleich" erlaubt Parallelsektionen denselben Slot (die harte Sperre und die Strafe entfallen)
 			— das ist nur bei <strong>fehlerhafter Anmeldung</strong>
@@ -308,13 +308,15 @@
 					<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
 					{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
 						<div class="mt-0.5 flex flex-wrap items-center gap-1">
-							{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus"
-									>📍 {c.location1}</span
-								>{/if}
+							{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">
+									📍 {c.location1}
+								</span>{/if}
 							{#if c.isRepeaterExam1}<span
 									class="badge badge-outline badge-xs"
-									title="Wiederholungsprüfung">🔁 WH</span
-								>{/if}
+									title="Wiederholungsprüfung"
+								>
+									🔁 WH
+								</span>{/if}
 							{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 						</div>
 					{/if}
@@ -328,13 +330,15 @@
 					<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
 					{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
 						<div class="mt-0.5 flex flex-wrap items-center gap-1">
-							{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus"
-									>📍 {c.location2}</span
-								>{/if}
+							{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">
+									📍 {c.location2}
+								</span>{/if}
 							{#if c.isRepeaterExam2}<span
 									class="badge badge-outline badge-xs"
-									title="Wiederholungsprüfung">🔁 WH</span
-								>{/if}
+									title="Wiederholungsprüfung"
+								>
+									🔁 WH
+								</span>{/if}
 							{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">{g}</span>{/each}
 						</div>
 					{/if}
@@ -394,8 +398,10 @@
 									<span>{s.name}</span>
 									<span
 										class="badge badge-ghost badge-xs tabular-nums"
-										title="Kohorte des Studierenden">{s.program}{s.group}</span
+										title="Kohorte des Studierenden"
 									>
+										{s.program}{s.group}
+									</span>
 									{#if s.autoAccepted}
 										<span
 											class="badge badge-info badge-xs"
@@ -454,18 +460,20 @@
 			<details open class="collapse-arrow collapse border border-base-300 bg-base-100">
 				<summary class="collapse-title text-sm font-medium">
 					Zu prüfen (nicht automatisch akzeptiert)
-					<span class="badge badge-warning badge-sm ml-1 tabular-nums">{ratableNonAuto.length}</span
-					>
+					<span class="badge badge-warning badge-sm ml-1 tabular-nums">
+						{ratableNonAuto.length}
+					</span>
 				</summary>
 				<div class="collapse-content">
 					<div class="overflow-x-auto rounded-lg border border-base-300">
 						<table class="table table-sm">
-							<thead
-								><tr
-									><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th
-									><th>gleicher Slot</th></tr
-								></thead
-							>
+							<thead>
+								<tr>
+									<th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">
+										Stud.
+									</th><th>gleicher Slot</th>
+								</tr>
+							</thead>
 							<tbody>
 								{#each ratableNonAuto as c (pairKey(c.ancode1, c.ancode2))}
 									{@render conflictRow(c)}
@@ -485,12 +493,13 @@
 				<div class="collapse-content">
 					<div class="overflow-x-auto rounded-lg border border-base-300">
 						<table class="table table-sm">
-							<thead
-								><tr
-									><th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">Stud.</th
-									><th>gleicher Slot</th></tr
-								></thead
-							>
+							<thead>
+								<tr>
+									<th>Nähe</th><th>Prüfung 1</th><th>Prüfung 2</th><th class="text-right">
+										Stud.
+									</th><th>gleicher Slot</th>
+								</tr>
+							</thead>
 							<tbody>
 								{#each ratableAuto as c (pairKey(c.ancode1, c.ancode2))}
 									{@render conflictRow(c)}
@@ -549,16 +558,18 @@
 										<div class="text-xs text-base-content/60">{c.mainExamer1}</div>
 										{#if c.location1 || c.isRepeaterExam1 || (c.groups1 ?? []).length}
 											<div class="mt-0.5 flex flex-wrap items-center gap-1">
-												{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus"
-														>📍 {c.location1}</span
-													>{/if}
+												{#if c.location1}<span class="badge badge-accent badge-xs" title="Campus">
+														📍 {c.location1}
+													</span>{/if}
 												{#if c.isRepeaterExam1}<span
 														class="badge badge-outline badge-xs"
-														title="Wiederholungsprüfung">🔁 WH</span
-													>{/if}
-												{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs"
-														>{g}</span
-													>{/each}
+														title="Wiederholungsprüfung"
+													>
+														🔁 WH
+													</span>{/if}
+												{#each c.groups1 ?? [] as g}<span class="badge badge-ghost badge-xs">
+														{g}
+													</span>{/each}
 											</div>
 										{/if}
 									</td>
@@ -573,16 +584,18 @@
 										<div class="text-xs text-base-content/60">{c.mainExamer2}</div>
 										{#if c.location2 || c.isRepeaterExam2 || (c.groups2 ?? []).length}
 											<div class="mt-0.5 flex flex-wrap items-center gap-1">
-												{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus"
-														>📍 {c.location2}</span
-													>{/if}
+												{#if c.location2}<span class="badge badge-accent badge-xs" title="Campus">
+														📍 {c.location2}
+													</span>{/if}
 												{#if c.isRepeaterExam2}<span
 														class="badge badge-outline badge-xs"
-														title="Wiederholungsprüfung">🔁 WH</span
-													>{/if}
-												{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs"
-														>{g}</span
-													>{/each}
+														title="Wiederholungsprüfung"
+													>
+														🔁 WH
+													</span>{/if}
+												{#each c.groups2 ?? [] as g}<span class="badge badge-ghost badge-xs">
+														{g}
+													</span>{/each}
 											</div>
 										{/if}
 									</td>
@@ -603,14 +616,16 @@
 											<div class="flex flex-wrap gap-x-4 gap-y-1 py-1 text-sm">
 												{#each c.affectedStudents ?? [] as s}
 													<span>
-														<span class="font-mono text-xs tabular-nums text-base-content/50"
-															>{s.mtknr}</span
-														>
+														<span class="font-mono text-xs tabular-nums text-base-content/50">
+															{s.mtknr}
+														</span>
 														{s.name}
 														<span
 															class="badge badge-ghost badge-xs tabular-nums"
-															title="Kohorte des Studierenden">{s.program}{s.group}</span
+															title="Kohorte des Studierenden"
 														>
+															{s.program}{s.group}
+														</span>
 													</span>
 												{:else}
 													<span class="text-base-content/50">— keine Studierenden gelistet</span>
@@ -645,16 +660,16 @@
 								{@const key = pairKey(s.ancode1, s.ancode2)}
 								<tr class="hover">
 									<td>
-										<span class="font-mono text-xs tabular-nums text-base-content/60"
-											>{s.ancode1}</span
-										>
+										<span class="font-mono text-xs tabular-nums text-base-content/60">
+											{s.ancode1}
+										</span>
 										{s.module1}
 										<span class="text-xs text-base-content/50">· {s.mainExamer1}</span>
 									</td>
 									<td>
-										<span class="font-mono text-xs tabular-nums text-base-content/60"
-											>{s.ancode2}</span
-										>
+										<span class="font-mono text-xs tabular-nums text-base-content/60">
+											{s.ancode2}
+										</span>
 										{s.module2}
 										<span class="text-xs text-base-content/50">· {s.mainExamer2}</span>
 									</td>

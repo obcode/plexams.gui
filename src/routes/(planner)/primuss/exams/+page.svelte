@@ -542,8 +542,9 @@
 							{/if}
 						</td>
 						<td>{exam.examType}</td>
-						{#if searching}<td><span class="badge badge-ghost badge-sm">{exam.program}</span></td
-							>{/if}
+						{#if searching}<td>
+								<span class="badge badge-ghost badge-sm">{exam.program}</span>
+							</td>{/if}
 						<td class="text-right tabular-nums">
 							{exam.studentRegsCount}
 						</td>

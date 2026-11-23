@@ -103,9 +103,9 @@
 			<span>
 				Benutzerliste nicht verfügbar — dies erfordert eine ADMIN-Rolle und ein Backend mit
 				OIDC-Auth.
-				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70"
-						>{data.loadError}</span
-					>{/if}
+				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70">
+						{data.loadError}
+					</span>{/if}
 			</span>
 		</div>
 	{:else}

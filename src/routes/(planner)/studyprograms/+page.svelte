@@ -298,12 +298,12 @@
 										/>
 									</td>
 									<td class="text-right whitespace-nowrap">
-										<button class="btn btn-ghost btn-xs" onclick={() => openEdit(p)}
-											>Bearbeiten</button
-										>
-										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(p)}
-											>Löschen</WriteButton
-										>
+										<button class="btn btn-ghost btn-xs" onclick={() => openEdit(p)}>
+											Bearbeiten
+										</button>
+										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(p)}>
+											Löschen
+										</WriteButton>
 									</td>
 								</tr>
 							{/each}
@@ -354,9 +354,9 @@
 						placeholder="leer = wie Kürzel"
 					/>
 					<span class="text-xs text-base-content/40">
-						Das interne Kürzel darf abschluss-suffigiert sein (z. B. <span class="font-mono"
-							>DC-B</span
-						>). Der ZPA-Code ist das 2-Buchstaben-Kürzel, das ZPA verwendet (z. B.
+						Das interne Kürzel darf abschluss-suffigiert sein (z. B. <span class="font-mono">
+							DC-B
+						</span>). Der ZPA-Code ist das 2-Buchstaben-Kürzel, das ZPA verwendet (z. B.
 						<span class="font-mono">DC</span> für DC-B und DC-M). Leer = wie Kürzel.
 					</span>
 				</label>
@@ -388,9 +388,9 @@
 				</label>
 				{#if editing.category !== 'fk07'}
 					<label class="flex flex-col gap-1">
-						<span class="text-xs font-medium text-base-content/60"
-							>Basis-Ancode (externe Prüfungen)</span
-						>
+						<span class="text-xs font-medium text-base-content/60">
+							Basis-Ancode (externe Prüfungen)
+						</span>
 						<input
 							type="number"
 							class="input input-bordered input-sm w-40"
@@ -405,10 +405,9 @@
 				{#if editing.category === 'fk07'}
 					<label class="flex cursor-pointer items-center gap-2">
 						<input type="checkbox" class="checkbox checkbox-sm" bind:checked={editing.retired} />
-						<span
-							>ausgelaufenes Programm <span class="text-base-content/50">(altes oldprogram)</span
-							></span
-						>
+						<span>
+							ausgelaufenes Programm <span class="text-base-content/50">(altes oldprogram)</span>
+						</span>
 					</label>
 				{/if}
 			</div>
@@ -416,8 +415,9 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>
+					Abbrechen
+				</button>
 				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>

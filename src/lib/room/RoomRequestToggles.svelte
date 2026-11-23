@@ -38,9 +38,9 @@
 			disabled={busy}
 			onchange={() => onactive?.()}
 		/>
-		<span class="whitespace-nowrap text-xs {req.active ? '' : 'text-error'}"
-			>{req.active ? 'aktiv' : 'inaktiv'}</span
-		>
+		<span class="whitespace-nowrap text-xs {req.active ? '' : 'text-error'}">
+			{req.active ? 'aktiv' : 'inaktiv'}
+		</span>
 	</label>
 	<button
 		class="btn btn-ghost btn-xs"

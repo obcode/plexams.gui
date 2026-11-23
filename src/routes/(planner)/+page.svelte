@@ -80,9 +80,9 @@
 		<div class="alert alert-info flex flex-wrap gap-x-4 py-2 text-sm" role="status">
 			<span class="font-medium">📨 Portal für Prüfende:</span>
 			{#each data.portal.inbox as e (e.semester + e.kind)}
-				<a class="link" href="/inquiries"
-					>{e.open} ungesichtet ({e.semester}, {KIND_LABEL[e.kind] ?? e.kind})</a
-				>
+				<a class="link" href="/inquiries">
+					{e.open} ungesichtet ({e.semester}, {KIND_LABEL[e.kind] ?? e.kind})
+				</a>
 			{/each}
 			{#if data.portal.unseen > 0}
 				<a class="link" href="/inquiries/activity">{data.portal.unseen} neue Eingaben</a>
@@ -116,9 +116,9 @@
 		</div>
 		<TodoList todos={openTodos.slice(0, TODOS_SHOWN)} empty="Nichts offen. 🎉" />
 		{#if openTodos.length > TODOS_SHOWN}
-			<a class="link link-hover text-sm text-base-content/60" href="/todos"
-				>… und {openTodos.length - TODOS_SHOWN} weitere</a
-			>
+			<a class="link link-hover text-sm text-base-content/60" href="/todos">
+				… und {openTodos.length - TODOS_SHOWN} weitere
+			</a>
 		{/if}
 	</section>
 
@@ -139,16 +139,18 @@
 										linkParam({ kind: 'PHASE', key: phase.key })
 									)}"
 									title="offene Todos zu dieser Phase (auch zu ihren Schritten)"
-									>{todosPerPhase[phase.key]} Todo{todosPerPhase[phase.key] === 1 ? '' : 's'}</a
 								>
+									{todosPerPhase[phase.key]} Todo{todosPerPhase[phase.key] === 1 ? '' : 's'}
+								</a>
 							{/if}
 							<WriteButton
 								class="btn btn-ghost btn-xs px-1 text-base-content/50"
 								title="Todo zu dieser Phase anlegen"
 								onclick={() =>
 									(newTodoLinks = [{ kind: 'PHASE', key: phase.key, label: phase.title }])}
-								>+ Todo</WriteButton
 							>
+								+ Todo
+							</WriteButton>
 						</div>
 					</div>
 					<!-- Fortschritts-Ring (Things3-Stil): füllt im Uhrzeigersinn; fertig = grün + Haken -->
@@ -208,8 +210,10 @@
 								<a
 									{href}
 									class="link-hover {textClass}"
-									title="Zur Seite, auf der das erledigt wird">{cond.title}</a
+									title="Zur Seite, auf der das erledigt wird"
 								>
+									{cond.title}
+								</a>
 							{/if}
 							{#if cond.gate}
 								<span

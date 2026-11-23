@@ -225,9 +225,9 @@
 
 		<!-- Parameter-Paare (UND) -->
 		<div class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60"
-				>Parameter (key = Wert, UND-verknüpft)</span
-			>
+			<span class="text-xs font-medium text-base-content/60">
+				Parameter (key = Wert, UND-verknüpft)
+			</span>
 			{#each params as p, i}
 				<div class="flex flex-wrap items-center gap-2">
 					<input

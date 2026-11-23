@@ -108,9 +108,9 @@
 					<div class="flex flex-wrap items-center gap-x-2">
 						<span class="truncate font-medium">{r.teacher.shortname}</span>
 						{#if r.teacher.fk && r.teacher.fk !== 'FK07'}
-							<span class="badge badge-neutral badge-xs" title="andere Fakultät"
-								>{r.teacher.fk}</span
-							>
+							<span class="badge badge-neutral badge-xs" title="andere Fakultät">
+								{r.teacher.fk}
+							</span>
 						{/if}
 						{#if r.teacher.isLBA}
 							<span class="badge badge-info badge-xs" title="Lehrbeauftragte:r">LBA</span>
@@ -126,9 +126,9 @@
 					</div>
 				</div>
 				{#if hasExams}
-					<span class="mt-0.5 shrink-0 tabular-nums text-base-content/40"
-						>{r.exams.length}&nbsp;Pr.</span
-					>
+					<span class="mt-0.5 shrink-0 tabular-nums text-base-content/40">
+						{r.exams.length}&nbsp;Pr.
+					</span>
 				{:else}
 					<span class="mt-0.5 shrink-0 font-medium text-warning">keine&nbsp;Pr.</span>
 				{/if}

@@ -116,9 +116,9 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Aufsichten — Permanente Nicht-Aufsichten</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.permanent.length}</span>
-		<span class="text-sm text-base-content/50"
-			>global, semesterübergreifend — z. B. pensioniert</span
-		>
+		<span class="text-sm text-base-content/50">
+			global, semesterübergreifend — z. B. pensioniert
+		</span>
 	</div>
 
 	<p class="max-w-3xl text-sm text-base-content/60">
@@ -198,9 +198,9 @@
 							<td class="font-medium">{p.name}</td>
 							<td class="text-base-content/70">{p.reason}</td>
 							<td class="whitespace-nowrap">
-								<span class="badge badge-ghost badge-sm tabular-nums"
-									>{windowLabel(p.validFrom, p.validUntil)}</span
-								>
+								<span class="badge badge-ghost badge-sm tabular-nums">
+									{windowLabel(p.validFrom, p.validUntil)}
+								</span>
 							</td>
 							<td>
 								<select

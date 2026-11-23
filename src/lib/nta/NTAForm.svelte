@@ -134,8 +134,9 @@
 
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">
-				Matrikelnummer {#if mode === 'edit'}<span class="text-base-content/40">(gesperrt)</span
-					>{/if}
+				Matrikelnummer {#if mode === 'edit'}<span class="text-base-content/40">
+						(gesperrt)
+					</span>{/if}
 			</span>
 			<input
 				type="text"

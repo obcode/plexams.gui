@@ -93,9 +93,9 @@
 						>
 							{f.label}
 							{#if f.caution}
-								<span class="badge badge-warning badge-xs" title="dominant — mit Vorsicht ändern"
-									>⚠ Vorsicht</span
-								>
+								<span class="badge badge-warning badge-xs" title="dominant — mit Vorsicht ändern">
+									⚠ Vorsicht
+								</span>
 							{/if}
 						</span>
 						{#if f.options}

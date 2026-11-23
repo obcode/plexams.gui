@@ -106,13 +106,17 @@
 						<button
 							role="tab"
 							class="tab {preview ? '' : 'tab-active'}"
-							onclick={() => (preview = false)}>Schreiben</button
+							onclick={() => (preview = false)}
 						>
+							Schreiben
+						</button>
 						<button
 							role="tab"
 							class="tab {preview ? 'tab-active' : ''}"
-							onclick={() => (preview = true)}>Vorschau</button
+							onclick={() => (preview = true)}
 						>
+							Vorschau
+						</button>
 					</div>
 				</div>
 				{#if preview}
@@ -164,9 +168,9 @@
 			<label class="flex cursor-pointer items-center gap-2">
 				<input type="checkbox" class="checkbox checkbox-sm" bind:checked={recurring} />
 				<span class="text-sm">
-					jedes Semester <span class="text-base-content/50"
-						>(wird bei der Übernahme ins nächste Semester wieder geöffnet)</span
-					>
+					jedes Semester <span class="text-base-content/50">
+						(wird bei der Übernahme ins nächste Semester wieder geöffnet)
+					</span>
 				</span>
 			</label>
 

@@ -58,24 +58,28 @@
 	<span>Art:</span>
 	<a
 		class="btn btn-xs {data.filter.kind ? 'btn-ghost' : 'btn-active'}"
-		href={link({ kind: null, before: null })}>alle</a
+		href={link({ kind: null, before: null })}
 	>
+		alle
+	</a>
 	{#each Object.entries(KIND_LABEL) as [kind, label] (kind)}
 		<a
 			class="btn btn-xs {data.filter.kind === kind ? 'btn-active' : 'btn-ghost'}"
-			href={link({ kind, before: null })}>{label}</a
+			href={link({ kind, before: null })}
 		>
+			{label}
+		</a>
 	{/each}
 	{#if data.filter.semester}
-		<a class="btn btn-xs btn-outline" href={link({ semester: null, before: null })}
-			>Semester {data.filter.semester} ✕</a
-		>
+		<a class="btn btn-xs btn-outline" href={link({ semester: null, before: null })}>
+			Semester {data.filter.semester} ✕
+		</a>
 	{/if}
 	<span class="grow"></span>
 	{#if unseen > 0}
-		<button class="btn btn-primary btn-xs" onclick={markSeen}
-			>{unseen} neue als gelesen markieren</button
-		>
+		<button class="btn btn-primary btn-xs" onclick={markSeen}>
+			{unseen} neue als gelesen markieren
+		</button>
 	{/if}
 </div>
 
@@ -98,10 +102,9 @@
 				{#each activity as a (a.id)}
 					<tr class={a.id > seenUpTo ? 'bg-info/10 font-medium' : ''}>
 						<td class="whitespace-nowrap">{formatBerlin(a.at)}</td>
-						<td
-							><a class="link" href={link({ semester: a.semester, before: null })}>{a.semester}</a
-							></td
-						>
+						<td>
+							<a class="link" href={link({ semester: a.semester, before: null })}>{a.semester}</a>
+						</td>
 						<td>{KIND_LABEL[a.kind] ?? a.kind}</td>
 						<td>{a.teacherName || a.teacherID}</td>
 						<td>

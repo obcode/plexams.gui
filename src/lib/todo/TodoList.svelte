@@ -71,13 +71,16 @@
 							href="/todos/{todo.id}"
 							class="link link-hover text-sm font-medium {todo.done
 								? 'text-base-content/50 line-through'
-								: ''}">{todo.title}</a
+								: ''}"
 						>
+							{todo.title}
+						</a>
 						{#if todo.priority !== 'NORMAL'}
 							<span
 								class="badge badge-sm {todo.priority === 'HIGH' ? 'badge-error' : 'badge-ghost'}"
-								>{PRIORITY_LABEL[todo.priority]}</span
 							>
+								{PRIORITY_LABEL[todo.priority]}
+							</span>
 						{/if}
 						{#if todo.dueDate}
 							<span
@@ -93,13 +96,15 @@
 						{#each todo.labels as label}
 							<a
 								class="badge badge-outline badge-sm"
-								href="/todos?label={encodeURIComponent(label)}">{label}</a
+								href="/todos?label={encodeURIComponent(label)}"
 							>
+								{label}
+							</a>
 						{/each}
 						{#if todo.commentCount}
-							<span class="text-xs text-base-content/50" title="Kommentare"
-								>💬 {todo.commentCount}</span
-							>
+							<span class="text-xs text-base-content/50" title="Kommentare">
+								💬 {todo.commentCount}
+							</span>
 						{/if}
 					</div>
 					{#if showLinks && todo.links.length}

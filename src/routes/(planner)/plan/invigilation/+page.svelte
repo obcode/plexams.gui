@@ -426,19 +426,19 @@
 
 		<!-- Legende -->
 		<div class="flex flex-wrap items-center gap-2 text-xs">
-			<span class="rounded bg-warning px-1.5 py-0.5 font-medium text-warning-content"
-				>👤 Aufsicht</span
-			>
+			<span class="rounded bg-warning px-1.5 py-0.5 font-medium text-warning-content">
+				👤 Aufsicht
+			</span>
 			<span class="font-semibold text-info">Prüfende</span>
 			<span class="badge badge-neutral badge-sm">👥 Personen</span>
 			<span class="badge badge-accent badge-sm">⏱ Dauer</span>
 			<span class="badge badge-secondary badge-sm">NTA (Details im Hover)</span>
-			<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content"
-				>keine Aufsicht / Reserve</span
-			>
-			<span class="text-base-content/60"
-				>· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neueinteilung)</span
-			>
+			<span class="rounded bg-error px-1.5 py-0.5 font-medium text-error-content">
+				keine Aufsicht / Reserve
+			</span>
+			<span class="text-base-content/60">
+				· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neueinteilung)
+			</span>
 		</div>
 
 		{#if actionError}
@@ -481,9 +481,9 @@
 										? 'rounded bg-primary px-2 py-1 text-primary-content'
 										: 'border-b border-base-300 pb-1.5'}"
 								>
-									<span class="badge {slotHi ? 'badge-neutral' : 'badge-primary'}"
-										>{s.time.start.slice(0, 5)} Uhr</span
-									>
+									<span class="badge {slotHi ? 'badge-neutral' : 'badge-primary'}">
+										{s.time.start.slice(0, 5)} Uhr
+									</span>
 									{#if slot}
 										{#if slot.reserve}
 											<button
@@ -499,8 +499,9 @@
 										{:else}
 											<span
 												class="rounded bg-error px-2 py-0.5 text-xs font-semibold text-error-content"
-												>keine Reserve</span
 											>
+												keine Reserve
+											</span>
 										{/if}
 
 										<!-- Reserve vorplanen / fixieren -->
@@ -540,8 +541,10 @@
 											<button
 												class="badge badge-ghost badge-sm"
 												title="Reserve vorplanen"
-												onclick={() => togglePicker(rKey, day.number)}>Reserve vorplanen…</button
+												onclick={() => togglePicker(rKey, day.number)}
 											>
+												Reserve vorplanen…
+											</button>
 										{/if}
 										{#if pickerOpen === rKey}
 											<div class="flex w-full items-center gap-1">
@@ -561,8 +564,10 @@
 															null,
 															(v) => (slot.reservePrePlanned = v),
 															(t) => (slot.reserve = t)
-														)}>vorplanen</WriteButton
+														)}
 												>
+													vorplanen
+												</WriteButton>
 											</div>
 										{/if}
 									{/if}
@@ -590,9 +595,9 @@
 														: 'bg-base-300'}"
 												>
 													<span class="font-bold">{r.name}</span>
-													<span class="badge badge-neutral badge-sm ml-auto"
-														>👥 {r.studentCount}</span
-													>
+													<span class="badge badge-neutral badge-sm ml-auto">
+														👥 {r.studentCount}
+													</span>
 													<span class="badge badge-accent badge-sm">⏱ {r.maxDuration}′</span>
 												</div>
 
@@ -651,9 +656,9 @@
 																		</button>
 																		<span class="opacity-80">· {re.exam.module}</span>
 																	</span>
-																	<span class="badge badge-neutral badge-xs shrink-0"
-																		>👥 {re.room.studentsInRoom.length}</span
-																	>
+																	<span class="badge badge-neutral badge-xs shrink-0">
+																		👥 {re.room.studentsInRoom.length}
+																	</span>
 																</div>
 
 																{#if ntas.length}
@@ -718,8 +723,9 @@
 																	class="badge badge-ghost badge-sm"
 																	title="andere Person vorplanen"
 																	onclick={() => togglePicker(rKey, day.number)}
-																	>Person vorplanen…</button
 																>
+																	Person vorplanen…
+																</button>
 															{/if}
 														</div>
 														{#if pickerOpen === rKey}
@@ -743,8 +749,10 @@
 																			r.name,
 																			(v) => (r.prePlanned = v),
 																			(t) => (r.invigilator = t)
-																		)}>✓</WriteButton
+																		)}
 																>
+																	✓
+																</WriteButton>
 															</div>
 														{/if}
 													{/if}

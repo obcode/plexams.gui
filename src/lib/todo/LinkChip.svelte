@@ -23,8 +23,10 @@
 			class="link link-hover"
 			href={link.href}
 			target={external ? '_blank' : undefined}
-			rel={external ? 'noopener noreferrer' : undefined}>{link.label || link.key}</a
+			rel={external ? 'noopener noreferrer' : undefined}
 		>
+			{link.label || link.key}
+		</a>
 	{:else}
 		<span>{link.label || link.key}</span>
 	{/if}
@@ -33,7 +35,9 @@
 			class="opacity-50 hover:opacity-100"
 			aria-label="Link entfernen"
 			{disabled}
-			onclick={onremove}>✕</button
+			onclick={onremove}
 		>
+			✕
+		</button>
 	{/if}
 </span>

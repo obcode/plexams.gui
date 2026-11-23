@@ -26,9 +26,9 @@
 			Kopieren Sie es jetzt – es wird nur dieses eine Mal angezeigt. Bewahren Sie es auf wie ein
 			Passwort.
 		</p>
-		<code class="w-full break-all rounded bg-base-100 p-2 text-sm text-base-content select-all"
-			>{form.created.secret}</code
-		>
+		<code class="w-full break-all rounded bg-base-100 p-2 text-sm text-base-content select-all">
+			{form.created.secret}
+		</code>
 		<button class="btn btn-sm" type="button" onclick={() => copy(form.created.secret)}>
 			{copied ? 'Kopiert' : 'Kopieren'}
 		</button>

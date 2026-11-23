@@ -296,12 +296,12 @@
 			<!-- Verhältnis Räume/Reserve als Dot-Plot -->
 			<div class="rounded-lg border border-base-300 bg-base-100 p-3">
 				<div class="mb-3 flex items-baseline justify-between">
-					<span class="text-xs font-medium text-base-content/60"
-						>Verhältnis Räume / Reserve — ein Punkt pro Aufsicht</span
-					>
-					<span class="text-[10px] text-base-content/50"
-						>{ratioCount} mit Aufsichten · {ratioWithoutCount} ohne Aufsichten</span
-					>
+					<span class="text-xs font-medium text-base-content/60">
+						Verhältnis Räume / Reserve — ein Punkt pro Aufsicht
+					</span>
+					<span class="text-[10px] text-base-content/50">
+						{ratioCount} mit Aufsichten · {ratioWithoutCount} ohne Aufsichten
+					</span>
 				</div>
 				<div class="relative" style="height: {ratioPlotHeight}px">
 					<!-- 50/50-Linie -->
@@ -330,9 +330,9 @@
 			<!-- Verteilung der noch offenen Minuten als Dot-Plot -->
 			<div class="rounded-lg border border-base-300 bg-base-100 p-3">
 				<div class="mb-3 flex items-baseline justify-between">
-					<span class="text-xs font-medium text-base-content/60"
-						>Verteilung „noch offen" — ein Punkt pro Aufsicht</span
-					>
+					<span class="text-xs font-medium text-base-content/60">
+						Verteilung „noch offen" — ein Punkt pro Aufsicht
+					</span>
 					<span class="text-[10px] text-base-content/50">{invigCount} Aufsichten</span>
 				</div>
 				<div class="relative" style="height: {dotPlotHeight}px">
@@ -369,9 +369,9 @@
 			<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
 				<div class="mb-3 flex items-baseline justify-between">
 					<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>
-					<span class="text-[10px] text-base-content/50"
-						>{data.excludedByConfig.length} Person(en)</span
-					>
+					<span class="text-[10px] text-base-content/50">
+						{data.excludedByConfig.length} Person(en)
+					</span>
 				</div>
 				{#if data.excludedByConfig.length}
 					<div class="flex flex-col gap-1">

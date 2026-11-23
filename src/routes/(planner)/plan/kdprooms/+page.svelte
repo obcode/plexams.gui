@@ -100,11 +100,11 @@
 					{:else}
 						Ungeplant
 					{/if}
-					<span class="text-sm text-base-content/50"
-						>({slot.date ? mkDateShort(slot.date) : '—'} · {slot.start
+					<span class="text-sm text-base-content/50">
+						({slot.date ? mkDateShort(slot.date) : '—'} · {slot.start
 							? slot.start.slice(0, 5)
-							: '—'})</span
-					>
+							: '—'})
+					</span>
 				</div>
 				<div class="flex flex-wrap gap-1">
 					{#each roomStatuses as rs}
@@ -138,14 +138,15 @@
 									{#each sortBookingsForDisplay(slot.annyBookings) as b}
 										<tr class:opacity-60={b.canceledAt}>
 											<td>{b.room || '--'}</td>
-											<td class="whitespace-nowrap tabular-nums"
-												>{formatBookingTime(b.startDate)}–{formatBookingTime(b.endDate)}</td
-											>
+											<td class="whitespace-nowrap tabular-nums">
+												{formatBookingTime(b.startDate)}–{formatBookingTime(b.endDate)}
+											</td>
 											<td>
 												<div>{b.description}</div>
 												<div class="mt-1 flex items-center gap-1">
-													{#if b.isBlocker}<span class="badge badge-neutral badge-sm">Blocker</span
-														>{/if}
+													{#if b.isBlocker}<span class="badge badge-neutral badge-sm">
+															Blocker
+														</span>{/if}
 													<span class="badge badge-outline badge-sm">{b.status}</span>
 												</div>
 											</td>
@@ -192,10 +193,9 @@
 								<tbody>
 									{#each slot.exams as e}
 										<tr>
-											<td
-												><a class="link" href="/exam/examsToPlan?ancode={e.ancode}">{e.ancode}</a
-												></td
-											>
+											<td>
+												<a class="link" href="/exam/examsToPlan?ancode={e.ancode}">{e.ancode}</a>
+											</td>
 											<td>{e.module}</td>
 											<td class="text-right tabular-nums">{e.studentRegsCount}</td>
 											<td>
@@ -209,10 +209,12 @@
 													{#each e.plannedRooms as pr}
 														<div class="whitespace-nowrap">
 															{pr.name} ({pr.seats})
-															{#if pr.prePlanned}<span class="badge badge-accent badge-sm">pre</span
-																>{/if}
-															{#if pr.reserve}<span class="badge badge-secondary badge-sm">res</span
-																>{/if}
+															{#if pr.prePlanned}<span class="badge badge-accent badge-sm">
+																	pre
+																</span>{/if}
+															{#if pr.reserve}<span class="badge badge-secondary badge-sm">
+																	res
+																</span>{/if}
 														</div>
 													{/each}
 												{/if}

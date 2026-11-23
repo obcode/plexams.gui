@@ -331,9 +331,9 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Raum-Anfragen (Gebäudemanagement)</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.roomRequests.length}</span>
-		<span class="text-sm text-base-content/60"
-			>{approvedCount} genehmigt · {pendingCount} offen</span
-		>
+		<span class="text-sm text-base-content/60">
+			{approvedCount} genehmigt · {pendingCount} offen
+		</span>
 		<div class="flex-1"></div>
 		<div role="tablist" class="tabs tabs-boxed">
 			{#each SECTIONS as s}
@@ -426,9 +426,9 @@
 									</td>
 									<td class="font-medium">{p.room}</td>
 									<td class="whitespace-nowrap">{fmtDate(p.from)}</td>
-									<td class="whitespace-nowrap tabular-nums"
-										>{fmtTime(p.from)}–{fmtTime(p.until)}</td
-									>
+									<td class="whitespace-nowrap tabular-nums">
+										{fmtTime(p.from)}–{fmtTime(p.until)}
+									</td>
 									<td
 										class="text-right tabular-nums {p.students > p.seats
 											? 'font-semibold text-error'
@@ -442,9 +442,9 @@
 											{p.exam.zpaExam.module}
 											<span class="text-base-content/50">· {p.exam.zpaExam.mainExamer}</span>
 											{#if p.exam.ntas && p.exam.ntas.length}
-												<span class="badge badge-warning badge-sm ml-1"
-													>{p.exam.ntas.length} NTA</span
-												>
+												<span class="badge badge-warning badge-sm ml-1">
+													{p.exam.ntas.length} NTA
+												</span>
 											{/if}
 										{/if}
 									</td>
@@ -531,9 +531,9 @@
 								<td>{fmtDate(r.from)}</td>
 								<td class="tabular-nums">{fmtTime(r.from)}–{fmtTime(r.until)}</td>
 								<td class="font-medium">{r.room}</td>
-								<td class="text-base-content/60"
-									>{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}</td
-								>
+								<td class="text-base-content/60">
+									{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}
+								</td>
 								<td><RoomRequestPlanned planned={r.planned} /></td>
 								<td>
 									<RoomRequestToggles
@@ -563,12 +563,12 @@
 									{#each group.reqs as r (key(r))}
 										<tr class={r.active ? '' : 'opacity-50'}>
 											<td class="whitespace-nowrap">{fmtDate(r.from)}</td>
-											<td class="whitespace-nowrap tabular-nums"
-												>{fmtTime(r.from)}–{fmtTime(r.until)}</td
-											>
-											<td class="whitespace-nowrap text-base-content/60"
-												>{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}</td
-											>
+											<td class="whitespace-nowrap tabular-nums">
+												{fmtTime(r.from)}–{fmtTime(r.until)}
+											</td>
+											<td class="whitespace-nowrap text-base-content/60">
+												{mkDateShort(r.starttime)} · {starttimeHHMM(r.starttime)}
+											</td>
 											<td><RoomRequestPlanned planned={r.planned} /></td>
 											<td>
 												<RoomRequestToggles
@@ -592,11 +592,9 @@
 				{#each bySlot as group (group.day + '-' + group.slot)}
 					<div class="rounded-lg border border-base-300 bg-base-100 p-3">
 						<div class="mb-2 flex items-center gap-2">
-							<span class="font-semibold"
-								>{mkDateShort(group.reqs[0].starttime)} · {starttimeHHMM(
-									group.reqs[0].starttime
-								)}</span
-							>
+							<span class="font-semibold">
+								{mkDateShort(group.reqs[0].starttime)} · {starttimeHHMM(group.reqs[0].starttime)}
+							</span>
 							<span class="badge badge-ghost badge-sm tabular-nums">{group.reqs.length}</span>
 							<span class="text-xs text-base-content/50">{fmtDate(group.reqs[0].from)}</span>
 						</div>
@@ -606,9 +604,9 @@
 									{#each group.reqs as r (key(r))}
 										<tr class={r.active ? '' : 'opacity-50'}>
 											<td class="whitespace-nowrap font-medium">{r.room}</td>
-											<td class="whitespace-nowrap tabular-nums"
-												>{fmtTime(r.from)}–{fmtTime(r.until)}</td
-											>
+											<td class="whitespace-nowrap tabular-nums">
+												{fmtTime(r.from)}–{fmtTime(r.until)}
+											</td>
 											<td><RoomRequestPlanned planned={r.planned} /></td>
 											<td>
 												<RoomRequestToggles

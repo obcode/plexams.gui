@@ -61,9 +61,9 @@
 		<button class="btn btn-primary btn-sm" disabled={loading || !q.trim()} onclick={search}>
 			{loading ? 'sucht …' : 'Suchen'}
 		</button>
-		<span class="text-xs text-base-content/40"
-			>reine Ziffern = Matrikelnummer, sonst Name (Regex)</span
-		>
+		<span class="text-xs text-base-content/40">
+			reine Ziffern = Matrikelnummer, sonst Name (Regex)
+		</span>
 	</div>
 
 	{#if error}
@@ -82,8 +82,9 @@
 					<div class="flex flex-wrap items-baseline gap-x-2">
 						<span class="font-mono text-base font-semibold tabular-nums">{s.mtknr}</span>
 						<span class="font-medium">{s.name}</span>
-						{#if s.nta}<span class="badge badge-info badge-sm" title="Nachteilsausgleich">NTA</span
-							>{/if}
+						{#if s.nta}<span class="badge badge-info badge-sm" title="Nachteilsausgleich">
+								NTA
+							</span>{/if}
 					</div>
 					<div class="text-sm text-base-content/70">
 						{s.program}{s.group ? ` · ${s.group}` : ''}
@@ -93,13 +94,15 @@
 					</div>
 					{#if s.nta}
 						<div class="mt-1 flex flex-wrap items-center gap-1 text-xs">
-							{#if s.nta.deltaDurationPercent}<span class="badge badge-ghost badge-sm"
-									>+{s.nta.deltaDurationPercent}%</span
-								>{/if}
-							{#if s.nta.needsRoomAlone}<span class="badge badge-warning badge-sm">Einzelraum</span
-								>{/if}
-							{#if s.nta.compensation}<span class="text-base-content/60">{s.nta.compensation}</span
-								>{/if}
+							{#if s.nta.deltaDurationPercent}<span class="badge badge-ghost badge-sm">
+									+{s.nta.deltaDurationPercent}%
+								</span>{/if}
+							{#if s.nta.needsRoomAlone}<span class="badge badge-warning badge-sm">
+									Einzelraum
+								</span>{/if}
+							{#if s.nta.compensation}<span class="text-base-content/60">
+									{s.nta.compensation}
+								</span>{/if}
 						</div>
 					{/if}
 				</div>
@@ -114,14 +117,16 @@
 							{#each s.regsWithProgram as r}
 								{@const info = examInfo(r.program, r.primussAncode)}
 								<div class="flex flex-wrap items-baseline gap-x-2 text-sm">
-									<span class="badge badge-ghost badge-sm tabular-nums"
-										>{r.program}/{r.primussAncode}</span
-									>
+									<span class="badge badge-ghost badge-sm tabular-nums">
+										{r.program}/{r.primussAncode}
+									</span>
 									{#if r.zpaAncode != null && r.zpaAncode !== r.primussAncode}
 										<span
 											class="badge badge-outline badge-sm tabular-nums"
-											title="interner ZPA-Ancode">ZPA {r.zpaAncode}</span
+											title="interner ZPA-Ancode"
 										>
+											ZPA {r.zpaAncode}
+										</span>
 									{/if}
 									{#if info}
 										<span>{info.module}</span>

@@ -909,9 +909,9 @@
 	<details class="collapse-arrow collapse w-full border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Pre-Plan-Parameter
-			<span class="font-normal text-base-content/50"
-				>· global · wirkt beim „Automatisch verteilen"</span
-			>
+			<span class="font-normal text-base-content/50">
+				· global · wirkt beim „Automatisch verteilen"
+			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			<div class="max-w-3xl text-xs text-base-content/50">
@@ -1136,9 +1136,9 @@
 								{m.examKind}
 							</span>
 							<span class={m.connected ? '' : 'text-base-content/60'}>{m.module}</span>
-							{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums"
-									>{m.ancode}</span
-								>{/if}
+							{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">
+									{m.ancode}
+								</span>{/if}
 						</span>
 					{/each}
 				</div>
@@ -1252,8 +1252,10 @@
 								{#if unassignedSet.has(e.id)}
 									<span
 										class="mr-1"
-										title="ohne Slot — Details in den Hinweisen (kleine SEB ggf. gewollt)">⚠</span
+										title="ohne Slot — Details in den Hinweisen (kleine SEB ggf. gewollt)"
 									>
+										⚠
+									</span>
 								{/if}
 								{#if e.examKind === 'SEB'}
 									<span class="badge badge-info badge-sm">SEB</span>
@@ -1335,16 +1337,16 @@
 							<td>
 								{#if e.ancode}
 									<span class="badge badge-success badge-sm tabular-nums">✓ {e.ancode}</span>
-									<WriteButton class="btn btn-ghost btn-xs" onclick={() => disconnect(e)}
-										>Lösen</WriteButton
-									>
+									<WriteButton class="btn btn-ghost btn-xs" onclick={() => disconnect(e)}>
+										Lösen
+									</WriteButton>
 								{:else}
 									<span class="badge badge-sm {data.zpaPresent ? 'badge-warning' : 'badge-ghost'}">
 										nicht zugeordnet
 									</span>
-									<button class="btn btn-ghost btn-xs" onclick={() => openSuggest(e)}
-										>Zuordnen</button
-									>
+									<button class="btn btn-ghost btn-xs" onclick={() => openSuggest(e)}>
+										Zuordnen
+									</button>
 								{/if}
 							</td>
 							<td class="text-right whitespace-nowrap">
@@ -1352,9 +1354,9 @@
 									Constraints
 								</button>
 								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(e)}>Bearbeiten</button>
-								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(e)}
-									>Löschen</WriteButton
-								>
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(e)}>
+									Löschen
+								</WriteButton>
 							</td>
 						</tr>
 					{/each}
@@ -1399,9 +1401,9 @@
 				</div>
 				<div class="flex flex-col gap-1 sm:col-span-2">
 					<div class="flex items-baseline gap-2">
-						<span class="text-xs font-medium text-base-content/60"
-							>Prüfender (Nachname, Vorname)</span
-						>
+						<span class="text-xs font-medium text-base-content/60">
+							Prüfender (Nachname, Vorname)
+						</span>
 						{#if selectedExamerLabel}
 							<span class="text-xs text-primary">✓ {selectedExamerLabel}</span>
 						{:else}
@@ -1501,8 +1503,9 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>
+					Abbrechen
+				</button>
 				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>
@@ -1541,9 +1544,9 @@
 									{m.examKind}
 								</span>
 								<span>{m.module}</span>
-								{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums"
-										>{m.ancode}</span
-									>{/if}
+								{#if m.ancode}<span class="font-mono text-base-content/50 tabular-nums">
+										{m.ancode}
+									</span>{/if}
 								<span class="text-xs {m.connected ? 'text-success' : 'text-base-content/40'}">
 									{m.connected
 										? 'Constraint aktiv'

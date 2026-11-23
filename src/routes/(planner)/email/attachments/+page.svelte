@@ -146,9 +146,9 @@
 				⬇ Planned-Rooms-JSON (für Deckblätter)
 			</button>
 			<span class="text-xs text-base-content/50">
-				Export der geplanten Räume (<span class="font-mono"
-					>&lt;semester&gt;_planned-rooms.json</span
-				>) — Eingabe für die Deckblatt-Erzeugung.
+				Export der geplanten Räume (<span class="font-mono">
+					&lt;semester&gt;_planned-rooms.json
+				</span>) — Eingabe für die Deckblatt-Erzeugung.
 			</span>
 			{#if prError}
 				<span class="text-xs text-error">{prError}</span>

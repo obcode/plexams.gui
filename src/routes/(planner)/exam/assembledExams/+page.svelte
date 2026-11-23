@@ -134,8 +134,9 @@
 				<span>
 					Aufbereitete Prüfungen zurückgesetzt — {resetRemoved} Prüfung(en) entfernt.
 				</span>
-				<button class="btn btn-ghost btn-xs" onclick={() => (resetRemoved = null)}>schließen</button
-				>
+				<button class="btn btn-ghost btn-xs" onclick={() => (resetRemoved = null)}>
+					schließen
+				</button>
 			</div>
 		{/if}
 
@@ -144,8 +145,9 @@
 				<div class="flex items-center gap-2 text-sm font-medium">
 					Generiert: {prepResult.changes.length} Änderung(en) · {prepResult.studentCount} StudentRegs
 					<div class="flex-1"></div>
-					<button class="btn btn-ghost btn-xs" onclick={() => (prepResult = null)}>schließen</button
-					>
+					<button class="btn btn-ghost btn-xs" onclick={() => (prepResult = null)}>
+						schließen
+					</button>
 				</div>
 				{#if prepResult.changes.length}
 					<ul class="mt-1 flex max-h-72 flex-col gap-1 overflow-y-auto text-sm">

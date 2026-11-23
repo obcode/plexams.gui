@@ -108,10 +108,10 @@
 				disabled={!!createdName}
 			/>
 		</label>
-		<span class="text-xs text-base-content/50"
-			>Muster: <span class="font-mono">YYYY-SS</span> oder
-			<span class="font-mono">YYYY-WS</span>.</span
-		>
+		<span class="text-xs text-base-content/50">
+			Muster: <span class="font-mono">YYYY-SS</span> oder
+			<span class="font-mono">YYYY-WS</span>.
+		</span>
 	</div>
 
 	<SemesterConfigForm

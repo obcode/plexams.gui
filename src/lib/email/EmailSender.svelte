@@ -258,9 +258,9 @@ versenden ist; optionaler Hinweistext dazu
 			<span class="text-xs text-base-content/60">{hideRealSendHint}</span>
 		{:else if alreadySent}
 			<span class="text-xs text-base-content/60">
-				bereits gesendet — zum erneuten Senden das Häkchen auf der <a class="link" href="/"
-					>Startseite</a
-				> zurücksetzen
+				bereits gesendet — zum erneuten Senden das Häkchen auf der <a class="link" href="/">
+					Startseite
+				</a> zurücksetzen
 			</span>
 		{:else if confirming}
 			<div class="flex items-center gap-2 rounded-lg bg-error/10 px-2 py-1" transition:slide>

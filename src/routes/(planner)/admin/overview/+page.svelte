@@ -105,9 +105,9 @@
 			<span>
 				Übersicht nicht verfügbar — dies erfordert eine ADMIN-Rolle und ein Backend mit der
 				<code>adminOverview</code>-Query.
-				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70"
-						>{data.loadError}</span
-					>{/if}
+				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70">
+						{data.loadError}
+					</span>{/if}
 			</span>
 		</div>
 	{:else}
@@ -125,8 +125,10 @@
 									class="link link-primary ml-1 text-xs"
 									href={server.releaseURL}
 									target="_blank"
-									rel="noopener noreferrer">Release ↗</a
+									rel="noopener noreferrer"
 								>
+									Release ↗
+								</a>
 							{/if}
 						</dd>
 						<dt class="text-base-content/60">Commit</dt>
@@ -222,9 +224,9 @@
 								{#if backup.lastChangeAt}(zuletzt {fmt(backup.lastChangeAt)}){/if}.
 							</span>
 						</div>
-						<a class="btn btn-warning btn-sm w-fit" href="/download"
-							>⬇️ Semester-Dump herunterladen</a
-						>
+						<a class="btn btn-warning btn-sm w-fit" href="/download">
+							⬇️ Semester-Dump herunterladen
+						</a>
 					{:else}
 						<p class="text-sm text-success">Aktuell — keine ungesicherten Änderungen.</p>
 					{/if}
@@ -248,8 +250,9 @@
 							<span class="badge badge-warning badge-sm">VIEWER {roleCounts.viewer}</span>
 							<span class="badge badge-neutral badge-sm">Σ {roleCounts.total}</span>
 						{/if}
-						<a class="link link-primary ml-auto text-xs" href="/admin/users">Benutzerverwaltung →</a
-						>
+						<a class="link link-primary ml-auto text-xs" href="/admin/users">
+							Benutzerverwaltung →
+						</a>
 					</h2>
 					<div class="overflow-x-auto rounded-lg border border-base-300">
 						<table class="table table-sm">
@@ -270,10 +273,9 @@
 										<td><span class="badge badge-sm {roleBadge(u.role)}">{u.role}</span></td>
 									</tr>
 								{:else}
-									<tr
-										><td colspan="4" class="text-center text-base-content/50">Keine Benutzer.</td
-										></tr
-									>
+									<tr>
+										<td colspan="4" class="text-center text-base-content/50">Keine Benutzer.</td>
+									</tr>
 								{/each}
 							</tbody>
 						</table>
@@ -386,10 +388,9 @@
 											</td>
 										</tr>
 									{:else}
-										<tr
-											><td colspan="5" class="text-center text-base-content/50">Keine Einträge.</td
-											></tr
-										>
+										<tr>
+											<td colspan="5" class="text-center text-base-content/50">Keine Einträge.</td>
+										</tr>
 									{/each}
 								</tbody>
 							</table>
@@ -420,9 +421,9 @@
 												<span class="badge badge-primary badge-xs ml-1">aktiv</span>
 											{/if}
 										</td>
-										<td class="text-right tabular-nums text-base-content/60"
-											>{w.schemaVersion ?? '—'}</td
-										>
+										<td class="text-right tabular-nums text-base-content/60">
+											{w.schemaVersion ?? '—'}
+										</td>
 										<td class="text-right">
 											{#if w.readOnly}
 												<span class="badge badge-warning badge-xs">read-only</span>
