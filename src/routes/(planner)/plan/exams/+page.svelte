@@ -549,12 +549,16 @@
 			<div class="join">
 				<button
 					class="btn join-item btn-sm {view === 'kalender' ? 'btn-primary' : 'btn-ghost'}"
-					onclick={() => (view = 'kalender')}>🗓 Slots</button
+					onclick={() => (view = 'kalender')}
 				>
+					🗓 Slots
+				</button>
 				<button
 					class="btn join-item btn-sm {view === 'zeit' ? 'btn-primary' : 'btn-ghost'}"
-					onclick={() => (view = 'zeit')}>⏱ Zeit</button
+					onclick={() => (view = 'zeit')}
 				>
+					⏱ Zeit
+				</button>
 			</div>
 			{#if selectedExam !== -1}
 				<span class="flex items-center gap-1 text-sm text-base-content/60">
@@ -695,10 +699,10 @@
 				<option value="all">Alle Gruppen</option>
 				{#each allProgramsInPlan as program}
 					{@const count = unplannedExams(program)}
-					<option value={program}
-						>{program}{#if count > 0}
-							({count} offen){/if}</option
-					>
+					<option value={program}>
+						{program}{#if count > 0}
+							({count} offen){/if}
+					</option>
 				{/each}
 			</select>
 			<select class="select select-bordered select-sm" bind:value={showExamerID}>
@@ -922,14 +926,15 @@
 																<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
 																<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
 																<span class="ml-auto flex items-center gap-0.5">
-																	{#if x.e.planEntry?.locked}<span title="manuell gesperrt">🔒</span
-																		>{/if}
-																	{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert"
-																			>🏗️</span
-																		>{/if}
-																	{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung"
-																			>🔁</span
-																		>{/if}
+																	{#if x.e.planEntry?.locked}<span title="manuell gesperrt">
+																			🔒
+																		</span>{/if}
+																	{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert">
+																			🏗️
+																		</span>{/if}
+																	{#if x.e.zpaExam?.isRepeaterExam}<span title="Wiederholung">
+																			🔁
+																		</span>{/if}
 																</span>
 															</div>
 															<div class="truncate text-[10px] leading-tight">
@@ -1022,9 +1027,9 @@
 					<p class="text-sm text-base-content/60">
 						Diese Prüfungen plant eine andere Fakultät — sie bekommen von dir keinen Slot. Sobald
 						sie eine Zeit haben, erscheinen sie zur Konflikt-Übersicht an ihrer Zeit im Raster.
-						Zeiten setzt du unter <a href="/exam/external" class="link link-primary"
-							>Prüfungen anderer FKs</a
-						>.
+						Zeiten setzt du unter <a href="/exam/external" class="link link-primary">
+							Prüfungen anderer FKs
+						</a>.
 					</p>
 					<div class="flex flex-wrap gap-2">
 						{#each otherFkNoSlot as e (e.ancode)}
@@ -1034,8 +1039,9 @@
 							>
 								<div class="flex items-center gap-1 font-semibold">
 									<span class="font-mono">{otherFkAncode(e)}</span>
-									{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">🔁</span
-										>{/if}
+									{#if e.zpaExam?.isRepeaterExam}<span class="ml-auto" title="Wiederholung">
+											🔁
+										</span>{/if}
 								</div>
 								<div class="truncate">{e.zpaExam?.module}</div>
 								<div class="text-base-content/50">

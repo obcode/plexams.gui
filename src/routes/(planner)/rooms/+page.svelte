@@ -194,26 +194,28 @@
 							<div class="flex flex-wrap gap-1">
 								{#if room.handicap}<span class="badge badge-info badge-sm">NTA</span>{/if}
 								{#if room.lab}<span class="badge badge-info badge-sm">Labor</span>{/if}
-								{#if room.placesWithSocket}<span class="badge badge-info badge-sm">Steckdosen</span
-									>{/if}
+								{#if room.placesWithSocket}<span class="badge badge-info badge-sm">
+										Steckdosen
+									</span>{/if}
 								{#if room.exahm}<span class="badge badge-info badge-sm">EXaHM</span>{/if}
 								{#if room.seb}
 									<span class="badge badge-info badge-sm">SEB</span>
-									{#if room.sebSeats > 0}<span class="badge badge-ghost badge-sm"
-											>{room.sebSeats} SEB</span
-										>{/if}
-									{#if room.hmebSeats > 0}<span class="badge badge-ghost badge-sm"
-											>{room.hmebSeats} HMEB</span
-										>{/if}
+									{#if room.sebSeats > 0}<span class="badge badge-ghost badge-sm">
+											{room.sebSeats} SEB
+										</span>{/if}
+									{#if room.hmebSeats > 0}<span class="badge badge-ghost badge-sm">
+											{room.hmebSeats} HMEB
+										</span>{/if}
 								{/if}
-								{#if REQUEST_LABEL[room.requestWith]}<span class="badge badge-warning badge-sm"
-										>{REQUEST_LABEL[room.requestWith]}</span
-									>{/if}
+								{#if REQUEST_LABEL[room.requestWith]}<span class="badge badge-warning badge-sm">
+										{REQUEST_LABEL[room.requestWith]}
+									</span>{/if}
 								{#if room.hitzewert != null}<span
 										class="badge badge-outline badge-sm"
 										title="Hitzewert (überschreibt das Stockwerk aus dem Namen)"
-										>🌡 {room.hitzewert}</span
-									>{/if}
+									>
+										🌡 {room.hitzewert}
+									</span>{/if}
 							</div>
 						</td>
 						<td>
@@ -234,9 +236,9 @@
 							</label>
 						</td>
 						<td>
-							<button class="btn btn-ghost btn-xs" onclick={() => openEdit(room)}
-								>✎ Bearbeiten</button
-							>
+							<button class="btn btn-ghost btn-xs" onclick={() => openEdit(room)}>
+								✎ Bearbeiten
+							</button>
 						</td>
 					</tr>
 				{/each}

@@ -393,8 +393,9 @@
 							class="input input-bordered input-sm w-28"
 							bind:value={form.startTimes[i]}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmStartTime(i)}>✕</button
-						>
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmStartTime(i)}>
+							✕
+						</button>
 					</div>
 				{/each}
 			</div>
@@ -505,8 +506,9 @@
 			<div class="flex flex-col gap-1">
 				{#each programsByFaculty as grp}
 					<div class="flex flex-wrap items-center gap-1">
-						<span class="w-28 shrink-0 text-xs font-medium text-base-content/60">{grp.faculty}</span
-						>
+						<span class="w-28 shrink-0 text-xs font-medium text-base-content/60">
+							{grp.faculty}
+						</span>
 						{#each grp.programs as jp}
 							<button
 								class="badge gap-1 {selectedProgram === jp.shortname
@@ -517,8 +519,9 @@
 							>
 								{jp.shortname}
 								{#if countFor(jp.shortname) > 0}
-									<span class="text-[10px] opacity-70 tabular-nums">({countFor(jp.shortname)})</span
-									>
+									<span class="text-[10px] opacity-70 tabular-nums">
+										({countFor(jp.shortname)})
+									</span>
 								{/if}
 							</button>
 						{/each}
@@ -656,8 +659,9 @@
 							onchange={(e) =>
 								(form.forbiddenDays[i] = setDate(form.forbiddenDays[i], e.currentTarget.value))}
 						/>
-						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmForbidden(i)}>✕</button
-						>
+						<button class="btn btn-ghost btn-xs text-error" onclick={() => rmForbidden(i)}>
+							✕
+						</button>
 					</div>
 				{/each}
 			</div>
@@ -725,9 +729,9 @@
 								class="input input-bordered input-sm w-full sm:w-80"
 								bind:value={form.emails.additionalExamer[i]}
 							/>
-							<button class="btn btn-ghost btn-xs text-error" onclick={() => rmExaminer(i)}
-								>✕</button
-							>
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => rmExaminer(i)}>
+								✕
+							</button>
 						</div>
 					{/each}
 				</div>

@@ -116,8 +116,10 @@
 						? 'badge-success'
 						: preplan.state === 'CLOSED'
 							? 'badge-neutral'
-							: 'badge-ghost'}">{STATE_LABEL[preplan.state] ?? preplan.state}</span
+							: 'badge-ghost'}"
 				>
+					{STATE_LABEL[preplan.state] ?? preplan.state}
+				</span>
 			</div>
 			<p class="text-sm">
 				{preplan.submissions} Meldungen, davon {preplan.openSubmissions} ungesichtet ·
@@ -238,9 +240,9 @@
 								: ''}
 							{#if s.createdBy !== s.submittedBy}· angelegt von {s.createdBy}{/if}
 							· Vorplanung:
-							{#if s.preplanExamID}<a class="link" href="/preplan#preplan-{s.preplanExamID}"
-									>#{s.preplanExamID}</a
-								>{:else}nicht (mehr) vorhanden{/if}
+							{#if s.preplanExamID}<a class="link" href="/preplan#preplan-{s.preplanExamID}">
+									#{s.preplanExamID}
+								</a>{:else}nicht (mehr) vorhanden{/if}
 						</p>
 						{#if s.reviewNote}
 							<p class="text-sm"><span class="font-medium">Notiz:</span> {s.reviewNote}</p>

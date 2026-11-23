@@ -220,9 +220,9 @@
 										class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-semibold hover:bg-base-200"
 										onclick={() => toggleSection(sec.key)}
 									>
-										<span class="text-base-content/50"
-											>{isOpen(sec, openSections, term) ? '▾' : '▸'}</span
-										>
+										<span class="text-base-content/50">
+											{isOpen(sec, openSections, term) ? '▾' : '▸'}
+										</span>
 										letztes Semester: {sec.label}
 										<span class="badge badge-ghost badge-sm tabular-nums">{sec.items.length}</span>
 										{#if sec.items.some((/** @type {any} */ i) => i._newer)}
@@ -265,9 +265,9 @@
 										{:else if s.submitted}
 											<span class="badge badge-success badge-sm">Aufsicht ✓</span>
 										{:else}
-											<span class="badge badge-warning badge-sm"
-												>Aufsicht · Anforderungen fehlen</span
-											>
+											<span class="badge badge-warning badge-sm">
+												Aufsicht · Anforderungen fehlen
+											</span>
 										{/if}
 									</td>
 									<td>

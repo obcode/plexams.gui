@@ -69,8 +69,9 @@
 							<span class="badge badge-ghost badge-xs">{dirLabel(e.direction)}</span>
 							<span class="text-xs text-base-content/50">{fmt(e.time)}</span>
 							<span class="flex-1"></span>
-							{#if e.added}<span class="badge badge-success badge-xs tabular-nums">+{e.added}</span
-								>{/if}
+							{#if e.added}<span class="badge badge-success badge-xs tabular-nums">
+									+{e.added}
+								</span>{/if}
 							{#if e.changed}
 								<span class="badge badge-warning badge-xs tabular-nums">~{e.changed}</span>
 							{/if}

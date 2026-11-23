@@ -366,13 +366,13 @@
 					<span class="text-base-content/60">in Toleranz</span>
 					<span class="text-right text-success">{report.balance.withinTolerance}</span>
 					<span class="text-base-content/60">darüber</span>
-					<span class="text-right text-warning"
-						>{report.balance.over} (max {report.balance.maxOver})</span
-					>
+					<span class="text-right text-warning">
+						{report.balance.over} (max {report.balance.maxOver})
+					</span>
 					<span class="text-base-content/60">darunter</span>
-					<span class="text-right text-warning"
-						>{report.balance.under} (max {report.balance.maxUnder})</span
-					>
+					<span class="text-right text-warning">
+						{report.balance.under} (max {report.balance.maxUnder})
+					</span>
 				</div>
 			</div>
 
@@ -397,16 +397,17 @@
 						<span class="text-base-content/60">unbesetzt</span>
 						<span
 							class="text-right {report.coverage.unfilled === 0 ? 'text-success' : 'text-error'}"
-							>{report.coverage.unfilled}</span
 						>
+							{report.coverage.unfilled}
+						</span>
 					</div>
 				</div>
 
 				<div class="rounded-lg border border-base-300 bg-base-100 p-4">
 					<div class="mb-3 font-medium">
-						Minuten <span class="text-xs text-base-content/50"
-							>(±{report.minutes.toleranceMin})</span
-						>
+						Minuten <span class="text-xs text-base-content/50">
+							(±{report.minutes.toleranceMin})
+						</span>
 					</div>
 					<div class="grid grid-cols-3 gap-2 text-center text-sm tabular-nums">
 						<div class="rounded bg-success/10 p-2">
@@ -454,8 +455,10 @@
 												? 'text-success'
 												: o.percent >= 80
 													? 'text-warning'
-													: 'text-error'}">{o.percent?.toFixed?.(0) ?? o.percent}%</td
+													: 'text-error'}"
 										>
+											{o.percent?.toFixed?.(0) ?? o.percent}%
+										</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -470,9 +473,9 @@
 			<div class="rounded-lg border border-base-300 bg-base-100 p-4">
 				<div class="mb-3 flex items-center justify-between">
 					<span class="font-medium">Soft-Cost</span>
-					<span class="badge badge-neutral tabular-nums"
-						>Σ {report.softCost.total?.toFixed?.(2) ?? report.softCost.total}</span
-					>
+					<span class="badge badge-neutral tabular-nums">
+						Σ {report.softCost.total?.toFixed?.(2) ?? report.softCost.total}
+					</span>
 				</div>
 				{#if report.softCost.breakdown.length}
 					{@const maxCost = Math.max(
@@ -517,9 +520,9 @@
 									1
 								)}
 								<div class="flex items-center gap-2 text-xs">
-									<span class="w-8 text-right tabular-nums text-base-content/60"
-										>{bucket.count}×</span
-									>
+									<span class="w-8 text-right tabular-nums text-base-content/60">
+										{bucket.count}×
+									</span>
 									<div class="h-4 flex-1 overflow-hidden rounded bg-base-200">
 										<div
 											class="h-full bg-primary"

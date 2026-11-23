@@ -72,9 +72,9 @@
 	{#if $dryRunTestMail?.overridden}
 		<div class="alert alert-warning flex-wrap py-2 text-sm" transition:fade>
 			<span>
-				Probelauf-Empfänger weicht ab: <span class="font-mono font-semibold"
-					>{$dryRunTestMail.current}</span
-				> — zurücksetzen?
+				Probelauf-Empfänger weicht ab: <span class="font-mono font-semibold">
+					{$dryRunTestMail.current}
+				</span> — zurücksetzen?
 			</span>
 			<WriteButton class="btn btn-warning btn-sm" disabled={busy} onclick={reset}>
 				Zurücksetzen

@@ -109,9 +109,9 @@
 				<span class="badge badge-ghost badge-sm">🔁 jedes Semester</span>
 			{/if}
 			{#each todo.labels as label}
-				<a class="badge badge-outline badge-sm" href="/todos?label={encodeURIComponent(label)}"
-					>{label}</a
-				>
+				<a class="badge badge-outline badge-sm" href="/todos?label={encodeURIComponent(label)}">
+					{label}
+				</a>
 			{/each}
 		</div>
 

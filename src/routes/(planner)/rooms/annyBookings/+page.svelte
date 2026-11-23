@@ -352,8 +352,9 @@
 					onkeydown={(e) => e.key === 'Enter' && addName()}
 					placeholder="Name hinzufügen (z. B. Vorname Nachname)"
 				/>
-				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} onclick={addName}>＋</button
-				>
+				<button class="btn btn-ghost btn-sm" disabled={!newName.trim()} onclick={addName}>
+					＋
+				</button>
 				<WriteButton
 					class="btn btn-primary btn-sm"
 					disabled={savingNames || !namesDirty}
@@ -374,8 +375,9 @@
 		{#each annyRooms as r}
 			<span class="badge badge-outline badge-sm font-mono">{r}</span>
 		{:else}
-			<span class="text-base-content/40">— keine (auf der Räume-Seite via „Anforderung: Anny")</span
-			>
+			<span class="text-base-content/40">
+				— keine (auf der Räume-Seite via „Anforderung: Anny")
+			</span>
 		{/each}
 		<a href="/rooms" class="link link-hover text-xs text-base-content/50">pflegen →</a>
 	</div>
@@ -475,9 +477,9 @@
 									<div class="min-w-[130px] flex-1">
 										<div class="h-6 text-center text-xs font-medium tabular-nums">
 											{day.label}
-											{#if day.date}<span class="text-base-content/40"
-													>· {mkDateShort(day.date)}</span
-												>{/if}
+											{#if day.date}<span class="text-base-content/40">
+													· {mkDateShort(day.date)}
+												</span>{/if}
 										</div>
 										<div
 											class="relative rounded border-l border-base-200 bg-base-200/20"
@@ -562,8 +564,9 @@
 								<td class="max-w-[28rem] truncate" title={b.description}>{b.description || '—'}</td>
 								<td>
 									<span class="badge badge-ghost badge-sm">{b.status}</span>
-									{#if b.isBlocker}<span class="badge badge-warning badge-sm ml-1">Blocker</span
-										>{/if}
+									{#if b.isBlocker}<span class="badge badge-warning badge-sm ml-1">
+											Blocker
+										</span>{/if}
 								</td>
 							</tr>
 						{/each}

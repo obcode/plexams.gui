@@ -156,16 +156,19 @@
 			>
 				<div class="flex items-center gap-1 whitespace-nowrap">
 					<span class="font-mono font-semibold">{ancodeToShow}</span>
-					<span class="text-xs tabular-nums text-base-content/50">&sum;{exam.studentRegsCount}</span
-					>
+					<span class="text-xs tabular-nums text-base-content/50">
+						&sum;{exam.studentRegsCount}
+					</span>
 					<!-- Status-Icons rechts, damit die Ancodes links bündig ausgerichtet sind -->
 					<span class="ml-auto flex items-center gap-0.5">
-						{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
-								>🔒</span
-							>{/if}
+						{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">
+								🔒
+							</span>{/if}
 						{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
-								title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
-							>{/if}
+								title="automatisch fixiert (EXaHM/SEB-Raumphase)"
+							>
+								🏗️
+							</span>{/if}
 						{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
 					</span>
 				</div>
@@ -190,12 +193,14 @@
 					<!-- Status-Icons rechts, damit Ancode + Modul links bündig stehen -->
 					{#if exam.planEntry?.locked || exam.planEntry?.phaseFixed || exam.zpaExam.isRepeaterExam}
 						<div class="flex items-center gap-0.5">
-							{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt"
-									>🔒</span
-								>{/if}
+							{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">
+									🔒
+								</span>{/if}
 							{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
-									title="automatisch fixiert (EXaHM/SEB-Raumphase)">🏗️</span
-								>{/if}
+									title="automatisch fixiert (EXaHM/SEB-Raumphase)"
+								>
+									🏗️
+								</span>{/if}
 							{#if exam.zpaExam.isRepeaterExam}<span title="Wiederholungsprüfung">🔁</span>{/if}
 						</div>
 					{/if}
@@ -220,9 +225,9 @@
 			<div class="mt-1 flex flex-wrap items-center gap-1">
 				{#each exam.primussExams as primussExam}
 					{#if primussExam.exam.ancode != exam.ancode}
-						<span class="badge badge-ghost badge-sm"
-							>{primussExam.exam.program}/{primussExam.exam.ancode}</span
-						>
+						<span class="badge badge-ghost badge-sm">
+							{primussExam.exam.program}/{primussExam.exam.ancode}
+						</span>
 					{/if}
 				{/each}
 			</div>

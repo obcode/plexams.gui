@@ -190,9 +190,9 @@
 			<span>
 				Kontodaten nicht verfügbar — dies erfordert ein angemeldetes Konto und ein Backend mit
 				OIDC-Auth.
-				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70"
-						>{data.loadError}</span
-					>{/if}
+				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70">
+						{data.loadError}
+					</span>{/if}
 			</span>
 		</div>
 	{:else}
@@ -227,8 +227,9 @@
 				{#if shortError}
 					<div class="alert alert-error alert-sm">
 						<span class="font-mono text-sm break-words whitespace-pre-wrap">{shortError}</span>
-						<button class="btn btn-ghost btn-xs" onclick={() => (shortError = '')}>schließen</button
-						>
+						<button class="btn btn-ghost btn-xs" onclick={() => (shortError = '')}>
+							schließen
+						</button>
 					</div>
 				{/if}
 				{#if shortMsg}
@@ -316,9 +317,9 @@
 					{#if account?.jiraTokenSet}
 						<span class="badge badge-success gap-1">✓ Token hinterlegt</span>
 						{#if account?.jiraTokenUpdatedAt}
-							<span class="text-xs text-base-content/50"
-								>zuletzt aktualisiert: {fmtDate(account.jiraTokenUpdatedAt)}</span
-							>
+							<span class="text-xs text-base-content/50">
+								zuletzt aktualisiert: {fmtDate(account.jiraTokenUpdatedAt)}
+							</span>
 						{/if}
 					{:else}
 						<span class="badge badge-ghost gap-1">Kein Token hinterlegt</span>
@@ -328,8 +329,9 @@
 				{#if tokenError}
 					<div class="alert alert-error alert-sm">
 						<span class="font-mono text-sm break-words whitespace-pre-wrap">{tokenError}</span>
-						<button class="btn btn-ghost btn-xs" onclick={() => (tokenError = '')}>schließen</button
-						>
+						<button class="btn btn-ghost btn-xs" onclick={() => (tokenError = '')}>
+							schließen
+						</button>
 					</div>
 				{/if}
 				{#if tokenMsg}

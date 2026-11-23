@@ -243,13 +243,17 @@
 				<button
 					role="tab"
 					class="tab {view === 'exams' ? 'tab-active' : ''}"
-					onclick={() => (view = 'exams')}>nach Prüfungen</button
+					onclick={() => (view = 'exams')}
 				>
+					nach Prüfungen
+				</button>
 				<button
 					role="tab"
 					class="tab {view === 'rooms' ? 'tab-active' : ''}"
-					onclick={() => (view = 'rooms')}>nach Räumen</button
+					onclick={() => (view = 'rooms')}
 				>
+					nach Räumen
+				</button>
 			</div>
 		</div>
 
@@ -478,9 +482,9 @@
 								<th class="sticky left-0 bg-base-200">Raum</th>
 								{#each data.semesterConfig.days as day}
 									<th class="text-center whitespace-nowrap">
-										{mkDateShort(day.date)}<br /><span class="font-normal text-base-content/50"
-											>{mkDate(day.date)}</span
-										>
+										{mkDateShort(day.date)}<br /><span class="font-normal text-base-content/50">
+											{mkDate(day.date)}
+										</span>
 									</th>
 								{/each}
 							</tr>

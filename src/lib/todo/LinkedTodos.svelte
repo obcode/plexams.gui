@@ -62,8 +62,9 @@
 			<a
 				class="link link-hover text-xs text-base-content/50"
 				href="/todos?link={encodeURIComponent(linkParam({ kind, key }))}&status=all"
-				>alle, auch erledigte →</a
 			>
+				alle, auch erledigte →
+			</a>
 			<WriteButton class="btn btn-outline btn-xs" onclick={() => (creating = true)}>
 				+ Todo
 			</WriteButton>

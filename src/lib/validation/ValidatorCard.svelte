@@ -133,8 +133,9 @@
 					<span class="badge badge-error tabular-nums">{validator.report.errorCount} Fehler</span>
 				{/if}
 				{#if validator.report.warningCount > 0}
-					<span class="badge badge-warning tabular-nums">{validator.report.warningCount} Warn.</span
-					>
+					<span class="badge badge-warning tabular-nums">
+						{validator.report.warningCount} Warn.
+					</span>
 				{/if}
 				{#if validator.report.infoCount > 0}
 					<span class="badge badge-ghost tabular-nums">{validator.report.infoCount} Info</span>
@@ -185,24 +186,24 @@
 									{#if f.ancode}
 										<span class="badge badge-outline badge-xs">
 											Prüfung {f.ancode}{#if examLabel(f.ancode)}<span class="opacity-70">
-													· {examLabel(f.ancode)}</span
-												>{/if}
+													· {examLabel(f.ancode)}
+												</span>{/if}
 										</span>
 									{/if}
 									{#each f.relatedAncodes ?? [] as ra}
 										<span class="badge badge-outline badge-xs">
 											↔ {ra}{#if examLabel(ra)}<span class="opacity-70">
-													· {examLabel(ra)}</span
-												>{/if}
+													· {examLabel(ra)}
+												</span>{/if}
 										</span>
 									{/each}
 									{#if f.room}
 										<span class="badge badge-outline badge-xs">Raum {f.room}</span>
 									{/if}
 									{#if f.starttime}
-										<span class="badge badge-outline badge-xs tabular-nums"
-											>{fmtStarttime(f.starttime)}</span
-										>
+										<span class="badge badge-outline badge-xs tabular-nums">
+											{fmtStarttime(f.starttime)}
+										</span>
 									{/if}
 									{#if f.invigilatorID != null}
 										<span class="badge badge-outline badge-xs">Aufsicht {f.invigilatorID}</span>

@@ -87,9 +87,9 @@
 					class="textarea textarea-bordered textarea-sm min-h-20 w-full font-mono"
 					bind:value={editBody}></textarea>
 				<div class="flex justify-end gap-2">
-					<button class="btn btn-ghost btn-xs" onclick={() => (editingId = null)} disabled={busy}
-						>Abbrechen</button
-					>
+					<button class="btn btn-ghost btn-xs" onclick={() => (editingId = null)} disabled={busy}>
+						Abbrechen
+					</button>
 					<WriteButton class="btn btn-primary btn-xs" onclick={saveEdit} disabled={busy}>
 						Speichern
 					</WriteButton>

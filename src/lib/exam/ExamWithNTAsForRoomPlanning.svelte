@@ -366,14 +366,14 @@
 							<span class="flex flex-wrap items-center gap-1">
 								<span class="font-medium">{room.room.name}</span>
 								{#if room.room.name != 'ONLINE'}
-									<span class="text-base-content/60"
-										>({room.studentsInRoom.length}/{room.room.seats})</span
-									>
+									<span class="text-base-content/60">
+										({room.studentsInRoom.length}/{room.room.seats})
+									</span>
 									{#if room.reserve}<span class="badge badge-info badge-sm">Reserve</span>{/if}
 									{#if fixedSeatsFor(room) != null}
-										<span class="badge badge-neutral badge-sm"
-											>{fixedSeatsFor(room)} Plätze (fix)</span
-										>
+										<span class="badge badge-neutral badge-sm">
+											{fixedSeatsFor(room)} Plätze (fix)
+										</span>
 									{/if}
 								{/if}
 							</span>
@@ -422,8 +422,10 @@
 							<button
 								class="btn btn-ghost btn-xs"
 								title="schließen"
-								onclick={() => (showPicker = false)}>✕</button
+								onclick={() => (showPicker = false)}
 							>
+								✕
+							</button>
 						</div>
 						{#if loadingRooms}
 							<div class="text-xs text-base-content/50">lädt…</div>
@@ -471,8 +473,10 @@
 				{:else}
 					<button
 						class="btn btn-ghost btn-xs self-start text-xs text-base-content/60"
-						onclick={openPicker}>➕ Raum vorplanen</button
+						onclick={openPicker}
 					>
+						➕ Raum vorplanen
+					</button>
 				{/if}
 				{#if pickError}
 					<div class="text-xs text-error">{pickError}</div>
@@ -488,8 +492,9 @@
 						<div class="flex items-center gap-1">
 							<span class="font-medium">{nta.name}</span>
 							<span class="font-mono text-base-content/50">{nta.mtknr}</span>
-							{#if nta.needsRoomAlone}<span class="badge badge-error badge-sm">eigener Raum</span
-								>{/if}
+							{#if nta.needsRoomAlone}<span class="badge badge-error badge-sm">
+									eigener Raum
+								</span>{/if}
 						</div>
 						<div class="text-base-content/60">{nta.compensation}</div>
 						<div class="mt-1 flex items-center gap-2">

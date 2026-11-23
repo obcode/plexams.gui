@@ -125,34 +125,37 @@
 				{#if !data.notAssembled}
 					<span class="badge badge-primary tabular-nums">{studentCount} Anmeldungen</span>
 				{/if}
-				{#if c?.notPlannedByMe}<span class="badge badge-neutral badge-sm"
-						>nicht von mir geplant</span
-					>{/if}
+				{#if c?.notPlannedByMe}<span class="badge badge-neutral badge-sm">
+						nicht von mir geplant
+					</span>{/if}
 				{#if c?.online}<span class="badge badge-info badge-sm">Online</span>{/if}
 				{#if c?.roomConstraints?.exahm}<span class="badge badge-error badge-sm">EXaHM</span>{/if}
 				{#if c?.roomConstraints?.seb}<span class="badge badge-warning badge-sm">SEB</span>{/if}
 				{#if c?.roomConstraints?.lab}<span class="badge badge-neutral badge-sm">Labor</span>{/if}
-				{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm">Steckdosen</span
-					>{/if}
+				{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm">
+						Steckdosen
+					</span>{/if}
 				{#if c?.roomConstraints?.preExamMinutes}<span
 						class="badge badge-ghost badge-sm"
 						title="verlängerter Vorlauf (ersetzt Standard 15 Min)"
-						>Vorlauf {c.roomConstraints.preExamMinutes} Min</span
-					>{/if}
+					>
+						Vorlauf {c.roomConstraints.preExamMinutes} Min
+					</span>{/if}
 				{#if c?.roomConstraints?.postExamMinutes}<span
 						class="badge badge-ghost badge-sm"
 						title="verlängerter Nachlauf (ersetzt Standard 15 Min)"
-						>Nachlauf {c.roomConstraints.postExamMinutes} Min</span
-					>{/if}
-				{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm"
-						>🚫 {c.excludeDays.map(day).join(', ')}</span
-					>{/if}
-				{#if (c?.possibleDays ?? []).length}<span class="badge badge-ghost badge-sm"
-						>nur {c.possibleDays.map(day).join(', ')}</span
-					>{/if}
-				{#if (c?.sameSlot ?? []).length}<span class="badge badge-ghost badge-sm"
-						>=Slot {c.sameSlot.join(', ')}</span
-					>{/if}
+					>
+						Nachlauf {c.roomConstraints.postExamMinutes} Min
+					</span>{/if}
+				{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm">
+						🚫 {c.excludeDays.map(day).join(', ')}
+					</span>{/if}
+				{#if (c?.possibleDays ?? []).length}<span class="badge badge-ghost badge-sm">
+						nur {c.possibleDays.map(day).join(', ')}
+					</span>{/if}
+				{#if (c?.sameSlot ?? []).length}<span class="badge badge-ghost badge-sm">
+						=Slot {c.sameSlot.join(', ')}
+					</span>{/if}
 			</div>
 		</div>
 
@@ -178,9 +181,9 @@
 				{#each exam.conflicts as cf}
 					<div class="flex flex-wrap items-center gap-2 text-sm">
 						<span class="font-mono tabular-nums">{cf.ancode}</span>
-						<span class="badge badge-warning badge-sm tabular-nums"
-							>{cf.numberOfStuds} gemeinsam</span
-						>
+						<span class="badge badge-warning badge-sm tabular-nums">
+							{cf.numberOfStuds} gemeinsam
+						</span>
 						{#each cf.primussAncodes ?? [] as p}
 							<span class="badge badge-ghost badge-xs tabular-nums">
 								{p.program}/{p.ancode} ({p.numberOfStuds})
@@ -220,8 +223,9 @@
 									</span>
 									<span class="min-w-0 flex-1">
 										<span>{s.name}</span>
-										{#if ntaSet.has(s.mtknr)}<span class="badge badge-info badge-xs ml-1">NTA</span
-											>{/if}
+										{#if ntaSet.has(s.mtknr)}<span class="badge badge-info badge-xs ml-1">
+												NTA
+											</span>{/if}
 										{#if s.zpaStudent?.email}
 											<span class="text-xs text-base-content/40">· {s.zpaStudent.email}</span>
 										{/if}

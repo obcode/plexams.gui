@@ -433,9 +433,9 @@
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium"
-				>Prüfungen gemeinsamer Studiengänge konnten nicht geladen werden (Backend-Fehler).</span
-			>
+			<span class="font-medium">
+				Prüfungen gemeinsamer Studiengänge konnten nicht geladen werden (Backend-Fehler).
+			</span>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
 	{/if}
@@ -458,13 +458,17 @@
 					<span class="text-sm text-base-content/50">Studienfakultät:</span>
 					<button
 						class="badge gap-1 {faculty === '' ? 'badge-primary' : 'badge-ghost'}"
-						onclick={() => (faculty = '')}>alle</button
+						onclick={() => (faculty = '')}
 					>
+						alle
+					</button>
 					{#each faculties as f}
 						<button
 							class="badge gap-1 {faculty === f ? 'badge-primary' : 'badge-ghost'}"
-							onclick={() => (faculty = f)}>{f}</button
+							onclick={() => (faculty = f)}
 						>
+							{f}
+						</button>
 					{/each}
 				</div>
 			{/if}
@@ -472,13 +476,17 @@
 				<span class="text-sm text-base-content/50">Studiengang:</span>
 				<button
 					class="badge gap-1 {program === '' ? 'badge-primary' : 'badge-ghost'}"
-					onclick={() => (program = '')}>alle</button
+					onclick={() => (program = '')}
 				>
+					alle
+				</button>
 				{#each programs as p}
 					<button
 						class="badge gap-1 {program === p ? 'badge-primary' : 'badge-ghost'}"
-						onclick={() => (program = p)}>{p}</button
+						onclick={() => (program = p)}
 					>
+						{p}
+					</button>
 				{/each}
 			</div>
 			<label class="flex cursor-pointer items-center gap-2 text-sm">
@@ -496,12 +504,16 @@
 				<span class="text-base-content/50">Sortierung:</span>
 				<button
 					class="badge gap-1 {sortBy === 'ancode' ? 'badge-primary' : 'badge-ghost'}"
-					onclick={() => (sortBy = 'ancode')}>Primuss-Ancode</button
+					onclick={() => (sortBy = 'ancode')}
 				>
+					Primuss-Ancode
+				</button>
 				<button
 					class="badge gap-1 {sortBy === 'time' ? 'badge-primary' : 'badge-ghost'}"
-					onclick={() => (sortBy = 'time')}>Zeit</button
+					onclick={() => (sortBy = 'time')}
 				>
+					Zeit
+				</button>
 			</div>
 		</div>
 
@@ -574,14 +586,16 @@
 									{#if g.planEntry?.starttime}
 										{dateTime(g.planEntry.starttime)}
 										{#if dNum(g.planEntry.starttime)}
-											<span class="text-base-content/50"
-												>({dNum(g.planEntry.starttime)}/{sNum(g.planEntry.starttime)})</span
-											>
+											<span class="text-base-content/50">
+												({dNum(g.planEntry.starttime)}/{sNum(g.planEntry.starttime)})
+											</span>
 										{:else}
 											<span
 												class="text-base-content/50"
-												title="Zeit außerhalb des Prüfungszeitraums">· außerhalb</span
+												title="Zeit außerhalb des Prüfungszeitraums"
 											>
+												· außerhalb
+											</span>
 										{/if}
 									{:else}
 										<span class="text-base-content/30">—</span>
@@ -623,8 +637,9 @@
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">Import: {importResult.examsImported} Prüfungen</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" onclick={() => (importResult = null)}>schließen</button
-				>
+				<button class="btn btn-ghost btn-xs" onclick={() => (importResult = null)}>
+					schließen
+				</button>
 			</div>
 			<div class="text-sm">
 				{importResult.examsCreated} neu · {importResult.examsRemoved} entfernt · {importResult.examsExisting}
@@ -644,8 +659,9 @@
 			<div class="flex w-full items-center gap-2">
 				<span class="font-medium">Gelöscht: {deleteResult.examsDeleted} Prüfungen</span>
 				<div class="flex-1"></div>
-				<button class="btn btn-ghost btn-xs" onclick={() => (deleteResult = null)}>schließen</button
-				>
+				<button class="btn btn-ghost btn-xs" onclick={() => (deleteResult = null)}>
+					schließen
+				</button>
 			</div>
 			<div class="text-sm">
 				{deleteResult.externalExamsDeleted} extern angelegte Prüfungen entfernt
@@ -806,9 +822,9 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeLink} disabled={linking}
-					>Schließen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeLink} disabled={linking}>
+					Schließen
+				</button>
 			</div>
 		</div>
 		<button class="modal-backdrop" aria-label="schließen" onclick={closeLink}></button>

@@ -106,8 +106,10 @@
 			{#each [['open', 'offen'], ['done', 'erledigt'], ['all', 'alle']] as [value, text]}
 				<button
 					class="btn join-item btn-sm {status === value ? 'btn-active' : ''}"
-					onclick={() => setParam('status', value === 'open' ? '' : value)}>{text}</button
+					onclick={() => setParam('status', value === 'open' ? '' : value)}
 				>
+					{text}
+				</button>
 			{/each}
 		</div>
 		<select

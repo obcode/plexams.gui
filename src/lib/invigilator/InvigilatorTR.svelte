@@ -159,8 +159,9 @@
 						value={invigilator.todos.totalMinutes}
 						max={barMax}
 					></progress>
-					<span class="w-12 shrink-0 text-right tabular-nums">{invigilator.todos.totalMinutes}</span
-					>
+					<span class="w-12 shrink-0 text-right tabular-nums">
+						{invigilator.todos.totalMinutes}
+					</span>
 				</div>
 
 				<div class="flex items-center gap-2">
@@ -170,9 +171,9 @@
 						value={invigilator.todos.doingMinutes}
 						max={barMax}
 					></progress>
-					<span class="w-12 shrink-0 text-right tabular-nums"
-						>{invigilator.todos.doingMinutes > 0 ? invigilator.todos.doingMinutes : ''}</span
-					>
+					<span class="w-12 shrink-0 text-right tabular-nums">
+						{invigilator.todos.doingMinutes > 0 ? invigilator.todos.doingMinutes : ''}
+					</span>
 				</div>
 
 				<div class="flex items-center gap-2">

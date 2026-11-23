@@ -218,8 +218,10 @@
 					class="btn btn-{accent} btn-sm"
 					{disabled}
 					title={disabled ? disabledTitle || undefined : undefined}
-					onclick={start}>{actionLabel}</button
+					onclick={start}
 				>
+					{actionLabel}
+				</button>
 			{/if}
 		</div>
 	</div>

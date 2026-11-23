@@ -219,8 +219,9 @@
 							{#each byProgram as p (p.program)}
 								<tr class={p.lowSampleSize ? 'text-base-content/40 italic' : ''}>
 									<td class="font-medium">
-										{p.program}{#if p.lowSampleSize}<span title="geringe Fallzahl">&nbsp;*</span
-											>{/if}
+										{p.program}{#if p.lowSampleSize}<span title="geringe Fallzahl">
+												&nbsp;*
+											</span>{/if}
 									</td>
 									<td class="text-right tabular-nums">{p.studentCount}</td>
 									<td class="text-right tabular-nums">{p.multiExamStudentCount}</td>
@@ -271,8 +272,9 @@
 							<summary
 								class="flex cursor-pointer flex-wrap items-center gap-2 px-3 py-2 text-sm marker:content-['']"
 							>
-								<span class="text-base-content/40 transition-transform group-open:rotate-90">▸</span
-								>
+								<span class="text-base-content/40 transition-transform group-open:rotate-90">
+									▸
+								</span>
 								<span class="font-medium">{s.name}</span>
 								<span class="text-xs text-base-content/50">{s.program} · {s.group}</span>
 								<span class="badge badge-sm {BADGE[tone]} ml-auto">{s.worstLabel}</span>

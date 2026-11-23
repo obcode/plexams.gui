@@ -440,8 +440,9 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">ZPA-Prüfungen planen</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{filtered.length} / {counts.total}</span
-		>
+		<span class="badge badge-primary badge-lg tabular-nums">
+			{filtered.length} / {counts.total}
+		</span>
 	</div>
 
 	<details class="w-full sm:w-fit">
@@ -589,13 +590,17 @@
 						<WriteButton
 							class="btn btn-success btn-xs"
 							disabled={busy.has(e.ancode)}
-							onclick={() => setStatus(e, 'toPlan')}>planen</WriteButton
+							onclick={() => setStatus(e, 'toPlan')}
 						>
+							planen
+						</WriteButton>
 						<WriteButton
 							class="btn btn-error btn-xs"
 							disabled={busy.has(e.ancode)}
-							onclick={() => setStatus(e, 'notToPlan')}>nicht</WriteButton
+							onclick={() => setStatus(e, 'notToPlan')}
 						>
+							nicht
+						</WriteButton>
 					{:else}
 						<input
 							type="checkbox"
@@ -626,8 +631,10 @@
 						<span>{e.mainExamer}</span>
 						{#if isNonFK07(e)}<span
 								class="badge badge-neutral badge-xs"
-								title="Prüfende außerhalb der FK07">{e.examerFk}</span
-							>{/if}
+								title="Prüfende außerhalb der FK07"
+							>
+								{e.examerFk}
+							</span>{/if}
 						<span class="text-base-content/50">· {e.examTypeFull} ·</span>
 						{#if e.duration > 0}
 							<span class="tabular-nums text-base-content/50">{e.duration} min</span>
@@ -642,8 +649,10 @@
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode)}
 								title="Dauer-Override entfernen"
-								onclick={() => rmDur(e)}>✕</WriteButton
+								onclick={() => rmDur(e)}
 							>
+								✕
+							</WriteButton>
 						{:else}
 							<span class="badge badge-error badge-sm" title="keine Dauer hinterlegt">Dauer 0</span>
 							<input
@@ -656,8 +665,10 @@
 							<WriteButton
 								class="btn btn-ghost btn-xs"
 								disabled={busy.has(e.ancode) || !durInput[e.ancode]}
-								onclick={() => setDur(e)}>setzen</WriteButton
+								onclick={() => setDur(e)}
 							>
+								setzen
+							</WriteButton>
 						{/if}
 					</div>
 					<div class="mt-1 flex flex-wrap items-center gap-1">
@@ -715,32 +726,39 @@
 							{#if c?.doNotPublish}
 								<span
 									class="badge badge-error badge-outline badge-sm"
-									title="nicht ins ZPA hochladen">nicht veröffentlichen</span
+									title="nicht ins ZPA hochladen"
 								>
+									nicht veröffentlichen
+								</span>
 							{/if}
 							{#if c?.online}<span class="badge badge-info badge-sm">Online</span>{/if}
-							{#if c?.roomConstraints?.exahm}<span class="badge badge-error badge-sm">EXaHM</span
-								>{/if}
-							{#if c?.roomConstraints?.seb}<span class="badge badge-warning badge-sm">SEB</span
-								>{/if}
-							{#if c?.roomConstraints?.lab}<span class="badge badge-neutral badge-sm">Labor</span
-								>{/if}
-							{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm"
-									>Steckdosen</span
-								>{/if}
+							{#if c?.roomConstraints?.exahm}<span class="badge badge-error badge-sm">
+									EXaHM
+								</span>{/if}
+							{#if c?.roomConstraints?.seb}<span class="badge badge-warning badge-sm">
+									SEB
+								</span>{/if}
+							{#if c?.roomConstraints?.lab}<span class="badge badge-neutral badge-sm">
+									Labor
+								</span>{/if}
+							{#if c?.roomConstraints?.placesWithSocket}<span class="badge badge-sm">
+									Steckdosen
+								</span>{/if}
 							{#if c?.roomConstraints?.kdpJiraURL}<a
 									class="badge badge-info badge-outline badge-sm"
 									href={c.roomConstraints.kdpJiraURL}
 									target="_blank"
 									rel="noopener"
-									title={c.roomConstraints.kdpJiraURL}>Jira ↗</a
-								>{/if}
-							{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm"
-									>🚫 {c.excludeDays.map(day).join(', ')}</span
-								>{/if}
-							{#if (c?.possibleDays ?? []).length}<span class="badge badge-ghost badge-sm"
-									>nur {c.possibleDays.map(day).join(', ')}</span
-								>{/if}
+									title={c.roomConstraints.kdpJiraURL}
+								>
+									Jira ↗
+								</a>{/if}
+							{#if (c?.excludeDays ?? []).length}<span class="badge badge-ghost badge-sm">
+									🚫 {c.excludeDays.map(day).join(', ')}
+								</span>{/if}
+							{#if (c?.possibleDays ?? []).length}<span class="badge badge-ghost badge-sm">
+									nur {c.possibleDays.map(day).join(', ')}
+								</span>{/if}
 							{#each c?.sameSlot ?? [] as a}
 								<button
 									class="badge badge-outline badge-sm tabular-nums hover:badge-primary"
@@ -754,23 +772,27 @@
 									↔ {a}
 								</button>
 							{/each}
-							{#if c?.roomConstraints?.maxStudents}<span class="badge badge-ghost badge-sm"
-									>max {c.roomConstraints.maxStudents}</span
-								>{/if}
+							{#if c?.roomConstraints?.maxStudents}<span class="badge badge-ghost badge-sm">
+									max {c.roomConstraints.maxStudents}
+								</span>{/if}
 							{#if c?.roomConstraints?.additionalSeats}<span
 									class="badge badge-ghost badge-sm"
-									title="Platz-Puffer">+{c.roomConstraints.additionalSeats} Plätze</span
-								>{/if}
+									title="Platz-Puffer"
+								>
+									+{c.roomConstraints.additionalSeats} Plätze
+								</span>{/if}
 							{#if c?.roomConstraints?.preExamMinutes}<span
 									class="badge badge-ghost badge-sm"
 									title="verlängerter Vorlauf (ersetzt Standard 15 Min)"
-									>Vorlauf {c.roomConstraints.preExamMinutes} Min</span
-								>{/if}
+								>
+									Vorlauf {c.roomConstraints.preExamMinutes} Min
+								</span>{/if}
 							{#if c?.roomConstraints?.postExamMinutes}<span
 									class="badge badge-ghost badge-sm"
 									title="verlängerter Nachlauf (ersetzt Standard 15 Min)"
-									>Nachlauf {c.roomConstraints.postExamMinutes} Min</span
-								>{/if}
+								>
+									Nachlauf {c.roomConstraints.postExamMinutes} Min
+								</span>{/if}
 							{#if !hasConstraints(c)}<span class="text-base-content/30">keine</span>{/if}
 							<button class="btn btn-ghost btn-xs ml-auto" onclick={() => openEdit(e)}>✎</button>
 						{/if}

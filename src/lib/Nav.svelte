@@ -464,8 +464,10 @@
 										class="rounded-lg {item.href === activeHref
 											? 'bg-primary/15 font-medium text-primary'
 											: ''}"
-										href={item.href}>{item.label}</a
+										href={item.href}
 									>
+										{item.label}
+									</a>
 								</li>
 							{:else if isGroup(item)}
 								{@const groupActive = item.items.some((s) => isLink(s) && s.href === activeHref)}
@@ -496,8 +498,10 @@
 														class="rounded-lg {sub.href === activeHref
 															? 'bg-primary/15 font-medium text-primary'
 															: ''}"
-														href={sub.href}>{sub.label}</a
+														href={sub.href}
 													>
+														{sub.label}
+													</a>
 												</li>
 											{:else if !isGroup(sub)}
 												<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{sub.section}</li>
@@ -734,9 +738,9 @@
 					<li class="px-2 pb-1">
 						<span class="pointer-events-none flex items-center gap-2 text-xs">
 							Rolle:
-							<span class="badge badge-sm {viewer ? 'badge-warning' : 'badge-ghost'}"
-								>{meRole || '—'}</span
-							>
+							<span class="badge badge-sm {viewer ? 'badge-warning' : 'badge-ghost'}">
+								{meRole || '—'}
+							</span>
 						</span>
 					</li>
 					<li>
@@ -744,8 +748,10 @@
 							class="rounded-lg {activeHref === '/account'
 								? 'bg-primary/15 font-medium text-primary'
 								: ''}"
-							href="/account">👤 Mein Account</a
+							href="/account"
 						>
+							👤 Mein Account
+						</a>
 					</li>
 					<li>
 						<!-- Das Portal für Prüfende – Planende sind meist auch Prüfende. -->
@@ -758,24 +764,30 @@
 								class="rounded-lg {activeHref === '/admin/overview'
 									? 'bg-primary/15 font-medium text-primary'
 									: ''}"
-								href="/admin/overview">🛠️ Überblick</a
+								href="/admin/overview"
 							>
+								🛠️ Überblick
+							</a>
 						</li>
 						<li>
 							<a
 								class="rounded-lg {activeHref === '/admin/users'
 									? 'bg-primary/15 font-medium text-primary'
 									: ''}"
-								href="/admin/users">👥 Benutzerverwaltung</a
+								href="/admin/users"
 							>
+								👥 Benutzerverwaltung
+							</a>
 						</li>
 						<li>
 							<a
 								class="rounded-lg {activeHref === '/admin/access'
 									? 'bg-primary/15 font-medium text-primary'
 									: ''}"
-								href="/admin/access">🔑 Zugang zum Portal</a
+								href="/admin/access"
 							>
+								🔑 Zugang zum Portal
+							</a>
 						</li>
 					{/if}
 				</ul>
@@ -795,8 +807,9 @@
 					<span class="loading loading-spinner loading-xs"></span>
 				{/if}
 				<span class="tabular-nums">{semester}</span>
-				{#if noData(currentSem)}<span class="text-warning" title="Semester ohne Daten">· ⚠</span
-					>{/if}
+				{#if noData(currentSem)}<span class="text-warning" title="Semester ohne Daten">
+						· ⚠
+					</span>{/if}
 				{#if readOnly}<span title="nur lesen (read-only)">🔒</span>{/if}
 				<svg
 					class="h-3 w-3 opacity-60"
@@ -847,14 +860,18 @@
 							<button
 								class="rounded-lg"
 								disabled={togglingReadOnly}
-								onclick={() => toggleReadOnly(false)}>🔓 Schutz aufheben</button
+								onclick={() => toggleReadOnly(false)}
 							>
+								🔓 Schutz aufheben
+							</button>
 						{:else}
 							<button
 								class="rounded-lg"
 								disabled={togglingReadOnly}
-								onclick={() => toggleReadOnly(true)}>🔒 Dieses Semester schützen</button
+								onclick={() => toggleReadOnly(true)}
 							>
+								🔒 Dieses Semester schützen
+							</button>
 						{/if}
 					</li>
 				{/if}
@@ -915,13 +932,13 @@
 								<li class="menu-title px-2 pt-2 pb-0.5 text-xs">Schutz</li>
 								<li>
 									{#if readOnly}
-										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(false)}
-											>🔓 Schutz aufheben</button
-										>
+										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(false)}>
+											🔓 Schutz aufheben
+										</button>
 									{:else}
-										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}
-											>🔒 Dieses Semester schützen</button
-										>
+										<button disabled={togglingReadOnly} onclick={() => toggleReadOnly(true)}>
+											🔒 Dieses Semester schützen
+										</button>
 									{/if}
 								</li>
 							{/if}
@@ -957,9 +974,9 @@
 				{#each menus as menu}
 					<li>
 						<details open={menu.label === activeMenu}>
-							<summary class="font-medium {menu.label === activeMenu ? 'text-primary' : ''}"
-								>{menu.label}</summary
-							>
+							<summary class="font-medium {menu.label === activeMenu ? 'text-primary' : ''}">
+								{menu.label}
+							</summary>
 							<ul>
 								{#each menu.items as item}
 									{#if isLink(item)}
@@ -968,8 +985,10 @@
 												class={item.href === activeHref
 													? 'bg-primary/15 font-medium text-primary'
 													: ''}
-												href={item.href}>{item.label}</a
+												href={item.href}
 											>
+												{item.label}
+											</a>
 										</li>
 									{:else if isGroup(item)}
 										{@const groupActive = item.items.some(
@@ -977,9 +996,9 @@
 										)}
 										<li>
 											<details open={groupActive}>
-												<summary class="font-medium {groupActive ? 'text-primary' : ''}"
-													>{item.group}</summary
-												>
+												<summary class="font-medium {groupActive ? 'text-primary' : ''}">
+													{item.group}
+												</summary>
 												<ul>
 													{#each item.items as sub}
 														{#if isLink(sub)}
@@ -988,8 +1007,10 @@
 																	class={sub.href === activeHref
 																		? 'bg-primary/15 font-medium text-primary'
 																		: ''}
-																	href={sub.href}>{sub.label}</a
+																	href={sub.href}
 																>
+																	{sub.label}
+																</a>
 															</li>
 														{:else if !isGroup(sub)}
 															<li class="menu-title px-2 pt-2 pb-0.5 text-xs">{sub.section}</li>

@@ -97,8 +97,10 @@
 						<WriteButton
 							class="btn btn-ghost btn-xs"
 							disabled={removeBusy === `${w.mtknr}-${w.ancode}`}
-							onclick={() => removeWaiver(w)}>zurücknehmen</WriteButton
+							onclick={() => removeWaiver(w)}
 						>
+							zurücknehmen
+						</WriteButton>
 					</div>
 				{/each}
 			</div>

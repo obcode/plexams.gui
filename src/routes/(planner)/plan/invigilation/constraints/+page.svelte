@@ -298,17 +298,17 @@
 							</td>
 							<td class="text-right whitespace-nowrap">
 								{#if perm}
-									<span class="text-xs text-base-content/40"
-										>permanent — kein Semester-Eintrag nötig</span
-									>
+									<span class="text-xs text-base-content/40">
+										permanent — kein Semester-Eintrag nötig
+									</span>
 								{:else}
 									<button class="btn btn-ghost btn-xs" onclick={() => openEdit(c)}>
 										{c._empty ? 'Anlegen' : 'Bearbeiten'}
 									</button>
 									{#if !c._empty}
-										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(c)}
-											>Löschen</WriteButton
-										>
+										<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(c)}>
+											Löschen
+										</WriteButton>
 									{/if}
 								{/if}
 							</td>
@@ -357,9 +357,9 @@
 									<option value={datePart(d.date)}>{fmtDate(d.date)}</option>
 								{/each}
 							</select>
-							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeExcluded(i)}
-								>✕</button
-							>
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeExcluded(i)}>
+								✕
+							</button>
 						</div>
 					{/each}
 				{/if}
@@ -392,9 +392,9 @@
 								<span class="text-xs text-base-content/60">bis</span>
 								<input type="time" class="input input-bordered input-sm" bind:value={w.until} />
 							</label>
-							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeWindow(i)}
-								>✕</button
-							>
+							<button class="btn btn-ghost btn-xs text-error" onclick={() => removeWindow(i)}>
+								✕
+							</button>
 						</div>
 					{/each}
 				{/if}
@@ -405,8 +405,9 @@
 			{/if}
 
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>
+					Abbrechen
+				</button>
 				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert…' : 'Speichern'}
 				</WriteButton>

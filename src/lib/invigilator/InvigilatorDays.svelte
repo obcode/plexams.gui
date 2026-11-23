@@ -309,26 +309,26 @@
 		</div>
 		<!-- legend -->
 		<div class="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px]">
-			<span class="flex items-center gap-1"
-				><span class="inline-block h-3 w-3 rounded bg-violet-300"></span>Prüfung (Eigenaufsicht)</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="inline-block h-3 w-3 rounded bg-sky-300"></span>Prüfung (fremde Aufsicht)</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="inline-block h-3 w-3 rounded bg-orange-300"></span>Aufsicht</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="inline-block h-3 w-3 rounded bg-yellow-300"></span>Reserve</span
-			>
-			<span class="flex items-center gap-1"
-				><span
+			<span class="flex items-center gap-1">
+				<span class="inline-block h-3 w-3 rounded bg-violet-300"></span>Prüfung (Eigenaufsicht)
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="inline-block h-3 w-3 rounded bg-sky-300"></span>Prüfung (fremde Aufsicht)
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="inline-block h-3 w-3 rounded bg-orange-300"></span>Aufsicht
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="inline-block h-3 w-3 rounded bg-yellow-300"></span>Reserve
+			</span>
+			<span class="flex items-center gap-1">
+				<span
 					class="inline-block h-3 w-3 rounded border border-dashed border-gray-400 bg-gray-300/30"
-				></span>Zeitfenster</span
-			>
-			<span class="flex items-center gap-1"
-				><span class="inline-block h-3 w-3 rounded bg-red-200"></span>ausgeschlossen</span
-			>
+				></span>Zeitfenster
+			</span>
+			<span class="flex items-center gap-1">
+				<span class="inline-block h-3 w-3 rounded bg-red-200"></span>ausgeschlossen
+			</span>
 		</div>
 	</div>
 </div>

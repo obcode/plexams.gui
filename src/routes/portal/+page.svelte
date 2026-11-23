@@ -67,9 +67,9 @@
 				{#each closed.filter((i) => i.affected) as inquiry (inquiry.semester + inquiry.kind)}
 					{@const href = inquiryPath(inquiry)}
 					<li>
-						{#if href}<a class="link" {href}
-								>{KIND_LABEL[inquiry.kind] ?? inquiry.kind} · {inquiry.semester}</a
-							>{:else}{KIND_LABEL[inquiry.kind] ?? inquiry.kind} · {inquiry.semester}{/if}
+						{#if href}<a class="link" {href}>
+								{KIND_LABEL[inquiry.kind] ?? inquiry.kind} · {inquiry.semester}
+							</a>{:else}{KIND_LABEL[inquiry.kind] ?? inquiry.kind} · {inquiry.semester}{/if}
 						– nur noch zum Nachlesen
 					</li>
 				{/each}

@@ -113,17 +113,17 @@
 		{:else}
 			<div class="mt-2 overflow-x-auto">
 				<table class="table table-sm">
-					<thead
-						><tr><th>Person</th><th>ZPA-ID</th><th>Problem</th><th>Adresse</th><th></th></tr></thead
-					>
+					<thead>
+						<tr><th>Person</th><th>ZPA-ID</th><th>Problem</th><th>Adresse</th><th></th></tr>
+					</thead>
 					<tbody>
 						{#each data.accessIdentityReport as p (p.kind + p.teacherID + p.email)}
 							<tr>
-								<td
-									>{p.teacherName || '–'}{#if p.hasExams}<span class="badge badge-sm ml-1"
-											>Prüfungen</span
-										>{/if}</td
-								>
+								<td>
+									{p.teacherName || '–'}{#if p.hasExams}<span class="badge badge-sm ml-1">
+											Prüfungen
+										</span>{/if}
+								</td>
 								<td class="font-mono">{p.teacherID}</td>
 								<td>{PROBLEM[p.kind] ?? p.kind}</td>
 								<td class="font-mono text-xs">{p.email}</td>
@@ -131,8 +131,10 @@
 									{#if p.kind !== 'ALIAS_UNKNOWN_TEACHER'}
 										<button
 											class="btn btn-ghost btn-xs"
-											onclick={() => (aliasTeacher = String(p.teacherID))}>Alias…</button
+											onclick={() => (aliasTeacher = String(p.teacherID))}
 										>
+											Alias…
+										</button>
 									{/if}
 								</td>
 							</tr>
@@ -175,9 +177,9 @@
 					<li class="flex flex-wrap items-center gap-x-3 text-sm">
 						<span class="font-mono">{a.email}</span> → {a.teacherName || `ZPA-ID ${a.teacherID}`}
 						{#if a.note}<span class="text-base-content/60">({a.note})</span>{/if}
-						<button class="btn btn-ghost btn-xs" disabled={busy} onclick={() => removeAlias(a)}
-							>Entfernen</button
-						>
+						<button class="btn btn-ghost btn-xs" disabled={busy} onclick={() => removeAlias(a)}>
+							Entfernen
+						</button>
 					</li>
 				{/each}
 			</ul>
@@ -197,9 +199,9 @@
 					<li class="flex flex-wrap items-center gap-x-3 text-sm">
 						<span class="font-mono">{r.email}</span>
 						<span class="text-base-content/60">{r.count}× · zuletzt {formatBerlin(r.at)}</span>
-						<button class="btn btn-ghost btn-xs" onclick={() => prefillAlias(r.email)}
-							>Als Alias…</button
-						>
+						<button class="btn btn-ghost btn-xs" onclick={() => prefillAlias(r.email)}>
+							Als Alias…
+						</button>
 					</li>
 				{/each}
 			</ul>
@@ -255,9 +257,9 @@
 					<li class="flex flex-wrap items-center gap-x-3 text-sm">
 						<span class="font-mono">{b.email}</span>
 						{#if b.reason}<span class="text-base-content/60">{b.reason}</span>{/if}
-						<button class="btn btn-ghost btn-xs" disabled={busy} onclick={() => removeBlock(b)}
-							>Aufheben</button
-						>
+						<button class="btn btn-ghost btn-xs" disabled={busy} onclick={() => removeBlock(b)}>
+							Aufheben
+						</button>
 					</li>
 				{/each}
 			</ul>
@@ -269,17 +271,17 @@
 		{#if data.portalAccessTokens.length > 0}
 			<div class="mt-2 overflow-x-auto">
 				<table class="table table-sm">
-					<thead
-						><tr><th>Kennung</th><th>Wofür</th><th>Umfang</th><th>Status</th><th></th></tr></thead
-					>
+					<thead>
+						<tr><th>Kennung</th><th>Wofür</th><th>Umfang</th><th>Status</th><th></th></tr>
+					</thead>
 					<tbody>
 						{#each data.portalAccessTokens as t (t.id)}
 							<tr>
 								<td class="font-mono text-xs">{t.ownerEmail}</td>
-								<td
-									>{t.description}
-									<span class="font-mono text-xs text-base-content/60">{t.id}</span></td
-								>
+								<td>
+									{t.description}
+									<span class="font-mono text-xs text-base-content/60">{t.id}</span>
+								</td>
 								<td>{t.scope === 'WRITE' ? 'eintragen' : 'lesen'}</td>
 								<td class="text-xs">
 									{t.revokedAt
@@ -291,8 +293,10 @@
 										<button
 											class="btn btn-ghost btn-xs text-error"
 											disabled={busy}
-											onclick={() => revoke(t)}>Widerrufen</button
+											onclick={() => revoke(t)}
 										>
+											Widerrufen
+										</button>
 									{/if}
 								</td>
 							</tr>

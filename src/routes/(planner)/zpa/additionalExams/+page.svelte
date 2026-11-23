@@ -177,8 +177,9 @@
 									{#each ex.rooms ?? [] as r}
 										<div class="flex flex-wrap items-center gap-1 text-sm">
 											<span class="badge badge-ghost badge-sm font-mono">{r.roomName}</span>
-											{#if r.isReserve}<span class="badge badge-warning badge-xs">Reserve</span
-												>{/if}
+											{#if r.isReserve}<span class="badge badge-warning badge-xs">
+													Reserve
+												</span>{/if}
 											{#if r.isHandicap}<span class="badge badge-info badge-xs">NTA</span>{/if}
 											<span class="text-base-content/60">
 												{teacherName.get(r.invigilatorID) ?? (r.invigilatorID || '—')}
@@ -193,11 +194,12 @@
 								</div>
 							</td>
 							<td class="text-right whitespace-nowrap">
-								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}>Bearbeiten</button
-								>
-								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(ex)}
-									>Löschen</WriteButton
-								>
+								<button class="btn btn-ghost btn-xs" onclick={() => openEdit(ex)}>
+									Bearbeiten
+								</button>
+								<WriteButton class="btn btn-ghost btn-xs text-error" onclick={() => del(ex)}>
+									Löschen
+								</WriteButton>
 							</td>
 						</tr>
 					{/each}
@@ -289,8 +291,9 @@
 				<div class="alert alert-error mt-3 py-2 text-sm"><span>{editError}</span></div>
 			{/if}
 			<div class="modal-action">
-				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>Abbrechen</button
-				>
+				<button class="btn btn-ghost btn-sm" onclick={closeEdit} disabled={saving}>
+					Abbrechen
+				</button>
 				<WriteButton class="btn btn-primary btn-sm" onclick={save} disabled={saving}>
 					{saving ? 'speichert …' : 'Speichern'}
 				</WriteButton>

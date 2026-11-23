@@ -457,9 +457,9 @@
 			<!-- harte Verletzungen (sollten 0 sein) -->
 			{#if hv.length}
 				<div class="alert alert-error flex-col items-start py-2 text-sm">
-					<span
-						><strong>{fmt(hv.length)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.</span
-					>
+					<span>
+						<strong>{fmt(hv.length)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.
+					</span>
 					<ul class="ml-4 list-disc font-mono text-xs opacity-80">
 						{#each hv as v}
 							<li>{v}</li>
@@ -519,9 +519,9 @@
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			⚙️ Raumplanungs-Parameter
-			<span class="font-normal text-base-content/50"
-				>· global · wirken beim nächsten „Generieren"</span
-			>
+			<span class="font-normal text-base-content/50">
+				· global · wirken beim nächsten „Generieren"
+			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			<div class="max-w-3xl text-xs text-base-content/50">
@@ -540,9 +540,9 @@
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
 			Angewandte Constraints
-			<span class="font-normal text-base-content/50"
-				>· {(data.constraints ?? []).length} · read-only</span
-			>
+			<span class="font-normal text-base-content/50">
+				· {(data.constraints ?? []).length} · read-only
+			</span>
 		</summary>
 		<div class="collapse-content">
 			<div class="overflow-x-auto rounded-lg border border-base-200">

@@ -247,13 +247,17 @@
 					<button
 						role="tab"
 						class="tab {view === 'edit' ? 'tab-active' : ''}"
-						onclick={() => (view = 'edit')}>Bearbeiten</button
+						onclick={() => (view = 'edit')}
 					>
+						Bearbeiten
+					</button>
 					<button
 						role="tab"
 						class="tab {view === 'diff' ? 'tab-active' : ''}"
-						onclick={() => (view = 'diff')}>Änderungen (Diff)</button
+						onclick={() => (view = 'diff')}
 					>
+						Änderungen (Diff)
+					</button>
 				</div>
 
 				{#if view === 'edit'}
@@ -385,13 +389,17 @@
 						<button
 							role="tab"
 							class="tab {previewMode === 'html' ? 'tab-active' : ''}"
-							onclick={() => (previewMode = 'html')}>HTML</button
+							onclick={() => (previewMode = 'html')}
 						>
+							HTML
+						</button>
 						<button
 							role="tab"
 							class="tab {previewMode === 'text' ? 'tab-active' : ''}"
-							onclick={() => (previewMode = 'text')}>Klartext</button
+							onclick={() => (previewMode = 'text')}
 						>
+							Klartext
+						</button>
 					</div>
 				</div>
 				<p class="text-xs text-base-content/50">

@@ -248,17 +248,19 @@
 					rel="noreferrer"
 					class="ml-1 text-base-content/40 hover:text-primary"
 					title="in Jira öffnen"
-					onclick={(e) => e.stopPropagation()}>↗</a
+					onclick={(e) => e.stopPropagation()}
 				>
+					↗
+				</a>
 			{/if}
 		</td>
 		<td class="max-w-[24rem] truncate" title={issue.summary ?? ''}>{issue.summary}</td>
 		<td class="whitespace-nowrap">
 			{#if issue.status}<span class="badge badge-info badge-sm">{issue.status}</span>{/if}
 		</td>
-		<td class="whitespace-nowrap text-sm text-base-content/70"
-			>{issue.reporter?.displayName ?? '—'}</td
-		>
+		<td class="whitespace-nowrap text-sm text-base-content/70">
+			{issue.reporter?.displayName ?? '—'}
+		</td>
 		{#if anyCreated}
 			<td class="tabular-nums whitespace-nowrap text-sm text-base-content/60">
 				{formatJiraDate(issue.created)}
@@ -405,19 +407,20 @@
 					>
 						{detail.key}
 					</a>
-					{#if detail.issueType}<span class="badge badge-neutral badge-sm">{detail.issueType}</span
-						>{/if}
+					{#if detail.issueType}<span class="badge badge-neutral badge-sm">
+							{detail.issueType}
+						</span>{/if}
 					{#if detail.status}<span class="badge badge-info badge-sm">{detail.status}</span>{/if}
 				</div>
 				<div class="text-sm text-base-content/60">
 					{detail.reporter?.displayName ?? '—'}{#if detail.reporter?.emailAddress}<span
 							class="text-base-content/40"
 						>
-							· {detail.reporter.emailAddress}</span
-						>{/if}
+							· {detail.reporter.emailAddress}
+						</span>{/if}
 					{#if formatJiraDate(detail.created)}<span class="text-base-content/40">
-							· {formatJiraDate(detail.created)}</span
-						>{/if}
+							· {formatJiraDate(detail.created)}
+						</span>{/if}
 				</div>
 				<div class="font-medium">{detail.summary}</div>
 				{#if detail.description}
