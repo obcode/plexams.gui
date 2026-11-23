@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { mkDateShort } from '$lib/jshelper/misc';
 	import { combineStarttime } from '$lib/exam/setExamTime';
+	import { errorMessage, postApi } from '$lib/apiClient';
 
 	import SlotExam from '$lib/examsInPlan/SlotExam.svelte';
 	let {
@@ -35,21 +36,23 @@
 	// die nur solche Prüfungen enthalten, als frei und werden dezent hervorgehoben.
 	// Erst nach dem ersten Laden (loaded) werten, sonst blitzt jeder Slot kurz „leer".
 	let loaded = $state(false);
+	let loadError = $state('');
 	let myExamsCount = $derived(
 		exams.filter((exam: any) => !exam.constraints || !exam.constraints.notPlannedByMe).length
 	);
-	let isEmpty = $derived(loaded && myExamsCount === 0 && !forbiddenSlot);
+	let isEmpty = $derived(loaded && !loadError && myExamsCount === 0 && !forbiddenSlot);
 
 	async function fetchExams() {
-		const response = await fetch('/api/slot/examsAt', {
-			method: 'POST',
-			body: JSON.stringify({ starttime: combineStarttime(day.date, time.start, day.date) }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		exams = data.examsAt;
+		try {
+			const data = await postApi('/api/slot/examsAt', {
+				starttime: combineStarttime(day.date, time.start, day.date)
+			});
+			exams = data.examsAt ?? [];
+			loadError = '';
+		} catch (e) {
+			exams = [];
+			loadError = errorMessage(e);
+		}
 		loaded = true;
 		countIt();
 	}
@@ -127,6 +130,12 @@
 				{#each exahm as room}
 					<div class="badge badge-warning m-1 rounded-lg border-black">{room.name}</div>
 				{/each}
+			</div>
+		{/if}
+
+		{#if loadError}
+			<div class="m-1 text-xs text-error" title={loadError}>
+				Prüfungen nicht ladbar: {loadError}
 			</div>
 		{/if}
 

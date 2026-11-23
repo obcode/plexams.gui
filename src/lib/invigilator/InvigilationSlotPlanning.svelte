@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Room from './Room.svelte';
 	import { onMount } from 'svelte';
+	import { errorMessage, postApi } from '$lib/apiClient';
 
 	let {
 		time,
@@ -13,16 +14,17 @@
 	let noRooms = $state(true);
 	let loading = $state(true);
 
+	let loadError = $state('');
+
 	async function fetchSlot(starttime: string) {
-		const response = await fetch('/api/plan/roomsWithInvigilationsAt', {
-			method: 'POST',
-			body: JSON.stringify({ starttime }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		slot = data.roomsWithInvigilationsAt;
+		try {
+			const data = await postApi('/api/plan/roomsWithInvigilationsAt', { starttime });
+			slot = data.roomsWithInvigilationsAt;
+			loadError = '';
+		} catch (e) {
+			slot = undefined;
+			loadError = errorMessage(e);
+		}
 		noRooms = !slot || !slot.roomsWithInvigilators || slot.roomsWithInvigilators.length == 0;
 		loading = false;
 	}
@@ -57,6 +59,9 @@
 				{/if}
 			{/if}
 		</div>
+		{#if loadError}
+			<div class="m-2 text-xs text-error">Räume/Aufsichten nicht ladbar: {loadError}</div>
+		{/if}
 		{#if !noRooms}
 			<div
 				class="m-2 grid grid-cols-1 rounded-lg border-2 border-solid border-base-300 bg-success/10 shadow-xl sm:grid-cols-3 lg:grid-cols-5"

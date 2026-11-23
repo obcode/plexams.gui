@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ExamWithNTAsForRoomPlanning from '$lib/exam/ExamWithNTAsForRoomPlanning.svelte';
 	import { onMount } from 'svelte';
+	import { errorMessage, postApi } from '$lib/apiClient';
 
 	let {
 		day,
@@ -32,22 +33,27 @@
 
 	let examsInSlot = $state<any[]>([]);
 
+	let loadError = $state('');
+
 	async function fetchExamsInSlot() {
-		const response = await fetch('/api/slot/examsAt', {
-			method: 'POST',
-			body: JSON.stringify({ starttime }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		examsInSlot = data.examsAt;
+		try {
+			const data = await postApi('/api/slot/examsAt', { starttime });
+			examsInSlot = data.examsAt ?? [];
+			loadError = '';
+		} catch (e) {
+			examsInSlot = [];
+			loadError = errorMessage(e);
+		}
 	}
 
 	onMount(() => {
 		fetchExamsInSlot();
 	});
 </script>
+
+{#if loadError}
+	<div class="m-1 text-xs text-error">Prüfungen nicht ladbar: {loadError}</div>
+{/if}
 
 {#each examsInSlot as plannedExam}
 	{#if !plannedExam.constraints || !plannedExam.constraints.notPlannedByMe}

@@ -17,6 +17,7 @@
 	import { inPeriod, dayNumberForTime, slotNumberForTime } from '$lib/slot/derive';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { errorMessage, postApi } from '$lib/apiClient';
 	let { data } = $props();
 
 	let examsWithoutSlot = $derived(data.examsWithoutSlot ?? []);
@@ -153,21 +154,26 @@
 		initSlotsStatus('forbidden');
 		selectedExam = payload.ancode;
 		selectedExamerID = payload.mainExamerID;
-		let allowedSlots = await fetchAllowedSlots(payload.ancode);
-		for (let slot of allowedSlots) {
-			slotsStatus[slotKey(slot.starttime)] = 'allowed';
-		}
-		let akwardSlots = await fetchAwkwardSlots(payload.ancode);
-		for (let slot of akwardSlots) {
-			if (slotsStatus[slotKey(slot.starttime)] == 'allowed') {
-				slotsStatus[slotKey(slot.starttime)] = 'awkward';
+		placeError = '';
+		try {
+			let allowedSlots = await fetchAllowedSlots(payload.ancode);
+			for (let slot of allowedSlots) {
+				slotsStatus[slotKey(slot.starttime)] = 'allowed';
 			}
+			let akwardSlots = await fetchAwkwardSlots(payload.ancode);
+			for (let slot of akwardSlots) {
+				if (slotsStatus[slotKey(slot.starttime)] == 'allowed') {
+					slotsStatus[slotKey(slot.starttime)] = 'awkward';
+				}
+			}
+			let res = await fetchconflictingAncodes(payload.ancode);
+			conflictingAncodes = res.map((/** @type {any} */ conflict) => conflict.ancode);
+			conflictStuds = Object.fromEntries(
+				res.map((/** @type {any} */ c) => [c.ancode, c.numberOfStuds])
+			);
+		} catch (e) {
+			placeError = `Erlaubte Slots/Konflikte nicht ladbar: ${errorMessage(e)}`;
 		}
-		let res = await fetchconflictingAncodes(payload.ancode);
-		conflictingAncodes = res.map((/** @type {any} */ conflict) => conflict.ancode);
-		conflictStuds = Object.fromEntries(
-			res.map((/** @type {any} */ c) => [c.ancode, c.numberOfStuds])
-		);
 	}
 
 	function handleUnselect() {
@@ -277,39 +283,18 @@
 	}
 
 	async function fetchAllowedSlots(/** @type {any} */ ancode) {
-		const response = await fetch('/api/slot/allowedSlots', {
-			method: 'POST',
-			body: JSON.stringify({ ancode }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		return data.allowedSlots;
+		const data = await postApi('/api/slot/allowedSlots', { ancode });
+		return data.allowedSlots ?? [];
 	}
 
 	async function fetchAwkwardSlots(/** @type {any} */ ancode) {
-		const response = await fetch('/api/slot/awkwardSlots', {
-			method: 'POST',
-			body: JSON.stringify({ ancode }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		return data.awkwardSlots;
+		const data = await postApi('/api/slot/awkwardSlots', { ancode });
+		return data.awkwardSlots ?? [];
 	}
 
 	async function fetchconflictingAncodes(/** @type {any} */ ancode) {
-		const response = await fetch('/api/exam/conflictingAncodes', {
-			method: 'POST',
-			body: JSON.stringify({ ancode }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		return data.conflictingAncodes;
+		const data = await postApi('/api/exam/conflictingAncodes', { ancode });
+		return data.conflictingAncodes ?? [];
 	}
 
 	function globalForbiddenSlot(/** @type {any} */ day, /** @type {any} */ time) {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InvigilatorForDay from '$lib/invigilator/InvigilatorForDay.svelte';
 	import { onMount } from 'svelte';
+	import { errorMessage, postApi } from '$lib/apiClient';
 
 	let {
 		date,
@@ -17,17 +18,21 @@
 	let want = $state<any[]>([]);
 	let can = $state<any[]>([]);
 
+	let loadError = $state('');
+
 	async function fetchInviglatorsForDay(date: string) {
-		const response = await fetch('/api/plan/invigilatorsForDay', {
-			method: 'POST',
-			body: JSON.stringify({ date }),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
-		let data = await response.json();
-		want = data.invigilatorsForDay.want;
-		can = data.invigilatorsForDay.can.sort(function (invig1: any, invig2: any) {
+		let data;
+		try {
+			data = await postApi('/api/plan/invigilatorsForDay', { date });
+			loadError = '';
+		} catch (e) {
+			want = [];
+			can = [];
+			loadError = errorMessage(e);
+			return;
+		}
+		want = data.invigilatorsForDay?.want ?? [];
+		can = (data.invigilatorsForDay?.can ?? []).sort(function (invig1: any, invig2: any) {
 			return (
 				invig2.todos.totalMinutes -
 				invig2.todos.doingMinutes -
@@ -45,6 +50,9 @@
 	class="grid grid-cols-1 border-solid border-2 border-black bg-cyan-400 m-2 p-2 rounded-lg shadow-xl text-center"
 >
 	<div>Verfügbare Aufsichten</div>
+	{#if loadError}
+		<div class="text-xs text-error">Aufsichten nicht ladbar: {loadError}</div>
+	{/if}
 	<div
 		class=" w-full border-solid border-2 border-black bg-green-300 mb-2 p-8 rounded-lg shadow-xl text-center"
 	>
