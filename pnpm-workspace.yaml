@@ -19,3 +19,10 @@ overrides:
   # Optional peer of vitest (declared as "*") that pnpm auto-installs; the unit tests
   # use jsdom, not happy-dom. The fix is 21.0.4.
   happy-dom: ^21.0.4
+
+# One-line fix for sveltejs/kit#17500: capture_scroll throws when a history entry has no
+# record (back/forward into an entry made by an earlier document, an iOS reload), which
+# leaves the client router stuck until a reload. Remove once a Kit release contains the
+# upstream fix; pnpm refuses to install when the patch no longer applies to a new version.
+patchedDependencies:
+  '@sveltejs/kit@3.4.0': patches/@sveltejs__kit@3.4.0.patch
