@@ -33,6 +33,13 @@ const ALLOWED_TAGS = new Set([
 /**
  * Request-Header, die mitdürfen. `x-remote-user` trägt die angemeldete
  * Mailadresse, `cookie` die Sitzung — beide fehlen hier mit Absicht.
+ *
+ * An allow-list, so every identity header is dropped without being named: the ones this app
+ * reads (`x-remote-user`, `x-remote-displayname`, see hooks.server.js), the one the proxy may
+ * add (`x-remote-department`), whatever an auth proxy in front of it sets (`x-forwarded-email`,
+ * `x-forwarded-user`, `x-auth-request-*`, `remote-user`), the client address
+ * (`x-forwarded-for`, `x-real-ip`, `forwarded`), `cookie`, `authorization`, and `referer`, which
+ * carries the previous page's query string. scrub.test.js names each of them.
  */
 const ALLOWED_HEADERS = new Set(['user-agent', 'content-type', 'accept', 'accept-language']);
 
@@ -53,12 +60,29 @@ const ALLOWED_CONTEXTS = new Set([
 ]);
 
 /**
+ * Fields kept from two of those contexts. `response` can carry the response headers and
+ * cookies (`set-cookie`), `trace` a `data` object with span attributes such as the full URL.
+ * What finds a failure is the status and the trace id; the rest is dropped.
+ */
+const ALLOWED_CONTEXT_FIELDS = /** @type {Record<string, Set<string>>} */ ({
+	response: new Set(['type', 'status_code', 'body_size']),
+	trace: new Set(['trace_id', 'span_id', 'parent_span_id', 'op', 'status', 'origin'])
+});
+
+/**
  * Eine Matrikelnummer hat 7–10 Ziffern. Ancodes haben 3–5, Jahreszahlen 4 —
  * die bleiben also lesbar. Epoch-Zeitstempel und lange Dauern fallen mit
  * darunter; in Freitext ist das der richtige Tausch.
  */
 const RE_MTKNR = /\b\d{7,10}\b/g;
 const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
+
+/**
+ * A URL or path in free text, followed by a query string or fragment. Group 1 is the part that
+ * is kept. A fetch error names the address it failed on (`Failed to fetch /api/x?q=…`), and the
+ * query is where a search term or a name sits.
+ */
+const RE_URL_QUERY = /((?:[a-z][a-z0-9+.-]*:\/\/[^\s/?#"'<>]*)?\/[^\s?#"'<>]*)[?#][^\s"'<>]*/gi;
 
 /**
  * Entfernt die beiden personenbezogenen Kennzeichen, die in Freitext
@@ -73,7 +97,10 @@ const RE_EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
  */
 export function redact(value) {
 	if (value === null || value === undefined) return '';
-	return String(value).replace(RE_EMAIL, '[email]').replace(RE_MTKNR, '[mtknr]');
+	return String(value)
+		.replace(RE_URL_QUERY, '$1')
+		.replace(RE_EMAIL, '[email]')
+		.replace(RE_MTKNR, '[mtknr]');
 }
 
 /**
@@ -146,9 +173,25 @@ function allowContexts(contexts) {
 	/** @type {Record<string, any>} */
 	const out = {};
 	for (const [key, value] of Object.entries(contexts)) {
-		if (ALLOWED_CONTEXTS.has(key)) out[key] = value;
+		if (!ALLOWED_CONTEXTS.has(key)) continue;
+		const fields = ALLOWED_CONTEXT_FIELDS[key];
+		out[key] =
+			fields && value && typeof value === 'object'
+				? Object.fromEntries(Object.entries(value).filter(([field]) => fields.has(field)))
+				: value;
 	}
 	return Object.keys(out).length > 0 ? out : undefined;
+}
+
+/**
+ * Drops the local variables from every frame of a stack trace. Sentry 11 collects them by
+ * default (`stackFrameVariables`); DATA_COLLECTION turns that off, and this is the second line.
+ * A variable in a `/api` handler holds the parsed request body.
+ *
+ * @param {{ frames?: Array<{ vars?: unknown }> } | undefined} stacktrace
+ */
+function dropFrameVariables(stacktrace) {
+	for (const frame of stacktrace?.frames ?? []) delete frame.vars;
 }
 
 /**
@@ -220,12 +263,17 @@ export function scrubEvent(event) {
 	if (!event) return null;
 
 	if (event.message) event.message = redact(stripGraphQLPayload(event.message));
-	if (event.transaction) event.transaction = redactUrl(event.transaction);
+	// A route name such as `POST /api/exam/conflictingAncodes`, not a URL: parsed as one it
+	// came out as `/POST%20/api/…`. redact() cuts a query string in it all the same.
+	if (event.transaction) event.transaction = redact(event.transaction);
 
 	for (const value of event.exception?.values ?? []) {
 		if (value.value) value.value = redact(stripGraphQLPayload(value.value));
 		if (value.type) value.type = redact(value.type);
+		dropFrameVariables(value.stacktrace);
 	}
+	// Thread stacks carry frames as well.
+	for (const thread of event.threads?.values ?? []) dropFrameVariables(thread.stacktrace);
 
 	if (event.request) {
 		event.request = {

@@ -71,8 +71,25 @@ Prozessvariablen. Zum Gegentesten des Browser-Wegs deshalb `pnpm build` und
 - **Session Replay.** Eine Videoaufzeichnung der Oberfläche ist eine Videoaufzeichnung der
   Matrikelnummern darauf. Gehört zu keiner Voreinstellung; es müsste ausdrücklich
   eingebunden werden. Also nicht.
-- **`@sentry/cli`-Postinstall** — in `pnpm-workspace.yaml` auf `false`. Es lädt nur die
-  Binärdatei für den Source-Map-Upload. Ohne die Entscheidung schlägt `pnpm install` fehl.
+- **`@sentry/cli`-Postinstall** — stand bis Sentry 10 in `pnpm-workspace.yaml` auf `false`.
+  Sentry 11 hat das Paket nicht mehr im Baum (Nachfolger `sentry` ohne Install-Skript), der
+  Eintrag ist deshalb weg.
+
+## Sentry 11: `dataCollection` statt `sendDefaultPii`
+
+Seit 11 sammelt das SDK ohne Angabe **alles**: Nutzerfelder und IP, Cookies, Header, Query,
+Bodies, GraphQL-Variablen, Stack-Frame-Variablen. `DATA_COLLECTION` in `src/lib/obs/options.js`
+schaltet jede Kategorie einzeln ab; ein fehlender Schlüssel heißt „sammeln", deshalb prüft
+`options.test.js` die Schlüsselliste. Der Scrubber bleibt die zweite Linie und verlässt sich
+nicht darauf (er wirft zusätzlich Frame-`vars` weg und kürzt `contexts.response`/`trace`).
+Außerdem: `skipOpenTelemetrySetup: true` heißt jetzt `enableOpenTelemetrySetup: false`,
+`enableLogs` gibt es nicht mehr. Ein String-Tunnel auf dem eigenen Origin sendet jetzt
+`application/x-sentry-envelope` statt `text/plain` — Falle 1 (CSRF) greift damit nicht mehr,
+`ORIGIN` bleibt trotzdem gesetzt.
+
+Gegentest ohne GlitchTip: Produktionsbuild mit `SENTRY_DSN=http://key@127.0.0.1:9999/1` gegen
+einen Node-Server, der Envelopes auf stdout schreibt, `PLEXAMS_SERVER` auf einen toten Port;
+ein POST auf ein `/api`-Proxy erzeugt über `gqlProxy` ein Event.
 
 ## Gegentesten
 

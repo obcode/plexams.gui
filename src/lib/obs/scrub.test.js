@@ -5,12 +5,12 @@ import { redact, redactUrl, scrubBreadcrumb, scrubEvent, stripGraphQLPayload } f
 // Erfundene Werte. Nichts hier stammt aus dem semester-Repo — siehe CLAUDE.md.
 const MTKNR = '12345678';
 const NAME = 'Erika Musterfrau';
-const MAIL = 'erika.musterfrau@hm.edu';
+const MAIL = 'someone@example.invalid';
 
 /** Die Zusicherung, für die es diese Datei gibt. */
 function expectClean(/** @type {unknown} */ value) {
 	const text = JSON.stringify(value) ?? '';
-	for (const forbidden of [MTKNR, NAME, MAIL, 'hm.edu', '@']) {
+	for (const forbidden of [MTKNR, NAME, MAIL, 'example.invalid', '@']) {
 		expect(text, `enthält ${forbidden}: ${text}`).not.toContain(forbidden);
 	}
 }
@@ -255,5 +255,185 @@ describe('GraphQL-Anfragen in Fehlerberichten', () => {
 		expect(stripGraphQLPayload('cannot reach backend: ECONNREFUSED')).toBe(
 			'cannot reach backend: ECONNREFUSED'
 		);
+	});
+});
+
+// What Sentry 11 attaches by default unless DATA_COLLECTION says otherwise. The scrubber has to
+// hold on its own, so these events are built as the SDK would build them with collection on.
+describe('Sentry 11: identity, cookies and query strings', () => {
+	const SEARCH = 'Musterfrau';
+
+	/** Every header that names the person, the session or the client address. */
+	const IDENTITY_HEADERS = {
+		'X-Remote-User': MAIL,
+		'X-Remote-Displayname': NAME,
+		'X-Remote-Department': 'Fakultät 07',
+		'X-Forwarded-Email': MAIL,
+		'X-Forwarded-User': MAIL,
+		'X-Forwarded-Preferred-Username': 'someone',
+		'X-Forwarded-Groups': 'staff',
+		'X-Forwarded-For': '192.0.2.10',
+		'X-Real-IP': '192.0.2.10',
+		Forwarded: 'for=192.0.2.10',
+		'X-Auth-Request-Email': MAIL,
+		'X-Auth-Request-User': MAIL,
+		'X-Auth-Request-Preferred-Username': 'someone',
+		'X-Auth-Request-Access-Token': 'fake-access-token',
+		'Remote-User': MAIL,
+		Authorization: 'Bearer plexams_fake-token',
+		Cookie: '_oauth2_proxy=fake-session; theme=dark',
+		Referer: `https://plexams.example/nta/semester?q=${SEARCH}&mail=${MAIL}`
+	};
+
+	const serverEvent = () =>
+		scrubEvent(
+			/** @type {any} */ ({
+				request: {
+					method: 'GET',
+					url: `https://plexams.example/exam/examsToPlan?q=${SEARCH}&mail=${encodeURIComponent(MAIL)}`,
+					query_string: `q=${SEARCH}&mail=${encodeURIComponent(MAIL)}`,
+					cookies: { _oauth2_proxy: 'fake-session' },
+					env: { REMOTE_ADDR: '192.0.2.10' },
+					data: { name: NAME, email: MAIL },
+					headers: { ...IDENTITY_HEADERS, 'User-Agent': 'Mozilla/5.0', Accept: 'text/html' }
+				},
+				user: { email: MAIL, username: 'someone', ip_address: '192.0.2.10' }
+			})
+		);
+
+	it.each(Object.keys(IDENTITY_HEADERS))('drops the header %s', (name) => {
+		const headers = serverEvent()?.request?.headers ?? {};
+		const lower = Object.keys(headers).map((key) => key.toLowerCase());
+		expect(lower).not.toContain(name.toLowerCase());
+	});
+
+	it('keeps only the harmless headers, whatever their case', () => {
+		expect(serverEvent()?.request?.headers).toEqual({
+			'User-Agent': 'Mozilla/5.0',
+			Accept: 'text/html'
+		});
+	});
+
+	it('drops cookies, the query string, the body, the environment and the user', () => {
+		const event = serverEvent();
+		expect(event?.request).toEqual({
+			method: 'GET',
+			url: 'https://plexams.example/exam/examsToPlan',
+			headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'text/html' }
+		});
+		expect(event?.user).toBeUndefined();
+		const text = JSON.stringify(event);
+		for (const forbidden of [
+			MAIL,
+			NAME,
+			SEARCH,
+			'someone',
+			'fake-session',
+			'fake-token',
+			'fake-access-token',
+			'192.0.2.10',
+			'Fakultät'
+		]) {
+			expect(text, `contains ${forbidden}`).not.toContain(forbidden);
+		}
+	});
+
+	it('cuts the query from navigation and fetch breadcrumbs', () => {
+		const event = scrubEvent(
+			/** @type {any} */ ({
+				breadcrumbs: [
+					{
+						category: 'navigation',
+						data: { from: `/nta/semester?q=${SEARCH}`, to: `/plan/exams#${SEARCH}` }
+					},
+					{
+						category: 'fetch',
+						data: {
+							url: `/api/email/emailAttachments?kind=x&mail=${encodeURIComponent(MAIL)}`,
+							method: 'GET',
+							status_code: 200,
+							request_body_size: 42,
+							// What a body-collecting SDK would add to the breadcrumb.
+							request_body: JSON.stringify({ name: NAME }),
+							response_body: JSON.stringify({ email: MAIL })
+						}
+					},
+					{
+						category: 'xhr',
+						data: { url: `https://plexams.example/query?variables={"n":"${SEARCH}"}` }
+					}
+				]
+			})
+		);
+
+		expect(event?.breadcrumbs?.map((crumb) => crumb.data)).toEqual([
+			{ from: '/nta/semester', to: '/plan/exams' },
+			{ url: '/api/email/emailAttachments', method: 'GET', status_code: 200 },
+			{ url: 'https://plexams.example/query' }
+		]);
+		expect(JSON.stringify(event)).not.toContain(SEARCH);
+		expectClean(event);
+	});
+
+	it('keeps the method in a transaction name and cuts its query', () => {
+		const event = scrubEvent(
+			/** @type {any} */ ({ transaction: `GET /api/jira/issue?key=${SEARCH}` })
+		);
+		expect(event?.transaction).toBe('GET /api/jira/issue');
+	});
+
+	it('cuts a query string out of free text', () => {
+		expect(redact(`Failed to fetch /api/jira/issue?key=${SEARCH} (400)`)).toBe(
+			'Failed to fetch /api/jira/issue (400)'
+		);
+		expect(redact(`GET https://plexams.example/nta?q=${SEARCH}#top failed`)).toBe(
+			'GET https://plexams.example/nta failed'
+		);
+		expect(redact('Prüfung 1234: Raum fehlt?')).toBe('Prüfung 1234: Raum fehlt?');
+	});
+
+	it('drops the local variables of every stack frame', () => {
+		const frame = () => ({
+			filename: 'src/lib/server/gqlProxy.js',
+			function: 'gqlProxy',
+			vars: { variables: { name: NAME, email: MAIL } }
+		});
+		const event = scrubEvent(
+			/** @type {any} */ ({
+				exception: { values: [{ type: 'Error', value: 'x', stacktrace: { frames: [frame()] } }] },
+				threads: { values: [{ stacktrace: { frames: [frame()] } }] }
+			})
+		);
+
+		expect(event?.exception?.values?.[0].stacktrace?.frames?.[0]).toEqual({
+			filename: 'src/lib/server/gqlProxy.js',
+			function: 'gqlProxy'
+		});
+		expectClean(event);
+	});
+
+	it('keeps status and ids of the response and trace contexts, nothing else', () => {
+		const event = scrubEvent(
+			/** @type {any} */ ({
+				contexts: {
+					response: {
+						status_code: 500,
+						headers: { 'set-cookie': '_oauth2_proxy=fake-session' },
+						cookies: { _oauth2_proxy: 'fake-session' }
+					},
+					trace: {
+						trace_id: 'a'.repeat(32),
+						span_id: 'b'.repeat(16),
+						data: { 'url.full': `https://plexams.example/nta?mail=${MAIL}` }
+					}
+				}
+			})
+		);
+
+		expect(event?.contexts).toEqual({
+			response: { status_code: 500 },
+			trace: { trace_id: 'a'.repeat(32), span_id: 'b'.repeat(16) }
+		});
+		expectClean(event);
 	});
 });

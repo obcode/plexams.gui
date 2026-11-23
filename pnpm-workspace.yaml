@@ -1,12 +1,9 @@
 # pnpm-Settings (seit pnpm 10/11 nicht mehr im "pnpm"-Feld der package.json).
 # Native Postinstall-Builds sind aus Sicherheitsgründen standardmäßig blockiert;
 # hier werden die für Vite/Tailwind nötigen Pakete explizit erlaubt.
+# (@sentry/cli used to be listed here as `false`. Sentry 11 dropped it from the tree; its
+# successor, the `sentry` package, has no install script.)
 allowBuilds:
-  # false, nicht "noch nicht entschieden": das Postinstall lädt nur die
-  # sentry-cli-Binärdatei, und die braucht ausschließlich der Source-Map-Upload
-  # über sentrySvelteKit() — das ist bewusst nicht eingebunden (vite.config.js).
-  # Kommt @sentry/cli über @sentry/vite-plugin nur als Transitivabhängigkeit mit.
-  '@sentry/cli': false
   '@tailwindcss/oxide': true
   esbuild: true
 
@@ -16,10 +13,6 @@ allowBuilds:
 overrides:
   # @tailwindcss/typography (latest 0.5.20) pins postcss-selector-parser 6.0.10 exactly.
   '@tailwindcss/typography>postcss-selector-parser': ^6.1.6
-  # @sentry/bundler-plugins 10.x wants glob ^13; the fix is glob 14.0.2 (Sentry 11 has
-  # it, but that is a major upgrade of the error-reporting SDK). The bundler plugin is
-  # never executed here: sentrySvelteKit() is deliberately not in vite.config.js.
-  '@sentry/bundler-plugins>glob': ^14.0.3
   # graphql-config (also 6.0.0, the latest) wants minimatch ^10; the fix is 11.0.1.
   # Only used by `pnpm codegen`.
   'graphql-config>minimatch': ^11.0.1
