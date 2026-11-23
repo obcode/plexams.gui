@@ -15,11 +15,11 @@ if (env.SENTRY_DSN) {
 		dsn: env.SENTRY_DSN,
 		environment: env.SENTRY_ENVIRONMENT,
 		release: __APP_VERSION__,
-		// Kein OpenTelemetry. Es würde hier ohnehin nur halb greifen (das SDK
-		// startet erst, wenn SvelteKit die Module schon geladen hat, also nach
-		// dem Zeitpunkt, zu dem OTel http/fetch instrumentieren müsste) — und
-		// gebraucht wird es nur für Tracing, das aus ist.
-		skipOpenTelemetrySetup: true
+		// No OpenTelemetry: it is only needed for tracing, which is off. Sentry 11 renamed
+		// `skipOpenTelemetrySetup: true` to `enableOpenTelemetrySetup: false`, and the SvelteKit
+		// SDK defaults it to true (it registers a tracer provider for SvelteKit's own spans), so
+		// it has to be stated. At runtime the old key would be ignored without a warning.
+		enableOpenTelemetrySetup: false
 	});
 }
 
