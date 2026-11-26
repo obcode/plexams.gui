@@ -1,4 +1,6 @@
 <script>
+	import { stepHelp } from '#lib/help/workflow.js';
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -22,9 +24,12 @@
 
 	/** @type {Record<string, string>} */
 	const AREA_LABEL = {
-		EXAMS: 'Terminplan gesperrt — Entwurf verschickt / Prüfungsplan veröffentlicht',
-		ROOMS: 'Raumzuordnung gesperrt — Raumplan veröffentlicht',
-		INVIGILATIONS: 'Aufsichteneinteilung gesperrt — Aufsichtenplan veröffentlicht'
+		EXAMS:
+			'Der Terminplan lässt sich nicht mehr neu generieren, weil der Entwurf verschickt oder der Plan veröffentlicht ist. Einzelne Prüfungen kannst du weiter von Hand verschieben.',
+		ROOMS:
+			'Die Räume lassen sich nicht mehr neu generieren, weil der Raumplan veröffentlicht ist. Einzelne Räume kannst du weiter von Hand ändern.',
+		INVIGILATIONS:
+			'Die Aufsichten lassen sich nicht mehr neu einteilen, weil der Aufsichtenplan veröffentlicht ist. Einzelne Aufsichten kannst du weiter von Hand ändern.'
 	};
 
 	/** @param {any} cond */
@@ -40,7 +45,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				errorMsg = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			planningState = result.setPlanningCondition;
@@ -218,10 +223,20 @@
 							{#if cond.gate}
 								<span
 									class="text-base-content/40"
-									title="Sperre: ist dies erledigt, wird die {cond.gate}-Generierung gesperrt"
+									title="Sperre: Solange dieses Häkchen gesetzt ist, lässt sich dieser Bereich nicht neu generieren. Änderungen von Hand bleiben möglich."
 								>
 									🔒
 								</span>
+							{/if}
+							{#if stepHelp(cond.key)}
+								<a
+									class="text-base-content/40 hover:text-base-content"
+									href="/hilfe#schritt-{cond.key}"
+									title="{stepHelp(cond.key)?.what} — {stepHelp(cond.key)?.why}"
+									aria-label="Erklärung zu „{cond.title}“"
+								>
+									ⓘ
+								</a>
 							{/if}
 						</div>
 					{/each}
@@ -231,10 +246,13 @@
 	</div>
 
 	<p class="max-w-3xl text-xs text-base-content/50">
-		Manche Häkchen setzen sich beim Ausführen der Operationen (Generieren/Veröffentlichen)
-		automatisch. „Veröffentlicht" bedeutet: die Veröffentlichungs-E-Mail wurde verschickt (nicht der
-		ZPA-Upload). Für kleine Korrekturen nach der Veröffentlichung das Häkchen kurz lösen, neu
-		generieren und wieder setzen.
+		Arbeite die Phasen von links nach rechts und die Schritte von oben nach unten ab. Ein Klick auf
+		einen Schritt führt zu der Seite, auf der er erledigt wird; ⓘ erklärt, was zu tun ist und warum.
+		Ausgegraute Häkchen setzt Plexams selbst, sobald der Schritt gelaufen ist; alle anderen setzt
+		du. 🔒 sperrt das Neu-Generieren des Bereichs: „veröffentlicht" heißt, dass die
+		Veröffentlichungs-E-Mail verschickt ist (nicht das Übertragen ins ZPA). Für kleine Korrekturen
+		danach das Häkchen kurz zurücknehmen, neu generieren und wieder setzen. Den ganzen Ablauf
+		erklärt die <a class="link" href="/hilfe">Hilfe</a>.
 	</p>
 </div>
 

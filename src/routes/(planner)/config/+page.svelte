@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
 	import SemesterDump from '#lib/backup/SemesterDump.svelte';
@@ -63,7 +64,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				planerError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				planerError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
@@ -87,7 +88,7 @@
 			const res = await fetch('/api/semester/resetSemesterPlaner', { method: 'POST' });
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				planerError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				planerError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			planerName = '';
@@ -119,7 +120,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				errorMsg = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			const out = result.setSemesterConfigInput;

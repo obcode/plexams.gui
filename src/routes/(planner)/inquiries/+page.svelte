@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { formatBerlin } from '#lib/portal/time.js';
 	import { KIND_LABEL, STATE_LABEL, preplanDiff } from '#lib/inquiry/diff.js';
@@ -35,7 +36,7 @@
 				body: JSON.stringify(body)
 			});
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			await refreshAll();
 			return true;
 		} catch (e) {

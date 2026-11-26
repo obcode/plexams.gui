@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -43,7 +44,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error ?? `Fehler (HTTP ${res.status})`;
+				error = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			teacherID = 0;
@@ -81,7 +82,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error ?? `Fehler (HTTP ${res.status})`;
+				error = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -102,7 +103,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error ?? `Fehler (HTTP ${res.status})`;
+				error = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

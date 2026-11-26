@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { checkStudentRegs } from '#lib/studentRegs/store.js';
 	import LinkedTodos from '#lib/todo/LinkedTodos.svelte';
@@ -29,7 +30,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				error = d?.error || `Fehler (HTTP ${res.status})`;
+				error = d?.error || httpErrorMessage(res.status);
 				return false;
 			}
 			await refreshAll();

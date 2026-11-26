@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { refreshAll } from '$app/navigation';
@@ -150,7 +151,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			patchItem(e.ancode, (it) => ({ ...it, durationOverride: v }));
@@ -176,7 +177,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			patchItem(e.ancode, (it) => ({ ...it, durationOverride: null }));
@@ -307,7 +308,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 			}
 		} catch (err) {
 			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
@@ -341,7 +342,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 			}
 		} catch (err) {
 			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
@@ -367,7 +368,8 @@
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ ancode: item.ancode })
 			});
-			if (!res.ok) throw new Error(`Fehler (HTTP ${res.status})`);
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 		} catch (e) {
 			patchItem(item.ancode, (it) => ({ ...it, status: prev }));
 			actionError = e instanceof Error ? e.message : String(e);

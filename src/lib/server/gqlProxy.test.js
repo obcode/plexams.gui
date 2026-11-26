@@ -35,13 +35,24 @@ describe('gqlProxy', () => {
 	// und die meisten Fehler sind gar keine.
 	it('eine Ablehnung des Backends ist eine Warnung, kein Vorfall', async () => {
 		mockBackendRequest.mockRejectedValue({
-			response: { errors: [{ message: 'forbidden: your role is read-only' }] }
+			response: {
+				errors: [
+					{
+						message: 'forbidden: your role is read-only',
+						extensions: { code: 'READ_ONLY_ROLE' }
+					}
+				]
+			}
 		});
 
 		const res = await gqlProxy('mutation { setExamTime }');
 
 		expect(res.status).toBe(400);
-		expect(await res.json()).toEqual({ error: 'forbidden: your role is read-only' });
+		// The planner reads German advice, the page gets the code.
+		const body = await res.json();
+		expect(body.code).toBe('READ_ONLY_ROLE');
+		expect(body.error).toContain('nur lesen');
+		expect(body.error).not.toContain('forbidden');
 		expect(mockCaptureException).toHaveBeenCalledWith(expect.anything(), { level: 'warning' });
 	});
 

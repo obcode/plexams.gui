@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
 	// „darf zeitgleich" bestätigen. Prop-getrieben — jede Mutation aktualisiert
@@ -85,7 +86,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			// optimistisch die Anzeige aktualisieren (Lauf-Snapshot ändert sich

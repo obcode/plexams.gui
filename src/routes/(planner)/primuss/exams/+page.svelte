@@ -1,4 +1,6 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import { plannerErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { backendBase, postUpload } from '#lib/email/attachments.js';
 	import EmailSender from '#lib/email/EmailSender.svelte';
@@ -34,7 +36,9 @@
 			if (r.blocked) {
 				blocked = true;
 			} else if (!r.ok) {
-				uploadError = r.error || 'Upload fehlgeschlagen';
+				uploadError =
+					r.error ||
+					'Der Upload ist fehlgeschlagen, es wurde nichts importiert. Versuche es noch einmal.';
 			} else {
 				result = r.result;
 				await refreshAll(); // Anmeldedaten unten aktualisieren
@@ -69,7 +73,7 @@
 			const res = await fetch('/api/primuss/resetPrimussData', { method: 'POST' });
 			const json = await res.json().catch(() => ({}));
 			if (!res.ok || json?.error) {
-				resetError = json?.error || `Fehler (HTTP ${res.status})`;
+				resetError = json?.error || httpErrorMessage(res.status);
 				return;
 			}
 			resetCleared = json?.resetPrimussData ?? [];
@@ -209,7 +213,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				connectError = result?.error || `Fehler (HTTP ${res.status})`;
+				connectError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			connectExam = null;
@@ -251,8 +255,7 @@
 	{#if blocked}
 		<div class="alert alert-warning py-2 text-sm">
 			<span>
-				Import momentan nicht möglich: Es läuft gerade eine Validierung, ein Transfer oder ein
-				E-Mail-Versand. Bitte später erneut versuchen.
+				{plannerErrorMessage('BUSY')}
 			</span>
 		</div>
 	{/if}

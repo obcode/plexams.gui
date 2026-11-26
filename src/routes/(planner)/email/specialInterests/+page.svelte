@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -56,7 +57,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				editError = d?.error || `Fehler (HTTP ${res.status})`;
+				editError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			// Umbenennen: alten Eintrag entfernen
@@ -88,7 +89,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				listError = d?.error || `Fehler (HTTP ${res.status})`;
+				listError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

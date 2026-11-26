@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
@@ -192,7 +193,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				importError = d?.error || `Fehler (HTTP ${res.status})`;
+				importError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			importResult = d.importJointExams;
@@ -232,7 +233,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				deleteError = d?.error || `Fehler (HTTP ${res.status})`;
+				deleteError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			deleteResult = d.deleteJointExams;
@@ -281,7 +282,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				timeError = d?.error || `Fehler (HTTP ${res.status})`;
+				timeError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			timeFor = null;
@@ -324,7 +325,7 @@
 				body: JSON.stringify({ program: m.program, primussAncode: m.primussAncode })
 			});
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) linkError = d?.error || `Fehler (HTTP ${res.status})`;
+			if (!res.ok || d?.error) linkError = d?.error || httpErrorMessage(res.status);
 			else candidates = d.jointZpaCandidates ?? [];
 		} catch (e) {
 			linkError = e instanceof Error ? e.message : String(e);
@@ -353,7 +354,7 @@
 				});
 				const d = await res.json().catch(() => ({}));
 				if (!res.ok || d?.error) {
-					linkError = d?.error || `Fehler (HTTP ${res.status})`;
+					linkError = d?.error || httpErrorMessage(res.status);
 					return;
 				}
 			}
@@ -379,7 +380,7 @@
 				});
 				const d = await res.json().catch(() => ({}));
 				if (!res.ok || d?.error) {
-					linkError = d?.error || `Fehler (HTTP ${res.status})`;
+					linkError = d?.error || httpErrorMessage(res.status);
 					return;
 				}
 			}

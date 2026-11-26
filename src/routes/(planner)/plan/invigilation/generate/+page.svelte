@@ -1,4 +1,9 @@
 <script>
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import * as env from '$app/env/public';
@@ -45,6 +50,7 @@
 			assignInvigilations(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
 				level
 				text
+				code
 				progress { iteration total bestCost balance unfilled }
 				report {
 					seed iterations iterationsRun stoppedEarly
@@ -103,8 +109,8 @@
 				const { createClient } = await import('graphql-ws');
 				wsClient = createClient({ url: wsUrl(), lazy: true, retryAttempts: 0 });
 			}
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			running = false;
 			return;
 		}
@@ -118,7 +124,7 @@
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						return;
 					}
 					const line = msg.data && msg.data.assignInvigilations;
@@ -134,20 +140,19 @@
 						}
 						lines = [...lines, { level: line.level, html }];
 						if (line.report) report = line.report;
+						if (line.level === 'ERROR') {
+							// A failed run must not end in a green "fertig": show the
+							// reason above the terminal as well.
+							const message = streamErrorMessage(line);
+							errorMsg = errorMsg ? `${errorMsg}\n${message}` : message;
+						}
 						if (line.level === 'DONE') done = true;
 					}
 					scrollToBottom();
 				},
 				/** @param {any} err */
 				error: (err) => {
-					errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					errorMsg = streamFailureMessage(err);
 					running = false;
 				},
 				complete: () => {
@@ -299,7 +304,7 @@
 
 	{#if errorMsg}
 		<div class="alert alert-error" transition:fade>
-			<span>{errorMsg}</span>
+			<span class="whitespace-pre-line">{errorMsg}</span>
 		</div>
 	{/if}
 

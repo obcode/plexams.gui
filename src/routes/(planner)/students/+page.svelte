@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	let { data } = $props();
 	/** @param {string} program @param {number} primussAncode */
 	const examInfo = (program, primussAncode) => data.examByKey?.[`${program}/${primussAncode}`];
@@ -25,7 +26,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				error = d?.error || `Fehler (HTTP ${res.status})`;
+				error = d?.error || httpErrorMessage(res.status);
 				students = [];
 				return;
 			}

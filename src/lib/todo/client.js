@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 // Browser-seitige Zugriffe auf die Todos, über die /api/todo-Proxys
 // (Konvention: GraphQL nie direkt aus dem Browser). Jede Funktion wirft mit einer
 // lesbaren Meldung, wenn das Backend ablehnt.
@@ -14,7 +15,7 @@ async function post(name, body = {}) {
 		body: JSON.stringify(body)
 	});
 	const data = await res.json().catch(() => ({}));
-	if (!res.ok || data?.error) throw new Error(data?.error || `Fehler (HTTP ${res.status})`);
+	if (!res.ok || data?.error) throw new Error(data?.error || httpErrorMessage(res.status));
 	return data;
 }
 

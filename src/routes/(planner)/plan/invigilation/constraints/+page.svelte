@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -162,7 +163,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				editError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				editError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			closeEdit();
@@ -186,7 +187,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				listError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

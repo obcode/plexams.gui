@@ -1,3 +1,8 @@
+import {
+	httpErrorMessage,
+	plannerErrorMessage,
+	UNREACHABLE_MESSAGE
+} from '#lib/errors/plannerErrors.js';
 import { backendBase } from '#lib/backend.js';
 
 // Sichern/Wiederherstellen von Semesterdaten über die REST-Routen von plexams.go
@@ -60,8 +65,8 @@ export async function postTransfer(url, fd) {
 	let res;
 	try {
 		res = await fetch(url, { method: 'POST', body: fd });
-	} catch (e) {
-		return { ok: false, status: 0, error: e instanceof Error ? e.message : String(e) };
+	} catch {
+		return { ok: false, status: 0, error: UNREACHABLE_MESSAGE };
 	}
 	return interpretTransferResponse(res);
 }
@@ -79,5 +84,10 @@ export async function interpretTransferResponse(res) {
 		return { ok: true, result };
 	}
 	const text = await res.text().catch(() => '');
-	return { ok: false, status: res.status, error: text.trim() || `HTTP ${res.status}` };
+	// 423: the semester is protected. The server's text for that is a bare English
+	// phrase; everything else (400/409) names the file or data that is in the way.
+	if (res.status === 423) {
+		return { ok: false, status: 423, error: plannerErrorMessage('SEMESTER_READ_ONLY') };
+	}
+	return { ok: false, status: res.status, error: text.trim() || httpErrorMessage(res.status) };
 }

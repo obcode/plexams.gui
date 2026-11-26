@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 import { assembledExamsState } from '#lib/assembledExams/store.js';
@@ -18,7 +19,7 @@ export async function regeneratePreparation() {
 		const res = await fetch('/api/exam/generatePreparation', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
-			return { changes: [], studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
+			return { changes: [], studentCount: 0, error: d?.error || httpErrorMessage(res.status) };
 		}
 		const r = d.generatePreparation;
 		if (r?.assembledExams?.state) assembledExamsState.set(r.assembledExams.state);

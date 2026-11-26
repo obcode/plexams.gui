@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import Slot from '#lib/slot/Slot.svelte';
 	import { normalizeFk, planningFk, displayAncode } from '#lib/exam/fk.ts';
 	import {
@@ -41,29 +42,36 @@
 	let showOnlyExahm = $state(false);
 	let showOnlyEXaHMRooms = $state(false);
 
+	// Filter lists. A failed request must not end up as data: the proxies answer an
+	// error with an object, and the filters would then iterate over that.
+	let filterError = $state('');
+	/**
+	 * @param {string} path
+	 * @returns {Promise<any[]>}
+	 */
+	async function loadFilterList(path) {
+		try {
+			const response = await fetch(path, { method: 'GET' });
+			const body = await response.json().catch(() => null);
+			if (response.ok && Array.isArray(body)) return body;
+		} catch {
+			// handled below
+		}
+		filterError =
+			'Die Filterlisten (Studiengänge, Ancodes, Prüfende) konnten nicht geladen werden; die Filter über dem Plan sind deshalb unvollständig. Der Plan selbst ist vollständig. Lade die Seite neu.';
+		return [];
+	}
 	let allProgramsInPlan = $state(/** @type {any[]} */ ([]));
 	async function getPrograms() {
-		const response = await fetch('/api/exam/allProgramsInPlan', {
-			method: 'GET'
-		});
-
-		allProgramsInPlan = await response.json();
+		allProgramsInPlan = await loadFilterList('/api/exam/allProgramsInPlan');
 	}
 	let allAncodes = $state(/** @type {any[]} */ ([]));
 	async function getAncodes() {
-		const response = await fetch('/api/exam/ancodesInPlan', {
-			method: 'GET'
-		});
-
-		allAncodes = await response.json();
+		allAncodes = await loadFilterList('/api/exam/ancodesInPlan');
 	}
 	let allExamer = $state(/** @type {any[]} */ ([]));
 	async function getExamer() {
-		const response = await fetch('/api/exam/examerInPlan', {
-			method: 'GET'
-		});
-
-		allExamer = await response.json();
+		allExamer = await loadFilterList('/api/exam/examerInPlan');
 	}
 
 	// Reaktiver Status je Slot (Schlüssel „day,time"). Bewusst ein einfaches Objekt,
@@ -245,7 +253,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				placeError = d?.error || `Fehler (HTTP ${res.status})`;
+				placeError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -608,6 +616,10 @@
 				{/if}
 				{#if placeError}<div class="text-xs text-error">{placeError}</div>{/if}
 			</div>
+		{/if}
+
+		{#if filterError}
+			<div class="alert alert-warning py-2 text-sm"><span>{filterError}</span></div>
 		{/if}
 
 		<!-- Filter-Toolbar -->

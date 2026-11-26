@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import AttachmentManager from '#lib/email/AttachmentManager.svelte';
 	import EmailSender from '#lib/email/EmailSender.svelte';
 	import { backendBase } from '#lib/email/attachments.js';
@@ -25,7 +26,7 @@
 			const res = await fetch(`${backendBase()}/download/planned-rooms.json`, {
 				credentials: 'include'
 			});
-			if (!res.ok) throw new Error(`Fehler (HTTP ${res.status})`);
+			if (!res.ok) throw new Error(httpErrorMessage(res.status));
 			const filename = filenameFromCD(
 				res.headers.get('content-disposition') ?? '',
 				'planned-rooms.json'

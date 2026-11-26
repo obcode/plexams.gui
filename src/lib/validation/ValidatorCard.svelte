@@ -50,7 +50,7 @@
 			!!f.studentMtknr &&
 			!!f.ancode &&
 			f.level === 'ERROR' &&
-			/alone/i.test(f.message ?? '')
+			f.code === 'NTA_ROOM_NOT_ALONE'
 		);
 	}
 	/** @param {any} f */
@@ -76,7 +76,9 @@
 				cancelWaive();
 				onrestart?.(); // neu prüfen → Eintrag wird zur Warnung
 			} else {
-				waiveError = (r && r.error) || 'Fehler beim Speichern';
+				waiveError =
+					(r && r.error) ||
+					'Der Verzicht konnte nicht gespeichert werden. Lade die Seite neu und versuche es noch einmal.';
 			}
 		} finally {
 			waiveBusy = false;
@@ -181,6 +183,12 @@
 						<span class="mt-0.5">{levelIcon(f.level)}</span>
 						<div class="min-w-0 flex-1">
 							<div class="break-words">{f.message}</div>
+							{#if f.hint}
+								<div class="mt-0.5 break-words text-xs text-base-content/70">
+									<span class="font-medium">Was tun:</span>
+									{f.hint}
+								</div>
+							{/if}
 							{#if f.ancode || (f.relatedAncodes && f.relatedAncodes.length) || f.room || f.starttime || f.invigilatorID != null || f.studentMtknr}
 								<div class="mt-1 flex flex-wrap gap-1">
 									{#if f.ancode}

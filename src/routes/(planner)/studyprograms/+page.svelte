@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -101,7 +102,7 @@
 			body: JSON.stringify({ input })
 		});
 		const d = await res.json().catch(() => ({}));
-		if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+		if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 	}
 
 	async function save() {
@@ -178,7 +179,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				listError = d?.error || `Fehler (HTTP ${res.status})`;
+				listError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -196,7 +197,7 @@
 			const res = await fetch('/api/studyprogram/seedStudyProgramsFromConfig', { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				listError = d?.error || `Fehler (HTTP ${res.status})`;
+				listError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			const n = d.seedStudyProgramsFromConfig ?? 0;

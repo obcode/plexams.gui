@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -34,7 +35,7 @@
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
 				// u. a. „Config existiert schon" kommt als GraphQL-Error
-				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				errorMsg = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			const out = result.createSemester;

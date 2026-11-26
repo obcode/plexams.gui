@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
 	import { roomValidators } from '#lib/validation/validators.js';
 	import { onMount } from 'svelte';
@@ -16,7 +17,7 @@
 		try {
 			const res = await fetch('/api/nta/ntaRoomAloneWaivers');
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			waivers = d.ntaRoomAloneWaivers ?? [];
 		} catch (e) {
 			loadErr = e instanceof Error ? e.message : String(e);
@@ -34,7 +35,7 @@
 			body: JSON.stringify({ mtknr, ancode, reason })
 		});
 		const d = await res.json().catch(() => ({}));
-		if (!res.ok || d?.error) return { ok: false, error: d?.error || `Fehler (HTTP ${res.status})` };
+		if (!res.ok || d?.error) return { ok: false, error: d?.error || httpErrorMessage(res.status) };
 		await loadWaivers();
 		return { ok: true };
 	}
@@ -52,7 +53,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				loadErr = d?.error || `Fehler (HTTP ${res.status})`;
+				loadErr = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await loadWaivers();

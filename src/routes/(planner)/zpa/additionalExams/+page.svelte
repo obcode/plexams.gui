@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -97,16 +98,23 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				editError = d?.error || `Fehler (HTTP ${res.status})`;
+				editError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			// Ancode geändert → alten Eintrag löschen
 			if (!isNew && origAncode && origAncode !== ancode) {
-				await fetch('/api/exam/deleteAdditionalExam', {
+				const delRes = await fetch('/api/exam/deleteAdditionalExam', {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({ ancode: origAncode })
 				});
+				const delData = await delRes.json().catch(() => ({}));
+				if (!delRes.ok || delData?.error) {
+					// The new entry is saved; say that the old one is still there.
+					editError = `Die Prüfung wurde unter dem neuen Ancode ${ancode} gespeichert, der alte Eintrag ${origAncode} konnte aber nicht gelöscht werden und steht jetzt doppelt in der Liste. Lösche ihn dort von Hand. (${delData?.error || httpErrorMessage(delRes.status)})`;
+					await refreshAll();
+					return;
+				}
 			}
 			closeEdit();
 			await refreshAll();
@@ -129,7 +137,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				listError = d?.error || `Fehler (HTTP ${res.status})`;
+				listError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

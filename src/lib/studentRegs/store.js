@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 
@@ -40,7 +41,7 @@ export async function regenerateStudentRegs() {
 		const res = await fetch('/api/primuss/generateStudentRegs', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
-			return { studentCount: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
+			return { studentCount: 0, error: d?.error || httpErrorMessage(res.status) };
 		}
 		const r = d.generateStudentRegs;
 		if (r?.state) studentRegsState.set(r.state);

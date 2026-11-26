@@ -1,4 +1,10 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import * as env from '$app/env/public';
@@ -63,6 +69,7 @@
 			generateExamRoomsPhase(dryRun: $dryRun, seed: $seed, iterations: $iterations) {
 				level
 				text
+				code
 				examReport {
 					units
 					fixed
@@ -130,8 +137,8 @@
 				const { createClient } = await import('graphql-ws');
 				wsClient = createClient({ url: wsUrl(), lazy: true, retryAttempts: 0 });
 			}
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			running = false;
 			return;
 		}
@@ -149,7 +156,7 @@
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						return;
 					}
 					const line = msg.data && msg.data.generateExamRoomsPhase;
@@ -164,20 +171,19 @@
 						}
 						lines = [...lines, { level: line.level, html }];
 						if (line.examReport) examReport = line.examReport;
+						if (line.level === 'ERROR') {
+							// A failed run must not end in a green "fertig": show the
+							// reason above the terminal as well.
+							const message = streamErrorMessage(line);
+							errorMsg = errorMsg ? `${errorMsg}\n${message}` : message;
+						}
 						if (line.level === 'DONE') done = true;
 					}
 					scrollToBottom();
 				},
 				/** @param {any} err */
 				error: (err) => {
-					errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					errorMsg = streamFailureMessage(err);
 					running = false;
 				},
 				complete: () => {
@@ -225,7 +231,7 @@
 			const res = await fetch(`/api/room/${path}`, { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				fixError = d?.error || `Fehler (HTTP ${res.status})`;
+				fixError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			fixInfo = msg(d);
@@ -359,7 +365,9 @@
 	</details>
 
 	{#if errorMsg}
-		<div class="alert alert-error" transition:fade><span>{errorMsg}</span></div>
+		<div class="alert alert-error" transition:fade>
+			<span class="whitespace-pre-line">{errorMsg}</span>
+		</div>
 	{/if}
 
 	<!-- Terminal -->

@@ -33,8 +33,10 @@ describe('postApi', () => {
 
 	// gqlProxy: HTTP 400 + { error } — früher landete hier `undefined` im State
 	it('throws the backend message on a proxied GraphQL error', async () => {
-		mockFetch(400, { error: 'no rows in result set' });
-		await expect(postApi('/api/slot/examsAt')).rejects.toThrow('no rows in result set');
+		mockFetch(400, { error: 'Raum R1 hat nur 3 Plätze', code: 'INVALID_INPUT' });
+		const err = await postApi('/api/slot/examsAt').catch((e) => e);
+		expect(err.message).toBe('Raum R1 hat nur 3 Plätze');
+		expect(err.code).toBe('INVALID_INPUT');
 	});
 
 	it('throws on an error field even with HTTP 200', async () => {
@@ -42,9 +44,9 @@ describe('postApi', () => {
 		await expect(postApi('/api/slot/examsAt')).rejects.toThrow('kaputt');
 	});
 
-	it('throws with the HTTP status when the body is not JSON', async () => {
+	it('explains the HTTP status when the body is not JSON', async () => {
 		mockFetch(502, new SyntaxError('Unexpected token <'));
-		await expect(postApi('/api/slot/examsAt')).rejects.toThrow('Fehler (HTTP 502)');
+		await expect(postApi('/api/slot/examsAt')).rejects.toThrow('(HTTP 502)');
 	});
 });
 

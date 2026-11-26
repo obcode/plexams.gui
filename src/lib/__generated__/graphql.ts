@@ -1351,6 +1351,11 @@ export enum LogLevel {
  */
 export type LogLine = {
   __typename?: 'LogLine';
+  /**
+   * Set on an ERROR line whose cause is known: a stable code (BUSY, PUBLISHED_LOCKED,
+   * ALREADY_SENT, ...) a client can react to without parsing text.
+   */
+  code?: Maybe<Scalars['String']['output']>;
   examReport?: Maybe<ExamScheduleReport>;
   level: LogLevel;
   progress?: Maybe<OptimizerProgress>;
@@ -4798,6 +4803,10 @@ export type User = {
 export type ValidationFinding = {
   __typename?: 'ValidationFinding';
   ancode?: Maybe<Scalars['Int']['output']>;
+  /** Stable kind of the finding, where a client offers an action for it. */
+  code?: Maybe<Scalars['String']['output']>;
+  /** What to do about the finding, as a sentence for the planner. */
+  hint?: Maybe<Scalars['String']['output']>;
   invigilatorID?: Maybe<Scalars['Int']['output']>;
   level: ValidationLevel;
   message: Scalars['String']['output'];

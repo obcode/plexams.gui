@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -144,7 +145,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				editError = d?.error || `Fehler (HTTP ${res.status})`;
+				editError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			closeEdit();
@@ -168,7 +169,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				listError = d?.error || `Fehler (HTTP ${res.status})`;
+				listError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -190,7 +191,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 			}
 			await refreshAll();
 		} catch (err) {
@@ -216,7 +217,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 			}
 			await refreshAll();
 		} catch (err) {
@@ -255,7 +256,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				suggestError = result?.error || `Fehler (HTTP ${res.status})`;
+				suggestError = result?.error || httpErrorMessage(res.status);
 			} else {
 				suggestions = result.preplanExamAncodeSuggestions ?? [];
 			}
@@ -285,7 +286,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				suggestError = result?.error || `Fehler (HTTP ${res.status})`;
+				suggestError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			closeSuggest();
@@ -309,7 +310,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -403,7 +404,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				conNotSame = prev; // zurücksetzen
-				conError = d?.error || `Fehler (HTTP ${res.status})`;
+				conError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -439,7 +440,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				conCanShare = prev;
-				conError = d?.error || `Fehler (HTTP ${res.status})`;
+				conError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -473,7 +474,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				conError = d?.error || `Fehler (HTTP ${res.status})`;
+				conError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			closeConstraints();
@@ -549,7 +550,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			proposal = result.preplanBookingSuggestions;
@@ -596,7 +597,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			validation = result.validatePreplanAssignment;
@@ -626,7 +627,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			validation = result.generatePreplanAssignment;
@@ -660,7 +661,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				listError = result?.error || `Fehler (HTTP ${res.status})`;
+				listError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			const n = Number(result.resetPreplanTimes ?? 0);

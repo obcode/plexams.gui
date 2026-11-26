@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 
@@ -45,7 +46,7 @@ export async function regenerateAssembledExams() {
 		const res = await fetch('/api/exam/generateAssembledExams', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
-			return { changes: [], error: d?.error || `Fehler (HTTP ${res.status})` };
+			return { changes: [], error: d?.error || httpErrorMessage(res.status) };
 		}
 		const r = d.generateAssembledExams;
 		if (r?.state) assembledExamsState.set(r.state);
@@ -70,7 +71,7 @@ export async function resetAssembledExams() {
 		const res = await fetch('/api/exam/resetAssembledExams', { method: 'POST' });
 		const d = await res.json().catch(() => ({}));
 		if (!res.ok || d?.error) {
-			return { removed: 0, error: d?.error || `Fehler (HTTP ${res.status})` };
+			return { removed: 0, error: d?.error || httpErrorMessage(res.status) };
 		}
 		return { removed: d.resetAssembledExams ?? 0, error: null };
 	} catch (e) {

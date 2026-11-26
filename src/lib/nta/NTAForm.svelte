@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import WriteButton from '#lib/WriteButton.svelte';
 
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines NTA. Beim Bearbeiten
@@ -96,7 +97,7 @@
 			});
 			data = await res.json().catch(() => ({}));
 			if (!res.ok || data?.error) {
-				errorMsg = data?.error ?? `Fehler (HTTP ${res.status})`;
+				errorMsg = data?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 		} catch (e) {

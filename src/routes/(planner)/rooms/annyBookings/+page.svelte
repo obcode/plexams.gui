@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import StreamAction from '#lib/zpa/StreamAction.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -270,7 +271,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				namesError = d?.error || `Fehler (HTTP ${res.status})`;
+				namesError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll(); // mine wird beim Query neu berechnet

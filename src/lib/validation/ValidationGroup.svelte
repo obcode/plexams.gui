@@ -1,4 +1,10 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
@@ -124,7 +130,7 @@
 			});
 			const data = await res.json().catch(() => ({}));
 			if (!res.ok || data?.error) {
-				v.errorMsg = data?.error || `Fehler (HTTP ${res.status})`;
+				v.errorMsg = data?.error || httpErrorMessage(res.status);
 				v.status = 'error';
 				return;
 			}
@@ -149,7 +155,7 @@
 			text
 			validation {
 				name ok errorCount warningCount infoCount skipped skipReason
-				findings { level message ancode relatedAncodes room starttime invigilatorID studentMtknr }
+				findings { level message code hint ancode relatedAncodes room starttime invigilatorID studentMtknr }
 			}`;
 		if (!spec.length) {
 			return { query: `subscription { ${def.key} { ${fields} } }`, variables: {} };
@@ -181,8 +187,8 @@
 
 		try {
 			await ensureClient();
-		} catch (e) {
-			setupError = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			setupError = CLIENT_LOAD_MESSAGE;
 			return;
 		}
 
@@ -206,7 +212,7 @@
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						v.errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						v.errorMsg = streamFailureMessage(msg.errors);
 						v.status = 'error';
 						return;
 					}
@@ -222,19 +228,15 @@
 						}
 						v.lines.push({ level: line.level, html });
 						if (line.validation) v.report = line.validation;
-						if (line.level === 'DONE') v.status = 'done';
+						// A check that could not run (something else is running, or it broke)
+						// reports an ERROR line; say why instead of showing it as passed.
+						if (line.level === 'ERROR') v.errorMsg = streamErrorMessage(line);
+						if (line.level === 'DONE') v.status = v.errorMsg ? 'error' : 'done';
 					}
 				},
 				/** @param {any} err */
 				error: (err) => {
-					v.errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					v.errorMsg = streamFailureMessage(err);
 					v.status = 'error';
 				},
 				complete: () => {

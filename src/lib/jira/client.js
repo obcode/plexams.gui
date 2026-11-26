@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 // Browser-seitige Zugriffe auf die Jira-Anbindung.
 //
 // GraphQL läuft über die /api/jira-Proxies (Konvention: HTTP-GraphQL nie direkt
@@ -14,7 +15,7 @@ import { postUpload } from '#lib/email/attachments.js';
 async function apiGet(path) {
 	const res = await fetch(path);
 	const data = await res.json().catch(() => ({}));
-	if (!res.ok || data?.error) throw new Error(data?.error || `Fehler (HTTP ${res.status})`);
+	if (!res.ok || data?.error) throw new Error(data?.error || httpErrorMessage(res.status));
 	return data;
 }
 
@@ -30,7 +31,7 @@ async function apiPost(path, body) {
 		body: JSON.stringify(body)
 	});
 	const data = await res.json().catch(() => ({}));
-	if (!res.ok || data?.error) throw new Error(data?.error || `Fehler (HTTP ${res.status})`);
+	if (!res.ok || data?.error) throw new Error(data?.error || httpErrorMessage(res.status));
 	return data;
 }
 

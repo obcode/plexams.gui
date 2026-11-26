@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Editiert eine Teilmenge der globalen generationConfig und schreibt die
 	// *vollständige* Config zurück (Input ist komplett non-null → Round-Trip über
 	// toGenerationConfigInput, damit die Felder der anderen Solver erhalten
@@ -51,7 +52,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error ?? `Fehler (HTTP ${res.status})`;
+				error = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			savedAt = new Date().toLocaleTimeString('de-DE');

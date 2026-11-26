@@ -1,4 +1,10 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { refreshAll } from '$app/navigation';
@@ -62,6 +68,7 @@
 			assignRoomsForExams(dryRun: $dryRun, seed: $seed, iterations: $iterations, keepAssigned: $keepAssigned) {
 				level
 				text
+				code
 				roomReport {
 					exams
 					placedSeats
@@ -109,8 +116,8 @@
 		try {
 			if (!convert) convert = await getConvert();
 			if (!wsClient) wsClient = await getWsClient();
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			running = false;
 			return;
 		}
@@ -131,7 +138,7 @@
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						return;
 					}
 					const line = msg.data && msg.data.assignRoomsForExams;
@@ -146,20 +153,19 @@
 						}
 						lines = [...lines, { level: line.level, html }];
 						if (line.roomReport) roomReport = line.roomReport;
+						if (line.level === 'ERROR') {
+							// A failed run must not end in a green "fertig": show the
+							// reason above the terminal as well.
+							const message = streamErrorMessage(line);
+							errorMsg = errorMsg ? `${errorMsg}\n${message}` : message;
+						}
 						if (line.level === 'DONE') done = true;
 					}
 					scrollToBottom();
 				},
 				/** @param {any} err */
 				error: (err) => {
-					errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					errorMsg = streamFailureMessage(err);
 					running = false;
 				},
 				complete: () => {
@@ -214,7 +220,7 @@
 			const res = await fetch('/api/room/resetRoomsForExams', { method: 'POST' });
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				resetError = d?.error || `Fehler (HTTP ${res.status})`;
+				resetError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			resetInfo = 'Raumzuteilung zurückgesetzt (vorgeplante Räume bleiben).';

@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
 	import { refreshAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
@@ -87,7 +88,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				toggleError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				toggleError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

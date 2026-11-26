@@ -1,4 +1,10 @@
 <script>
+	import { isBusy, plannerErrorMessage } from '#lib/errors/plannerErrors.js';
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
@@ -30,8 +36,6 @@
 	// die keine reine Sperrmeldung sind) — prominent als Alert statt nur im Terminal.
 	/** @type {string[]} */
 	let errorTexts = [];
-	/** ANSI-Codes entfernen, damit die Klartext-Meldung lesbar ist. */
-	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
 	// Zeilen nach Level farblich hervorheben (Catppuccin-Palette passend zum
 	// Terminal-Hintergrund). WARN-Zeilen — z. B. die Warnf-Warnung der
@@ -55,12 +59,6 @@
 	/** @type {(() => void) | null} */
 	let unsubscribe = null;
 
-	/** @param {string} t */
-	const isBlockedMessage = (t) =>
-		/running, cannot start now|a validation or another|writes? (are |is )?(not allowed|blocked)|exclusive|already running|is published|locked|gesperrt/i.test(
-			t
-		);
-
 	async function scrollToBottom() {
 		await tick();
 		if (termEl) termEl.scrollTop = termEl.scrollHeight;
@@ -81,19 +79,19 @@
 		try {
 			if (!convert) convert = await getConvert();
 			if (!wsClient) wsClient = await getWsClient();
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			running = false;
 			return;
 		}
 
 		unsubscribe = wsClient.subscribe(
-			{ query: `subscription { ${field} { level text } }` },
+			{ query: `subscription { ${field} { level text code } }` },
 			{
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						return;
 					}
 					const line = msg.data && msg.data[field];
@@ -111,10 +109,10 @@
 						if (line.level === 'ERROR') {
 							// Sperrmeldung → eigener Hinweis; sonst aussagekräftige
 							// Reporter-/error-Meldung prominent als Fehler-Alert zeigen.
-							if (isBlockedMessage(text)) {
+							if (isBusy(line.code)) {
 								blocked = true;
 							} else {
-								errorTexts = [...errorTexts, stripAnsi(text)];
+								errorTexts = [...errorTexts, streamErrorMessage(line)];
 								errorMsg = errorTexts.join('\n');
 							}
 						}
@@ -124,14 +122,7 @@
 				},
 				/** @param {any} err */
 				error: (err) => {
-					errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					errorMsg = streamFailureMessage(err);
 					running = false;
 				},
 				complete: () => {
@@ -192,8 +183,7 @@
 	{#if blocked}
 		<div class="alert alert-warning py-2 text-sm" transition:fade>
 			<span>
-				Aktion momentan nicht möglich: Es läuft gerade eine Validierung, ein Transfer oder eine
-				andere Generierung. Bitte später erneut versuchen.
+				{plannerErrorMessage('BUSY')}
 			</span>
 		</div>
 	{/if}

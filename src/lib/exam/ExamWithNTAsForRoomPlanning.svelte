@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { classifyRoom } from '#lib/room/roomCategories.js';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -170,7 +171,7 @@
 				body: JSON.stringify({ starttime })
 			});
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			slotRooms = d.roomsWithFreeSeatsAt ?? [];
 		} catch (e) {
 			pickError = e instanceof Error ? e.message : String(e);
@@ -280,7 +281,7 @@
 				headers: { 'content-type': 'application/json' }
 			});
 			const result = await res.json().catch(() => ({}));
-			if (!res.ok || result?.error) throw new Error(result?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || result?.error) throw new Error(result?.error || httpErrorMessage(res.status));
 		} catch (e) {
 			// bei Fehler die optimistische Zuordnung zurücknehmen
 			plannedExam.plannedRooms = (plannedExam.plannedRooms || []).filter(

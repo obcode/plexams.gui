@@ -1,4 +1,9 @@
 <script>
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, tick } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
@@ -57,8 +62,6 @@
 	// z. B. ZPA-Status + Antworttext — gesammelt und prominent als Alert gezeigt.
 	/** @type {string[]} */
 	let errorTexts = [];
-	/** ANSI-Codes entfernen, damit die Klartext-Meldung lesbar ist. */
-	const stripAnsi = (/** @type {string} */ t) => (t ?? '').replace(/\[[0-9;]*m/g, '');
 
 	/** @type {any} */
 	let convert = null;
@@ -74,16 +77,7 @@
 		if (termEl) termEl.scrollTop = termEl.scrollHeight;
 	}
 
-	/** @param {any} err */
-	function errText(err) {
-		return err instanceof Error
-			? err.message
-			: Array.isArray(err)
-				? err.map((/** @type {any} */ e) => e.message).join('; ')
-				: err && err.reason
-					? err.reason
-					: 'Verbindungsfehler';
-	}
+	const errText = streamFailureMessage;
 
 	async function start() {
 		if (status === 'running') return;
@@ -96,15 +90,15 @@
 		try {
 			if (!convert) convert = await getConvert();
 			if (!wsClient) wsClient = await getWsClient();
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			status = 'error';
 			return;
 		}
 
 		const query = hasDryRun
-			? `subscription ($dryRun: Boolean!) { ${field}(dryRun: $dryRun) { level text } }`
-			: `subscription { ${field} { level text } }`;
+			? `subscription ($dryRun: Boolean!) { ${field}(dryRun: $dryRun) { level text code } }`
+			: `subscription { ${field} { level text code } }`;
 		const variables = hasDryRun ? { dryRun } : {};
 
 		unsubscribe = wsClient.subscribe(
@@ -113,7 +107,7 @@
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						status = 'error';
 						return;
 					}
@@ -132,7 +126,7 @@
 						if (line.level === 'ERROR') {
 							// Reporter-/error-Kanal: aussagekräftige Meldung prominent zeigen
 							// und die Operation als fehlgeschlagen markieren (kein „fertig").
-							errorTexts = [...errorTexts, stripAnsi(text)];
+							errorTexts = [...errorTexts, streamErrorMessage(line)];
 							errorMsg = errorTexts.join('\n');
 							status = 'error';
 						} else if (line.level === 'DONE') {

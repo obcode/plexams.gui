@@ -66,11 +66,20 @@ describe('interpretTransferResponse', () => {
 		expect(r).toEqual({ ok: true, result: { dataset: 'preplan', applied: 3 } });
 	});
 
-	it('reicht den Fehlertext bei 409 (laufende Operation / read-only) durch', async () => {
+	it('reicht den Fehlertext bei 409 (laufende Operation) durch', async () => {
 		const r = await interpretTransferResponse(
-			fakeResponse({ ok: false, status: 409, text: 'semester is read-only\n' })
+			fakeResponse({ ok: false, status: 409, text: 'collection x is in the way\n' })
 		);
-		expect(r).toEqual({ ok: false, status: 409, error: 'semester is read-only' });
+		expect(r).toEqual({ ok: false, status: 409, error: 'collection x is in the way' });
+	});
+
+	it('erklärt ein geschütztes Semester (423) auf Deutsch', async () => {
+		const r = await interpretTransferResponse(
+			fakeResponse({ ok: false, status: 423, text: 'semester is read-only\n' })
+		);
+		expect(r).toMatchObject({ ok: false, status: 423 });
+		expect(JSON.stringify(r)).toContain('geschützt');
+		expect(JSON.stringify(r)).not.toContain('read-only');
 	});
 
 	it('reicht den Fehlertext bei 400 (kaputte CSV) durch', async () => {
@@ -80,8 +89,9 @@ describe('interpretTransferResponse', () => {
 		expect(r).toEqual({ ok: false, status: 400, error: 'header mismatch' });
 	});
 
-	it('fällt ohne Fehlertext auf HTTP <status> zurück', async () => {
+	it('erklärt den Status, wenn der Server keinen Text mitschickt', async () => {
 		const r = await interpretTransferResponse(fakeResponse({ ok: false, status: 500, text: '' }));
-		expect(r).toEqual({ ok: false, status: 500, error: 'HTTP 500' });
+		expect(r).toMatchObject({ ok: false, status: 500 });
+		expect(JSON.stringify(r)).toContain('(HTTP 500)');
 	});
 });

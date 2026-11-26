@@ -1,3 +1,4 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 import { writable, get } from 'svelte/store';
 
 // Session-weiter Probelauf-Empfänger. Ein globaler Store, damit jeder
@@ -56,7 +57,7 @@ export async function setDryRunTestMail(email) {
 		body: JSON.stringify({ email })
 	});
 	const d = await res.json().catch(() => ({}));
-	if (!res.ok || d?.error) throw new Error(d?.error ?? `Fehler (HTTP ${res.status})`);
+	if (!res.ok || d?.error) throw new Error(d?.error ?? httpErrorMessage(res.status));
 	dryRunTestMail.set(d.setDryRunTestMail);
 	loaded = true;
 	return d.setDryRunTestMail;
@@ -69,7 +70,7 @@ export async function setDryRunTestMail(email) {
 export async function resetDryRunTestMail() {
 	const res = await fetch('/api/email/resetDryRunTestMail', { method: 'POST' });
 	const d = await res.json().catch(() => ({}));
-	if (!res.ok || d?.error) throw new Error(d?.error ?? `Fehler (HTTP ${res.status})`);
+	if (!res.ok || d?.error) throw new Error(d?.error ?? httpErrorMessage(res.status));
 	dryRunTestMail.set(d.resetDryRunTestMail);
 	loaded = true;
 	return d.resetDryRunTestMail;

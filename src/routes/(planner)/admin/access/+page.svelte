@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { formatBerlin } from '#lib/portal/time.js';
 
@@ -32,7 +33,7 @@
 			body: JSON.stringify(body)
 		});
 		const d = await res.json().catch(() => ({}));
-		if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+		if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 		return d;
 	}
 

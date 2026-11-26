@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Constraints-Editor als Popup. Ersetzt die alte Seite /exam/constraints/<ancode>.
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -150,7 +151,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error || `Fehler (HTTP ${res.status})`;
+				error = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			// lokal aufbereitetes Constraint-Objekt zurückgeben (kein Reload)

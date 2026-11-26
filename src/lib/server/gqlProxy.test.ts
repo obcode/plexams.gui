@@ -34,10 +34,18 @@ describe('gqlProxy', () => {
 	});
 
 	it('mappt Backend-Fehler auf HTTP 400 mit lesbarem error-Feld', async () => {
-		requestMock.mockRejectedValueOnce(new Error('boom'));
+		requestMock.mockRejectedValueOnce({ response: { errors: [{ message: 'boom' }] } });
 		const res = await gqlProxy('mutation { x }');
 		expect(res.status).toBe(400);
 		const body = await res.json();
 		expect(body.error).toContain('boom');
+	});
+
+	it('sagt es, wenn das Backend gar nicht geantwortet hat', async () => {
+		requestMock.mockRejectedValueOnce(new Error('fetch failed'));
+		const res = await gqlProxy('mutation { x }');
+		const body = await res.json();
+		expect(body.error).toContain('antwortet gerade nicht');
+		expect(body.error).not.toContain('fetch failed');
 	});
 });

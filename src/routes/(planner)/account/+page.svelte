@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 
 	/** @type {{ data: import('./$types').PageData }} */
@@ -32,7 +33,7 @@
 			body: JSON.stringify(body ?? {})
 		});
 		const d = await res.json().catch(() => ({}));
-		if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+		if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 		return d;
 	}
 
@@ -164,7 +165,7 @@
 		try {
 			const res = await fetch('/api/jira/connection', { method: 'GET' });
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			if (!d?.jiraConnection) throw new Error('Keine Verbindung — kein Jira-Token hinterlegt?');
 			testResult = d.jiraConnection;
 		} catch (e) {

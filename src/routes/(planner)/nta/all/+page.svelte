@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { fade } from 'svelte/transition';
 	import { refreshAll } from '$app/navigation';
 	import NtaTr from '#lib/nta/NtaTR.svelte';
@@ -71,7 +72,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				toggleError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				toggleError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();

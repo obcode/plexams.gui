@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
 	// Aktionen (add/remove/fix) liefern das aktualisierte ConnectedExam,
 	// das per onupdated-Callback nach oben gereicht und im State ersetzt wird.
@@ -49,7 +50,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				actionError = result?.error || `Fehler (HTTP ${res.status})`;
+				actionError = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			onupdated?.(result[path]);

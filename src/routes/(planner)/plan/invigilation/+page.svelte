@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { mkDateShort } from '#lib/jshelper/misc.js';
 	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -253,7 +254,7 @@
 				body: JSON.stringify(body)
 			});
 			const d = await res.json().catch(() => ({}));
-			if (!res.ok || d?.error) throw new Error(d?.error || `Fehler (HTTP ${res.status})`);
+			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			return true;
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : String(e);
@@ -337,10 +338,10 @@
 			const res = await fetch('/api/invigilator/resetInvigilations', { method: 'POST' });
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;
-				actionError = /published|locked|veröffentlicht/i.test(msg)
-					? 'Aufsichtenplan ist veröffentlicht und gesperrt — erst die Veröffentlichung auf der Startseite zurücknehmen (Häkchen „Aufsichtenplan veröffentlicht").'
-					: msg;
+				actionError =
+					result?.code === 'PUBLISHED_LOCKED'
+						? 'Der Aufsichtenplan ist bereits veröffentlicht und deshalb gegen Zurücksetzen gesperrt. Soll er wirklich zurückgesetzt werden, nimm zuerst auf der Startseite das Häkchen „Aufsichtenplan veröffentlicht" zurück.'
+						: (result?.error ?? httpErrorMessage(res.status));
 				resetBusy = false;
 				return;
 			}
@@ -359,7 +360,7 @@
 		// Der svelte-ignore unterdrückt eine echte svelte-check-Warnung (`lookups`),
 		// eslint-plugin-svelte hält ihn trotzdem für ungenutzt — deshalb hier gezielt
 		// abgeschaltet statt den Kommentar zu entfernen.
-		// eslint-disable-next-line svelte/no-unused-svelte-ignore
+
 		// svelte-ignore state_referenced_locally
 		selectPerson(fid, lookups.teacherName.get(fid) ?? String(fid));
 	}

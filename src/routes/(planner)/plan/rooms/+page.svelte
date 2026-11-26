@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import ExamsForRoomPlanning from '#lib/slot/ExamsForRoomPlanning.svelte';
 	import RoomNamesInSlot from '#lib/slot/RoomNamesInSlot.svelte';
 	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
@@ -38,10 +39,10 @@
 			const res = await fetch('/api/room/resetRoomsForExams', { method: 'POST' });
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				const msg = result?.error ?? `Fehler (HTTP ${res.status})`;
-				blockError = /published|locked|veröffentlicht/i.test(msg)
-					? 'Raumplan ist veröffentlicht und gesperrt — erst die Veröffentlichung auf der Startseite zurücknehmen (Häkchen „Raumplan veröffentlicht").'
-					: msg;
+				blockError =
+					result?.code === 'PUBLISHED_LOCKED'
+						? 'Der Raumplan ist bereits veröffentlicht und deshalb gegen Zurücksetzen gesperrt. Soll er wirklich zurückgesetzt werden, nimm zuerst auf der Startseite das Häkchen „Raumplan veröffentlicht" zurück.'
+						: (result?.error ?? httpErrorMessage(res.status));
 				return;
 			}
 			await onGenerated();
@@ -165,7 +166,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				blockError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				blockError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			if (isBlocked) blockedMap.delete(key);
@@ -213,7 +214,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				blockError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				blockError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			for (const k of keys) {

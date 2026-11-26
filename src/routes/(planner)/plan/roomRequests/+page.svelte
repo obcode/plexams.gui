@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
 	import RoomRequestToggles from '#lib/room/RoomRequestToggles.svelte';
@@ -135,7 +136,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				errorMsg = result?.error ?? `Fehler (HTTP ${res.status})`;
+				errorMsg = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			await refreshAll();
@@ -232,7 +233,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				mError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				mError = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			modalOpen = false;
@@ -266,7 +267,7 @@
 			const res = await fetch('/api/room/roomRequestsPreview');
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				previewError = result?.error ?? `Fehler (HTTP ${res.status})`;
+				previewError = result?.error ?? httpErrorMessage(res.status);
 				preview = null;
 				return;
 			}
@@ -299,9 +300,13 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				const err = result?.error ?? `Fehler (HTTP ${res.status})`;
-				if (!force && /already exist/i.test(err)) {
-					if (confirm('Es existieren bereits Anfragen. Bestehende verwerfen und neu generieren?')) {
+				const err = result?.error ?? httpErrorMessage(res.status);
+				if (!force && result?.code === 'ALREADY_EXISTS') {
+					if (
+						confirm(
+							'Für dieses Semester gibt es bereits Raum-Anfragen. Wenn du fortfährst, werden sie gelöscht und aus dem Probelauf neu angelegt. Bereits eingetragene Genehmigungen gehen dabei verloren. Bestehende Anfragen verwerfen und neu anlegen?'
+						)
+					) {
 						applying = false;
 						return applyPreview(true);
 					}

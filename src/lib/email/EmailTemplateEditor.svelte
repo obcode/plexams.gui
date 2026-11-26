@@ -8,6 +8,7 @@
 	initialisiert der Editor-Puffer einmalig aus template.markdown.
 -->
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { tick } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -86,7 +87,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (mySeq !== seq) return; // eine neuere Anfrage ist schon unterwegs
 			if (!res.ok || d?.error) {
-				preview = { html: '', text: '', error: d?.error || `Fehler (HTTP ${res.status})` };
+				preview = { html: '', text: '', error: d?.error || httpErrorMessage(res.status) };
 			} else {
 				const p = d.renderEmailTemplatePreview ?? {};
 				preview = { html: p.html ?? '', text: p.text ?? '', error: p.error ?? null };
@@ -136,7 +137,7 @@
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
 				// Backend lehnt nicht-parsendes Markdown ab → NICHT als gespeichert markieren.
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			onsaved?.(d.setEmailTemplate);
@@ -164,7 +165,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				actionError = d?.error || `Fehler (HTTP ${res.status})`;
+				actionError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			buffer = template.defaultMarkdown;

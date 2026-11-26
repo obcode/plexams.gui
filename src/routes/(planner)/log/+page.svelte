@@ -1,4 +1,5 @@
 <script>
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	let { data } = $props();
 
 	/** @type {any[]} */
@@ -61,7 +62,7 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				error = result?.error || `Fehler (HTTP ${res.status})`;
+				error = result?.error || httpErrorMessage(res.status);
 				return;
 			}
 			logs = result.mutationLog ?? [];

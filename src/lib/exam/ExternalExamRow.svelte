@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Eine Prüfungszeile mit Inline-Termineingabe (Datum + Zeit, kein Popup).
 	// Setzt die externe Zeit über /api/exam/setExternalExamTime(ancode) und meldet
 	// Erfolg per onsaved-Callback nach oben (dort refreshAll).
@@ -80,7 +81,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				error = d?.error || `Fehler (HTTP ${res.status})`;
+				error = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			onsaved?.();

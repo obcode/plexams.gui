@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import {
@@ -145,7 +146,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
+				semesterError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			window.location.reload();
@@ -182,7 +183,7 @@
 			});
 			const d = await res.json().catch(() => ({}));
 			if (!res.ok || d?.error) {
-				semesterError = d?.error || `Fehler (HTTP ${res.status})`;
+				semesterError = d?.error || httpErrorMessage(res.status);
 				return;
 			}
 			window.location.reload();
@@ -278,6 +279,7 @@
 						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 						{ href: '/nta/semester', label: '♿ NTA' },
 						{ href: '/download', label: '⬇️ Downloads & Exporte' },
+						{ href: '/hilfe', label: '❓ Hilfe: Ablauf & Glossar' },
 						{ href: '/todos', label: '☑️ Todos' },
 						{ href: '/jira', label: '🎫 Jira' },
 						{ href: '/log', label: '🧾 Mutations-Log' },

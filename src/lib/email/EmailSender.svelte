@@ -1,4 +1,10 @@
 <script>
+	import { isBusy, plannerErrorMessage } from '#lib/errors/plannerErrors.js';
+	import {
+		CLIENT_LOAD_MESSAGE,
+		streamErrorMessage,
+		streamFailureMessage
+	} from '#lib/errors/streamErrors.js';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import { getConvert, getWsClient } from '#lib/validation/wsClient.js';
@@ -85,12 +91,6 @@ versenden ist; optionaler Hinweistext dazu
 	/** @type {(() => void) | null} */
 	let unsubscribe = null;
 
-	// erkennt die „läuft gerade etwas anderes"-Ablehnung des Servers
-	/** @param {string} text */
-	function isBlockedMessage(text) {
-		return /a validation or another transfer\/email is running|cannot start now/i.test(text);
-	}
-
 	async function scrollToBottom() {
 		await tick();
 		if (termEl) termEl.scrollTop = termEl.scrollHeight;
@@ -112,8 +112,8 @@ versenden ist; optionaler Hinweistext dazu
 		try {
 			if (!convert) convert = await getConvert();
 			if (!wsClient) wsClient = await getWsClient();
-		} catch (e) {
-			errorMsg = 'Konnte WebSocket-Client nicht laden: ' + (e instanceof Error ? e.message : e);
+		} catch {
+			errorMsg = CLIENT_LOAD_MESSAGE;
 			running = false;
 			return;
 		}
@@ -128,14 +128,14 @@ versenden ist; optionaler Hinweistext dazu
 
 		unsubscribe = wsClient.subscribe(
 			{
-				query: `subscription (${decls}) { ${emailKey}(${callArgs}) { level text } }`,
+				query: `subscription (${decls}) { ${emailKey}(${callArgs}) { level text code } }`,
 				variables
 			},
 			{
 				/** @param {any} msg */
 				next: (msg) => {
 					if (msg.errors && msg.errors.length) {
-						errorMsg = msg.errors.map((/** @type {any} */ e) => e.message).join('; ');
+						errorMsg = streamFailureMessage(msg.errors);
 						return;
 					}
 					const line = msg.data && msg.data[emailKey];
@@ -152,8 +152,14 @@ versenden ist; optionaler Hinweistext dazu
 						lines = [...lines, { level: line.level, html }];
 						if (line.level === 'ERROR') {
 							hadError = true;
-							if (isBlockedMessage(text)) blocked = true;
-							if (/already sent/i.test(text)) sentOverride = true;
+							if (isBusy(line.code)) {
+								blocked = true;
+							} else {
+								// Show what went wrong above the terminal, not only inside it.
+								const message = streamErrorMessage(line);
+								errorMsg = errorMsg ? `${errorMsg}\n${message}` : message;
+							}
+							if (line.code === 'ALREADY_SENT') sentOverride = true;
 						}
 						if (line.level === 'DONE') {
 							done = true;
@@ -165,14 +171,7 @@ versenden ist; optionaler Hinweistext dazu
 				},
 				/** @param {any} err */
 				error: (err) => {
-					errorMsg =
-						err instanceof Error
-							? err.message
-							: Array.isArray(err)
-								? err.map((/** @type {any} */ e) => e.message).join('; ')
-								: err && err.reason
-									? err.reason
-									: 'Verbindungsfehler';
+					errorMsg = streamFailureMessage(err);
 					running = false;
 				},
 				complete: () => {
@@ -231,6 +230,8 @@ versenden ist; optionaler Hinweistext dazu
 				</span>
 			{:else if blocked}
 				<span class="badge badge-warning">blockiert</span>
+			{:else if hardError}
+				<span class="badge badge-error">nicht abgeschlossen</span>
 			{:else if done}
 				<span class="badge {lastReal ? 'badge-success' : 'badge-ghost'}">
 					{lastReal ? '✓ versendet' : '✓ Probelauf'}
@@ -287,15 +288,14 @@ versenden ist; optionaler Hinweistext dazu
 	{#if blocked}
 		<div class="alert alert-warning py-2 text-sm" transition:fade>
 			<span>
-				Versand momentan nicht möglich: Es läuft gerade eine Validierung oder ein anderer
-				Transfer/E-Mail-Versand. Bitte später erneut versuchen.
+				{plannerErrorMessage('BUSY')}
 			</span>
 		</div>
 	{/if}
 
 	{#if hardError}
 		<div class="alert alert-error py-2 text-sm" transition:fade>
-			<span>{errorMsg}</span>
+			<span class="whitespace-pre-line">{errorMsg}</span>
 		</div>
 	{/if}
 

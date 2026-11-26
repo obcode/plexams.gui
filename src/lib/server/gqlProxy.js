@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/sveltekit';
-import { gqlErrorMessage } from '#lib/gqlError.js';
+import { gqlErrorCode, gqlErrorMessage } from '#lib/gqlError.js';
 import { backendRequest } from '#lib/server/backend.js';
 
 // Serverseitiger Helfer für die /api-Proxy-Endpunkte: führt eine GraphQL-
@@ -18,7 +18,7 @@ import { backendRequest } from '#lib/server/backend.js';
 /**
  * @param {import('graphql-request').RequestDocument} document Query/Mutation
  * @param {Record<string, any>} [variables]
- * @returns {Promise<Response>} JSON-Response (Daten oder `{ error }` mit 400)
+ * @returns {Promise<Response>} JSON-Response (Daten oder `{ error, code }` mit 400)
  */
 export async function gqlProxy(document, variables) {
 	try {
@@ -36,6 +36,8 @@ export async function gqlProxy(document, variables) {
 		// Backend nicht erreichbar oder etwas ist unterwegs zerbrochen: das ist
 		// ein Vorfall.
 		Sentry.captureException(e, { level: e?.response ? 'warning' : 'error' });
-		return Response.json({ error: gqlErrorMessage(e) }, { status: 400 });
+		// `code` lets a page react to the kind of refusal (BUSY, PUBLISHED_LOCKED, …)
+		// without looking at the text.
+		return Response.json({ error: gqlErrorMessage(e), code: gqlErrorCode(e) }, { status: 400 });
 	}
 }
