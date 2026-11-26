@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
@@ -200,7 +201,7 @@
 			importResult = d.importJointExams;
 			await refreshAll();
 		} catch (e) {
-			importError = e instanceof Error ? e.message : String(e);
+			importError = clientErrorMessage(e);
 		} finally {
 			importing = false;
 			input.value = '';
@@ -242,7 +243,7 @@
 			if (deleteProgram && program === deleteProgram) program = '';
 			await refreshAll();
 		} catch (e) {
-			deleteError = e instanceof Error ? e.message : String(e);
+			deleteError = clientErrorMessage(e);
 		} finally {
 			deleting = false;
 		}
@@ -289,7 +290,7 @@
 			timeFor = null;
 			await refreshAll();
 		} catch (e) {
-			timeError = e instanceof Error ? e.message : String(e);
+			timeError = clientErrorMessage(e);
 		} finally {
 			timeSaving = false;
 		}
@@ -329,7 +330,7 @@
 			if (!res.ok || d?.error) linkError = d?.error || httpErrorMessage(res.status);
 			else candidates = d.jointZpaCandidates ?? [];
 		} catch (e) {
-			linkError = e instanceof Error ? e.message : String(e);
+			linkError = clientErrorMessage(e);
 		} finally {
 			candLoading = false;
 		}
@@ -362,7 +363,7 @@
 			closeLink();
 			await refreshAll();
 		} catch (e) {
-			linkError = e instanceof Error ? e.message : String(e);
+			linkError = clientErrorMessage(e);
 		} finally {
 			linking = false;
 		}
@@ -388,7 +389,7 @@
 			closeLink();
 			await refreshAll();
 		} catch (e) {
-			linkError = e instanceof Error ? e.message : String(e);
+			linkError = clientErrorMessage(e);
 		} finally {
 			linking = false;
 		}

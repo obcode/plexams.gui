@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Eine ZPA↔Primuss-Zuordnung als Zeile. `exam` trägt zusätzlich `.level`.
 	// Aktionen (add/remove/fix) liefern das aktualisierte ConnectedExam,
@@ -55,7 +56,7 @@
 			}
 			onupdated?.(result[path]);
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}

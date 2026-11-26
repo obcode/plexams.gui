@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
@@ -94,7 +95,7 @@
 			}
 			await refreshAll();
 		} catch (err) {
-			toggleError = err instanceof Error ? err.message : String(err);
+			toggleError = clientErrorMessage(err);
 		}
 	}
 

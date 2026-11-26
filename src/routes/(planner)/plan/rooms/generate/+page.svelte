@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import {
 		CLIENT_LOAD_MESSAGE,
@@ -228,7 +229,7 @@
 			roomReport = null;
 			await refreshAll();
 		} catch (e) {
-			resetError = e instanceof Error ? e.message : String(e);
+			resetError = clientErrorMessage(e);
 		} finally {
 			resetBusy = false;
 		}

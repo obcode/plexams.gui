@@ -101,6 +101,14 @@ test.describe('Rolle PLANER', () => {
 		}
 	});
 
+	test('eine gescheiterte Status-Abfrage wird gemeldet statt verschluckt', async ({ page }) => {
+		await page.route('**/api/backup/status', (route) => route.abort('failed'));
+		await page.goto('/');
+		await expect(page.getByText('Plexams konnte nicht prüfen')).toBeVisible();
+		await expect(page.getByText('Der Plexams-Server antwortet gerade nicht.')).toBeVisible();
+		await expect(page.getByText('Failed to fetch')).toHaveCount(0);
+	});
+
 	test('eine kaputte Antwort landet nicht als Daten in der Seite', async ({ page }) => {
 		await page.route('**/api/exam/allProgramsInPlan', (route) =>
 			route.fulfill({ status: 502, contentType: 'text/html', body: '<html>Bad Gateway</html>' })

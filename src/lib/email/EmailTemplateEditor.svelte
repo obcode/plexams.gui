@@ -8,6 +8,7 @@
 	initialisiert der Editor-Puffer einmalig aus template.markdown.
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { tick } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
@@ -94,7 +95,7 @@
 			}
 		} catch (e) {
 			if (mySeq === seq) {
-				preview = { html: '', text: '', error: e instanceof Error ? e.message : String(e) };
+				preview = { html: '', text: '', error: clientErrorMessage(e) };
 			}
 		} finally {
 			if (mySeq === seq) previewLoading = false;
@@ -142,7 +143,7 @@
 			}
 			onsaved?.(d.setEmailTemplate);
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}
@@ -171,7 +172,7 @@
 			buffer = template.defaultMarkdown;
 			onsaved?.({ ...template, markdown: template.defaultMarkdown, isDefault: true });
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}

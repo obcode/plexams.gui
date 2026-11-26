@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { goto, refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { isAdmin, isViewer } from '#lib/auth.js';
@@ -38,7 +39,7 @@
 			await fn();
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}
@@ -52,7 +53,7 @@
 			await deleteTodo(todo.id);
 			await goto('/todos');
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 			busy = false;
 		}
 	}

@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Konflikt-Loop zum Terminplan: Konflikte des aktuellen Plans; pro Studierendem
 	// einen Konflikt akzeptieren (Wiederholer etc.) und Parallelsektionen als
@@ -94,7 +95,7 @@
 			patchFn?.();
 			await refreshAll();
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 		} finally {
 			busy = '';
 		}

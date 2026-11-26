@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { goto, refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -64,7 +65,7 @@
 			message = `${n} Todos aus ${data.fromSemester} übernommen.`;
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			carrying = false;
 		}

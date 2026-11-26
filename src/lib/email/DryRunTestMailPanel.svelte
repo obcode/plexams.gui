@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -39,7 +40,7 @@
 			await setDryRunTestMail(input.trim());
 			savedAt = new Date().toLocaleTimeString('de-DE');
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}
@@ -55,7 +56,7 @@
 			input = status.override ?? '';
 			savedAt = new Date().toLocaleTimeString('de-DE');
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}

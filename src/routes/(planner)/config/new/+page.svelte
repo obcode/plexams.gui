@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -47,7 +48,7 @@
 			createdName = name.trim();
 			warnings = out.warnings ?? [];
 		} catch (e) {
-			errorMsg = e instanceof Error ? e.message : String(e);
+			errorMsg = clientErrorMessage(e);
 		} finally {
 			creating = false;
 		}

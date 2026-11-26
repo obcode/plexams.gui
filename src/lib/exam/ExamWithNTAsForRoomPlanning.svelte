@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { classifyRoom } from '#lib/room/roomCategories.js';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -174,7 +175,7 @@
 			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			slotRooms = d.roomsWithFreeSeatsAt ?? [];
 		} catch (e) {
-			pickError = e instanceof Error ? e.message : String(e);
+			pickError = clientErrorMessage(e);
 			slotRooms = [];
 		} finally {
 			loadingRooms = false;
@@ -287,7 +288,7 @@
 			plannedExam.plannedRooms = (plannedExam.plannedRooms || []).filter(
 				(/** @type {any} */ x) => x !== newRoom
 			);
-			pickError = e instanceof Error ? e.message : String(e);
+			pickError = clientErrorMessage(e);
 			showPicker = true;
 		}
 	}

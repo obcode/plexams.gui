@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import PageIntro from '#lib/help/PageIntro.svelte';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
@@ -159,7 +160,7 @@
 			patchItem(e.ancode, (it) => ({ ...it, durationOverride: v }));
 			durInput[e.ancode] = '';
 		} catch (err) {
-			actionError = err instanceof Error ? err.message : String(err);
+			actionError = clientErrorMessage(err);
 		} finally {
 			const s = new Set(busy);
 			s.delete(e.ancode);
@@ -184,7 +185,7 @@
 			}
 			patchItem(e.ancode, (it) => ({ ...it, durationOverride: null }));
 		} catch (err) {
-			actionError = err instanceof Error ? err.message : String(err);
+			actionError = clientErrorMessage(err);
 		} finally {
 			const s = new Set(busy);
 			s.delete(e.ancode);
@@ -314,7 +315,7 @@
 			}
 		} catch (err) {
 			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
-			actionError = err instanceof Error ? err.message : String(err);
+			actionError = clientErrorMessage(err);
 		} finally {
 			const s = new Set(busy);
 			s.delete(e.ancode);
@@ -348,7 +349,7 @@
 			}
 		} catch (err) {
 			patchItem(e.ancode, (it) => ({ ...it, constraints: prev }));
-			actionError = err instanceof Error ? err.message : String(err);
+			actionError = clientErrorMessage(err);
 		} finally {
 			const s = new Set(busy);
 			s.delete(e.ancode);
@@ -374,7 +375,7 @@
 			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 		} catch (e) {
 			patchItem(item.ancode, (it) => ({ ...it, status: prev }));
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 		} finally {
 			const s = new Set(busy);
 			s.delete(item.ancode);

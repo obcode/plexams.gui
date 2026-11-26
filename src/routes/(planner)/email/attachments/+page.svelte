@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import AttachmentManager from '#lib/email/AttachmentManager.svelte';
 	import EmailSender from '#lib/email/EmailSender.svelte';
@@ -39,7 +40,7 @@
 			a.click();
 			URL.revokeObjectURL(url);
 		} catch (e) {
-			prError = e instanceof Error ? e.message : String(e);
+			prError = clientErrorMessage(e);
 		} finally {
 			prDownloading = false;
 		}

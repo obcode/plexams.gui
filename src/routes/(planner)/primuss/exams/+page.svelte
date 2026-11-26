@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { plannerErrorMessage } from '#lib/errors/plannerErrors.js';
@@ -81,7 +82,7 @@
 			result = null;
 			await refreshAll(); // Primuss-Ansichten neu laden
 		} catch (e) {
-			resetError = e instanceof Error ? e.message : String(e);
+			resetError = clientErrorMessage(e);
 		} finally {
 			resetting = false;
 		}
@@ -220,7 +221,7 @@
 			connectExam = null;
 			await refreshAll(); // „verbunden"-Flags neu berechnen
 		} catch (e) {
-			connectError = e instanceof Error ? e.message : String(e);
+			connectError = clientErrorMessage(e);
 		} finally {
 			connectBusy = false;
 		}

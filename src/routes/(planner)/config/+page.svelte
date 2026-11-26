@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
@@ -73,7 +74,7 @@
 			// Effektivwerte/Platzhalter neu laden (können sich durch die Overrides ändern)
 			await refreshAll();
 		} catch (e) {
-			planerError = e instanceof Error ? e.message : String(e);
+			planerError = clientErrorMessage(e);
 		} finally {
 			planerSaving = false;
 		}
@@ -102,7 +103,7 @@
 			planerSavedAt = new Date().toLocaleTimeString('de-DE');
 			await refreshAll();
 		} catch (e) {
-			planerError = e instanceof Error ? e.message : String(e);
+			planerError = clientErrorMessage(e);
 		} finally {
 			planerSaving = false;
 		}
@@ -137,7 +138,7 @@
 			// Tage/Anfangszeiten/reservierte Zeiten je Studiengang neu berechnet → Config neu laden
 			await refreshAll();
 		} catch (e) {
-			errorMsg = e instanceof Error ? e.message : String(e);
+			errorMsg = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}

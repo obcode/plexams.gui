@@ -3,6 +3,7 @@
 	lassen sich bearbeiten. Neue Kommentare unten.
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
@@ -38,7 +39,7 @@
 			body = '';
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}
@@ -59,7 +60,7 @@
 			editingId = null;
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busy = false;
 		}

@@ -1,3 +1,4 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
@@ -30,7 +31,7 @@ export async function regeneratePreparation() {
 			error: null
 		};
 	} catch (e) {
-		return { changes: [], studentCount: 0, error: e instanceof Error ? e.message : String(e) };
+		return { changes: [], studentCount: 0, error: clientErrorMessage(e) };
 	} finally {
 		preparing.set(false);
 	}

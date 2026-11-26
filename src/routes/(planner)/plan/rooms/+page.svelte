@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import ExamsForRoomPlanning from '#lib/slot/ExamsForRoomPlanning.svelte';
 	import RoomNamesInSlot from '#lib/slot/RoomNamesInSlot.svelte';
@@ -47,7 +48,7 @@
 			}
 			await onGenerated();
 		} catch (e) {
-			blockError = e instanceof Error ? e.message : String(e);
+			blockError = clientErrorMessage(e);
 		} finally {
 			resetBusy = false;
 		}
@@ -174,7 +175,7 @@
 			blockedMap = blockedMap;
 			needsRegen = true;
 		} catch (e) {
-			blockError = e instanceof Error ? e.message : String(e);
+			blockError = clientErrorMessage(e);
 		} finally {
 			const s = new Set(blockBusy);
 			s.delete(key);
@@ -224,7 +225,7 @@
 			blockedMap = blockedMap;
 			needsRegen = true;
 		} catch (e) {
-			blockError = e instanceof Error ? e.message : String(e);
+			blockError = clientErrorMessage(e);
 		} finally {
 			const s = new Set(blockBusy);
 			s.delete(dayKey);

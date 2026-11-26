@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import PageIntro from '#lib/help/PageIntro.svelte';
 	import Term from '#lib/help/Term.svelte';
@@ -130,7 +131,7 @@
 			gapInfo = 'Zwischenzeit gespeichert.';
 			await refreshAll();
 		} catch (err) {
-			gapError = err instanceof Error ? err.message : String(err);
+			gapError = clientErrorMessage(err);
 		} finally {
 			gapBusy = false;
 		}
@@ -187,7 +188,7 @@
 			slotTimeInfo = 'Tageszeiten-Einstellung gespeichert.';
 			await refreshAll();
 		} catch (err) {
-			slotTimeError = err instanceof Error ? err.message : String(err);
+			slotTimeError = clientErrorMessage(err);
 		} finally {
 			slotTimeBusy = false;
 		}
@@ -536,7 +537,7 @@
 			discardRunReport();
 			await refreshAll();
 		} catch (e) {
-			resetError = e instanceof Error ? e.message : String(e);
+			resetError = clientErrorMessage(e);
 		} finally {
 			resetBusy = false;
 		}

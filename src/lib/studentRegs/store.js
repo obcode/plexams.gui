@@ -1,4 +1,6 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+import { statusFailed, statusOk } from '#lib/errors/statusProblems.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 
@@ -13,17 +15,23 @@ export const studentRegsState = writable({ dirty: false, reason: null, changedAt
 export const regeneratingStudents = writable(false);
 
 let inflight = false;
+const KEY = 'studentRegs';
+const LABEL = 'ob die Anmeldungen aktuell sind';
 
 export async function checkStudentRegs() {
 	if (!browser || inflight) return;
 	inflight = true;
 	try {
 		const res = await fetch('/api/primuss/studentRegsState');
-		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
+		if (!res.ok || d?.error) {
+			statusFailed(KEY, LABEL, d?.error || httpErrorMessage(res.status));
+			return;
+		}
 		if (d?.studentRegsState) studentRegsState.set(d.studentRegsState);
-	} catch {
-		/* ignore */
+		statusOk(KEY);
+	} catch (e) {
+		statusFailed(KEY, LABEL, clientErrorMessage(e));
 	} finally {
 		inflight = false;
 	}
@@ -47,7 +55,7 @@ export async function regenerateStudentRegs() {
 		if (r?.state) studentRegsState.set(r.state);
 		return { studentCount: r?.studentCount ?? 0, error: null };
 	} catch (e) {
-		return { studentCount: 0, error: e instanceof Error ? e.message : String(e) };
+		return { studentCount: 0, error: clientErrorMessage(e) };
 	} finally {
 		regeneratingStudents.set(false);
 	}

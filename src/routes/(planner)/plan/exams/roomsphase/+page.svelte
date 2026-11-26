@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import {
 		CLIENT_LOAD_MESSAGE,
@@ -239,7 +240,7 @@
 			fixInfo = msg(d);
 			await refreshPhaseState();
 		} catch (e) {
-			fixError = e instanceof Error ? e.message : String(e);
+			fixError = clientErrorMessage(e);
 		} finally {
 			fixBusy = false;
 		}

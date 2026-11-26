@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
@@ -278,7 +279,7 @@
 			await refreshAll(); // mine wird beim Query neu berechnet
 			names = [...(data.personalizationNames || [])];
 		} catch (e) {
-			namesError = e instanceof Error ? e.message : String(e);
+			namesError = clientErrorMessage(e);
 		} finally {
 			savingNames = false;
 		}

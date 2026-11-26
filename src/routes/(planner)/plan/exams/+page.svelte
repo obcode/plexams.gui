@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import Slot from '#lib/slot/Slot.svelte';
@@ -182,7 +183,7 @@
 			await refreshAll();
 			placeNonce++;
 		} catch (e) {
-			placeError = e instanceof Error ? e.message : String(e);
+			placeError = clientErrorMessage(e);
 		} finally {
 			lockBusy = false;
 		}
@@ -294,7 +295,7 @@
 			placeNonce++;
 			handleUnselect();
 		} catch (e) {
-			placeError = e instanceof Error ? e.message : String(e);
+			placeError = clientErrorMessage(e);
 		} finally {
 			placeBusy = false;
 		}

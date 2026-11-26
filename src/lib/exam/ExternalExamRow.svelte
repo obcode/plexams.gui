@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	// Eine Prüfungszeile mit Inline-Termineingabe (Datum + Zeit, kein Popup).
 	// Setzt die externe Zeit über /api/exam/setExternalExamTime(ancode) und meldet
@@ -86,7 +87,7 @@
 			}
 			onsaved?.();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}

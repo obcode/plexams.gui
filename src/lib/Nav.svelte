@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -12,6 +13,7 @@
 	import { assembledExamsState, checkAssembledExams } from '#lib/assembledExams/store.js';
 	import { studentRegsState, checkStudentRegs } from '#lib/studentRegs/store.js';
 	import { backupStatus, checkBackupStatus } from '#lib/backup/store.js';
+	import { statusProblems, statusFailed, statusOk } from '#lib/errors/statusProblems.js';
 	import { myInputsCsvDownloadUrl } from '#lib/backup/transfer.js';
 	import { isViewer, isAdmin, displayName, roleOf } from '#lib/auth.js';
 
@@ -122,13 +124,23 @@
 	// liefert nur noch die Auswahlliste fürs Dropdown.
 	let readOnly = $derived(page.data?.readOnly ?? currentSem?.readOnly ?? false);
 	async function getSemester() {
-		const response = await fetch('/api/semester/semesters', { method: 'GET' });
-		const d = await response.json().catch(() => ({}));
-		if (d?.current) {
-			currentSem = d.current;
-			semester = d.current.id;
+		const label = 'welche Semester es gibt (Semesterauswahl)';
+		try {
+			const response = await fetch('/api/semester/semesters', { method: 'GET' });
+			const d = await response.json().catch(() => ({}));
+			if (!response.ok || d?.error) {
+				statusFailed('semesters', label, d?.error || httpErrorMessage(response.status));
+				return;
+			}
+			if (d?.current) {
+				currentSem = d.current;
+				semester = d.current.id;
+			}
+			if (Array.isArray(d?.all)) allSemesters = d.all;
+			statusOk('semesters');
+		} catch (e) {
+			statusFailed('semesters', label, clientErrorMessage(e));
 		}
-		if (Array.isArray(d?.all)) allSemesters = d.all;
 	}
 
 	// DB-Schutz (read-only) umschalten → bei Erfolg neu laden
@@ -151,7 +163,7 @@
 			}
 			window.location.reload();
 		} catch (e) {
-			semesterError = e instanceof Error ? e.message : String(e);
+			semesterError = clientErrorMessage(e);
 		} finally {
 			togglingReadOnly = false;
 		}
@@ -188,7 +200,7 @@
 			}
 			window.location.reload();
 		} catch (e) {
-			semesterError = e instanceof Error ? e.message : String(e);
+			semesterError = clientErrorMessage(e);
 		} finally {
 			switchingSemester = false;
 		}
@@ -1055,6 +1067,37 @@
 			{#if changedAt}<span class="opacity-60">· {fmtChangedAt(changedAt)}</span>{/if}
 			<div class="flex-1"></div>
 			<a class="btn btn-warning btn-xs" href="/exam/assembledExams">→ Generieren</a>
+		</div>
+	{/if}
+
+	<!-- Banner: eine Status-Abfrage der Leiste ist fehlgeschlagen; die Hinweise oben
+	     könnten dann veraltet sein oder fehlen. -->
+	{#if Object.keys($statusProblems).length}
+		<div
+			class="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-warning/40 bg-warning/15 px-3 py-1.5 text-sm"
+		>
+			<span>⚠️</span>
+			<span class="font-medium">Plexams konnte nicht prüfen,</span>
+			<span>
+				{Object.values($statusProblems)
+					.map((p) => p.label)
+					.join('; ')}.
+			</span>
+			<span class="opacity-70">
+				Die Hinweise in dieser Leiste sind deshalb vielleicht nicht aktuell. Grund: {Object.values(
+					$statusProblems
+				)[0].message}
+			</span>
+			<div class="flex-1"></div>
+			<button
+				class="btn btn-warning btn-xs"
+				onclick={() => {
+					getSemester();
+					checkStaleStates();
+				}}
+			>
+				noch einmal prüfen
+			</button>
 		</div>
 	{/if}
 

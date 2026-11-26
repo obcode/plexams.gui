@@ -4,6 +4,7 @@
 	verlinkten Daten, z. B. auf der Prüfungsseite.
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { untrack } from 'svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
 	import Markdown from '#lib/Markdown.svelte';
@@ -76,7 +77,7 @@
 			const saved = initial ? await updateTodo(initial.id, input) : await createTodo(input);
 			await onsaved(saved);
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}

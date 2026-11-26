@@ -4,6 +4,7 @@
 	onchange (Standard: refreshAll).
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
@@ -36,7 +37,7 @@
 			await setTodoDone(todo.id, !todo.done);
 			await onchange();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			const b = new Set(busy);
 			b.delete(todo.id);

@@ -1,4 +1,6 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+import { statusFailed, statusOk } from '#lib/errors/statusProblems.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 
@@ -17,6 +19,8 @@ export const regeneratingAssembled = writable(false);
 export const resettingAssembled = writable(false);
 
 let inflight = false;
+const KEY = 'assembledExams';
+const LABEL = 'ob die aufbereiteten Prüfungen aktuell sind';
 
 /** Zustand frisch vom Server holen. */
 export async function checkAssembledExams() {
@@ -24,11 +28,15 @@ export async function checkAssembledExams() {
 	inflight = true;
 	try {
 		const res = await fetch('/api/exam/assembledExamsState');
-		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
+		if (!res.ok || d?.error) {
+			statusFailed(KEY, LABEL, d?.error || httpErrorMessage(res.status));
+			return;
+		}
 		if (d?.assembledExamsState) assembledExamsState.set(d.assembledExamsState);
-	} catch {
-		/* ignore */
+		statusOk(KEY);
+	} catch (e) {
+		statusFailed(KEY, LABEL, clientErrorMessage(e));
 	} finally {
 		inflight = false;
 	}
@@ -52,7 +60,7 @@ export async function regenerateAssembledExams() {
 		if (r?.state) assembledExamsState.set(r.state);
 		return { changes: r?.changes ?? [], error: null };
 	} catch (e) {
-		return { changes: [], error: e instanceof Error ? e.message : String(e) };
+		return { changes: [], error: clientErrorMessage(e) };
 	} finally {
 		regeneratingAssembled.set(false);
 	}
@@ -75,7 +83,7 @@ export async function resetAssembledExams() {
 		}
 		return { removed: d.resetAssembledExams ?? 0, error: null };
 	} catch (e) {
-		return { removed: 0, error: e instanceof Error ? e.message : String(e) };
+		return { removed: 0, error: clientErrorMessage(e) };
 	} finally {
 		resettingAssembled.set(false);
 	}

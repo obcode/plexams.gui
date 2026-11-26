@@ -7,6 +7,7 @@
 	Für VIEWER ohne Todos bleibt die Box unsichtbar.
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { page } from '$app/state';
 	import { isViewer } from '#lib/auth.js';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -38,7 +39,7 @@
 			todos = await fetchTodos({ done: false, link: { kind, key } });
 			error = '';
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			loaded = true;
 		}

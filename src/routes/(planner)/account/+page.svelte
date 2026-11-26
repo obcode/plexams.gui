@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 
@@ -8,7 +9,7 @@
 	let account = $derived(data.account);
 
 	/** @param {unknown} e */
-	const errMsg = (e) => (e instanceof Error ? e.message : String(e));
+	const errMsg = (e) => clientErrorMessage(e);
 
 	/** @param {string | null | undefined} iso */
 	function fmtDate(iso) {

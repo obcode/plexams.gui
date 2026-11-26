@@ -1,3 +1,6 @@
+import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
+import { statusFailed, statusOk } from '#lib/errors/statusProblems.js';
 import { writable } from 'svelte/store';
 import { browser } from '$app/env';
 
@@ -26,6 +29,8 @@ export const backupStatus = writable({
 });
 
 let inflight = false;
+const KEY = 'backup';
+const LABEL = 'ob seit der letzten Sicherung etwas geändert wurde';
 
 /** Backup-Status frisch vom Server holen (reine Read-Query, nicht write-gelockt). */
 export async function checkBackupStatus() {
@@ -33,11 +38,15 @@ export async function checkBackupStatus() {
 	inflight = true;
 	try {
 		const res = await fetch('/api/backup/status');
-		if (!res.ok) return;
 		const d = await res.json().catch(() => ({}));
+		if (!res.ok || d?.error) {
+			statusFailed(KEY, LABEL, d?.error || httpErrorMessage(res.status));
+			return;
+		}
 		if (d?.backupStatus) backupStatus.set(d.backupStatus);
-	} catch {
-		/* ignore */
+		statusOk(KEY);
+	} catch (e) {
+		statusFailed(KEY, LABEL, clientErrorMessage(e));
 	} finally {
 		inflight = false;
 	}

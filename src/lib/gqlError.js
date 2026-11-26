@@ -1,3 +1,4 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 import { plannerErrorMessage, UNREACHABLE_MESSAGE } from '#lib/errors/plannerErrors.js';
 
 // Readable message for a failed graphql-request call. A ClientError carries the
@@ -12,7 +13,7 @@ export function gqlErrorMessage(e) {
 			.map((/** @type {any} */ x) => plannerErrorMessage(x?.extensions?.code, x?.message))
 			.join(' ');
 	}
-	if (e?.response) return e instanceof Error ? e.message : String(e);
+	if (e?.response) return clientErrorMessage(e);
 	return UNREACHABLE_MESSAGE;
 }
 

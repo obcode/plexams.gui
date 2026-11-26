@@ -1,4 +1,5 @@
 import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 
 // Browser-seitiger Aufruf eines /api-Proxys (gqlProxy). Der Proxy antwortet im
 // Fehlerfall mit HTTP 400 und `{ error }` — wer dann ungeprüft `data.<feld>`
@@ -53,5 +54,5 @@ export async function postApi(path, body = {}) {
  * @returns {string}
  */
 export function errorMessage(e) {
-	return e instanceof Error ? e.message : String(e);
+	return clientErrorMessage(e);
 }

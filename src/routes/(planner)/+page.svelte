@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { stepHelp } from '#lib/help/workflow.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
@@ -50,7 +51,7 @@
 			}
 			planningState = result.setPlanningCondition;
 		} catch (e) {
-			errorMsg = e instanceof Error ? e.message : String(e);
+			errorMsg = clientErrorMessage(e);
 		} finally {
 			const s = new Set(busy);
 			s.delete(cond.key);

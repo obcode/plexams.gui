@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { ROLES } from '#lib/auth.js';
@@ -47,7 +48,7 @@
 			resetForm();
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}
@@ -61,7 +62,7 @@
 			await post('/api/admin/setUser', { email: u.email, name: u.name ?? '', role: newRole });
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busyEmail = '';
 		}
@@ -76,7 +77,7 @@
 			await post('/api/admin/removeUser', { email: u.email });
 			await refreshAll();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		} finally {
 			busyEmail = '';
 		}

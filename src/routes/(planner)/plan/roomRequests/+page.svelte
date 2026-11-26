@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { fade } from 'svelte/transition';
@@ -141,7 +142,7 @@
 			}
 			await refreshAll();
 		} catch (e) {
-			errorMsg = e instanceof Error ? e.message : String(e);
+			errorMsg = clientErrorMessage(e);
 		} finally {
 			const s = new Set(busyKeys);
 			s.delete(k);
@@ -239,7 +240,7 @@
 			modalOpen = false;
 			await refreshAll();
 		} catch (e) {
-			mError = e instanceof Error ? e.message : String(e);
+			mError = clientErrorMessage(e);
 		} finally {
 			mSaving = false;
 		}
@@ -274,7 +275,7 @@
 			preview = result.roomRequestsPreview ?? [];
 			expanded = new Set();
 		} catch (e) {
-			previewError = e instanceof Error ? e.message : String(e);
+			previewError = clientErrorMessage(e);
 		} finally {
 			previewLoading = false;
 		}
@@ -319,7 +320,7 @@
 			await refreshAll();
 			section = 'manage';
 		} catch (e) {
-			applyError = e instanceof Error ? e.message : String(e);
+			applyError = clientErrorMessage(e);
 		} finally {
 			applying = false;
 		}

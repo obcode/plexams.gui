@@ -1,3 +1,5 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
+import { statusFailed, statusOk } from '#lib/errors/statusProblems.js';
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/env';
 import { validationGroups, zpaGroup } from '#lib/validation/validators.js';
@@ -107,9 +109,11 @@ export async function runValidationCheck() {
 	let client;
 	try {
 		client = await getWsClient();
-	} catch {
+	} catch (e) {
+		statusFailed('validation', 'den Stand der Validierung (Ampel)', clientErrorMessage(e));
 		return;
 	}
+	statusOk('validation');
 	for (const group of validationGroups) runGroupCheck(client, group);
 }
 
@@ -120,9 +124,11 @@ export async function runZpaCheck() {
 	let client;
 	try {
 		client = await getWsClient();
-	} catch {
+	} catch (e) {
+		statusFailed('zpaValidation', 'den Stand der ZPA-Prüfungen (Ampel)', clientErrorMessage(e));
 		return;
 	}
+	statusOk('zpaValidation');
 	runGroupCheck(client, zpaGroup);
 }
 

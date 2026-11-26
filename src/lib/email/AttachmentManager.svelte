@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { onMount } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import {
@@ -80,7 +81,7 @@
 			attachments = await listAttachments(kind);
 			onchange?.(attachments);
 		} catch (e) {
-			loadError = e instanceof Error ? e.message : String(e);
+			loadError = clientErrorMessage(e);
 		} finally {
 			loading = false;
 		}
@@ -155,7 +156,7 @@
 			await clearAttachments(kind);
 			await load();
 		} catch (e) {
-			loadError = e instanceof Error ? e.message : String(e);
+			loadError = clientErrorMessage(e);
 		} finally {
 			clearing = false;
 		}

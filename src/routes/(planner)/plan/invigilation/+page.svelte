@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { mkDateShort } from '#lib/jshelper/misc.js';
 	import NoSemesterConfig from '#lib/config/NoSemesterConfig.svelte';
@@ -257,7 +258,7 @@
 			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			return true;
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 			return false;
 		} finally {
 			const s = new Set(busy);
@@ -348,7 +349,7 @@
 			// Plan-View neu abfragen (abgeleiteter Zustand wird einmalig beim Laden berechnet)
 			location.reload();
 		} catch (e) {
-			actionError = e instanceof Error ? e.message : String(e);
+			actionError = clientErrorMessage(e);
 			resetBusy = false;
 		}
 	}

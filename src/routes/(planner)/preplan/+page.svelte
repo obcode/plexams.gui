@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
@@ -152,7 +153,7 @@
 			closeEdit();
 			await refreshAll();
 		} catch (e) {
-			editError = e instanceof Error ? e.message : String(e);
+			editError = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}
@@ -175,7 +176,7 @@
 			}
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		}
 	}
 
@@ -196,7 +197,7 @@
 			}
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			const set = new Set(busy);
 			set.delete(e.id);
@@ -222,7 +223,7 @@
 			}
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			const set = new Set(busy);
 			set.delete(e.id);
@@ -262,7 +263,7 @@
 				suggestions = result.preplanExamAncodeSuggestions ?? [];
 			}
 		} catch (err) {
-			suggestError = err instanceof Error ? err.message : String(err);
+			suggestError = clientErrorMessage(err);
 		} finally {
 			suggestLoading = false;
 		}
@@ -293,7 +294,7 @@
 			closeSuggest();
 			await refreshAll();
 		} catch (err) {
-			suggestError = err instanceof Error ? err.message : String(err);
+			suggestError = clientErrorMessage(err);
 		} finally {
 			connecting = false;
 		}
@@ -316,7 +317,7 @@
 			}
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		}
 	}
 
@@ -412,7 +413,7 @@
 			syncConPairs();
 		} catch (e) {
 			conNotSame = prev;
-			conError = e instanceof Error ? e.message : String(e);
+			conError = clientErrorMessage(e);
 		}
 	}
 
@@ -448,7 +449,7 @@
 			syncConPairs();
 		} catch (e) {
 			conCanShare = prev;
-			conError = e instanceof Error ? e.message : String(e);
+			conError = clientErrorMessage(e);
 		}
 	}
 
@@ -481,7 +482,7 @@
 			closeConstraints();
 			await refreshAll();
 		} catch (e) {
-			conError = e instanceof Error ? e.message : String(e);
+			conError = clientErrorMessage(e);
 		} finally {
 			conSaving = false;
 		}
@@ -556,7 +557,7 @@
 			}
 			proposal = result.preplanBookingSuggestions;
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			proposing = false;
 		}
@@ -604,7 +605,7 @@
 			validation = result.validatePreplanAssignment;
 			validationKind = 'validate';
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			validating = false;
 		}
@@ -635,7 +636,7 @@
 			validationKind = 'generate';
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			generating = false;
 		}
@@ -672,7 +673,7 @@
 					: 'Keine nicht-fixierten Zeiten vorhanden.';
 			await refreshAll();
 		} catch (err) {
-			listError = err instanceof Error ? err.message : String(err);
+			listError = clientErrorMessage(err);
 		} finally {
 			resetting = false;
 		}
@@ -1201,7 +1202,7 @@
 			/>
 		{:catch err}
 			<div class="alert alert-error py-2 text-sm">
-				<span>Kalender konnte nicht geladen werden: {err?.message ?? err}</span>
+				<span>Kalender konnte nicht geladen werden: {clientErrorMessage(err)}</span>
 			</div>
 		{/await}
 	</div>

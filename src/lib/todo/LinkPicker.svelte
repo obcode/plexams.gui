@@ -8,6 +8,7 @@
 	Browser wird nur danach gefiltert — die Suche nach „Braun" fände dann nichts.
 -->
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { fetchLinkSuggestions } from './client.js';
 	import { FREE_TEXT_KINDS, LINK_KINDS } from './todo.js';
 
@@ -50,7 +51,7 @@
 				highlight = s.length ? 0 : -1;
 				open = true;
 			} catch (e) {
-				error = e instanceof Error ? e.message : String(e);
+				error = clientErrorMessage(e);
 			}
 		}, 200);
 	}
@@ -71,7 +72,7 @@
 			input = '';
 			suggestions = [];
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 		}
 	}
 

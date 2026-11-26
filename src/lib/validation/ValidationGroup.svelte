@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import {
 		CLIENT_LOAD_MESSAGE,
@@ -137,7 +138,7 @@
 			v.report = toValidationReport(data[query.field]);
 			v.status = 'done';
 		} catch (e) {
-			v.errorMsg = e instanceof Error ? e.message : String(e);
+			v.errorMsg = clientErrorMessage(e);
 			v.status = 'error';
 		}
 	}

@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import ValidationLegend from '#lib/validation/ValidationLegend.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
@@ -21,7 +22,7 @@
 			if (!res.ok || d?.error) throw new Error(d?.error || httpErrorMessage(res.status));
 			waivers = d.ntaRoomAloneWaivers ?? [];
 		} catch (e) {
-			loadErr = e instanceof Error ? e.message : String(e);
+			loadErr = clientErrorMessage(e);
 		}
 	}
 	onMount(loadWaivers);

@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
@@ -120,7 +121,7 @@
 			closeEdit();
 			await refreshAll();
 		} catch (e) {
-			editError = e instanceof Error ? e.message : String(e);
+			editError = clientErrorMessage(e);
 		} finally {
 			saving = false;
 		}
@@ -148,7 +149,7 @@
 			}
 			await refreshAll();
 		} catch (e) {
-			listError = e instanceof Error ? e.message : String(e);
+			listError = clientErrorMessage(e);
 		}
 	}
 </script>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import WriteButton from '#lib/WriteButton.svelte';
 
@@ -110,7 +111,7 @@
 				return;
 			}
 		} catch (e) {
-			errorMsg = e instanceof Error ? e.message : String(e);
+			errorMsg = clientErrorMessage(e);
 			return;
 		} finally {
 			saving = false;

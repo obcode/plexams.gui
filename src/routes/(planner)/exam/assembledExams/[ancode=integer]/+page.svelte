@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import { checkStudentRegs } from '#lib/studentRegs/store.js';
@@ -37,7 +38,7 @@
 			checkStudentRegs();
 			return true;
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = clientErrorMessage(e);
 			return false;
 		} finally {
 			busy = false;

@@ -1,3 +1,4 @@
+import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 import { gql } from 'graphql-request';
 import { backendRequest } from '#lib/server/backend.js';
 import { CONNECTED_EXAM_FIELDS } from '#lib/exam/connectedFields.js';
@@ -48,7 +49,7 @@ export const load: PageServerLoad = async () => {
 				string,
 				{ ancode: number; module: string; mainExamer: string }[]
 			>,
-			loadError: e instanceof Error ? e.message : String(e)
+			loadError: clientErrorMessage(e)
 		};
 	}
 };

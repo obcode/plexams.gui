@@ -1,4 +1,5 @@
 <script>
+	import { clientErrorMessage } from '#lib/errors/clientErrors.js';
 	import {
 		fetchConnection,
 		fetchOpenIssues,
@@ -14,7 +15,7 @@
 	let { data } = $props();
 
 	/** @param {unknown} e */
-	const errMsg = (e) => (e instanceof Error ? e.message : String(e));
+	const errMsg = (e) => clientErrorMessage(e);
 
 	// ── Verbindung ──────────────────────────────────────────────────────────────
 	let connection = $state(data.connection);
