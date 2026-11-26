@@ -43,6 +43,21 @@
 	let editing = $state(null);
 	let isNew = $state(false);
 	let editError = $state('');
+
+	// Mirrors the backend rule (validateStudyProgram) as an early hint; the backend
+	// stays authoritative. New fk07 programs carry the degree like the Primuss file
+	// names (IF-B, DC-M); typographic dashes are never accepted.
+	const FK07_SHORTNAME = /^[A-Z]{2,4}-[BM]$/;
+	const TYPO_DASH = /[\u2010-\u2015\u2212]/;
+	const shortnameHint = $derived.by(() => {
+		const sn = (editing?.shortname ?? '').trim();
+		if (!sn) return '';
+		if (TYPO_DASH.test(sn))
+			return 'Typografischer Strich — bitte den normalen Bindestrich „-“ verwenden.';
+		if (isNew && editing?.category === 'fk07' && !editing?.retired && !FK07_SHORTNAME.test(sn))
+			return 'FK07-Kürzel brauchen die Form XX-B bzw. XX-M (z. B. IF-B, DC-M), wie in den Primuss-Dateinamen.';
+		return '';
+	});
 	let saving = $state(false);
 
 	function openAdd() {
@@ -330,7 +345,11 @@
 						class="input input-bordered input-sm w-32 font-mono"
 						bind:value={editing.shortname}
 						disabled={!isNew}
+						placeholder={editing.category === 'fk07' ? 'z. B. IF-B' : ''}
 					/>
+					{#if shortnameHint}
+						<span class="text-xs text-warning">{shortnameHint}</span>
+					{/if}
 				</label>
 				<label class="flex flex-col gap-1">
 					<span class="text-xs font-medium text-base-content/60">Name</span>
@@ -351,13 +370,16 @@
 						type="text"
 						class="input input-bordered input-sm w-40 font-mono"
 						bind:value={editing.zpaCode}
-						placeholder="leer = wie Kürzel"
+						placeholder={editing.category === 'fk07'
+							? 'leer = Kürzel ohne -B/-M'
+							: 'leer = wie Kürzel'}
 					/>
 					<span class="text-xs text-base-content/40">
-						Das interne Kürzel darf abschluss-suffigiert sein (z. B. <span class="font-mono">
-							DC-B
-						</span>). Der ZPA-Code ist das 2-Buchstaben-Kürzel, das ZPA verwendet (z. B.
-						<span class="font-mono">DC</span> für DC-B und DC-M). Leer = wie Kürzel.
+						Das Kürzel trägt den Abschluss (z. B. <span class="font-mono">DC-B</span>,
+						<span class="font-mono">DC-M</span>) — genau so steht es in den Primuss-Dateinamen. Der
+						ZPA-Code ist das Kürzel ohne Abschluss, das ZPA verwendet (z. B.
+						<span class="font-mono">DC</span> für DC-B und DC-M). Leer lassen: bei FK07 wird er aus dem
+						Kürzel abgeleitet, sonst gilt das Kürzel.
 					</span>
 				</label>
 				<label class="flex flex-col gap-1">

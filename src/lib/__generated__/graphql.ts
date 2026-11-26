@@ -4243,7 +4243,8 @@ export type StudyProgram = {
   shortname: Scalars['String']['output'];
   /**
    * The (still 2-letter, possibly non-unique) code this program has in the external
-   * ZPA system, e.g. "DC" for both DC-B and DC-M. Empty defaults to shortname.
+   * ZPA system, e.g. "DC" for both DC-B and DC-M. Left empty on an fk07 program, it is
+   * derived by stripping the degree suffix (DC-M -> DC); otherwise empty means shortname.
    */
   zpaCode?: Maybe<Scalars['String']['output']>;
 };
