@@ -299,6 +299,8 @@ export type ConstraintCost = {
   __typename?: 'ConstraintCost';
   cost: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  /** German label of the rule, for display (name is the stable key). */
+  title?: Maybe<Scalars['String']['output']>;
 };
 
 export type Constraints = {

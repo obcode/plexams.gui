@@ -161,7 +161,9 @@
 					</span>
 					<!-- Status-Icons rechts, damit die Ancodes links bündig ausgerichtet sind -->
 					<span class="ml-auto flex items-center gap-0.5">
-						{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">
+						{#if exam.planEntry != null && exam.planEntry.locked}<span
+								title="fester Termin aus der Vorplanung"
+							>
 								🔒
 							</span>{/if}
 						{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span
@@ -193,7 +195,9 @@
 					<!-- Status-Icons rechts, damit Ancode + Modul links bündig stehen -->
 					{#if exam.planEntry?.locked || exam.planEntry?.phaseFixed || exam.zpaExam.isRepeaterExam}
 						<div class="flex items-center gap-0.5">
-							{#if exam.planEntry != null && exam.planEntry.locked}<span title="manuell gesperrt">
+							{#if exam.planEntry != null && exam.planEntry.locked}<span
+									title="fester Termin aus der Vorplanung"
+								>
 									🔒
 								</span>{/if}
 							{#if exam.planEntry != null && exam.planEntry.phaseFixed}<span

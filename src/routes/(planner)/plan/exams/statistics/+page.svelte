@@ -137,9 +137,9 @@
 					undefined
 				)}
 				{@render kpi(
-					'Ø Proximity-Cost',
+					'Ø Nähe-Strafe',
 					formatDecimal(stats.avgProximityCost),
-					'Zielgröße des Solvers (kleiner = besser)',
+					'Maß des Generators für zu dicht liegende Prüfungen (kleiner = besser)',
 					'neutral',
 					'Carter-Index: kleiner = besser'
 				)}

@@ -133,7 +133,7 @@ export const STEP_HELP = {
 		note: 'Das Häkchen setzt sich von selbst, sobald alle diese Prüfungen einen Termin haben.'
 	},
 	exahmSebPlanned: {
-		what: 'Auf „EXaHM/SEB in T-Bau planen" erst einen Probelauf starten und dann mit „Planen & schreiben" übernehmen.',
+		what: 'Auf „EXaHM/SEB in T-Bau planen" erst einen Probelauf starten und dann mit „Planen & speichern" übernehmen.',
 		why: 'Die Rechnerprüfungen kommen zuerst dran, weil sie nur in die gebuchten T-Bau-Zeiten passen.'
 	},
 	exahmSebFixed: {
@@ -141,7 +141,7 @@ export const STEP_HELP = {
 		why: 'Fixierte Prüfungen behalten ihren Termin, wenn danach der große Terminplan generiert wird.'
 	},
 	examScheduleGenerated: {
-		what: 'Auf „Terminplan generieren" erst einen Probelauf starten, das Ergebnis ansehen und dann mit „Generieren & schreiben" speichern.',
+		what: 'Auf „Terminplan generieren" erst einen Probelauf starten, das Ergebnis ansehen und dann mit „Generieren & speichern" übernehmen.',
 		why: 'Der Generator verteilt alle übrigen Prüfungen so, dass möglichst wenige Studierende zwei Prüfungen gleichzeitig oder am selben Tag haben.',
 		note: 'Danach auf „Prüfungsplan" nachbessern und auf „Terminplanung validieren" prüfen.'
 	},
@@ -163,7 +163,7 @@ export const STEP_HELP = {
 		note: 'Kommt die Genehmigung, wird sie auf derselben Seite je Anfrage eingetragen.'
 	},
 	roomsAssigned: {
-		what: 'Auf „Räume generieren" erst einen Probelauf starten und dann mit „Generieren & schreiben" speichern.',
+		what: 'Auf „Räume generieren" erst einen Probelauf starten und dann mit „Generieren & speichern" übernehmen.',
 		why: 'Plexams verteilt alle Studierenden auf die verfügbaren Räume und berücksichtigt dabei Nachteilsausgleiche und Raumanforderungen.',
 		note: 'Räume hängen an der Prüfung. Wird eine Prüfung danach verschoben, müssen die Räume neu generiert werden.'
 	},

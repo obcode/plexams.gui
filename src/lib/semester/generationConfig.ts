@@ -85,60 +85,64 @@ export const EXAM_SCHEDULE_WEIGHT_FIELDS: GenerationConfigField[] = [
 	{
 		key: 'examAdjacent',
 		label: 'direkt hintereinander',
-		hint: 'zwei Prüfungen direkt hintereinander am selben Tag (sehr schlecht)'
+		hint: 'Strafpunkte, wenn eine Person zwei Prüfungen am selben Tag direkt hintereinander hat (sehr schlecht)'
 	},
-	{ key: 'examSameDay', label: 'selber Tag', hint: 'selber Tag, nicht direkt hintereinander' },
+	{
+		key: 'examSameDay',
+		label: 'selber Tag',
+		hint: 'Strafpunkte für zwei Prüfungen einer Person am selben Tag, nicht direkt hintereinander'
+	},
 	{
 		key: 'examDayFactor',
 		label: 'Tagesabstand-Faktor',
-		hint: 'über Tage: fällt mit dem echten Stundenabstand'
+		hint: 'Strafpunkte für Prüfungen einer Person an verschiedenen Tagen; je mehr Abstand, desto weniger'
 	},
 	{
 		key: 'examWorstCase',
 		label: 'Worst-Case-Schutz',
-		hint: 'schützt den am schlechtesten verteilten Studierenden'
+		hint: 'wächst mit dem Quadrat der Belastung einer Person und schützt so die, deren Prüfungen am dichtesten liegen'
 	},
 	{
 		key: 'examRepeatFactor',
 		label: 'Wiederholungs-Faktor',
-		hint: 'Abwertung für (wahrscheinliche) Wiederholungs-Konflikte (0..1)'
+		hint: 'Faktor (0 bis 1) für Konflikte, die wohl nur Wiederholer:innen betreffen; kleiner heißt weniger wichtig'
 	},
 	{
 		key: 'examAttract',
 		label: 'Zusammenziehen',
-		hint: 'zieht Parallelgruppen/kleine Prüfungen desselben Prüfers zusammen'
+		hint: 'legt Parallelgruppen eines Moduls und kleine Prüfungen derselben Person möglichst zur selben Zeit'
 	},
 	{
 		key: 'examSlotLoad',
 		label: 'Startzeit-Auslastung',
-		hint: 'Gleichverteilung über Startzeiten'
+		hint: 'Strafpunkte je Platz, den eine Startzeit über der Auslastungs-Schwelle belegt'
 	},
 	{
 		key: 'examLoadThreshold',
 		label: 'Auslastungs-Schwelle',
 		int: true,
-		hint: 'Schwelle für die Gleichverteilung über Startzeiten'
+		hint: 'so viele Plätze je Startzeit gelten noch als normal ausgelastet'
 	},
 	{
 		key: 'examUnplaced',
 		label: 'ungeplante Prüfung',
 		caution: true,
-		hint: 'Strafe pro ungeplanter Prüfung — dominant, hoch lassen'
+		hint: 'Strafpunkte je Prüfung ohne Termin; muss alles andere überwiegen, deshalb hoch lassen'
 	},
 	{
 		key: 'examCrossCampus',
 		label: 'Standortwechsel',
-		hint: 'selber Tag über verschiedene Standorte (Reisezeit)'
+		hint: 'zusätzliche Strafpunkte, wenn eine Person am selben Tag an zwei Standorten geprüft wird'
 	},
 	{
 		key: 'examHole',
 		label: 'Startzeit-Lücke',
-		hint: 'leere Startzeit zwischen belegten am selben Tag (schlecht für Aufsichten)'
+		hint: 'Strafpunkte je leerer Startzeit zwischen belegten am selben Tag (schlecht für die Aufsichten)'
 	},
 	{
 		key: 'examClosenessFalloffMin',
 		label: 'Zeit-Falloff (min)',
-		hint: '0 = raster-äquivalent; >0 = kontinuierlicher Zeit-Falloff (Zeitkonstante in Minuten) für feinere Startzeiten'
+		hint: '0 = nur „direkt hintereinander“ oder „selber Tag“; größer 0 = die Strafe nimmt mit dem Abstand in Minuten gleitend ab (nur bei vielen verschiedenen Startzeiten sinnvoll)'
 	}
 ];
 
@@ -150,7 +154,7 @@ export const ROOM_PHASE_A_WEIGHT_FIELDS: GenerationConfigField[] = [
 	{
 		key: 'examTbauFill',
 		label: 'T-Bau-Sitze',
-		hint: 'Strafe pro ungenutztem gebuchten T-Bau-Sitz (nur EXaHM/SEB-Raumphase A)'
+		hint: 'Strafpunkte je gebuchtem, aber ungenutztem Platz im T-Bau'
 	}
 ];
 

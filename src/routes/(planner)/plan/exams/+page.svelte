@@ -180,7 +180,7 @@
 				res.map((/** @type {any} */ c) => [c.ancode, c.numberOfStuds])
 			);
 		} catch (e) {
-			placeError = `Erlaubte Slots/Konflikte nicht ladbar: ${errorMessage(e)}`;
+			placeError = `Erlaubte Termine und Konflikte dieser Prüfung konnten nicht geladen werden: ${errorMessage(e)}`;
 		}
 	}
 
@@ -559,7 +559,7 @@
 					class="btn join-item btn-sm {view === 'kalender' ? 'btn-primary' : 'btn-ghost'}"
 					onclick={() => (view = 'kalender')}
 				>
-					🗓 Slots
+					🗓 Raster
 				</button>
 				<button
 					class="btn join-item btn-sm {view === 'zeit' ? 'btn-primary' : 'btn-ghost'}"
@@ -578,6 +578,17 @@
 			{/if}
 		</div>
 
+		<p class="max-w-3xl text-sm text-base-content/70">
+			Der Terminplan zum Ansehen und Nachbessern von Hand. „Raster“ zeigt je Prüfungstag und
+			Startzeit eine Zelle, „Zeit“ die Prüfungen nach ihrer echten Dauer. Klickst du eine Prüfung
+			an, färben sich die Zellen: grün erlaubt, gelb ungünstig, rot verboten; dann „＋ hier“ in
+			einer Zelle oder unten eine freie Zeit wählen. Jede Änderung ist sofort gespeichert. Danach
+			„Terminplanung validieren“ laufen lassen.
+			<a class="link link-hover whitespace-nowrap text-base-content/50" href="/hilfe#phase1">
+				Mehr dazu in der Hilfe →
+			</a>
+		</p>
+
 		<!-- Platzierungsleiste: bei gewählter Prüfung „＋ hier" im Slot oder freie Zeit -->
 		{#if selectedExam !== -1}
 			<div class="flex flex-col gap-2 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm">
@@ -586,7 +597,7 @@
 						Ancode <span class="font-mono">{selectedExam}</span> platzieren:
 					</span>
 					<span class="text-base-content/60">
-						auf „＋ hier" in einem Slot klicken — oder freie Zeit setzen:
+						in einer Zelle auf „＋ hier“ klicken oder eine freie Zeit setzen:
 					</span>
 					<input type="date" class="input input-bordered input-xs w-36" bind:value={placeDate} />
 					<input type="time" class="input input-bordered input-xs w-24" bind:value={placeTime} />
@@ -676,7 +687,7 @@
 					class="flex items-center gap-1 {view === 'zeit' ? 'opacity-40' : ''}"
 					title={view === 'zeit' ? 'in der Zeitansicht ohne Wirkung' : undefined}
 				>
-					<span class="text-sm text-base-content/60">reservierte Slots:</span>
+					<span class="text-sm text-base-content/60">reservierte Zeiten zeigen:</span>
 					<button
 						class="badge {jointSlotProgram === '' ? 'badge-neutral' : 'badge-ghost'}"
 						disabled={view === 'zeit'}
@@ -740,7 +751,7 @@
 				title="{otherFkAncode(e)} · {e.zpaExam?.module} ({e.zpaExam
 					?.mainExamer}) — echte Startzeit {offGridTime(
 					e.planEntry?.starttime
-				)}, nicht auf dem Slot-Raster"
+				)}, liegt nicht auf einer Startzeit des Rasters"
 			>
 				{#if !details}
 					<!-- kompakt: nur Ancode (+ Konflikt-Badge/Wiederholung); Rest im Tooltip -->
@@ -938,7 +949,9 @@
 																<span class="font-mono">{fmtAncode(x.e.zpaExam)}</span>
 																<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
 																<span class="ml-auto flex items-center gap-0.5">
-																	{#if x.e.planEntry?.locked}<span title="manuell gesperrt">
+																	{#if x.e.planEntry?.locked}<span
+																			title="fester Termin aus der Vorplanung"
+																		>
 																			🔒
 																		</span>{/if}
 																	{#if x.e.planEntry?.phaseFixed}<span title="Raumphase fixiert">

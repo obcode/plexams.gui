@@ -90,7 +90,7 @@ export const schedulingValidators = [
 		key: 'validateConflicts',
 		title: 'Konflikte',
 		description:
-			'Studierende mit zwei Prüfungen zur selben Zeit, zu dicht nacheinander oder am selben Tag.',
+			'Studierende mit zwei Prüfungen, die sich überschneiden (Fehler), am selben Tag zu dicht beginnen (Warnung) oder nur am selben Tag liegen (Hinweis). Akzeptierte und erlaubte Paare sind nur Hinweise.',
 		argSpec: [
 			{ name: 'onlyPlannedByMe', type: 'Boolean!', value: true },
 			{ name: 'ancode', type: 'Int!', value: 0 }
@@ -100,13 +100,13 @@ export const schedulingValidators = [
 		key: 'validateConstraints',
 		title: 'Vorgaben',
 		description:
-			'Feste Termine, ausgeschlossene Tage, „gleichzeitig“ und Raumanforderungen sind eingehalten.'
+			'Feste Termine, Sperrtage, mögliche Tage und „zur selben Zeit wie“ sind eingehalten; EXaHM/SEB-Prüfungen liegen in gebuchten Anny-Zeiten, Prüfungen mit erlaubten Räumen sitzen nur dort.'
 	},
 	{
 		key: 'validateSemesterTimes',
 		title: 'Tageszeiten',
 		description:
-			'Die Startzeiten liegen im Tageszeit-Fenster, das die Semester-Konfiguration vorgibt.'
+			'Die Startzeiten liegen im Tageszeit-Fenster, das unter „Terminplan generieren“ eingestellt ist (im Winter nicht zu früh, im Sommer nicht zu spät).'
 	}
 ];
 

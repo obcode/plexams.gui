@@ -27,11 +27,12 @@
 {#if exahmNtaAncodes.length}
 	<div class="flex flex-col gap-1 rounded-lg border border-info/40 bg-info/10 p-3">
 		<span class="text-sm font-medium">
-			NTA-Raum bei der Raumplanung buchen für ({exahmNtaAncodes.length})
+			Bei der Raumplanung einen eigenen Raum für den Nachteilsausgleich buchen ({exahmNtaAncodes.length})
 		</span>
 		<span class="text-xs text-base-content/60">
-			EXaHM/SEB-Prüfungen mit NTA — die NTA-Zeitverlängerung ist nicht gegated; der/die Studierende
-			sitzt in einem separaten, später zu buchenden NTA-Raum.
+			Diese EXaHM/SEB-Prüfungen haben Studierende mit Nachteilsausgleich. Ihre Zeitverlängerung
+			wurde hier nicht gegen die gebuchte T-Bau-Zeit geprüft; sie schreiben in einem eigenen Raum,
+			den du bei der Raumplanung buchst.
 		</span>
 		<div class="flex flex-wrap gap-1">
 			{#each exahmNtaAncodes as a}
@@ -48,7 +49,7 @@
 
 {#if unplacedReasons.length}
 	<div class="flex flex-col gap-2">
-		<h3 class="font-semibold">Nicht geplant ({unplacedReasons.length})</h3>
+		<h3 class="font-semibold">Nicht eingeplant ({unplacedReasons.length})</h3>
 		<div class="overflow-x-auto rounded-lg border border-warning/40">
 			<table class="table table-sm">
 				<thead>

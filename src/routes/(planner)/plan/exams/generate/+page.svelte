@@ -1,5 +1,7 @@
 <script>
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 	import {
 		CLIENT_LOAD_MESSAGE,
 		streamErrorMessage,
@@ -249,6 +251,7 @@
 					cost
 					costByConstraint {
 						name
+						title
 						cost
 					}
 					iterations
@@ -514,7 +517,7 @@
 		if (resetBusy || examsBlocked) return;
 		if (
 			!confirm(
-				'Generierten Terminplan zurücksetzen? Manuell gesperrte, externe und fixierte EXaHM/SEB-Prüfungen bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+				'Generierten Terminplan zurücksetzen? Alle generierten Termine werden gelöscht; nur Prüfungen mit festem Termin aus der Vorplanung, fixierte EXaHM/SEB-Prüfungen und die Prüfungen anderer FKs behalten ihren Termin. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -549,47 +552,63 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Terminplan generieren</h1>
-		{#if running}
-			<span class="badge badge-info gap-2">
-				<span class="loading loading-spinner loading-xs"></span> läuft …
-			</span>
-		{:else if done && !errorMsg}
-			<span class="badge badge-success">fertig</span>
-		{/if}
-		{#if running}
-			{#if writeRun}
-				<span class="badge badge-warning">schreibt in die Datenbank</span>
-			{:else}
-				<span class="badge badge-ghost">Probelauf (kein Schreiben)</span>
+	<PageIntro title="Terminplan generieren" help="schritt-examScheduleGenerated">
+		{#snippet actions()}
+			{#if running}
+				<span class="badge badge-info gap-2">
+					<span class="loading loading-spinner loading-xs"></span> läuft …
+				</span>
+				{#if writeRun}
+					<span class="badge badge-warning">speichert</span>
+				{:else}
+					<span class="badge badge-ghost">Probelauf (speichert nichts)</span>
+				{/if}
+				{#if ignoreRun}
+					<span class="badge badge-ghost">ohne Bewertungen</span>
+				{/if}
+				{#if keepAssigned}
+					<span class="badge badge-ghost">verbessert den bestehenden Plan</span>
+				{/if}
+			{:else if done && !errorMsg}
+				<span class="badge badge-success">fertig</span>
 			{/if}
-			{#if ignoreRun}
-				<span class="badge badge-ghost">ohne Bewertungen</span>
-			{/if}
-			{#if keepAssigned}
-				<span class="badge badge-ghost">Warm-Start</span>
-			{/if}
-		{/if}
-	</div>
+		{/snippet}
+		Hier gibt Plexams allen übrigen Prüfungen Tag und Uhrzeit, so dass möglichst wenige Studierende zwei
+		Prüfungen gleichzeitig oder kurz nacheinander haben. Vorher müssen die Prüfungen
+		<Term id="aufbereitete-pruefung">aufbereitet</Term>, die Termine der Prüfungen anderer FKs
+		eingetragen und die EXaHM/SEB-Prüfungen fixiert sein. Danach liest du unten die verbleibenden
+		<Term id="konflikt">Konflikte</Term>, akzeptierst vertretbare und besserst im Prüfungsplan von
+		Hand nach.
+		{#snippet howto()}
+			<ol>
+				<li>„Probelauf“ starten und den Bericht lesen: nicht eingeplante Prüfungen, Konflikte.</li>
+				<li>
+					Gefällt der Plan nicht, „Neuer Vorschlag“ probiert einen anderen Startwert; Konflikte, die
+					in Ordnung sind (z. B. bei Wiederholungsprüfungen), unten je Studierende:n akzeptieren.
+				</li>
+				<li>Passt das Ergebnis, mit demselben Startwert „Generieren &amp; speichern“.</li>
+				<li>Danach „Terminplanung validieren“ laufen lassen und im Prüfungsplan nachbessern.</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			📄 CSV Export / Import (Konflikt-Ratings, Slot-Teilung)
+			📄 Als CSV exportieren / importieren (Bewertungen der Konflikte, „darf zeitgleich“)
 		</summary>
 		<div class="mt-2 flex flex-col gap-3">
-			<DatasetCsvTransfer name="conflict-ratings" title="Konflikt-Ratings">
-				Bewertungen von Konflikten (ACCEPT/VETO).
+			<DatasetCsvTransfer name="conflict-ratings" title="Bewertungen der Konflikte">
+				Je Studierende:r und Prüfungspaar: akzeptiert (ACCEPT) oder ausdrücklich nicht (VETO).
 			</DatasetCsvTransfer>
-			<DatasetCsvTransfer name="can-share-slot" title="Dürfen Slot teilen">
-				Prüfungspaare, die sich einen Slot teilen dürfen.
+			<DatasetCsvTransfer name="can-share-slot" title="„darf zeitgleich“">
+				Prüfungspaare, die zur selben Zeit liegen dürfen.
 			</DatasetCsvTransfer>
 		</div>
 	</details>
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium">Daten konnten nicht geladen werden (Backend-Fehler).</span>
+			<span class="font-medium">Die Daten der Seite konnten nicht geladen werden.</span>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
 	{/if}
@@ -597,9 +616,10 @@
 	{#if examsBlocked}
 		<div class="alert alert-warning py-2 text-sm">
 			<span>
-				🔒 Terminplan gesperrt — Entwurf verschickt oder Prüfungsplan veröffentlicht. „Generieren
-				&amp; schreiben" ist deaktiviert; der Probelauf bleibt möglich. Zum Neuschreiben zuerst das
-				jeweilige Häkchen auf der Startseite lösen.
+				🔒 Terminplan gesperrt: Der Entwurf ist verschickt oder der Prüfungsplan veröffentlicht.
+				Speichern und Zurücksetzen sind deshalb ausgeschaltet, der Probelauf geht weiter. Soll
+				wirklich neu generiert werden, zuerst auf der Startseite das Häkchen beim jeweiligen Schritt
+				zurücknehmen.
 			</span>
 		</div>
 	{/if}
@@ -607,7 +627,7 @@
 	<!-- Eingaben -->
 	<div class="flex flex-wrap items-end gap-6 rounded-lg border border-base-300 bg-base-100 p-4">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Seed</span>
+			<span class="text-xs font-medium text-base-content/60">Startwert (Seed)</span>
 			<input
 				type="number"
 				class="input input-bordered input-sm w-24"
@@ -618,7 +638,7 @@
 		</label>
 		<div class="flex flex-col gap-1">
 			<div class="flex items-baseline justify-between gap-3">
-				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-xs font-medium text-base-content/60">Durchläufe</span>
 				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
 			</div>
 			<input
@@ -635,8 +655,8 @@
 				<span>{fmt(ITER_MAX)}</span>
 			</div>
 			<span class="text-xs text-base-content/50">
-				Standard 1 Mio.; mehr bringt i. d. R. nichts. 100k ≈ 0,3 s (schnelle Vorschau), 1 Mio. ≈ 3 s
-				(beste Qualität).
+				Voreinstellung 1 Mio.; mehr bringt meist nichts. 100.000 dauern etwa 0,3 s (schnelle
+				Vorschau), 1 Mio. etwa 3 s.
 			</span>
 		</div>
 		<label class="flex max-w-xs flex-col gap-1">
@@ -647,11 +667,11 @@
 					bind:checked={keepAssigned}
 					disabled={running}
 				/>
-				bestehenden Plan verbessern (Warm-Start)
+				bestehenden Plan nur verbessern
 			</span>
 			<span class="text-xs text-base-content/50">
-				Ändert nur, was den Plan verbessert — sinnvoll nach kleinen Anpassungen/Sperren. Für einen
-				komplett neuen Plan aus lassen.
+				Geht vom gespeicherten Plan aus und übernimmt nur Änderungen, die ihn besser machen.
+				Sinnvoll nach kleinen Anpassungen von Hand; für einen ganz neuen Plan ausgeschaltet lassen.
 			</span>
 		</label>
 	</div>
@@ -679,10 +699,11 @@
 			{#if gapError}<span class="text-xs text-error">{gapError}</span>{/if}
 		</div>
 		<span class="max-w-3xl text-xs text-base-content/50">
-			Puffer zwischen zwei Prüfungen desselben Studierenden (leer = Standard 30, persistente
-			Semester-Einstellung). Bei uniformen 2-h-Slots bleiben 90-min-Prüfungen mit 30 Min. Puffer
-			direkt hintereinander erlaubt; größere Werte sperren mehr Folgeslots. Wirkt beim nächsten
-			„Generieren".
+			So viele Minuten liegen mindestens zwischen dem Ende der einen und dem Beginn der nächsten
+			Prüfung einer Person (bei verschiedenen Standorten gilt die Reisezeit aus der
+			Semester-Konfiguration). Leer heißt 30. Bei Startzeiten im Abstand von zwei Stunden passen
+			dann 90-Minuten-Prüfungen noch direkt hintereinander; ein größerer Wert schließt mehr Termine
+			aus. Wird in der Semester-Konfiguration gespeichert und wirkt ab dem nächsten Lauf.
 		</span>
 	</div>
 
@@ -699,14 +720,14 @@
 				onclick={() => requestStart(false)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
-					: 'schreibt den Plan mit dem aktuellen Seed — identisch zum Probelauf mit demselben Seed'}
+					: 'speichert den Plan mit diesem Startwert, also dasselbe Ergebnis wie der Probelauf mit demselben Startwert'}
 			>
-				▶ Generieren &amp; schreiben
+				▶ Generieren &amp; speichern
 			</button>
 			<button
 				class="btn btn-ghost btn-sm"
 				onclick={newSuggestion}
-				title="anderen Seed (aktueller + 1) als Probelauf → anderer Plan"
+				title="Probelauf mit dem nächsten Startwert, ergibt einen anderen Plan"
 			>
 				🎲 Neuer Vorschlag
 			</button>
@@ -716,15 +737,17 @@
 				onclick={() => requestStart(false, true)}
 				title={examsBlocked
 					? 'gesperrt — siehe Hinweis oben'
-					: 'ignoriert alle Bewertungen & „darf zeitgleich" für diesen Lauf (gespeichert bleiben sie)'}
+					: 'generiert und speichert, ohne für diesen Lauf die Bewertungen der Konflikte und „darf zeitgleich“ zu beachten; die Bewertungen selbst bleiben gespeichert'}
 			>
 				↺ Neu generieren ohne Bewertungen
 			</button>
 			{#if phaseCheckBusy}<span class="loading loading-spinner loading-xs"></span>{/if}
 		{/if}
 		<span class="text-xs text-base-content/50">
-			Probelauf schreibt nichts. Derselbe Seed erzeugt bei unveränderten Daten &amp; Bewertungen
-			denselben Plan — nach einem guten Probelauf einfach mit demselben Seed „schreiben".
+			Der Probelauf speichert nichts. „Generieren &amp; speichern“ überschreibt die Termine aller
+			Prüfungen außer denen mit festem Termin aus der Vorplanung, den fixierten EXaHM/SEB-Prüfungen
+			und denen anderer FKs; was dabei keinen Termin findet, verliert seinen alten. Derselbe
+			Startwert ergibt bei unveränderten Daten und Bewertungen denselben Plan.
 		</span>
 	</div>
 
@@ -740,9 +763,9 @@
 				{resetBusy ? 'Setzt zurück…' : 'Generierten Terminplan zurücksetzen'}
 			</WriteButton>
 			<span class="text-xs text-base-content/50">
-				Entfernt die generierten Termine. Manuell gesperrte, externe und fixierte
-				EXaHM/SEB-Prüfungen bleiben — für einen vollständigen Reset vorher auf der Phase-A-Seite
-				„Fixierung aufheben".
+				Löscht die generierten Termine. Prüfungen mit festem Termin aus der Vorplanung, fixierte
+				EXaHM/SEB-Prüfungen und die Prüfungen anderer FKs bleiben. Sollen auch die EXaHM/SEB-Termine
+				weg, vorher unter „EXaHM/SEB in T-Bau planen“ die Fixierung aufheben.
 			</span>
 		</div>
 		{#if resetInfo}
@@ -767,7 +790,8 @@
 	>
 		{#if !lines.length && !current && !running}
 			<div style="color:#6c7086">
-				Bereit. Parameter wählen und „Probelauf" oder „Generieren" starten.
+				Bereit. „Probelauf“ oder „Generieren &amp; speichern“ starten; hier erscheint dann der
+				Verlauf.
 			</div>
 		{/if}
 		{#each lines as line}
@@ -805,7 +829,7 @@
 					Seed {r.seed}
 				</span>
 				{#if r.written}
-					<span class="badge badge-success">in DB geschrieben</span>
+					<span class="badge badge-success">gespeichert</span>
 				{:else}
 					<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
 				{/if}
@@ -814,7 +838,7 @@
 
 			<!-- Kennzahlen -->
 			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-				{#each [{ label: 'Prüfungen', value: fmt(r.units) }, { label: 'platziert', value: fmt(r.placed) }, { label: 'fest', value: fmt(r.fixed) }, { label: 'ungeplant', value: fmt(r.unplaced) }, { label: 'Kosten', value: fmt(r.cost) }, { label: 'Iterationen', value: fmt(r.iterations) }] as stat}
+				{#each [{ label: 'Prüfungen', value: fmt(r.units) }, { label: 'eingeplant', value: fmt(r.placed) }, { label: 'fester Termin', value: fmt(r.fixed) }, { label: 'nicht eingeplant', value: fmt(r.unplaced) }, { label: 'Strafpunkte', value: fmt(r.cost) }, { label: 'Durchläufe', value: fmt(r.iterations) }] as stat}
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
 						<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
@@ -826,12 +850,13 @@
 			{#if r.hardViolations > 0}
 				<div class="alert alert-error py-2 text-sm">
 					<span>
-						<strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.
+						<strong>{fmt(r.hardViolations)}</strong> harte Regel(n) verletzt: Der Plan ist nicht gültig
+						und wird nicht gespeichert. Welche, steht im Verlauf oben.
 					</span>
 				</div>
 			{:else}
 				<div class="alert alert-success py-2 text-sm">
-					<span>Keine harten Verletzungen.</span>
+					<span>Alle harten Regeln sind eingehalten.</span>
 				</div>
 			{/if}
 
@@ -845,7 +870,9 @@
 			<!-- ungeplante Prüfungen (Fallback ohne strukturierte Gründe) -->
 			{#if !(r.unplacedReasons ?? []).length && (r.unplacedAncodes ?? []).length}
 				<div class="flex flex-col gap-1 rounded-lg border border-warning/40 bg-warning/10 p-3">
-					<span class="text-sm font-medium">Ungeplante Prüfungen ({r.unplacedAncodes.length})</span>
+					<span class="text-sm font-medium">
+						Nicht eingeplante Prüfungen ({r.unplacedAncodes.length})
+					</span>
 					<div class="flex flex-wrap gap-1">
 						{#each r.unplacedAncodes as a}
 							<span class="badge badge-warning badge-sm tabular-nums">{a}</span>
@@ -939,18 +966,18 @@
 				</div>
 			</div>
 
-			<!-- Kosten je Constraint -->
+			<!-- Strafpunkte je Regel -->
 			{#if (r.costByConstraint ?? []).length}
 				<details class="collapse-arrow collapse border border-base-300 bg-base-100">
-					<summary class="collapse-title text-sm font-medium">Kosten je Constraint</summary>
+					<summary class="collapse-title text-sm font-medium">Strafpunkte je Regel</summary>
 					<div class="collapse-content">
 						<div class="overflow-x-auto rounded-lg border border-base-200">
 							<table class="table table-sm">
-								<thead><tr><th>Constraint</th><th class="text-right">Kosten</th></tr></thead>
+								<thead><tr><th>Regel</th><th class="text-right">Strafpunkte</th></tr></thead>
 								<tbody>
 									{#each r.costByConstraint as cc}
 										<tr>
-											<td>{cc.name}</td>
+											<td>{cc.title ?? cc.name}</td>
 											<td class="text-right tabular-nums">{fmt(cc.cost)}</td>
 										</tr>
 									{/each}
@@ -994,7 +1021,9 @@
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex items-baseline gap-2">
 			<span class="font-medium">Tageszeit-Fenster</span>
-			<span class="text-xs text-base-content/50">· global · wirkt beim nächsten „Generieren"</span>
+			<span class="text-xs text-base-content/50">
+				· gilt für alle Semester · wirkt ab dem nächsten Lauf
+			</span>
 		</div>
 		<div class="flex flex-wrap items-end gap-4">
 			<label class="flex flex-col gap-1">
@@ -1085,27 +1114,22 @@
 			{#if slotTimeError}<span class="text-xs text-error">{slotTimeError}</span>{/if}
 		</div>
 		<span class="max-w-3xl text-xs text-base-content/50">
-			Begrenzt die Beginn-Uhrzeit der Prüfungen auf ein Tageszeit-Fenster. <strong>
-				Automatik
-			</strong>
-			folgt dem Semester: im Wintersemester wird ein früher Beginn (vor „Winter: frühester Beginn") vermieden,
-			im Sommersemester ein später Beginn (nach „Sommer: spätester Beginn"). Der Sommer ist jetzt ein
-			<strong>fester Cutoff</strong> auf die Startzeit (nicht mehr „je später desto schlechter");
-			der milde Früh-Sog zieht große Prüfungen innerhalb des Fensters nach vorn. Im
-			<strong>HARD-Modus</strong>
-			landen zu spät/früh gezwungene Prüfungen als „ungeplant" mit Begründung im Terminplan-Report (statt
-			einer harten Verletzung); im <strong>SOFT-Modus</strong> ist eine Abweichung erlaubt, wird aber
-			über die Fenster-Strafe bewertet und gemeldet. Gebuchte, klimatisierte T-Bau-Räume (EXaHM/SEB) sind
-			vom Sommer-Cutoff ausgenommen. Erscheint unten in „Angewandte Constraints".
+			Begrenzt, wann Prüfungen beginnen dürfen. <strong>Automatik</strong> richtet sich nach dem
+			Semester: Im Wintersemester beginnt keine Prüfung vor „Winter: frühester Beginn“, im
+			Sommersemester keine nach „Sommer: spätester Beginn“. Bei <strong>hart</strong> bleibt eine
+			Prüfung, die nur außerhalb des Fensters Platz fände, lieber ohne Termin; der Bericht nennt
+			dann den Grund. Bei <strong>weich</strong> ist eine Abweichung möglich, kostet aber Strafpunkte
+			(„Fenster-Strafe“) und wird gemeldet. Der „milde Früh-Sog“ zieht große Prüfungen im Sommer innerhalb
+			des Fensters nach vorn. EXaHM/SEB-Prüfungen in den klimatisierten T-Bau-Räumen sind ausgenommen.
 		</span>
 	</div>
 
 	<!-- Terminplan-Solver-Gewichte (Teil der globalen generationConfig) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			⚙️ Solver-Gewichte
+			⚙️ Feineinstellung (Gewichte)
 			<span class="font-normal text-base-content/50">
-				· global · wirken beim nächsten „Generieren"
+				· gilt für alle Semester · wirkt ab dem nächsten Lauf
 			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
@@ -1124,9 +1148,9 @@
 	<!-- Angewandte Constraints (read-only) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			Angewandte Constraints
+			Angewandte Regeln
 			<span class="font-normal text-base-content/50">
-				· {(data.constraints ?? []).length} · read-only
+				· {(data.constraints ?? []).length} · nur zur Ansicht
 			</span>
 		</summary>
 		<div class="collapse-content">
@@ -1134,9 +1158,9 @@
 				<table class="table table-sm">
 					<thead>
 						<tr>
-							<th>Tier</th>
+							<th>Rang</th>
 							<th>Art</th>
-							<th>Titel</th>
+							<th>Regel</th>
 							<th>Beschreibung</th>
 							<th class="text-right">Gewicht</th>
 						</tr>
@@ -1146,7 +1170,9 @@
 							<tr>
 								<td class="tabular-nums">{c.tier}</td>
 								<td>
-									<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">{c.kind}</span>
+									<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">
+										{c.kind === 'hard' ? 'hart' : c.kind === 'soft' ? 'weich' : c.kind}
+									</span>
 								</td>
 								<td class="font-medium">{c.title}</td>
 								<td class="text-sm text-base-content/70">{c.description}</td>
@@ -1170,11 +1196,11 @@
 			<p class="py-3 text-sm">
 				Es sind erst <strong class="tabular-nums">{phaseWarnState.fixed}</strong> von
 				<strong class="tabular-nums">{phaseWarnState.planned}</strong>
-				EXaHM/SEB-Prüfungen fixiert. Nicht fixierte EXaHM/SEB-Prüfungen werden in Phase B neu platziert
-				(können den Slot wechseln). Trotzdem neu generieren?
+				EXaHM/SEB-Prüfungen fixiert. Die übrigen plant der Generator neu ein; sie können dabei einen anderen
+				Termin bekommen als auf der Seite „EXaHM/SEB in T-Bau planen“. Trotzdem generieren und speichern?
 			</p>
 			<p class="pb-2 text-xs text-base-content/50">
-				Tipp: Auf der Seite „EXaHM/SEB in T-Bau planen" (Phase A) zuerst „EXaHM/SEB fixieren".
+				Tipp: Auf der Seite „EXaHM/SEB in T-Bau planen“ zuerst „EXaHM/SEB fixieren“.
 			</p>
 			<div class="modal-action">
 				<button class="btn btn-ghost btn-sm" onclick={cancelGen}>Abbrechen</button>

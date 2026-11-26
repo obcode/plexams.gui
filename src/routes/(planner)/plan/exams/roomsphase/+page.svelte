@@ -13,6 +13,8 @@
 	import { ROOM_PHASE_A_WEIGHT_FIELDS } from '#lib/semester/generationConfig.ts';
 	import ExamScheduleReportExtras from '#lib/exam/ExamScheduleReportExtras.svelte';
 	import ExamRoomsPhaseBadge from '#lib/exam/ExamRoomsPhaseBadge.svelte';
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 
 	let { data } = $props();
 
@@ -251,33 +253,43 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">EXaHM/SEB in T-Bau planen (Phase A)</h1>
-		{#if running}
-			<span class="badge badge-info gap-2">
-				<span class="loading loading-spinner loading-xs"></span> läuft …
-			</span>
-		{:else if done && !errorMsg}
-			<span class="badge badge-success">fertig</span>
-		{/if}
-		{#if running}
-			{#if writeRun}
-				<span class="badge badge-warning">schreibt in die Datenbank</span>
-			{:else}
-				<span class="badge badge-ghost">Probelauf (kein Schreiben)</span>
+	<PageIntro title="EXaHM/SEB in T-Bau planen" help="schritt-exahmSebPlanned">
+		{#snippet actions()}
+			{#if running}
+				<span class="badge badge-info gap-2">
+					<span class="loading loading-spinner loading-xs"></span> läuft …
+				</span>
+				{#if writeRun}
+					<span class="badge badge-warning">speichert</span>
+				{:else}
+					<span class="badge badge-ghost">Probelauf (speichert nichts)</span>
+				{/if}
+			{:else if done && !errorMsg}
+				<span class="badge badge-success">fertig</span>
 			{/if}
-		{/if}
-	</div>
-
-	<p class="max-w-3xl text-sm text-base-content/60">
-		Erster Schritt der Terminplanung: die EXaHM/SEB-Prüfungen in den T-Bau legen. Empfohlen: erst
-		Probelauf, dann echt. Passt das Ergebnis, mit „EXaHM/SEB fixieren" festhalten — die fixierten
-		Prüfungen werden im anschließenden Terminplan (Phase B) nicht mehr verschoben.
-	</p>
+		{/snippet}
+		Der erste Schritt der Terminplanung: Die Rechnerprüfungen (<Term id="exahm" /> und
+		<Term id="seb" />) bekommen ihren Termin zuerst, weil sie nur in die Zeiten passen, für die in
+		<Term id="anny" /> Räume im <Term id="t-bau" /> gebucht sind. Plexams verteilt sie so, dass die gebuchten
+		Plätze möglichst gut genutzt werden. Passt das Ergebnis, hältst du es mit „EXaHM/SEB fixieren“ fest;
+		danach geht es weiter mit „Terminplan generieren“.
+		{#snippet howto()}
+			<ol>
+				<li>
+					„Probelauf“ starten und den Bericht unten lesen: Sind alle Rechnerprüfungen untergebracht?
+				</li>
+				<li>Passt es, „Planen &amp; speichern“.</li>
+				<li>
+					Ganz unten „EXaHM/SEB fixieren“. Erst dann lässt „Terminplan generieren“ diese Prüfungen
+					an ihrem Platz.
+				</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium">Daten konnten nicht geladen werden (Backend-Fehler).</span>
+			<span class="font-medium">Die Daten der Seite konnten nicht geladen werden.</span>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
 	{/if}
@@ -285,9 +297,9 @@
 	{#if examsBlocked}
 		<div class="alert alert-warning py-2 text-sm">
 			<span>
-				🔒 Gesperrt — Entwurf verschickt oder Prüfungsplan veröffentlicht. Schreiben und Fixieren
-				sind deaktiviert; der Probelauf bleibt möglich. Zum Neuschreiben zuerst das jeweilige
-				Häkchen auf der Startseite lösen.
+				🔒 Gesperrt: Der Entwurf ist verschickt oder der Prüfungsplan veröffentlicht. Speichern und
+				Fixieren sind deshalb ausgeschaltet, der Probelauf geht weiter. Soll wirklich neu geplant
+				werden, zuerst auf der Startseite das Häkchen beim jeweiligen Schritt zurücknehmen.
 			</span>
 		</div>
 	{/if}
@@ -295,7 +307,7 @@
 	<!-- Eingaben -->
 	<div class="flex flex-wrap items-end gap-6 rounded-lg border border-base-300 bg-base-100 p-4">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Seed</span>
+			<span class="text-xs font-medium text-base-content/60">Startwert (Seed)</span>
 			<input
 				type="number"
 				class="input input-bordered input-sm w-24"
@@ -306,7 +318,7 @@
 		</label>
 		<div class="flex flex-col gap-1">
 			<div class="flex items-baseline justify-between gap-3">
-				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-xs font-medium text-base-content/60">Durchläufe</span>
 				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
 			</div>
 			<input
@@ -338,24 +350,29 @@
 				onclick={() => start(false)}
 				title={examsBlocked ? 'gesperrt — siehe Hinweis oben' : ''}
 			>
-				▶ Planen &amp; schreiben
+				▶ Planen &amp; speichern
 			</button>
 		{/if}
-		<span class="text-xs text-base-content/50">
-			Derselbe Seed erzeugt bei unveränderten Daten denselben Plan.
+		<span class="max-w-xl text-xs text-base-content/50">
+			Der Probelauf speichert nichts. „Planen &amp; speichern“ überschreibt die Termine aller
+			EXaHM/SEB-Prüfungen außer denen mit festem Termin aus der Vorplanung; andere Prüfungen bleiben
+			unberührt. Mehr Durchläufe dauern länger und finden oft eine bessere Verteilung; derselbe
+			Startwert ergibt bei unveränderten Daten dasselbe Ergebnis.
 		</span>
 	</div>
 
 	<!-- Phase-A-Solver-Gewicht (Teil der globalen generationConfig) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			⚙️ Solver-Gewicht (T-Bau)
-			<span class="font-normal text-base-content/50">· global · wirkt beim nächsten „Planen"</span>
+			⚙️ Feineinstellung (T-Bau)
+			<span class="font-normal text-base-content/50">
+				· gilt für alle Semester · wirkt ab dem nächsten Lauf
+			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			<div class="max-w-3xl text-xs text-base-content/50">
-				Steuert nur die Raumphase A: wie stark ungenutzte gebuchte T-Bau-Sitze bestraft werden
-				(füllt den T-Bau dichter). Mit sinnvollem Default vorbelegt — nur bei Bedarf ändern.
+				Wirkt nur auf dieser Seite: Je höher der Wert, desto stärker füllt Plexams die gebuchten
+				T-Bau-Plätze. Die Voreinstellung passt in der Regel; nur bei Bedarf ändern.
 			</div>
 			<GenerationConfigFields
 				config={data.generationConfig}
@@ -378,7 +395,7 @@
 	>
 		{#if !lines.length && !current && !running}
 			<div style="color:#6c7086">
-				Bereit. Parameter wählen und „Probelauf" oder „Planen" starten.
+				Bereit. „Probelauf“ oder „Planen &amp; speichern“ starten; hier erscheint dann der Verlauf.
 			</div>
 		{/if}
 		{#each lines as line}
@@ -402,7 +419,7 @@
 					Seed {r.seed}
 				</span>
 				{#if r.written}
-					<span class="badge badge-success">in DB geschrieben</span>
+					<span class="badge badge-success">gespeichert</span>
 				{:else}
 					<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
 				{/if}
@@ -410,7 +427,7 @@
 			</div>
 
 			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-				{#each [{ label: 'Prüfungen', value: fmt(r.units) }, { label: 'platziert', value: fmt(r.placed) }, { label: 'fest', value: fmt(r.fixed) }, { label: 'übrig (SEB)', value: fmt(r.unplaced) }, { label: 'Kosten', value: fmt(r.cost) }, { label: 'Iterationen', value: fmt(r.iterations) }] as stat}
+				{#each [{ label: 'Prüfungen', value: fmt(r.units) }, { label: 'eingeplant', value: fmt(r.placed) }, { label: 'fester Termin', value: fmt(r.fixed) }, { label: 'nicht im T-Bau', value: fmt(r.unplaced) }, { label: 'Strafpunkte', value: fmt(r.cost) }, { label: 'Durchläufe', value: fmt(r.iterations) }] as stat}
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
 						<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
@@ -420,7 +437,10 @@
 
 			{#if r.hardViolations > 0}
 				<div class="alert alert-error py-2 text-sm">
-					<span><strong>{fmt(r.hardViolations)}</strong> harte Verletzung(en).</span>
+					<span>
+						<strong>{fmt(r.hardViolations)}</strong> harte Regel(n) verletzt, deshalb wurde nichts gespeichert.
+						Welche, steht im Verlauf oben.
+					</span>
 				</div>
 			{/if}
 
@@ -474,9 +494,9 @@
 			<ExamRoomsPhaseBadge state={phaseState} />
 		</div>
 		<span class="text-xs text-base-content/50">
-			Nach zufriedenstellender Phase A fixieren — die fixierten Prüfungen überleben Phase B
-			(Terminplan generieren). „Fixierung aufheben" lässt das manuelle Sperren (Locked)
-			unangetastet.
+			Fixieren hält die Termine aller EXaHM/SEB-Prüfungen fest: „Terminplan generieren“ verschiebt
+			sie dann nicht mehr. „Fixierung aufheben“ gibt sie wieder frei; Prüfungen mit festem Termin
+			aus der Vorplanung bleiben fest.
 		</span>
 		{#if fixInfo}
 			<div class="alert alert-success py-2 text-sm"><span>{fixInfo}</span></div>
