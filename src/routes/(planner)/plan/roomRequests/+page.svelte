@@ -353,9 +353,23 @@
 		</div>
 	</div>
 
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Große Räume wie der Rote Würfel gehören nicht der Fakultät; sie müssen für die Prüfungszeiten
+		beim Gebäudemanagement angefragt werden. Dran ist das, sobald der Terminplan steht. Der
+		Probelauf zeigt, welche dieser Räume für welche Prüfungen nötig wären; „Übernehmen“ legt daraus
+		die Anfragen an, „E-Mail senden“ schickt sie ans Gebäudemanagement. Kommt die Zusage, trägst du
+		sie unter „Bestehende Anfragen“ ein. Danach geht es weiter mit „Räume generieren“.
+		<a
+			class="link link-hover whitespace-nowrap text-base-content/50"
+			href="/hilfe#schritt-roomRequestsSent"
+		>
+			Mehr dazu in der Hilfe →
+		</a>
+	</p>
+
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			📄 CSV Export / Import (Raumanfragen)
+			📄 Als CSV exportieren / importieren
 		</summary>
 		<div class="mt-2">
 			<DatasetCsvTransfer name="room-requests" title="Raumanfragen" fullReplace>
@@ -367,8 +381,9 @@
 	<!-- ===================== Probelauf ===================== -->
 	{#if section === 'preview'}
 		<p class="text-xs text-base-content/50">
-			Read-only: zeigt, welche Management-Räume für welche Prüfungen angefragt würden. „Übernehmen"
-			schreibt den Probelauf in die DB und ersetzt bestehende Anfragen.
+			Der Probelauf speichert nichts: Er zeigt, welche Räume des Gebäudemanagements für welche
+			Prüfungen angefragt würden. „Übernehmen“ legt daraus die Anfragen an und ersetzt dabei alle
+			bestehenden; eingetragene Genehmigungen gehen verloren (davor wird gefragt).
 		</p>
 		<div class="flex flex-wrap items-center gap-3">
 			<button class="btn btn-sm gap-2" disabled={previewLoading} onclick={loadPreview}>
@@ -376,7 +391,9 @@
 				↻ Vorschau {preview ? 'neu laden' : 'laden'}
 			</button>
 			{#if preview}
-				<span class="text-sm text-base-content/60">{preview.length} Raum-Slots</span>
+				<span class="text-sm text-base-content/60">
+					{preview.length} Anfragen (Raum und Termin)
+				</span>
 				<div class="flex-1"></div>
 				<WriteButton
 					class="btn btn-primary btn-sm"
@@ -459,7 +476,7 @@
 										<td></td>
 										<td colspan="5" class="bg-base-200/40">
 											<div class="py-1 text-xs text-base-content/60">
-												Zeitgleiche Prüfungen im Slot:
+												Weitere Prüfungen zur selben Zeit:
 											</div>
 											<div class="flex flex-col gap-1 pb-2">
 												{#each p.simultaneousExams as se}
@@ -508,7 +525,8 @@
 			<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ Anfrage hinzufügen</button>
 		</div>
 		<p class="text-xs text-base-content/50">
-			„inaktiv" wird beim nächsten Vorbereiten der Räume-für-Slots nicht verwendet.
+			Eine inaktive Anfrage (z. B. nach einer Absage) verwendet „Räume generieren“ nicht mehr; die
+			Räume dann neu generieren.
 		</p>
 
 		{#if errorMsg}

@@ -140,7 +140,7 @@
 
 	/** @param {number} n */
 	const prePlanWarn = (n) =>
-		`${n === 1 ? 'In diesem Slot ist dieser Raum' : `${n} betroffene Slots haben diesen Raum`} vorgeplant (📌). Beim Zuordnen wird er dort übersprungen. Trotzdem sperren?`;
+		`${n === 1 ? 'Zu diesem Termin ist dieser Raum' : `Zu ${n} betroffenen Terminen ist dieser Raum`} vorgeplant (📌). Solange die Vorplanung besteht, lässt sich die Raumzuteilung nicht mehr speichern: „Räume generieren“ meldet dann eine verletzte harte Regel. Löse die Vorplanung vorher oder danach. Trotzdem sperren?`;
 
 	/** @param {number} day @param {number} slot @param {string} room */
 	async function toggleBlock(day, slot, room) {
@@ -258,22 +258,31 @@
 			</div>
 		</div>
 
+		<p class="max-w-3xl text-sm text-base-content/70">
+			Die Raumzuteilung zum Ansehen und Nachbessern von Hand. „nach Prüfungen“ zeigt je Prüfung ihre
+			Räume; dort planst du mit „➕ Raum vorplanen“ einen Raum fest ein (📌), den „Räume generieren“
+			dann einhält. „nach Räumen“ zeigt die Belegung je Raum; dort sperrst du einen Raum für
+			einzelne Termine oder ganze Tage. Nach jeder Änderung an Sperren oder Vorplanung die Räume neu
+			generieren und „Räume validieren“.
+		</p>
+
 		<!-- Zuordnung -->
 		<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
 			<div class="text-sm font-medium">Zuordnung & Import</div>
 			{#if data.roomsBlocked}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						🔒 Raumzuordnung gesperrt — der Raumplan ist veröffentlicht. Für Korrekturen das Häkchen
-						„Raumplan veröffentlicht" auf der Startseite kurz lösen.
+						🔒 Raumzuteilung gesperrt: Der Raumplan ist veröffentlicht, Zurücksetzen und
+						Neu-Generieren sind deshalb aus. Soll wirklich neu generiert werden, zuerst auf der
+						Startseite das Häkchen „Raumplan veröffentlicht“ zurücknehmen.
 					</span>
 				</div>
 			{/if}
 			{#if needsRegen}
 				<div class="alert alert-warning py-2 text-sm">
 					<span>
-						Raum-Sperren geändert — bitte auf „✨ Räume generieren" neu zuordnen, damit sie
-						berücksichtigt werden.
+						Die Sperren haben sich geändert. Bitte unter „✨ Räume generieren“ neu generieren, damit
+						die Zuteilung sie berücksichtigt.
 					</span>
 				</div>
 			{/if}
@@ -282,7 +291,7 @@
 					✨ Räume generieren
 				</a>
 				<span class="text-xs text-base-content/50">
-					Automatische Raumzuteilung mit Probelauf, Report &amp; Parametern (eigene Seite).
+					Die automatische Raumzuteilung mit Probelauf und Bericht hat eine eigene Seite.
 				</span>
 			</div>
 			<SubscriptionTerminal
@@ -290,8 +299,8 @@
 				ondone={onGenerated}
 			/>
 			<p class="text-xs text-base-content/50">
-				EXaHM-Raum-Slots kommen ausschließlich aus dem Anny-Import — ohne Import keine
-				EXaHM-Belegung.
+				EXaHM-Räume gibt es nur über Anny: Ohne geladene Anny-Buchungen bekommt keine EXaHM-Prüfung
+				einen Raum.
 			</p>
 			<div class="flex flex-wrap items-center gap-2 border-t border-base-300 pt-2">
 				<WriteButton
@@ -302,7 +311,8 @@
 					{resetBusy ? 'Setzt zurück…' : 'Raumzuteilung zurücksetzen'}
 				</WriteButton>
 				<span class="text-xs text-base-content/50">
-					entfernt die Raumzuteilung; vorgeplante (📌) Räume bleiben erhalten.
+					Löscht die Raumzuteilung; nur vorgeplante Räume (📌) bleiben. Lässt sich nicht rückgängig
+					machen.
 				</span>
 			</div>
 		</div>

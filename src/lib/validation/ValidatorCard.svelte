@@ -6,7 +6,7 @@
 	/**
 	 * @typedef {Object} Props
 	 * @property {any} validator
-	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - Optionaler Callback, um für ein „NTA … not alone"-Finding einen Verzicht
+	 * @property {((mtknr: string, ancode: number, reason: string) => Promise<{ ok: boolean, error?: string }>) | null} [onAcceptWaiver] - Optionaler Callback, um für ein Finding mit Code NTA_ROOM_NOT_ALONE einen Verzicht
 „eigener Raum" zu akzeptieren. Nur gesetzt, zeigt den Button.
 	 * @property {() => void} [onrestart] - Validator neu starten
 	 */

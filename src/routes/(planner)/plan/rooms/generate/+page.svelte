@@ -78,6 +78,7 @@
 					cost
 					costByConstraint {
 						name
+						title
 						cost
 					}
 					iterations
@@ -209,7 +210,7 @@
 		if (resetBusy || roomsBlocked) return;
 		if (
 			!confirm(
-				'Raumzuteilung zurücksetzen? Vorgeplante (📌) Räume bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+				'Raumzuteilung zurücksetzen? Alle generierten Räume werden gelöscht; nur vorgeplante Räume (📌) bleiben. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -256,25 +257,34 @@
 		{/if}
 		{#if running}
 			{#if writeRun}
-				<span class="badge badge-warning">schreibt in die Datenbank</span>
+				<span class="badge badge-warning">speichert</span>
 			{:else}
-				<span class="badge badge-ghost">Probelauf (kein Schreiben)</span>
+				<span class="badge badge-ghost">Probelauf (speichert nichts)</span>
 			{/if}
 			{#if keepAssigned}
-				<span class="badge badge-ghost">Warm-Start</span>
+				<span class="badge badge-ghost">verbessert die bestehende Zuteilung</span>
 			{/if}
 		{/if}
 	</div>
 
-	<p class="max-w-3xl text-sm text-base-content/60">
-		Ordnet allen verplanten Prüfungen automatisch Räume zu. Die je Slot erlaubten Räume werden live
-		aus den aktuellen Räumen/Anforderungen/Buchungen berechnet. EXaHM-Raum-Slots kommen
-		ausschließlich aus dem Anny-Import — ohne Import keine EXaHM-Belegung.
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Hier verteilt Plexams alle Studierenden der terminierten Prüfungen auf Räume und hält dabei
+		Nachteilsausgleiche, Raumanforderungen und vorgeplante Räume (📌) ein. Vorher müssen der
+		Terminplan stehen, die Raum-Anfragen beim Gebäudemanagement gestellt und die Anny-Buchungen
+		geladen sein: Welche Räume wann verfügbar sind, ergibt sich aus Raumliste, Anfragen, Buchungen
+		und Sperren; EXaHM-Räume gibt es nur über Anny. Danach „Räume validieren“ und unter
+		„Raumplanung“ von Hand nachbessern.
+		<a
+			class="link link-hover whitespace-nowrap text-base-content/50"
+			href="/hilfe#schritt-roomsAssigned"
+		>
+			Mehr dazu in der Hilfe →
+		</a>
 	</p>
 
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium">Daten konnten nicht geladen werden (Backend-Fehler).</span>
+			<span class="font-medium">Die Daten der Seite konnten nicht geladen werden.</span>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
 	{/if}
@@ -282,9 +292,10 @@
 	{#if roomsBlocked}
 		<div class="alert alert-warning py-2 text-sm">
 			<span>
-				🔒 Raumplan gesperrt — der Raumplan ist veröffentlicht. „Generieren &amp; schreiben" ist
-				deaktiviert; der Probelauf bleibt möglich. Für Korrekturen das Häkchen „Raumplan
-				veröffentlicht" auf der Startseite kurz lösen.
+				🔒 Raumplan gesperrt: Der Raumplan ist veröffentlicht. Speichern und Zurücksetzen sind
+				deshalb ausgeschaltet, der Probelauf geht weiter. Einzelne Räume änderst du unter
+				„Raumplanung“; soll wirklich neu generiert werden, zuerst auf der Startseite das Häkchen
+				„Raumplan veröffentlicht“ zurücknehmen.
 			</span>
 		</div>
 	{/if}
@@ -292,7 +303,7 @@
 	<!-- Eingaben -->
 	<div class="flex flex-wrap items-end gap-6 rounded-lg border border-base-300 bg-base-100 p-4">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Seed</span>
+			<span class="text-xs font-medium text-base-content/60">Startwert (Seed)</span>
 			<input
 				type="number"
 				class="input input-bordered input-sm w-24"
@@ -303,7 +314,7 @@
 		</label>
 		<div class="flex flex-col gap-1">
 			<div class="flex items-baseline justify-between gap-3">
-				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-xs font-medium text-base-content/60">Durchläufe</span>
 				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
 			</div>
 			<input
@@ -320,7 +331,8 @@
 				<span>{fmt(ITER_MAX)}</span>
 			</div>
 			<span class="text-xs text-base-content/50">
-				Standard 100k; mehr Iterationen = etwas bessere Qualität, aber länger.
+				Voreinstellung 100.000; mehr Durchläufe ergeben eine etwas bessere Zuteilung, dauern aber
+				länger.
 			</span>
 		</div>
 		<label class="flex max-w-xs flex-col gap-1">
@@ -331,11 +343,12 @@
 					bind:checked={keepAssigned}
 					disabled={running}
 				/>
-				bestehende Zuteilung verbessern (Warm-Start)
+				bestehende Zuteilung nur verbessern
 			</span>
 			<span class="text-xs text-base-content/50">
-				Behält die aktuelle Raumzuteilung als Ausgangspunkt und ändert nur, was sie verbessert —
-				sinnvoll nach kleinen Anpassungen/Sperren. Für eine komplett neue Zuteilung aus lassen.
+				Geht von der gespeicherten Raumzuteilung aus und übernimmt nur Änderungen, die sie besser
+				machen. Sinnvoll nach kleinen Anpassungen; für eine ganz neue Zuteilung ausgeschaltet
+				lassen.
 			</span>
 		</label>
 	</div>
@@ -354,14 +367,14 @@
 				onclick={() => start(false)}
 				title={roomsBlocked
 					? 'gesperrt — siehe Hinweis oben'
-					: 'schreibt die Raumzuteilung mit dem aktuellen Seed — identisch zum Probelauf mit demselben Seed'}
+					: 'speichert die Zuteilung mit diesem Startwert, also dasselbe Ergebnis wie der Probelauf mit demselben Startwert'}
 			>
-				▶ Generieren &amp; schreiben
+				▶ Generieren &amp; speichern
 			</button>
 			<button
 				class="btn btn-ghost btn-sm"
 				onclick={newSuggestion}
-				title="anderen Seed (aktueller + 1) als Probelauf → andere Zuteilung"
+				title="Probelauf mit dem nächsten Startwert, ergibt eine andere Zuteilung"
 			>
 				🎲 Neuer Vorschlag
 			</button>
@@ -442,7 +455,7 @@
 					Seed {r.seed ?? seedUsed}
 				</span>
 				{#if r.written}
-					<span class="badge badge-success">in DB geschrieben</span>
+					<span class="badge badge-success">gespeichert</span>
 				{:else}
 					<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
 				{/if}
@@ -452,7 +465,7 @@
 
 			<!-- Kennzahlen -->
 			<div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-				{#each [{ label: 'Prüfungen', value: fmt(r.exams) }, { label: 'platzierte Plätze', value: fmt(r.placedSeats) }, { label: 'ungeplante Plätze', value: fmt(r.unplacedSeats) }, { label: 'Räume', value: fmt(r.rooms) }, { label: 'Kosten', value: fmt(r.cost) }, { label: 'Iterationen', value: fmt(r.iterations) }] as stat}
+				{#each [{ label: 'Prüfungen', value: fmt(r.exams) }, { label: 'Studierende mit Platz', value: fmt(r.placedSeats) }, { label: 'Studierende ohne Platz', value: fmt(r.unplacedSeats) }, { label: 'Räume', value: fmt(r.rooms) }, { label: 'Strafpunkte', value: fmt(r.cost) }, { label: 'Durchläufe', value: fmt(r.iterations) }] as stat}
 					<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 						<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
 						<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
@@ -464,7 +477,8 @@
 			{#if hv.length}
 				<div class="alert alert-error flex-col items-start py-2 text-sm">
 					<span>
-						<strong>{fmt(hv.length)}</strong> harte Verletzung(en) — der Plan ist nicht gültig.
+						<strong>{fmt(hv.length)}</strong> harte Regel(n) verletzt: Die Zuteilung ist nicht gültig
+						und wird nicht gespeichert.
 					</span>
 					<ul class="ml-4 list-disc font-mono text-xs opacity-80">
 						{#each hv as v}
@@ -474,14 +488,16 @@
 				</div>
 			{:else}
 				<div class="alert alert-success py-2 text-sm">
-					<span>Keine harten Verletzungen.</span>
+					<span>Alle harten Regeln sind eingehalten.</span>
 				</div>
 			{/if}
 
 			<!-- ungeplante Prüfungen (mit betroffenen Studierenden) -->
 			{#if unplaced.length}
 				<div class="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3">
-					<span class="text-sm font-medium">Ungeplante Prüfungen ({unplaced.length})</span>
+					<span class="text-sm font-medium">
+						Prüfungen mit Studierenden ohne Platz ({unplaced.length})
+					</span>
 					<div class="flex flex-wrap gap-1">
 						{#each unplaced as u}
 							<span
@@ -497,18 +513,18 @@
 				</div>
 			{/if}
 
-			<!-- Kosten je Constraint -->
+			<!-- Strafpunkte je Regel -->
 			{#if asArray(r.costByConstraint).length}
 				<details class="collapse-arrow collapse border border-base-300 bg-base-100">
-					<summary class="collapse-title text-sm font-medium">Kosten je Constraint</summary>
+					<summary class="collapse-title text-sm font-medium">Strafpunkte je Regel</summary>
 					<div class="collapse-content">
 						<div class="overflow-x-auto rounded-lg border border-base-200">
 							<table class="table table-sm">
-								<thead><tr><th>Constraint</th><th class="text-right">Kosten</th></tr></thead>
+								<thead><tr><th>Regel</th><th class="text-right">Strafpunkte</th></tr></thead>
 								<tbody>
 									{#each r.costByConstraint as cc}
 										<tr>
-											<td>{cc.name}</td>
+											<td>{cc.title ?? cc.name}</td>
 											<td class="text-right tabular-nums">{fmt(cc.cost)}</td>
 										</tr>
 									{/each}
@@ -524,16 +540,16 @@
 	<!-- Raumplanungs-Parameter (Teil der globalen generationConfig) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			⚙️ Raumplanungs-Parameter
+			⚙️ Feineinstellung
 			<span class="font-normal text-base-content/50">
-				· global · wirken beim nächsten „Generieren"
+				· gilt für alle Semester · wirkt ab dem nächsten Lauf
 			</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-3">
 			<div class="max-w-3xl text-xs text-base-content/50">
-				Steuerung der automatischen Raumzuteilung. Alle Werte sind mit sinnvollen Defaults vorbelegt
-				— nur bei Bedarf ändern. <strong>„ungeplante Prüfung"</strong> ist dominant und sollte hoch
-				bleiben. Der <strong>Hitze-Modus</strong> vermeidet im Sommer heiße Räume in oberen Stockwerken.
+				Steuert die automatische Raumzuteilung. Die Voreinstellungen passen in der Regel; nur bei
+				Bedarf ändern. <strong>„ungeplante Prüfung“</strong> muss alles andere überwiegen und sollte
+				hoch bleiben. Der <strong>Hitze-Modus</strong> vermeidet im Sommer heiße Räume in oberen Stockwerken.
 			</div>
 			<GenerationConfigFields
 				config={data.generationConfig}
@@ -545,9 +561,9 @@
 	<!-- Angewandte Constraints (read-only) -->
 	<details class="collapse-arrow collapse border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			Angewandte Constraints
+			Angewandte Regeln
 			<span class="font-normal text-base-content/50">
-				· {(data.constraints ?? []).length} · read-only
+				· {(data.constraints ?? []).length} · nur zur Ansicht
 			</span>
 		</summary>
 		<div class="collapse-content">
@@ -555,9 +571,9 @@
 				<table class="table table-sm">
 					<thead>
 						<tr>
-							<th>Tier</th>
+							<th>Rang</th>
 							<th>Art</th>
-							<th>Titel</th>
+							<th>Regel</th>
 							<th>Beschreibung</th>
 							<th class="text-right">Gewicht</th>
 						</tr>
@@ -567,7 +583,9 @@
 							<tr>
 								<td class="tabular-nums">{c.tier}</td>
 								<td>
-									<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">{c.kind}</span>
+									<span class="badge badge-sm {KIND_BADGE[c.kind] ?? 'badge-ghost'}">
+										{c.kind === 'hard' ? 'hart' : c.kind === 'soft' ? 'weich' : c.kind}
+									</span>
 								</td>
 								<td class="font-medium">{c.title}</td>
 								<td class="text-sm text-base-content/70">{c.description}</td>

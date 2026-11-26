@@ -1,5 +1,6 @@
 <script>
 	import { mkDateShort } from '#lib/jshelper/misc.js';
+	import Term from '#lib/help/Term.svelte';
 
 	let { data } = $props();
 	let slots = data.slots;
@@ -71,13 +72,19 @@
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Anny-Anforderungen (KDP)</h1>
-		<span class="text-sm text-base-content/60">EXaHM / SEB-Bedarf + Anny-Buchungen</span>
+		<span class="text-sm text-base-content/60">EXaHM/SEB-Bedarf und Anny-Buchungen</span>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Je Termin: welche EXaHM- und SEB-Prüfungen dort liegen und welche T-Bau-Räume dafür in
+		<Term id="anny" /> gebucht und genutzt sind. Grün heißt gebucht und genutzt, rot genutzt, aber nicht
+		gebucht, gelb gebucht, aber nicht genutzt (kann storniert werden). So siehst du, was in Anny noch
+		zu buchen oder abzusagen ist. Die Buchungen selbst lädst du unter „Anny-Buchungen“ neu.
+	</p>
 
 	<div class="flex flex-wrap items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<label class="label cursor-pointer gap-2">
 			<input type="checkbox" class="toggle toggle-sm toggle-primary" bind:checked={hideEmpty} />
-			<span class="label-text">nur Slots mit Bedarf</span>
+			<span class="label-text">nur Termine mit Bedarf</span>
 		</label>
 		<span class="text-xs text-base-content/50">Wdh. = Wiederholungsprüfung</span>
 	</div>
@@ -98,7 +105,7 @@
 					{#if slot.date}
 						{fmtDate(slot.date)}{slot.start ? ` · ${slot.start}` : ''}
 					{:else}
-						Ungeplant
+						ohne Termin
 					{/if}
 					<span class="text-sm text-base-content/50">
 						({slot.date ? mkDateShort(slot.date) : '—'} · {slot.start

@@ -178,22 +178,22 @@ export const ROOM_GENERATION_FIELDS: GenerationConfigField[] = [
 		key: 'roomUnplaced',
 		label: 'ungeplante Prüfung',
 		caution: true,
-		hint: 'Strafe pro nicht platzierter Prüfung — dominant, hoch lassen'
+		hint: 'Strafpunkte je Studierende:r ohne Platz; muss alles andere überwiegen, deshalb hoch lassen'
 	},
 	{
 		key: 'roomBuffer',
 		label: 'Puffer',
-		hint: 'Strafe für fehlende bzw. überzogene Reserveplätze (Kapazitätspuffer)'
+		hint: 'Strafpunkte, wenn in einem Raum zu wenige oder zu viele Plätze frei bleiben'
 	},
 	{
 		key: 'roomSplit',
 		label: 'Aufteilung',
-		hint: 'Strafe für das Aufteilen einer Prüfung auf mehrere Räume'
+		hint: 'Strafpunkte, wenn eine Prüfung auf mehrere Räume verteilt wird'
 	},
 	{
 		key: 'roomCompaction',
 		label: 'Verdichtung',
-		hint: 'Belohnung für das Zusammenziehen auf wenige Räume/Gebäude'
+		hint: 'je höher, desto mehr kommen die Prüfungen in wenigen Räumen zusammen'
 	},
 	{
 		key: 'roomHeatFloor',
@@ -202,13 +202,13 @@ export const ROOM_GENERATION_FIELDS: GenerationConfigField[] = [
 	},
 	{
 		key: 'roomChurn',
-		label: 'Umverteilung (Churn)',
-		hint: 'Strafe für das Umverteilen bereits zugeordneter Räume (Warm-Start)'
+		label: 'Umverteilung',
+		hint: 'Strafpunkte, wenn beim Verbessern der bestehenden Zuteilung ein Raum wechselt'
 	},
 	{
 		key: 'roomHeatBaselineHour',
 		label: 'Hitze-Basisstunde',
-		hint: 'Uhrzeit (Stunde), ab der der Hitze-Term ansteigt'
+		hint: 'ab dieser vollen Stunde zählen obere Stockwerke im Sommer als zunehmend heiß'
 	}
 ];
 
@@ -217,7 +217,7 @@ export const PREPLAN_CONFIG_FIELDS: GenerationConfigField[] = [
 	{
 		key: 'preplanCapacityFactor',
 		label: 'Kapazitäts-Faktor',
-		hint: 'nutzbarer Anteil der gebuchten Anny-Sitze (1.0 = voll füllen)'
+		hint: 'so viel der gebuchten Anny-Plätze wird genutzt (1.0 = alle)'
 	}
 ];
 
