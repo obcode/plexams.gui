@@ -85,8 +85,8 @@ export const GLOSSARY = [
 	{
 		id: 'kdp',
 		term: 'KDP',
-		short: 'Das Team, das die Rechnerprüfungen (EXaHM/SEB) technisch betreut.',
-		long: 'Das KDP-Team betreut die Rechnerprüfungen technisch. Prüfende müssen dort für ihre EXaHM- oder SEB-Prüfung selbst ein Ticket öffnen; die Meldung an die Prüfungsplanung ersetzt das nicht. Von der Prüfungsplanung bekommt das KDP-Team die Übersicht, welche Rechnerprüfung wann in welchem Raum stattfindet.'
+		short: 'Kompetenzzentrum Digitales Prüfen: betreut die Rechnerprüfungen (EXaHM/SEB) technisch.',
+		long: 'KDP steht für Kompetenzzentrum Digitales Prüfen. Es betreut die Rechnerprüfungen technisch. Prüfende müssen dort für ihre EXaHM- oder SEB-Prüfung selbst ein Ticket öffnen; die Meldung an die Prüfungsplanung ersetzt das nicht. Von der Prüfungsplanung bekommt das KDP die Übersicht, welche Rechnerprüfung wann in welchem Raum stattfindet.'
 	},
 	{
 		id: 'anny',

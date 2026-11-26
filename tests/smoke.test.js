@@ -1,4 +1,6 @@
 // @ts-check
+import { readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { expect, test } from '@playwright/test';
 
 // Smoke-Tests: jede parametrfreie Seite muss serverseitig rendern (HTTP < 400 →
@@ -9,48 +11,14 @@ import { expect, test } from '@playwright/test';
 // Parametrisierte Routen (/exam/assembledExams/[ancode] usw.) sind hier NICHT
 // abgedeckt — die brauchen echte IDs; separater Follow-up.
 
-const ROUTES = [
-	'/',
-	'/config',
-	'/config/new',
-	'/email',
-	'/email/attachments',
-	'/email/specialInterests',
-	'/exam/assembledExams',
-	'/exam/connected',
-	'/exam/examersToPlan',
-	'/exam/examsToPlan',
-	'/invigilators',
-	'/log',
-	'/nta/all',
-	'/nta/semester',
-	'/plan/annyBookings',
-	'/plan/exams',
-	'/plan/exams/generate',
-	'/plan/exams/roomsphase',
-	'/plan/exams/validate',
-	'/plan/external',
-	'/plan/invigilation',
-	'/plan/invigilation/constraints',
-	'/plan/invigilation/generate',
-	'/plan/invigilation/planning',
-	'/plan/invigilation/validate',
-	'/plan/kdprooms',
-	'/plan/roomRequests',
-	'/plan/rooms',
-	'/plan/rooms/validate',
-	'/preplan',
-	'/primuss/exams',
-	'/primuss/joint',
-	'/rooms',
-	'/students',
-	'/studyprograms',
-	'/todos',
-	'/validate',
-	'/zpa/additionalExams',
-	'/zpa/publish',
-	'/zpa/teacher'
-];
+// Every parameter-free page of the planner, read from the route folders, so a new
+// page is covered without anyone remembering to list it here.
+const ROUTES_DIR = fileURLToPath(new URL('../src/routes/(planner)', import.meta.url));
+const ROUTES = readdirSync(ROUTES_DIR, { recursive: true, encoding: 'utf8' })
+	.filter((f) => f === '+page.svelte' || f.endsWith('/+page.svelte'))
+	.map((f) => '/' + f.replace(/\/?\+page\.svelte$/, ''))
+	.filter((route) => !route.includes('['))
+	.sort();
 
 for (const path of ROUTES) {
 	test(`rendert ${path}`, async ({ page }) => {

@@ -177,8 +177,8 @@ export const STEP_HELP = {
 		note: 'Ab hier ist das Neu-Generieren der Räume gesperrt. Einzelne Räume lassen sich weiter von Hand ändern.'
 	},
 	kdpRoomsSent: {
-		what: 'Auf „E-Mails" die Raumübersicht der EXaHM- und SEB-Prüfungen ans KDP-Team verschicken.',
-		why: 'Das KDP-Team betreut die Rechnerprüfungen und muss wissen, welche Prüfung wann in welchem Raum stattfindet.'
+		what: 'Auf „E-Mails" die Raumübersicht der EXaHM- und SEB-Prüfungen ans KDP (Kompetenzzentrum Digitales Prüfen) verschicken.',
+		why: 'Das KDP betreut die Rechnerprüfungen und muss wissen, welche Prüfung wann in welchem Raum stattfindet.'
 	},
 
 	// --- Phase 3 ---

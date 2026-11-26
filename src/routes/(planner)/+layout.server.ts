@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/sveltekit';
 import { gql } from 'graphql-request';
 import { backendRequest } from '#lib/server/backend.js';
 import type { LayoutServerLoad } from './$types';
@@ -68,7 +69,6 @@ export const load: LayoutServerLoad = async () => {
 			query {
 				semester {
 					id
-					semester
 					compatible
 					readOnly
 				}
@@ -84,8 +84,11 @@ export const load: LayoutServerLoad = async () => {
 			guiVersion: __APP_VERSION__,
 			buildTime: __BUILD_TIME__
 		};
-	} catch {
-		// Backend nicht erreichbar → keine Annahme über Schutz treffen.
+	} catch (e) {
+		// Backend nicht erreichbar → keine Annahme über Schutz treffen. Report it: for
+		// months this catch hid a query for a field the backend no longer had, and the
+		// "semester is protected" banner never showed.
+		Sentry.captureException(e, { level: 'warning' });
 		return {
 			semesterStatus: null,
 			readOnly: false,
