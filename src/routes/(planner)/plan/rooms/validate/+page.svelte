@@ -1,4 +1,5 @@
 <script>
+	import ValidationLegend from '#lib/validation/ValidationLegend.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
 	import { roomValidators } from '#lib/validation/validators.js';
@@ -67,6 +68,11 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<h1 class="text-2xl font-semibold">Räume validieren</h1>
+	<ValidationLegend>
+		Prüft die Raumplanung: Hat jede:r einen Platz, passen die Räume zu den Prüfungen, sind
+		angefragte Räume genehmigt, und sitzen Studierende mit Anspruch auf einen eigenen Raum allein?
+		Lass sie nach jedem Generieren der Räume und nach jeder Änderung von Hand laufen.
+	</ValidationLegend>
 
 	<ValidationGroup
 		bind:this={group}
@@ -107,8 +113,9 @@
 			</div>
 		{/if}
 		<div class="mt-2 text-xs text-base-content/50">
-			Ein akzeptierter Verzicht macht aus dem „eigener Raum"-Fehler eine Warnung; der Grund wird in
-			die NTA-Mail übernommen.
+			Hat jemand mit Anspruch auf einen eigenen Raum darauf verzichtet, kannst du das beim
+			zugehörigen Fehler oben mit „Verzicht akzeptieren" und einer Begründung festhalten. Aus dem
+			Fehler wird dann eine Info, und die Begründung steht in der E-Mail an die betroffene Person.
 		</div>
 	</div>
 </div>

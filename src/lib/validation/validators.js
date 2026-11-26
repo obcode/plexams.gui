@@ -17,28 +17,30 @@
 export const invigilationValidators = [
 	{
 		key: 'validateInvigilatorRequirements',
-		title: 'Anforderungen',
-		description: 'Aufsichts-Anforderungen erfüllt'
+		title: 'Sperrtage & eigene Prüfungen',
+		description:
+			'Niemand hat Aufsicht an einem Sperrtag, zwei Aufsichten gleichzeitig oder Reserveaufsicht während der eigenen Prüfung.'
 	},
 	{
 		key: 'validateInvigilationDuplicates',
-		title: 'Doppelbelegungen',
-		description: 'keine doppelten Aufsichten'
+		title: 'Doppelbesetzungen',
+		description: 'Kein Raum und keine Reserve ist doppelt besetzt.'
 	},
 	{
 		key: 'validateInvigilatorSlots',
-		title: 'Slots',
-		description: 'Aufsichten in gültigen Slots'
+		title: 'Offene Aufsichten',
+		description: 'Je Tag: Räume ohne Aufsicht und Prüfungszeiten ohne Reserve.'
 	},
 	{
 		key: 'validateInvigilationsTimeDistance',
-		title: 'Zeitabstände',
-		description: 'Abstände zwischen Aufsichten'
+		title: 'Zeit zwischen Aufsichten',
+		description: 'Zwischen zwei Aufsichten derselben Person liegt genug Zeit.'
 	},
 	{
 		key: 'validateInvigilationConstraints',
-		title: 'Constraints',
-		description: 'Constraints eingehalten'
+		title: 'Vorgaben der Einteilung',
+		description:
+			'Verfügbarkeit, Zeitfenster und vorgeplante Aufsichten sind eingehalten; die Last ist gleichmäßig verteilt.'
 	}
 ];
 
@@ -50,33 +52,35 @@ export const invigilationValidators = [
 export const roomValidators = [
 	{
 		key: 'validateRoomsPerSlot',
-		title: 'Räume pro Slot',
-		description: 'Räume nicht doppelt belegt'
+		title: 'Räume je Prüfungszeit',
+		description: 'Nur zu dieser Zeit erlaubte Räume, kein Raum überbelegt, niemand ohne Platz.'
 	},
 	{
 		key: 'validateRoomsNeedRequest',
-		title: 'Reservierungen',
-		description: 'nicht-genehmigte → Warnung, fehlende → Fehler'
+		title: 'Raum-Anfragen',
+		description:
+			'Für jeden Raum, der angefragt werden muss, gibt es eine Anfrage. Fehlt sie: Fehler. Noch nicht genehmigt: Warnung.'
 	},
 	{
 		key: 'validateRoomsPerExam',
-		title: 'Räume pro Prüfung',
-		description: 'Sitzplätze, Raum-Constraints, NTA-allein'
+		title: 'Räume je Prüfung',
+		description:
+			'Jede:r hat einen Platz, der Raum passt zu den Vorgaben der Prüfung, und wer Anspruch auf einen eigenen Raum hat, sitzt allein.'
 	},
 	{
 		key: 'validateRoomsEnoughSeats',
-		title: 'Genügend freie Plätze',
-		description: 'genug freie Plätze in den Slots'
+		title: 'Platzreserve',
+		description: 'In den Räumen bleiben genug Plätze als Reserve frei.'
 	},
 	{
 		key: 'validateRoomsTimeDistance',
-		title: 'Zeitabstände',
-		description: 'Abstände zwischen Räumen'
+		title: 'Zeit zwischen Prüfungen',
+		description: 'Zwischen zwei Prüfungen im selben Raum liegt genug Zeit.'
 	},
 	{
 		key: 'validateRoomsBlocked',
-		title: 'Blockierte Räume',
-		description: 'gesperrter Raum noch verplant → neu generieren'
+		title: 'Gesperrte Räume',
+		description: 'Kein gesperrter Raum ist noch verplant.'
 	}
 ];
 
@@ -85,7 +89,8 @@ export const schedulingValidators = [
 	{
 		key: 'validateConflicts',
 		title: 'Konflikte',
-		description: 'Konflikte im Zeitplan',
+		description:
+			'Studierende mit zwei Prüfungen zur selben Zeit, zu dicht nacheinander oder am selben Tag.',
 		argSpec: [
 			{ name: 'onlyPlannedByMe', type: 'Boolean!', value: true },
 			{ name: 'ancode', type: 'Int!', value: 0 }
@@ -93,13 +98,15 @@ export const schedulingValidators = [
 	},
 	{
 		key: 'validateConstraints',
-		title: 'Constraints',
-		description: 'Constraints im Zeitplan eingehalten'
+		title: 'Vorgaben',
+		description:
+			'Feste Termine, ausgeschlossene Tage, „gleichzeitig“ und Raumanforderungen sind eingehalten.'
 	},
 	{
 		key: 'validateSemesterTimes',
-		title: 'Semester-Zeiten',
-		description: 'Prüfungszeiten liegen im gültigen Semesterzeitraum'
+		title: 'Tageszeiten',
+		description:
+			'Die Startzeiten liegen im Tageszeit-Fenster, das die Semester-Konfiguration vorgibt.'
 	}
 ];
 
@@ -110,8 +117,9 @@ export const schedulingValidators = [
 export const preplanValidators = [
 	{
 		key: 'validatePreplanAssignment',
-		title: 'Zuordnung',
-		description: 'SEB/EXaHM-Vorplanung: Preplan-Prüfungen in Slots/Räume',
+		title: 'Verteilung',
+		description:
+			'Jede vorgeplante Rechnerprüfung passt in eine gebuchte Zeit und in die gebuchten Räume.',
 		query: {
 			endpoint: '/api/preplan/validatePreplanAssignment',
 			field: 'validatePreplanAssignment'
@@ -125,8 +133,8 @@ export const preplanValidators = [
 export const primussValidators = [
 	{
 		key: 'validateStudentRegs',
-		title: 'Anmeldungen',
-		description: 'Studierende mit Regs in mehreren Programmen (Info)'
+		title: 'Mehrere Studiengänge',
+		description: 'Studierende, die in mehreren Studiengängen angemeldet sind. Nur zur Kenntnis.'
 	}
 ];
 
@@ -136,28 +144,31 @@ export const primussValidators = [
 export const dbValidators = [
 	{
 		key: 'validateDBPlanEntries',
-		title: 'Planeinträge',
-		description: 'Planeinträge konsistent'
+		title: 'Termine',
+		description:
+			'Jeder gespeicherte Termin gehört zu einer aufbereiteten Prüfung und liegt auf einer erlaubten Startzeit.'
 	},
 	{
 		key: 'validateDBConstraints',
-		title: 'Constraints',
-		description: 'Constraints konsistent'
+		title: 'Vorgaben',
+		description:
+			'Gespeicherte Vorgaben gehören zu einer Prüfung; feste Tage stimmen mit dem Termin überein.'
 	},
 	{
 		key: 'validateDBRooms',
 		title: 'Räume',
-		description: 'Raumdaten konsistent'
+		description: 'Gespeicherte Räume passen zu Termin, Stammdaten und Anmeldungen.'
 	},
 	{
 		key: 'validateDBNtas',
-		title: 'NTAs',
-		description: 'Nachteilsausgleiche konsistent'
+		title: 'Nachteilsausgleiche',
+		description: 'Nachteilsausgleiche sind vollständig, eindeutig und greifen bei den Anmeldungen.'
 	},
 	{
 		key: 'validateDBReferences',
-		title: 'Referenzen',
-		description: 'Verweise zwischen Datensätzen konsistent'
+		title: 'Verweise',
+		description:
+			'Abweichende Dauern, Freigaben, Anmeldezahlen und Verknüpfungen zeigen auf vorhandene Prüfungen.'
 	}
 ];
 
@@ -165,9 +176,9 @@ export const dbValidators = [
 // und den Status-Indikator in der Nav. Weitere Gruppen hier ergänzen.
 /** @type {ValidatorGroup[]} */
 export const validationGroups = [
-	{ id: 'db', title: 'Datenbank-Integrität', validators: dbValidators },
+	{ id: 'db', title: 'Stimmigkeit der Daten', validators: dbValidators },
 	{ id: 'preplan', title: 'SEB/EXaHM-Vorplanung', validators: preplanValidators },
-	{ id: 'primuss', title: 'Primuss', validators: primussValidators },
+	{ id: 'primuss', title: 'Anmeldungen', validators: primussValidators },
 	{ id: 'scheduling', title: 'Terminplanung', validators: schedulingValidators },
 	{ id: 'rooms', title: 'Räume', validators: roomValidators },
 	{ id: 'invigilation', title: 'Aufsichten', validators: invigilationValidators }
@@ -178,9 +189,21 @@ export const validationGroups = [
 // eine eigene Ampel und starten nur auf Klick.
 /** @type {ValidatorDef[]} */
 export const zpaValidators = [
-	{ key: 'validateZPADateTimes', title: 'Termine', description: 'Datum/Uhrzeit im ZPA' },
-	{ key: 'validateZPARooms', title: 'Räume', description: 'Räume im ZPA' },
-	{ key: 'validateZPAInvigilators', title: 'Aufsichten', description: 'Aufsichten im ZPA' }
+	{
+		key: 'validateZPADateTimes',
+		title: 'Termine',
+		description: 'Im ZPA stehen dieselben Termine wie in Plexams.'
+	},
+	{
+		key: 'validateZPARooms',
+		title: 'Räume',
+		description: 'Im ZPA stehen dieselben Räume wie in Plexams.'
+	},
+	{
+		key: 'validateZPAInvigilators',
+		title: 'Aufsichten',
+		description: 'Im ZPA stehen dieselben Aufsichten wie in Plexams.'
+	}
 ];
 
 /** @type {ValidatorGroup} */

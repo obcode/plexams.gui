@@ -1,4 +1,5 @@
 <script>
+	import ValidationLegend from '#lib/validation/ValidationLegend.svelte';
 	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
 	import { validationGroups as groups } from '#lib/validation/validators.js';
 
@@ -22,6 +23,10 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
+	<ValidationLegend>
+		Hier laufen alle Prüfungen der Validierung auf einmal, von der Stimmigkeit der Daten bis zu den
+		Aufsichten. Dieselbe Prüfung startet auch die Ampel oben in der Leiste.
+	</ValidationLegend>
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Validierung (alle Bereiche)</h1>
 		{#if anyRunning}
