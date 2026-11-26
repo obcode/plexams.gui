@@ -59,7 +59,7 @@
 			case 'errors':
 				return { badge: 'badge-error', dot: 'bg-error', label: 'mit Fehlern' };
 			case 'panic':
-				return { badge: 'badge-error', dot: 'bg-error', label: 'Panik' };
+				return { badge: 'badge-error', dot: 'bg-error', label: 'abgestürzt' };
 			default:
 				return { badge: 'badge-ghost', dot: 'bg-base-content/30', label: sched.lastStatus || '—' };
 		}
@@ -92,7 +92,8 @@
 		<div>
 			<h1 class="text-2xl font-bold">🛠️ Administration · Überblick</h1>
 			<p class="mt-1 text-sm text-base-content/60">
-				Betriebszustand des Servers, Zugriff, Auto-Sync und Audit-Aktivität.
+				Für Administrator:innen: wie es dem Server geht, wer Zugang hat, ob der nächtliche Abgleich
+				mit ZPA und Anny gelaufen ist und was zuletzt geändert wurde.
 			</p>
 		</div>
 		{#if overview}
@@ -103,8 +104,7 @@
 	{#if !data.available || !overview}
 		<div class="alert alert-warning">
 			<span>
-				Übersicht nicht verfügbar — dies erfordert eine ADMIN-Rolle und ein Backend mit der
-				<code>adminOverview</code>-Query.
+				Die Übersicht ließ sich nicht laden. Sie ist nur mit der Rolle ADMIN sichtbar.
 				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70">
 						{data.loadError}
 					</span>{/if}
@@ -150,7 +150,7 @@
 							<span class="badge badge-success gap-1">Schreiben möglich</span>
 						{:else}
 							<span class="badge badge-warning gap-1">
-								<span class="loading loading-spinner loading-xs"></span> Operation läuft
+								<span class="loading loading-spinner loading-xs"></span> Vorgang läuft
 							</span>
 						{/if}
 						{#if live?.readOnly}
@@ -160,8 +160,8 @@
 						{/if}
 					</div>
 					<p class="text-xs text-base-content/50">
-						Während einer Validierung oder eines exklusiven Transfers sind Schreibvorgänge
-						serverseitig gesperrt.
+						Während einer Validierung, einer Übertragung ins ZPA oder eines E-Mail-Versands nimmt
+						der Server keine Änderungen an.
 					</p>
 				</div>
 			</section>
@@ -170,7 +170,7 @@
 			<section class="card border border-base-300 bg-base-100 shadow-sm">
 				<div class="card-body gap-3 p-4">
 					<h2 class="flex items-center gap-2 text-sm font-semibold text-base-content/70">
-						🔄 Auto-Sync
+						🔄 Nächtlicher Abgleich (ZPA, Anny)
 						<span class="badge badge-sm {syncAmpel.badge} gap-1.5">
 							<span class="inline-block h-2 w-2 rounded-full {syncAmpel.dot}"></span>
 							{syncAmpel.label}
@@ -185,7 +185,9 @@
 					{/if}
 
 					{#if sched?.neverRan}
-						<p class="text-sm text-base-content/50">Der Auto-Sync ist noch nie gelaufen.</p>
+						<p class="text-sm text-base-content/50">
+							Der nächtliche Abgleich ist noch nie gelaufen.
+						</p>
 					{:else if sched}
 						<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
 							<dt class="text-base-content/60">Letzter Lauf</dt>
@@ -202,13 +204,15 @@
 					{/if}
 
 					<div class="mt-1 border-t border-base-200 pt-2 text-xs text-base-content/60">
-						Admin-Digest:
+						Tägliche Zusammenfassung:
 						{#if sched?.adminMailEnabled}
 							<span class="text-success">aktiviert</span>, täglich {sched.adminMailTime || '—'}
 						{:else}
 							<span class="text-base-content/50">deaktiviert</span>
 						{/if}
-						<span class="opacity-70"> · Empfänger: alle ADMIN-Nutzer (Server-Config)</span>
+						<span class="opacity-70">
+							· geht an alle mit der Rolle ADMIN (Server-Konfiguration)
+						</span>
 					</div>
 				</div>
 			</section>
@@ -216,11 +220,11 @@
 			<!-- Backup -->
 			<section class="card border border-base-300 bg-base-100 shadow-sm">
 				<div class="card-body gap-3 p-4">
-					<h2 class="text-sm font-semibold text-base-content/70">💾 Backup</h2>
+					<h2 class="text-sm font-semibold text-base-content/70">💾 Sicherung</h2>
 					{#if backup?.hasUnsavedChanges}
 						<div class="alert alert-warning py-2 text-sm">
 							<span>
-								Backup fällig — Änderungen seit dem letzten Dump
+								Sicherung fällig: seit der letzten Sicherung wurde etwas geändert
 								{#if backup.lastChangeAt}(zuletzt {fmt(backup.lastChangeAt)}){/if}.
 							</span>
 						</div>
@@ -231,7 +235,7 @@
 						<p class="text-sm text-success">Aktuell — keine ungesicherten Änderungen.</p>
 					{/if}
 					<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-						<dt class="text-base-content/60">Letzter Dump</dt>
+						<dt class="text-base-content/60">Letzte Sicherung</dt>
 						<dd>{fmt(backup?.lastDumpAt)}</dd>
 						<dt class="text-base-content/60">Letzte Änderung</dt>
 						<dd>{fmt(backup?.lastChangeAt)}</dd>
@@ -288,7 +292,7 @@
 				<div class="card-body gap-3 p-4">
 					<h2 class="flex flex-wrap items-center gap-2 text-sm font-semibold text-base-content/70">
 						📊 Aktivität (Audit)
-						<a class="link link-primary ml-auto text-xs" href="/log">Mutations-Log →</a>
+						<a class="link link-primary ml-auto text-xs" href="/log">Änderungsprotokoll →</a>
 					</h2>
 
 					{#if activity}
@@ -326,7 +330,7 @@
 						<!-- Top-Operationen -->
 						<div>
 							<h3 class="mb-1.5 text-xs font-semibold text-base-content/60">
-								Häufigste Operationen (7 T)
+								Häufigste Vorgänge (letzte 7 Tage)
 							</h3>
 							<ul class="flex flex-col gap-1">
 								{#each activity?.topOperations ?? [] as op}

@@ -95,16 +95,18 @@
 	<header class="mb-6">
 		<h1 class="text-2xl font-bold">👥 Benutzerverwaltung</h1>
 		<p class="mt-1 text-sm text-base-content/60">
-			Rollen der über OIDC angemeldeten Benutzer verwalten. <span class="font-medium">VIEWER</span>
-			ist nur-lesend; Schreibvorgänge dieser Rolle lehnt das Backend ab.
+			Wer Plexams benutzen darf und mit welcher Rolle. Angemeldet wird über das Hochschul-Login;
+			hier vergibst du nur die Rolle: <span class="font-medium">VIEWER</span> darf nur lesen,
+			<span class="font-medium">PLANER</span> plant, <span class="font-medium">ADMIN</span> verwaltet
+			zusätzlich Benutzer.
 		</p>
 	</header>
 
 	{#if !data.available}
 		<div class="alert alert-warning">
 			<span>
-				Benutzerliste nicht verfügbar — dies erfordert eine ADMIN-Rolle und ein Backend mit
-				OIDC-Auth.
+				Die Benutzerliste ließ sich nicht laden. Sie ist nur mit der Rolle ADMIN und auf dem Server
+				mit Anmeldung sichtbar.
 				{#if data.loadError}<span class="mt-1 block font-mono text-xs opacity-70">
 						{data.loadError}
 					</span>{/if}
