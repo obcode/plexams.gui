@@ -199,7 +199,7 @@
 		<label class="mt-3 flex cursor-pointer items-center gap-2">
 			<input type="checkbox" class="checkbox checkbox-sm" bind:checked={form.notPlannedByMe} />
 			<span class="font-medium">nicht von mir geplant</span>
-			<span class="text-xs text-base-content/50">(dann sind keine weiteren Constraints nötig)</span>
+			<span class="text-xs text-base-content/50">(dann sind keine weiteren Vorgaben nötig)</span>
 		</label>
 
 		{#if form.notPlannedByMe}
@@ -352,7 +352,7 @@
 
 			<!-- gleicher Slot wie -->
 			<div class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">gleicher Slot wie</span>
+				<span class="text-xs font-medium text-base-content/60">zur selben Zeit wie</span>
 				<div class="flex flex-wrap items-center gap-1">
 					{#each form.sameSlot as a}
 						<span class="badge badge-ghost gap-1">

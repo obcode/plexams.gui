@@ -3,6 +3,8 @@
 	import ExternalExamRow from '#lib/exam/ExternalExamRow.svelte';
 	import DatasetCsvTransfer from '#lib/backup/DatasetCsvTransfer.svelte';
 	import { buildGroups, hasTime } from '#lib/exam/otherFkGroups.ts';
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 
 	let { data } = $props();
 
@@ -36,38 +38,53 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-baseline gap-3">
-		<h1 class="text-2xl font-semibold">Prüfungen anderer FKs</h1>
-		<span class="text-sm text-base-content/60 tabular-nums">
-			{total} Prüfungen{#if missing}, <span class="text-warning">{missing} ohne Termin</span>{/if}
-		</span>
-	</div>
+	<PageIntro title="Prüfungen anderer FKs" count={total} help="schritt-otherFKExamsScheduled">
+		Hier stehen Prüfungen, die eine andere <Term id="fk">Fakultät</Term> plant, die aber auch unsere Studierenden
+		schreiben: Prüfungen, die unter „Prüfungen auswählen &amp; Vorgaben“ die Vorgabe „nicht von mir geplant“
+		haben, und die Prüfungen der
+		<Term id="gemeinsame-studiengaenge">gemeinsamen Studiengänge</Term>, die die andere Fakultät
+		plant. Trag hier die Termine ein, die die andere Fakultät festgelegt hat, und zwar vor dem
+		Generieren des Terminplans: Für uns sind sie fest, und der Generator plant unsere Prüfungen um
+		sie herum.
+		{#snippet howto()}
+			<ol>
+				<li>Mit „nur ohne Termin“ die Prüfungen zeigen, denen noch ein Termin fehlt.</li>
+				<li>
+					In der Zeile Datum und Uhrzeit wählen und „setzen“ (bzw. „ändern“) drücken. Ein Termin
+					außerhalb unseres Prüfungszeitraums ist erlaubt und wird entsprechend markiert.
+				</li>
+				<li>
+					Viele Termine auf einmal: unter „Als CSV exportieren / importieren“ die Prüfungszeiten
+					exportieren, ergänzen und wieder importieren.
+				</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
+	{#if missing}
+		<p class="text-sm text-warning">
+			{missing === 1 ? 'Eine Prüfung hat' : `${missing} Prüfungen haben`} noch keinen Termin.
+		</p>
+	{/if}
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			📄 CSV Export / Import (externe Prüfungen &amp; Zeiten)
+			📄 Als CSV exportieren / importieren
 		</summary>
 		<div class="mt-2 flex flex-col gap-3">
-			<DatasetCsvTransfer name="external-exams" title="Externe Prüfungen (Stammdaten)">
-				Stammdaten der externen Prüfungen <strong>ohne Zeit</strong>.
+			<DatasetCsvTransfer name="external-exams" title="Prüfungen anderer FKs (ohne Termine)">
+				Modul, Prüfende und Art der Prüfungen anderer Fakultäten, <strong>ohne Termin</strong>.
 			</DatasetCsvTransfer>
 			<DatasetCsvTransfer name="exam-times" title="Prüfungszeiten">
-				Absolutes Datum &amp; Uhrzeit der externen Prüfungen (inkl. gemeinsamer Studiengänge). Der
-				Import berechnet den Slot neu.
+				Datum und Uhrzeit dieser Prüfungen, auch der gemeinsamen Studiengänge. Der Import setzt für
+				jede Zeile den Termin der Prüfung mit diesem Ancode; Zeilen ohne Datum oder Uhrzeit werden
+				übersprungen.
 			</DatasetCsvTransfer>
 		</div>
 	</details>
 
-	<p class="max-w-3xl text-sm text-base-content/60">
-		Termine für Prüfungen, die <strong>eine andere Fakultät</strong> plant: ZPA-Prüfungen mit dem Constraint
-		„nicht von mir geplant" (FK aus dem Constraint-Feld) sowie von anderen FKs geplante Prüfungen gemeinsamer
-		Studiengänge. Nach FK gruppiert. Datum &amp; Zeit direkt in der Zeile setzen — Prüfungen außerhalb
-		des Prüfungszeitraums behalten nur die Zeit (keinen Slot).
-	</p>
-
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
-			<span class="font-medium">Daten konnten nicht geladen werden (Backend-Fehler).</span>
+			<span class="font-medium">Die Prüfungen konnten nicht geladen werden.</span>
 			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
 		</div>
 	{/if}
@@ -87,7 +104,7 @@
 				class="tab {source === 'zpa' ? 'tab-active' : ''}"
 				onclick={() => (source = 'zpa')}
 			>
-				ZPA (nicht von mir)
+				ZPA, „nicht von mir geplant“
 			</button>
 			<button
 				role="tab"
@@ -100,7 +117,7 @@
 
 		<!-- FK-Filter -->
 		<label class="flex items-center gap-2 text-sm">
-			<span class="text-base-content/60">FK</span>
+			<span class="text-base-content/60">Fakultät</span>
 			<select class="select select-bordered select-sm" bind:value={fkFilter}>
 				<option value="">alle</option>
 				{#each fks as fk}
@@ -119,7 +136,7 @@
 		<div class="text-sm text-base-content/50">
 			{onlyMissing
 				? 'Alle passenden Prüfungen haben einen Termin.'
-				: 'Keine Prüfungen anderer FKs.'}
+				: 'Keine Prüfungen anderer FKs. Sie erscheinen hier, sobald eine Prüfung die Vorgabe „nicht von mir geplant“ hat oder ein gemeinsamer Studiengang importiert ist.'}
 		</div>
 	{:else}
 		{#each groups as group}

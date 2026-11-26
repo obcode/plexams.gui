@@ -2,6 +2,7 @@
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import SemesterConfigForm from '#lib/config/SemesterConfigForm.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
+	import PageIntro from '#lib/help/PageIntro.svelte';
 
 	let { data } = $props();
 
@@ -19,7 +20,7 @@
 	async function create() {
 		if (creating) return;
 		if (!nameOk) {
-			errorMsg = 'Name muss dem Muster YYYY-SS oder YYYY-WS entsprechen (z. B. 2027-SS).';
+			errorMsg = 'Der Name besteht aus Jahr, Bindestrich und SS oder WS, z. B. 2027-SS.';
 			return;
 		}
 		creating = true;
@@ -34,13 +35,13 @@
 			});
 			const result = await res.json().catch(() => ({}));
 			if (!res.ok || result?.error) {
-				// u. a. „Config existiert schon" kommt als GraphQL-Error
 				errorMsg = result?.error ?? httpErrorMessage(res.status);
 				return;
 			}
 			const out = result.createSemester;
 			if (!out?.ok) {
-				errorMsg = 'Anlegen nicht möglich.';
+				errorMsg =
+					'Der Server hat das Semester nicht angelegt. Bitte die Eingaben prüfen und noch einmal versuchen.';
 				return;
 			}
 			createdName = name.trim();
@@ -54,25 +55,15 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Neues Semester anlegen</h1>
-		<a class="btn btn-ghost btn-sm" href="/config">← zur Konfiguration</a>
-	</div>
-
-	<!-- Wichtiger Hinweis: Server bleibt an aktuelles Semester gebunden -->
-	<div class="alert alert-info py-2 text-sm">
-		<span>
-			Der laufende <strong>plexams</strong>-Server bleibt an sein aktuelles Semester
-			{#if data.currentSemester}(<strong>{data.currentSemester}</strong>){/if} gebunden. Das Anlegen schreibt
-			nur die Config für das neue Semester — um es zu <strong>beplanen</strong>, muss plexams für
-			das neue Semester (neu) gestartet werden.
-		</span>
-	</div>
-
-	<p class="max-w-3xl text-sm text-base-content/60">
-		Die Felder sind aus dem aktuellen Semester <strong>vorbefüllt</strong> (Anfangszeiten, E-Mails, reservierte
-		Zeiten je gemeinsamem Studiengang übernehmen — Termine anpassen).
-	</p>
+	<PageIntro title="Neues Semester anlegen" help="ablauf">
+		{#snippet actions()}
+			<a class="btn btn-ghost btn-sm" href="/config">← zur Semester-Konfiguration</a>
+		{/snippet}
+		Damit beginnt die Planung eines Semesters. Du gibst ihm einen Namen und legst Prüfungszeitraum, Startzeiten
+		und E-Mail-Adressen fest. Die Felder sind mit den Werten des gerade ausgewählten Semesters{#if data.currentSemester}
+			({data.currentSemester}){/if} vorbelegt; vor allem die Daten musst du anpassen. Ausgewählt bleibt
+		danach das bisherige Semester: Zum neuen wechselst du oben in der Leiste über die Semesterauswahl.
+	</PageIntro>
 
 	{#if errorMsg}
 		<div class="alert alert-error py-2 text-sm"><span>{errorMsg}</span></div>
@@ -82,9 +73,10 @@
 		<div class="alert alert-success flex-col items-start gap-1 py-3 text-sm">
 			<span class="font-semibold">Semester {createdName} angelegt.</span>
 			<span>
-				Nächster Schritt: <strong>plexams für {createdName} (neu) starten</strong>, um es zu
-				beplanen. Der hier laufende Server plant weiterhin
-				{#if data.currentSemester}{data.currentSemester}{:else}das bisherige Semester{/if}.
+				Ausgewählt ist weiterhin
+				{#if data.currentSemester}{data.currentSemester}{:else}das bisherige Semester{/if}. Nächster
+				Schritt: oben in der Leiste über die Semesterauswahl zu <strong>{createdName}</strong> wechseln
+				und dort unter „Semester-Konfiguration“ prüfen, ob der Planer stimmt.
 			</span>
 			{#if warnings.length}
 				<div class="mt-1">
@@ -110,8 +102,7 @@
 			/>
 		</label>
 		<span class="text-xs text-base-content/50">
-			Muster: <span class="font-mono">YYYY-SS</span> oder
-			<span class="font-mono">YYYY-WS</span>.
+			Jahr, Bindestrich und SS (Sommersemester) oder WS (Wintersemester), z. B. 2027-SS.
 		</span>
 	</div>
 
@@ -130,7 +121,8 @@
 			{creating ? 'legt an …' : 'Semester anlegen'}
 		</WriteButton>
 		<span class="text-xs text-base-content/50">
-			Existiert schon eine Config für den Namen, meldet der Server einen Fehler.
+			Legt das Semester mit dieser Konfiguration an. Ein Semester, das es schon gibt, wird nicht
+			überschrieben; seine Einstellungen änderst du unter „Semester-Konfiguration“.
 		</span>
 	</div>
 </div>

@@ -5,8 +5,10 @@
 
 /**
  * `replace`: the message stands alone and the backend text is dropped.
+ * `own`: the backend writes a German sentence that names the exam, ancode or field
+ * and says what to do; it stands alone, and `text` is only the fallback without one.
  * Otherwise the backend text is appended as a detail.
- * @type {Record<string, { text: string, replace: boolean }>}
+ * @type {Record<string, { text: string, replace: boolean, own?: boolean }>}
  */
 const MESSAGES = {
 	READ_ONLY_ROLE: {
@@ -35,13 +37,19 @@ const MESSAGES = {
 	},
 	ALREADY_EXISTS: {
 		text: 'Das gibt es bereits, deshalb wurde nichts neu angelegt.',
-		replace: true
+		replace: false,
+		own: true
 	},
 	NOT_FOUND: {
 		text: 'Der Eintrag wurde nicht gefunden. Vielleicht wurde er inzwischen geändert oder gelöscht; lade die Seite neu.',
+		replace: false,
+		own: true
+	},
+	INVALID_INPUT: { text: 'Die Eingabe passt so nicht.', replace: false, own: true },
+	REVISION_CONFLICT: {
+		text: 'Der Eintrag wurde inzwischen geändert, etwa in einem anderen Fenster oder von der Person im Portal. Lade die Seite neu und sieh dir den neuen Stand an.',
 		replace: true
 	},
-	INVALID_INPUT: { text: 'Die Eingabe passt so nicht', replace: false },
 	EXTERNAL_ZPA: {
 		text: 'Das ZPA hat nicht geantwortet oder die Anfrage abgelehnt. In Plexams wurde nichts verändert; versuche es später noch einmal',
 		replace: false
@@ -79,6 +87,7 @@ export function plannerErrorMessage(code, backendMessage) {
 		.trim();
 	const known = code ? MESSAGES[code] : undefined;
 	if (!known) return detail || 'Unbekannter Fehler.';
+	if (known.own) return detail || known.text;
 	if (known.replace || !detail) return known.replace ? known.text : `${known.text}.`;
 	return `${known.text}: ${detail}`;
 }

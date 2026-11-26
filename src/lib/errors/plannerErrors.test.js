@@ -35,10 +35,14 @@ describe('plannerErrorMessage', () => {
 		expect(plannerErrorMessage('INTERNAL', 'no rows in result set')).not.toContain('rows');
 	});
 
-	it('keeps the detail where it names what is wrong', () => {
-		expect(plannerErrorMessage('INVALID_INPUT', 'Datum liegt vor Semesterbeginn')).toBe(
-			'Die Eingabe passt so nicht: Datum liegt vor Semesterbeginn'
+	it('lets the backend sentence stand where it names what is wrong', () => {
+		expect(plannerErrorMessage('INVALID_INPUT', 'Die Startzeit „8.30“ ist keine Uhrzeit.')).toBe(
+			'Die Startzeit „8.30“ ist keine Uhrzeit.'
 		);
+		expect(plannerErrorMessage('ALREADY_EXISTS', 'Das Semester 2027-SS gibt es schon.')).toBe(
+			'Das Semester 2027-SS gibt es schon.'
+		);
+		expect(plannerErrorMessage('NOT_FOUND', '')).toContain('lade die Seite neu');
 	});
 
 	it('passes an uncoded message through, without the stream prefix', () => {

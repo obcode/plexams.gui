@@ -350,10 +350,10 @@
 <div class="flex flex-col gap-4">
 	<!-- Termine -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
-		<div class="font-semibold">Termine</div>
+		<div class="font-semibold">Prüfungszeitraum</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">von (from)</span>
+				<span class="text-xs font-medium text-base-content/60">erster Prüfungstag</span>
 				<input
 					type="date"
 					class="input input-bordered input-sm"
@@ -362,7 +362,7 @@
 				/>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">bis (until)</span>
+				<span class="text-xs font-medium text-base-content/60">letzter Prüfungstag</span>
 				<input
 					type="date"
 					class="input input-bordered input-sm"
@@ -371,15 +371,17 @@
 				/>
 			</label>
 		</div>
-		<p class="text-xs text-base-content/50">„von (from)" ist der Planungsbeginn = Tag 1.</p>
+		<p class="text-xs text-base-content/50">
+			Der erste Prüfungstag ist „Tag 1“ in der Tabelle der reservierten Zeiten weiter unten.
+		</p>
 	</div>
 
 	<!-- Anfangszeiten -->
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 		<div class="flex items-center gap-2">
-			<span class="font-semibold">Anfangszeiten</span>
+			<span class="font-semibold">Startzeiten</span>
 			<span class="badge badge-ghost badge-sm">{form.startTimes.length}</span>
-			<button class="btn btn-ghost btn-xs" onclick={addStartTime}>+ Anfangszeit</button>
+			<button class="btn btn-ghost btn-xs" onclick={addStartTime}>+ Startzeit</button>
 		</div>
 		{#if form.startTimes.length === 0}
 			<div class="text-xs text-base-content/50">keine</div>
@@ -407,24 +409,26 @@
 		<div class="font-semibold">Zeitabstände &amp; Kapazität</div>
 		<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Turnaround Raum/Aufsicht, Min</span>
+				<span class="text-xs font-medium text-base-content/60">
+					Pause zwischen zwei Belegungen, Min
+				</span>
 				<input
 					type="number"
 					min="0"
 					class="input input-bordered input-sm w-32"
 					bind:value={form.timelagMin}
 				/>
-				<span class="text-[11px] text-base-content/40">Default 15</span>
+				<span class="text-[11px] text-base-content/40">leer = 15</span>
 			</label>
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">zu nah ab, Min</span>
+				<span class="text-xs font-medium text-base-content/60">„zu nah“ unter, Min</span>
 				<input
 					type="number"
 					min="0"
 					class="input input-bordered input-sm w-32"
 					bind:value={form.notTooCloseMinutes}
 				/>
-				<span class="text-[11px] text-base-content/40">Default 120</span>
+				<span class="text-[11px] text-base-content/40">leer = 120</span>
 			</label>
 			<label class="flex flex-col gap-1">
 				<span class="text-xs font-medium text-base-content/60">Reisezeit zwischen Campus, Min</span>
@@ -454,14 +458,25 @@
 				</span>
 			</label>
 		</div>
-		<p class="text-xs text-base-content/50">
-			„Max. Plätze pro Startzeit" begrenzt, wie viele Studierende gleichzeitig (zur selben
-			Startzeit) geprüft werden — für feinere Startzeiten/Morgen-Packung; 0 = unbegrenzt.
-		</p>
-		<p class="text-xs text-base-content/50">
-			„Reisezeit zwischen Campus" ist der harte End-zu-Start-Mindestabstand zwischen zwei Prüfungen
-			eines Studierenden an verschiedenen Standorten; leer = 120.
-		</p>
+		<ul class="flex list-disc flex-col gap-0.5 pl-5 text-xs text-base-content/50">
+			<li>
+				<strong>Pause zwischen zwei Belegungen:</strong> so viele Minuten liegen mindestens zwischen zwei
+				Prüfungen im selben Raum und zwischen zwei Aufsichten derselben Person.
+			</li>
+			<li>
+				<strong>„zu nah“ unter:</strong> beginnen zwei Prüfungen einer Person am selben Tag weniger als
+				so viele Minuten nacheinander, zählen sie als „zu nah“ (bei den Konflikten und in der Statistik).
+			</li>
+			<li>
+				<strong>Reisezeit zwischen Campus:</strong> so viele Minuten liegen mindestens zwischen dem Ende
+				der einen und dem Beginn der nächsten Prüfung einer Person, wenn die beiden an verschiedenen Standorten
+				stattfinden.
+			</li>
+			<li>
+				<strong>Max. Plätze pro Startzeit:</strong> so viele Studierende werden höchstens zur selben Startzeit
+				geprüft; 0 heißt unbegrenzt.
+			</li>
+		</ul>
 	</div>
 
 	<!-- Reservierte Zeiten je gemeinsamem Studiengang als Matrix: Zeilen = Uhrzeit,
@@ -536,17 +551,17 @@
 				<button class="btn btn-outline btn-xs" onclick={fillAll}>alle wählen</button>
 				<button
 					class="btn btn-outline btn-xs"
-					title="ein Termin je Prüfungstag, abwechselnd letzter/erster Slot — Tag 1 = letzter Slot (nachmittags); Sperrtage ausgelassen"
+					title="ein Termin je Prüfungstag, abwechselnd späteste/früheste Startzeit — Tag 1 = späteste (nachmittags); Sperrtage ausgelassen"
 					onclick={() => fillAlternating(true)}
 				>
-					abwechselnd ab letztem Slot
+					abwechselnd, nachmittags beginnend
 				</button>
 				<button
 					class="btn btn-outline btn-xs"
-					title="ein Termin je Prüfungstag, abwechselnd erster/letzter Slot — Tag 1 = erster Slot (vormittags); Sperrtage ausgelassen"
+					title="ein Termin je Prüfungstag, abwechselnd früheste/späteste Startzeit — Tag 1 = früheste (vormittags); Sperrtage ausgelassen"
 					onclick={() => fillAlternating(false)}
 				>
-					abwechselnd ab erstem Slot
+					abwechselnd, vormittags beginnend
 				</button>
 				{#if sameFacultyPrograms.length > 1 && selectedFaculty}
 					<button
@@ -578,7 +593,7 @@
 		{#if jointPrograms.length === 0 || matrixDays.length === 0 || matrixRows.length === 0}
 			{#if jointPrograms.length > 0}
 				<div class="text-xs text-base-content/50">
-					Bitte zuerst Zeitraum (von/bis) und Anfangszeiten setzen.
+					Bitte zuerst den Prüfungszeitraum und die Startzeiten eintragen.
 				</div>
 			{/if}
 		{:else}

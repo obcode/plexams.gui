@@ -4,6 +4,8 @@
 	import { formatBerlin } from '#lib/portal/time.js';
 	import { KIND_LABEL, STATE_LABEL, preplanDiff } from '#lib/inquiry/diff.js';
 	import { REVIEW_LABEL } from '#lib/portal/inquiry.js';
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 
 	/** @type {{ data: any }} */
 	let { data } = $props();
@@ -80,11 +82,31 @@
 
 <svelte:head><title>Abfragen an Prüfende</title></svelte:head>
 
-<h1 class="text-2xl font-semibold">Abfragen an Prüfende</h1>
-<p class="mt-1 text-sm text-base-content/70">
-	Was die Prüfenden im Portal eintragen. Semester: <span class="font-mono">{semester}</span>. Alle
-	Eingaben stehen auch in der <a class="link" href="/inquiries/activity">Änderungsübersicht</a>.
-</p>
+<PageIntro title="Abfragen an Prüfende" subtitle={semester} help="schritt-sebExahmDemandEntered">
+	Über das Portal melden die Prüfenden selbst, was du von ihnen brauchst; zurzeit ist das der Bedarf
+	an Rechnerprüfungen (<Term id="exahm" /> und <Term id="seb" />). Das ist der erste Schritt, schon
+	im Semester davor. Jede Meldung landet beim Absenden sofort in der
+	<a class="link" href="/preplan">Vorplanung</a>; hier siehst du sie und hakst sie ab. Alle Eingaben
+	stehen auch unter <a class="link" href="/inquiries/activity">Änderungen im Portal</a>.
+	{#snippet howto()}
+		<ol>
+			<li>
+				Frist und Einleitung eintragen und speichern, dann „Öffnen“: ab jetzt sehen die Prüfenden
+				die Abfrage im Portal.
+			</li>
+			<li>Die Einladung verschickst du unter <a href="/email">E-Mails</a> („EXaHM / SEB“).</li>
+			<li>
+				Eingehende Meldungen im Posteingang lesen und „Gesichtet“ drücken, oder mit Begründung
+				„Ablehnen“. Beides ändert nur den Status; die Vorplanung bleibt, wie sie ist. Die Begründung
+				einer Ablehnung sieht die Person im Portal.
+			</li>
+			<li>
+				Nach der Frist „Schließen“. Damit ist der Schritt „EXaHM/SEB-Prüfungsbedarf erfasst“
+				erledigt.
+			</li>
+		</ol>
+	{/snippet}
+</PageIntro>
 
 {#if data.loadError}
 	<div class="alert alert-warning mt-4"><span>{data.loadError}</span></div>
@@ -174,10 +196,12 @@
 				{/if}
 			</div>
 			<p class="text-xs text-base-content/60">
-				Öffnen macht die Abfrage im Portal sichtbar. Die Einladung verschickt die Seite
-				<a class="link" href="/email">E-Mails</a> („EXaHM / SEB“) – solange eine EXaHM/SEB-Abfrage dieses
-				oder eines späteren Semesters offen ist, mit Link aufs Portal, auch aus dem vorherigen Semester
-				heraus. Schließen setzt „SEB/EXaHM-Bedarf erfasst“.
+				„Öffnen“ macht die Abfrage im Portal sichtbar; Prüfende können dann melden, ändern und
+				zurückziehen. Die Einladung verschickst du unter <a class="link" href="/email">E-Mails</a>
+				(„EXaHM / SEB“); solange eine solche Abfrage dieses oder eines späteren Semesters offen ist, enthält
+				sie den Link aufs Portal, auch wenn du sie aus dem vorherigen Semester heraus verschickst. „Schließen“
+				beendet die Abfrage und hakt „EXaHM/SEB-Prüfungsbedarf erfasst“ ab; „Wieder öffnen“ nimmt das
+				Häkchen zurück.
 			</p>
 		</div>
 	</section>
@@ -237,7 +261,7 @@
 						<p class="text-xs text-base-content/60">
 							Rev. {s.revision} · {formatBerlin(s.submittedAt)} von {s.submittedBy}{s.channel ===
 							'TOKEN'
-								? ' (Token)'
+								? ' (über die Schnittstelle, mit Token)'
 								: ''}
 							{#if s.createdBy !== s.submittedBy}· angelegt von {s.createdBy}{/if}
 							· Vorplanung:
@@ -265,7 +289,7 @@
 								<button
 									class="btn btn-ghost btn-sm"
 									disabled={busy || s.withdrawn}
-									title="Die Angaben der Meldung erneut in die Vorplanung schreiben – überschreibt spätere Änderungen an diesen Feldern"
+									title="Schreibt alle Angaben dieser Meldung noch einmal in die Vorplanung und überschreibt damit, was du dort seither an diesen Angaben geändert hast. Eine gelöschte Vorplanungs-Prüfung wird neu angelegt. Gilt danach als gesichtet."
 									onclick={() => post('/api/inquiry/reapplySubmission', { id: s.id })}
 								>
 									Erneut übernehmen
@@ -299,7 +323,9 @@
 
 <section class="mt-8">
 	<h2 class="text-lg font-medium">Weitere Abfragen</h2>
-	<p class="mt-1 text-sm text-base-content/70">Kommen mit den nächsten Ausbaustufen des Portals.</p>
+	<p class="mt-1 text-sm text-base-content/70">
+		Diese Abfragen gibt es noch nicht; sie kommen mit den nächsten Ausbaustufen des Portals.
+	</p>
 	<ul class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
 		{#each others as i (i.kind)}
 			<li class="rounded border border-base-300 p-3 text-sm text-base-content/60">
