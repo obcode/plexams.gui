@@ -129,15 +129,15 @@
 		// Validierung der Sperrfenster
 		for (const [i, w] of editWindows.entries()) {
 			if (!w.date) {
-				editError = `Sperrfenster ${i + 1}: Datum fehlt.`;
+				editError = `Zeitfenster ${i + 1}: Datum fehlt.`;
 				return;
 			}
 			if (!w.from && !w.until) {
-				editError = `Sperrfenster ${i + 1}: mindestens „von“ oder „bis“ angeben.`;
+				editError = `Zeitfenster ${i + 1}: mindestens „von“ oder „bis“ angeben.`;
 				return;
 			}
 			if (w.from && w.until && w.until <= w.from) {
-				editError = `Sperrfenster ${i + 1}: „bis“ muss nach „von“ liegen.`;
+				editError = `Zeitfenster ${i + 1}: „bis“ muss nach „von“ liegen.`;
 				return;
 			}
 		}
@@ -177,7 +177,7 @@
 
 	/** @param {any} c */
 	async function del(c) {
-		if (!confirm(`Aufsichts-Constraints für ${c.shortname} löschen?`)) return;
+		if (!confirm(`Aufsichts-Vorgaben für ${c.shortname} löschen?`)) return;
 		listError = '';
 		try {
 			const res = await fetch('/api/invigilator/deleteInvigilatorConstraints', {
@@ -199,18 +199,19 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufsichts-Constraints</h1>
+		<h1 class="text-2xl font-semibold">Aufsichts-Vorgaben</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.constraints.length}</span>
 	</div>
 	<p class="max-w-3xl text-sm text-base-content/60">
-		Vom Planer gepflegte Constraints je Aufsicht — <strong>zusätzlich</strong> zu den ZPA-Sperrtagen
-		(„Anforderungen und Planung“), getrennt davon. <strong>Permanente</strong> Nicht-Aufsichten (z.
-		B. pensioniert) gelten semesterübergreifend; <strong>semesterspezifische</strong> (z. B. Mutterschutz)
-		nur dieses Semester.
+		Was du je Aufsichtsperson für dieses Semester <strong>zusätzlich</strong> zu ihren Angaben im ZPA
+		festlegst (die stehen unter „Aufsichten mit Anforderungen“): ganz keine Aufsichten (z. B. Mutterschutz),
+		weitere Sperrtage oder Zeitfenster, in denen sie an einem Tag nur verfügbar ist. Trag das vor „Aufsichten
+		einteilen“ ein; die Einteilung hält sich daran. Wer dauerhaft keine Aufsichten macht (z. B. im Ruhestand),
+		steht unter „Dauerhaft keine Aufsicht“.
 	</p>
 
 	<!-- Semesterspezifisch: Hinzufügen + Anzeige-Toggle -->
-	<div class="text-sm font-medium">Semesterspezifische Constraints</div>
+	<div class="text-sm font-medium">Vorgaben für dieses Semester</div>
 	<div class="flex flex-wrap items-end gap-4 rounded-lg border border-base-300 bg-base-100 p-3">
 		<label class="flex flex-col gap-1">
 			<span class="text-xs font-medium text-base-content/60">Aufsicht</span>
@@ -222,7 +223,7 @@
 			</select>
 		</label>
 		<button class="btn btn-primary btn-sm" disabled={!addTeacherID} onclick={openAdd}>
-			Constraints anlegen
+			Vorgaben anlegen
 		</button>
 		<div class="flex-1"></div>
 		<label class="label cursor-pointer gap-2">
@@ -238,7 +239,7 @@
 	<!-- Liste -->
 	{#if rows.length === 0}
 		<div class="text-sm text-base-content/50">
-			{showAll ? 'Keine Aufsichten vorhanden.' : 'Noch keine Aufsichts-Constraints angelegt.'}
+			{showAll ? 'Keine Aufsichten vorhanden.' : 'Noch keine Aufsichts-Vorgaben angelegt.'}
 		</div>
 	{:else}
 		<div class="overflow-x-auto rounded-lg border border-base-300">
@@ -248,7 +249,7 @@
 						<th>Aufsicht</th>
 						<th>Status</th>
 						<th>Sperrtage</th>
-						<th>Sperrfenster</th>
+						<th>Zeitfenster (nur dann verfügbar)</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -267,7 +268,7 @@
 								{:else if c.isNotInvigilator}
 									<span class="badge badge-error badge-sm">keine Aufsichten (Semester)</span>
 								{:else if c._empty}
-									<span class="text-base-content/40">ohne Constraints</span>
+									<span class="text-base-content/40">ohne Vorgaben</span>
 								{:else}
 									<span class="text-base-content/50">—</span>
 								{/if}
@@ -323,7 +324,7 @@
 	<!-- Permanente Nicht-Aufsichten: nur Hinweis; Verwaltung unter Stammdaten → Aufsichten -->
 	<p class="text-xs text-base-content/50">
 		<strong>Permanente</strong> Nicht-Aufsichten ({data.permanent.length}) werden unter
-		<a class="link" href="/invigilators">Stammdaten → Aufsichten</a>
+		<a class="link" href="/invigilators">Semester → „Dauerhaft keine Aufsicht“</a>
 		verwaltet (semesterübergreifend) und erscheinen oben mit dem Badge „permanent".
 	</p>
 </div>
@@ -333,7 +334,7 @@
 	<div class="modal modal-open">
 		<div class="modal-box max-w-2xl">
 			<h2 class="text-lg font-semibold">
-				Aufsichts-Constraints — {editName}
+				Aufsichts-Vorgaben — {editName}
 				{#if isNew}<span class="badge badge-info badge-sm">neu</span>{/if}
 			</h2>
 
@@ -366,14 +367,17 @@
 				{/if}
 			</div>
 
-			<!-- Sperrfenster -->
+			<!-- Zeitfenster (verfügbar) -->
 			<div class="mt-4 flex flex-col gap-2">
 				<div class="flex items-center gap-2">
-					<span class="font-medium">Sperrfenster</span>
-					<button class="btn btn-ghost btn-xs" onclick={addWindow}>+ Sperrfenster</button>
+					<span class="font-medium">Zeitfenster (nur dann verfügbar)</span>
+					<button class="btn btn-ghost btn-xs" onclick={addWindow}>+ Zeitfenster</button>
 				</div>
 				<p class="text-xs text-base-content/50">
-					Mindestens „von“ oder „bis“ angeben; sind beide gesetzt, muss „bis“ nach „von“ liegen.
+					Achtung, kein Sperrfenster: An diesem Tag bekommt die Person <strong>nur</strong> Aufsichten,
+					die ganz in das Fenster passen (Beginn frühestens „von“, Ende spätestens „bis“). Mehrere Fenster
+					am selben Tag sind möglich, z. B. 08:00–11:00 und ab 14:00, um 11:00–14:00 freizuhalten. Mindestens
+					„von“ oder „bis“ angeben.
 				</p>
 				{#if editWindows.length === 0}
 					<div class="text-xs text-base-content/50">keine</div>

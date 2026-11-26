@@ -1174,6 +1174,8 @@ export type InvigilatorOutlier = {
   __typename?: 'InvigilatorOutlier';
   doing: Scalars['Int']['output'];
   invigilatorID: Scalars['Int']['output'];
+  /** The invigilator's full name, for display. */
+  name?: Maybe<Scalars['String']['output']>;
   open: Scalars['Int']['output'];
   percent: Scalars['Float']['output'];
   target: Scalars['Int']['output'];
@@ -4122,6 +4124,8 @@ export type SoftCostItem = {
   __typename?: 'SoftCostItem';
   cost: Scalars['Float']['output'];
   name: Scalars['String']['output'];
+  /** German label of the rule, for display (name is the stable key). */
+  title?: Maybe<Scalars['String']['output']>;
 };
 
 /** SoftCostReport: the weighted soft-constraint penalty score (lower is better). */

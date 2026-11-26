@@ -275,6 +275,15 @@
 			<h1 class="text-2xl font-semibold">Aufsichten mit Anforderungen</h1>
 			<span class="badge badge-primary badge-lg">{invigilators.length}</span>
 		</div>
+		<p class="max-w-3xl text-sm text-base-content/70">
+			Wer wie viel Aufsicht leisten soll. Die Angaben der Aufsichtspersonen (Faktor, Sperrtage,
+			anrechenbare Leistungen wie Beisitz) kommen aus dem ZPA und werden unter „ZPA-Import &amp;
+			Veröffentlichung“ geladen; weitere Vorgaben trägst du unter „Aufsichts-Vorgaben“ ein. Die
+			Zahlen sind Minuten: zu verteilen sind die Aufsichten in den Räumen und die Reserveaufsichten,
+			davon geht ab, was schon angerechnet ist. „bereinigt“ heißt: ohne das, was Personen über ihren
+			Anteil hinaus angerechnet bekommen haben; das lässt sich nicht auf andere verteilen. Danach
+			geht es weiter mit „Aufsichten einteilen“.
+		</p>
 
 		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
 			{#each [{ label: 'Aufsichten in Räumen', value: todos.sumExamRooms }, { label: 'Reserve-Aufsichten', value: todos.sumReserve }, { label: 'anrechenbar', value: todos.sumOtherContributions }, { label: 'anrechenbar (bereinigt)', value: todos.sumOtherContributionsOvertimeCutted }, { label: 'zu leisten / Aufsicht', value: todos.todoPerInvigilator }, { label: 'zu leisten / Aufsicht (bereinigt)', value: todos.todoPerInvigilatorOvertimeCutted }, { label: 'Summe noch offen', value: stillOpen, accent: true }, { label: 'noch offen / Aufsicht', value: stillOpenPerInvig, accent: true }] as stat}
@@ -365,7 +374,7 @@
 				</div>
 			</div>
 
-			<!-- Manuell ausgeschlossene Aufsichten (Aufsichts-Constraints) -->
+			<!-- Manuell ausgeschlossene Aufsichten (Aufsichts-Vorgaben) -->
 			<div class="rounded-lg border border-warning/40 bg-warning/5 p-3">
 				<div class="mb-3 flex items-baseline justify-between">
 					<span class="text-xs font-medium text-base-content/60"> Manuell ausgeschlossen </span>

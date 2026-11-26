@@ -1428,6 +1428,9 @@ InvigilatorOutlier: a person whose assigned minutes are furthest from target.
 """
 type InvigilatorOutlier {
   invigilatorID: Int!
+
+  """The invigilator's full name, for display."""
+  name: String
   doing: Int!
   target: Int!
   open: Int!
@@ -4010,6 +4013,9 @@ enum SlotTimeConstraintMode {
 type SoftCostItem {
   name: String!
   cost: Float!
+
+  """German label of the rule, for display (name is the stable key)."""
+  title: String
 }
 
 """

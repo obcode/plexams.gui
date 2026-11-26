@@ -316,7 +316,7 @@
 			label: 'Aufsichten',
 			items: [
 				{ href: '/plan/invigilation/planning', label: '👀 Aufsichten mit Anforderungen' },
-				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
+				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Vorgaben' },
 				{ href: '/plan/invigilation/generate', label: '✨ Aufsichten einteilen' },
 				{ href: '/plan/invigilation', label: '⏰ Aufsichtsplan' },
 				{ href: '/plan/invigilation/validate', label: '✅ Aufsichten validieren' }

@@ -328,7 +328,7 @@
 		if (resetBusy) return;
 		if (
 			!confirm(
-				'Aufsichteneinteilung zurücksetzen? Vorgeplante (📌) Aufsichten bleiben erhalten. Das lässt sich nicht rückgängig machen.'
+				'Aufsichteneinteilung zurücksetzen? Alle Aufsichten werden gelöscht; nur fixierte (🔒) bleiben. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -374,7 +374,7 @@
 			<h1 class="text-2xl font-semibold">Aufsichtsplan</h1>
 			{#if selKind}
 				<span class="badge badge-primary badge-lg gap-2">
-					{selectedName}{selKind === 'teacher' ? ` (${selectedId})` : ' · NTA'}
+					{selectedName}{selKind === 'teacher' ? '' : ' · Nachteilsausgleich'}
 					<button class="font-bold" onclick={clearSel}>✕</button>
 				</span>
 			{/if}
@@ -394,11 +394,19 @@
 		{#if data.invigilationsBlocked}
 			<div class="alert alert-warning py-2 text-sm">
 				<span>
-					🔒 Aufsichteneinteilung gesperrt — der Aufsichtenplan ist veröffentlicht. Zum
-					Zurücksetzen/Ändern das Häkchen „Aufsichtenplan veröffentlicht" auf der Startseite lösen.
+					🔒 Aufsichteneinteilung gesperrt: Der Aufsichtenplan ist veröffentlicht. Zum Zurücksetzen
+					oder Neu-Einteilen zuerst auf der Startseite das Häkchen „Aufsichtenplan veröffentlicht“
+					zurücknehmen.
 				</span>
 			</div>
 		{/if}
+
+		<p class="max-w-3xl text-sm text-base-content/70">
+			Die Einteilung der Aufsichten je Tag, Prüfungszeit und Raum. Wählst du oben eine Person aus,
+			siehst du ihre Aufsichten und eigenen Prüfungen hervorgehoben; mit „📌 fixieren“ legst du eine
+			Aufsicht fest, sodass „Aufsichten einteilen“ sie beim nächsten Lauf nicht mehr verschiebt
+			(🔒). Nach jeder Änderung „Aufsichten validieren“ laufen lassen.
+		</p>
 
 		<!-- Auswahl per Dropdown -->
 		<div class="flex flex-wrap items-center gap-2">
@@ -418,7 +426,7 @@
 				bind:value={ntaSel}
 				onchange={() => ntaSel && selectNta(ntaSel)}
 			>
-				<option value="">NTA wählen…</option>
+				<option value="">Studierende:n mit Nachteilsausgleich wählen…</option>
 				{#each lookups.ntaList as n}
 					<option value={n.mtknr}>{n.name} (+{n.deltaDurationPercent} %)</option>
 				{/each}
@@ -438,7 +446,7 @@
 				keine Aufsicht / Reserve
 			</span>
 			<span class="text-base-content/60">
-				· 📌 fixieren / 🔒 fixiert = Vorplanung (überlebt die Neueinteilung)
+				· 📌 fixieren / 🔒 fixiert: bleibt beim nächsten Einteilen, wo sie ist
 			</span>
 		</div>
 

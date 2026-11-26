@@ -223,23 +223,77 @@ export const PREPLAN_CONFIG_FIELDS: GenerationConfigField[] = [
 
 /** Aufsichten (invigplan) — Verfahren (Simulated Annealing). */
 export const INVIG_METHOD_FIELDS: GenerationConfigField[] = [
-	{ key: 'iterations', label: 'Iterationen', int: true },
-	{ key: 'startTemp', label: 'Start-Temperatur' },
-	{ key: 'endTemp', label: 'End-Temperatur' },
-	{ key: 'toleranceMin', label: 'Toleranz (min)', int: true },
-	{ key: 'maxSpanHours', label: 'max. Spanne (h)' }
+	{
+		key: 'iterations',
+		label: 'Durchläufe',
+		int: true,
+		hint: 'Voreinstellung, wenn oben nichts anderes gewählt ist'
+	},
+	{
+		key: 'startTemp',
+		label: 'Start-Temperatur',
+		hint: 'wie bereitwillig der Optimierer anfangs auch schlechtere Zwischenstände annimmt'
+	},
+	{
+		key: 'endTemp',
+		label: 'End-Temperatur',
+		hint: 'dasselbe am Ende; kleiner heißt, er nimmt dann fast nur noch Verbesserungen'
+	},
+	{
+		key: 'toleranceMin',
+		label: 'Toleranz (min)',
+		int: true,
+		hint: 'so viele Minuten darf eine Person von ihrem Soll abweichen'
+	},
+	{
+		key: 'maxSpanHours',
+		label: 'max. Spanne (h)',
+		hint: 'so viele Stunden höchstens vom Beginn der ersten bis zum Ende der letzten Aufsicht eines Tages'
+	}
 ];
 
 /** Aufsichten (invigplan) — Gewichte. */
 export const INVIG_WEIGHT_FIELDS: GenerationConfigField[] = [
-	{ key: 'weightMinuteBalance', label: 'Minuten-Balance' },
-	{ key: 'weightBeyondTolerance', label: 'über Toleranz' },
-	{ key: 'weightOverTargetFactor', label: 'über Soll (Faktor)' },
-	{ key: 'weightCoverage', label: 'Abdeckung' },
-	{ key: 'weightMaxDays', label: 'max. Tage' },
-	{ key: 'weightPreferExamDays', label: 'Prüfungstage bevorzugen' },
-	{ key: 'weightDistribution', label: 'Verteilung' },
-	{ key: 'weightDaySpan', label: 'Tages-Spanne' }
+	{
+		key: 'weightMinuteBalance',
+		label: 'Minuten-Balance',
+		hint: 'Strafpunkte, je weiter jemand von seinem Soll entfernt ist'
+	},
+	{
+		key: 'weightBeyondTolerance',
+		label: 'über Toleranz',
+		hint: 'Strafpunkte je Minute außerhalb der Toleranz; deutlich höher als die Minuten-Balance'
+	},
+	{
+		key: 'weightOverTargetFactor',
+		label: 'über Soll (Faktor)',
+		hint: 'größer 1: lieber jemanden etwas unter dem Soll lassen als über das Soll bringen'
+	},
+	{
+		key: 'weightCoverage',
+		label: 'Abdeckung',
+		hint: 'Strafpunkte je unbesetzter Aufsicht; muss alles andere überwiegen'
+	},
+	{
+		key: 'weightMaxDays',
+		label: 'max. Tage',
+		hint: 'Strafpunkte, wenn jemand wegen Aufsichten an mehr als 3 Tagen kommen muss'
+	},
+	{
+		key: 'weightPreferExamDays',
+		label: 'Prüfungstage bevorzugen',
+		hint: 'Aufsichten möglichst an Tagen, an denen die Person ohnehin eine eigene Prüfung hat'
+	},
+	{
+		key: 'weightDistribution',
+		label: 'Verteilung',
+		hint: 'Reserveaufsichten und Aufsichten in Räumen mit Nachteilsausgleich gleichmäßig verteilen'
+	},
+	{
+		key: 'weightDaySpan',
+		label: 'Tages-Spanne',
+		hint: 'Strafpunkte, wenn der Tag einer Person länger als die max. Spanne wird'
+	}
 ];
 
 type AnyConfig = Record<string, unknown>;

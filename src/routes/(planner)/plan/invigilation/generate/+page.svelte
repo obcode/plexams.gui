@@ -57,9 +57,9 @@
 					balance { satisfied invigilators toleranceMin withinTolerance over under maxOver maxUnder }
 					coverage { positions unfilled }
 					minutes { withinTolerance over under toleranceMin }
-					outliers { invigilatorID doing target open percent }
+					outliers { invigilatorID name doing target open percent }
 					fairness { kind total max buckets { count invigilators } }
-					softCost { total breakdown { name cost } }
+					softCost { total breakdown { name title cost } }
 				}
 			}
 		}
@@ -201,16 +201,31 @@
 			<span class="badge badge-success">fertig</span>
 		{/if}
 		{#if dryRun}
-			<span class="badge badge-ghost">Probelauf (kein Schreiben in die DB)</span>
+			<span class="badge badge-ghost">Probelauf (speichert nichts)</span>
 		{:else}
-			<span class="badge badge-warning">schreibt in die Datenbank</span>
+			<span class="badge badge-warning">speichert</span>
 		{/if}
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Hier teilt Plexams für jeden Raum und jede Prüfungszeit eine Aufsicht ein, dazu die
+		Reserveaufsichten. Es hält sich an Sperrtage, eigene Prüfungen und die Aufsichts-Vorgaben und
+		verteilt die Minuten so, dass jede Person etwa ihr Soll leistet und an möglichst wenigen Tagen
+		kommen muss. Vorher müssen die Räume stehen und die Anforderungen der Aufsichtspersonen aus dem
+		ZPA geladen sein. Erst als Probelauf rechnen, dann mit „speichern“: Das ersetzt die ganze
+		bisherige Einteilung; vorgeplante Aufsichten bleiben, wo sie sind. Danach „Aufsichten
+		validieren“.
+		<a
+			class="link link-hover whitespace-nowrap text-base-content/50"
+			href="/hilfe#schritt-invigilationsAssigned"
+		>
+			Mehr dazu in der Hilfe →
+		</a>
+	</p>
 
 	<!-- Eingaben -->
 	<div class="flex flex-wrap items-start gap-6 rounded-lg border border-base-300 bg-base-100 p-4">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Probelauf (Dry Run)</span>
+			<span class="text-xs font-medium text-base-content/60">Probelauf oder speichern</span>
 			<label class="label cursor-pointer justify-start gap-3 px-0">
 				<input
 					type="checkbox"
@@ -218,12 +233,14 @@
 					bind:checked={dryRun}
 					disabled={running}
 				/>
-				<span class="label-text">{dryRun ? 'nur berechnen' : 'speichern'}</span>
+				<span class="label-text">
+					{dryRun ? 'Probelauf (speichert nichts)' : 'speichern (ersetzt die Einteilung)'}
+				</span>
 			</label>
 		</label>
 
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">Seed</span>
+			<span class="text-xs font-medium text-base-content/60">Startwert (Seed)</span>
 			<input
 				type="number"
 				class="input input-bordered input-sm w-24"
@@ -235,7 +252,7 @@
 
 		<div class="flex flex-col gap-1">
 			<div class="flex items-baseline justify-between gap-3">
-				<span class="text-xs font-medium text-base-content/60">Iterationen</span>
+				<span class="text-xs font-medium text-base-content/60">Durchläufe</span>
 				<span class="text-sm font-semibold tabular-nums">{fmt(iterations)}</span>
 			</div>
 			<input
@@ -257,21 +274,21 @@
 	<!-- Aufsichten-Optimierer-Parameter (global, selten geändert → eingeklappt) -->
 	<details class="collapse collapse-arrow border border-base-300 bg-base-100">
 		<summary class="collapse-title text-sm font-medium">
-			⚙️ Erweiterte Parameter
-			<span class="font-normal text-base-content/50">· global · Aufsichten-Solver</span>
+			⚙️ Feineinstellung
+			<span class="font-normal text-base-content/50">· gilt für alle Semester</span>
 		</summary>
 		<div class="collapse-content flex flex-col gap-4">
 			<div class="text-xs text-base-content/50">
-				Diese Werte gelten global für alle Aufsichten-Läufe und kommen mit sinnvollen Defaults
-				vorbelegt. „Iterationen" oben (Schieberegler) ist der Wert für diesen Lauf. Die
-				Terminplan-Gewichte stehen auf „Terminplan generieren", die Pre-Plan-Parameter auf der
+				Diese Werte gelten für alle Läufe dieser Seite; die Voreinstellungen passen in der Regel.
+				Die „Durchläufe“ oben (Schieberegler) gelten für diesen einen Lauf. Die Gewichte des
+				Terminplans stehen unter „Terminplan generieren“, die der Vorplanung auf der
 				Vorplanungsseite.
 			</div>
 			<GenerationConfigFields
 				config={data.config}
 				sections={[
 					{
-						label: 'Verfahren (Simulated Annealing)',
+						label: 'Verfahren',
 						cols: 'sm:grid-cols-3 xl:grid-cols-6',
 						fields: INVIG_METHOD_FIELDS
 					},
@@ -293,7 +310,7 @@
 			<div class="flex flex-1 items-center gap-3">
 				<progress class="progress progress-primary w-48" value={progressPct} max="100"></progress>
 				<span class="text-xs tabular-nums text-base-content/70">
-					{fmt(current.progress.iteration)} / {fmt(current.progress.total)} · Kosten {current.progress.bestCost?.toFixed?.(
+					{fmt(current.progress.iteration)} / {fmt(current.progress.total)} · Strafpunkte {current.progress.bestCost?.toFixed?.(
 						2
 					) ?? current.progress.bestCost} · offen {current.progress.unfilled} ·
 					{current.progress.balance ? '⚖ balanciert' : 'nicht balanciert'}
@@ -316,7 +333,7 @@
 	>
 		{#if !lines.length && !current && !running}
 			<div class="text-base-content/40" style="color:#6c7086">
-				Bereit. Parameter wählen und „Einteilung starten" drücken.
+				Bereit. „Einteilung starten“ drücken; hier erscheint dann der Verlauf.
 			</div>
 		{/if}
 		{#each lines as line}
@@ -334,7 +351,7 @@
 {#if report}
 	<div class="mx-2 my-4 flex flex-col gap-4" transition:fade>
 		<div class="flex flex-wrap items-center gap-3">
-			<h2 class="text-xl font-semibold">Ergebnis-Report</h2>
+			<h2 class="text-xl font-semibold">Ergebnis</h2>
 			{#if dryRun}
 				<span class="badge badge-ghost">Probelauf — nichts gespeichert</span>
 			{/if}
@@ -342,7 +359,7 @@
 
 		<!-- Kennzahlen -->
 		<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-			{#each [{ label: 'Seed', value: report.seed }, { label: 'Iterationen', value: fmt(report.iterations) }, { label: 'gelaufen', value: fmt(report.iterationsRun) }, { label: 'früh gestoppt', value: report.stoppedEarly ? 'ja' : 'nein' }] as stat}
+			{#each [{ label: 'Startwert', value: report.seed }, { label: 'Durchläufe', value: fmt(report.iterations) }, { label: 'davon gelaufen', value: fmt(report.iterationsRun) }, { label: 'früh gestoppt', value: report.stoppedEarly ? 'ja' : 'nein' }] as stat}
 				<div class="rounded-lg border border-base-300 bg-base-100 px-3 py-2">
 					<div class="text-xs leading-tight text-base-content/60">{stat.label}</div>
 					<div class="text-lg font-semibold tabular-nums">{stat.value}</div>
@@ -358,9 +375,11 @@
 					: 'border-error/40'}"
 			>
 				<div class="mb-3 flex items-center justify-between">
-					<span class="font-medium">Balance</span>
+					<span class="font-medium">Ausgleich der Minuten</span>
 					<span class="badge {report.balance.satisfied ? 'badge-success' : 'badge-error'}">
-						{report.balance.satisfied ? '✓ ±Toleranz erfüllt' : '✗ nicht erfüllt'}
+						{report.balance.satisfied
+							? '✓ alle innerhalb der Toleranz'
+							: '✗ nicht alle innerhalb der Toleranz'}
 					</span>
 				</div>
 				<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm tabular-nums">
@@ -397,7 +416,7 @@
 						</span>
 					</div>
 					<div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm tabular-nums">
-						<span class="text-base-content/60">Positionen</span>
+						<span class="text-base-content/60">zu besetzen</span>
 						<span class="text-right">{report.coverage.positions}</span>
 						<span class="text-base-content/60">unbesetzt</span>
 						<span
@@ -441,7 +460,7 @@
 						<table class="table table-zebra table-xs">
 							<thead>
 								<tr>
-									<th>ID</th>
+									<th>Aufsicht</th>
 									<th class="text-right">geleistet</th>
 									<th class="text-right">Soll</th>
 									<th class="text-right">offen</th>
@@ -451,7 +470,7 @@
 							<tbody>
 								{#each report.outliers as o}
 									<tr>
-										<td class="tabular-nums">{o.invigilatorID}</td>
+										<td>{o.name ?? o.invigilatorID}</td>
 										<td class="text-right tabular-nums">{o.doing}</td>
 										<td class="text-right tabular-nums">{o.target}</td>
 										<td class="text-right tabular-nums">{o.open}</td>
@@ -477,7 +496,7 @@
 			<!-- Soft-Cost -->
 			<div class="rounded-lg border border-base-300 bg-base-100 p-4">
 				<div class="mb-3 flex items-center justify-between">
-					<span class="font-medium">Soft-Cost</span>
+					<span class="font-medium">Strafpunkte je Regel</span>
 					<span class="badge badge-neutral tabular-nums">
 						Σ {report.softCost.total?.toFixed?.(2) ?? report.softCost.total}
 					</span>
@@ -491,7 +510,7 @@
 						{#each report.softCost.breakdown as b}
 							<div>
 								<div class="flex justify-between text-xs">
-									<span class="text-base-content/70">{b.name}</span>
+									<span class="text-base-content/70">{b.title ?? b.name}</span>
 									<span class="tabular-nums">{b.cost?.toFixed?.(2) ?? b.cost}</span>
 								</div>
 								<progress
@@ -515,7 +534,13 @@
 				{#each report.fairness as f}
 					<div>
 						<div class="mb-2 flex items-baseline justify-between">
-							<span class="text-sm font-medium capitalize">{f.kind}</span>
+							<span class="text-sm font-medium">
+								{f.kind === 'reserve'
+									? 'Reserveaufsichten'
+									: f.kind === 'nta'
+										? 'Aufsichten in Räumen mit Nachteilsausgleich'
+										: f.kind}
+							</span>
 							<span class="text-xs text-base-content/50">Σ {f.total} · max {f.max}</span>
 						</div>
 						<div class="flex flex-col gap-1">

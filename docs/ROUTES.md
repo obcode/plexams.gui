@@ -64,7 +64,7 @@ prüft, dass jedes Ziel als Route existiert.
 |                  | Anny-Anforderungen (KDP)            | `plan/kdprooms/`                 | `room/`                       | `api/room/`                                    |
 |                  | Räume validieren                    | `plan/rooms/validate/`           | `validation/`                 | —                                              |
 | **Aufsichten**   | Aufsichten mit Anforderungen        | `plan/invigilation/planning/`    | `invigilator/`                | `api/invigilator/`, `api/plan/`                |
-|                  | Aufsichts-Constraints               | `plan/invigilation/constraints/` | `invigilator/`                | `api/invigilator/`                             |
+|                  | Aufsichts-Vorgaben                  | `plan/invigilation/constraints/` | `invigilator/`                | `api/invigilator/`                             |
 |                  | Aufsichten einteilen                | `plan/invigilation/generate/`    | `invigilator/`, `validation/` | `api/invigilator/`, `api/semester/`            |
 |                  | Aufsichtsplan                       | `plan/invigilation/`             | `invigilator/`                | `api/plan/`                                    |
 |                  | Aufsichten validieren               | `plan/invigilation/validate/`    | `validation/`                 | —                                              |
@@ -99,7 +99,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/semester/`     |        10 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer (setzen/zurücksetzen), Generierungs-Config                                    |
 | `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                            |
 | `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                                 |
-| `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                                   |
+| `api/invigilator/`  |         5 | Aufsichts-Vorgaben, permanente Nicht-Aufsichten, Reset                                                                                      |
 | `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                                  |
 | `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                                               |
 | `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                                               |
