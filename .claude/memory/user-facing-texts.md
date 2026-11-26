@@ -46,10 +46,15 @@ standing rule for every page touched from now on.
 - `plannerErrors.js` has a third mode `own` (NOT_FOUND, ALREADY_EXISTS, INVALID_INPUT): the
   backend's German sentence stands alone, the generic text is the fallback.
 
+- Caught errors go through `clientErrorMessage` (`#lib/errors/clientErrors.js`), never
+  `e.message` directly: browser texts like "Failed to fetch" become German advice.
+- A status query of the bar reports a failure with `statusFailed(key, label, message)` and
+  clears it with `statusOk(key)` (`#lib/errors/statusProblems.js`); never swallow it.
+
 **Vocabulary fixed on 2026-11-26** (use it on every page): „… & speichern“ for writing runs,
 „Probelauf (speichert nichts)“, Startwert (Seed), Durchläufe, Strafpunkte, Regel (not
-Constraint), Termin/Startzeit (not Slot), fixieren/fixiert (glossary), „fester Termin aus der
-Vorplanung“ for a locked plan entry (there is no lock button), „Aufsichts-Vorgaben“,
+Constraint), Termin/Startzeit (not Slot), fixieren/fixiert (glossary), „Termin fixieren“ for a
+locked plan entry (button in the exam plan, also set by a fixed pre-planned exam), „Aufsichts-Vorgaben“,
 „Zeitfenster (nur dann verfügbar)“ for invigilator time windows (they are availability windows,
 not blocked times). Rule tables show `title ?? name` from the backend.
 
