@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import StreamAction from '#lib/zpa/StreamAction.svelte';
@@ -316,6 +317,13 @@
 			<span class="badge badge-secondary badge-lg tabular-nums">{mineCount} meine</span>
 		{/if}
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Die Buchungen der T-Bau-Räume, wie sie in <Term id="anny" /> stehen. Gebucht wird in Anny selbst;
+		hier rufst du die Buchungen nur ab. Eine <Term id="exahm" />- oder <Term id="seb" />-Prüfung
+		kann nur zu einer Zeit stattfinden, für die es eine Buchung gibt. Nach jeder Änderung in Anny
+		neu abrufen. Unter „Eigene Namen" stehen die Namen, unter denen unsere Fakultät bucht; nur diese
+		Buchungen sind als „meine" markiert.
+	</p>
 
 	<!-- Abrufen + Namen pflegen -->
 	<div class="grid grid-cols-1 gap-3 lg:grid-cols-2">

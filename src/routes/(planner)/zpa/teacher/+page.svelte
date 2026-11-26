@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	let { data } = $props();
 
 	// Gestreamte Load-Daten: Seite rendert sofort, Tabelle füllt sich nach.
@@ -159,6 +160,13 @@
 			{/if}
 		{/if}
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Alle Lehrenden, wie sie das <Term id="zpa" /> liefert, und wer davon für Aufsichten in Frage kommt.
+		Die Daten kommen aus dem ZPA und lassen sich hier nicht ändern; aktualisiert werden sie unter
+		<a class="link" href="/zpa/publish">ZPA-Import &amp; Veröffentlichung</a> mit „Dozierende
+		laden". Wer dauerhaft keine Aufsicht macht, steht unter
+		<a class="link" href="/invigilators">Dauerhaft keine Aufsicht</a>.
+	</p>
 
 	<!-- Toolbar -->
 	<div class="flex flex-wrap items-center gap-4 rounded-lg border border-base-300 bg-base-100 p-3">

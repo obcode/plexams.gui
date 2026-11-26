@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { mkStarttime } from '#lib/jshelper/misc.js';
 	import NtaCard from '#lib/nta/NTACard.svelte';
 
@@ -51,6 +52,12 @@
 			</a>
 		</div>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Welche Studierenden mit <Term id="nta">Nachteilsausgleich</Term> in diesem Semester zu Prüfungen angemeldet
+		sind, und welche Prüfungen davon betroffen sind. Die Seite zeigt nur an. Gepflegt werden Nachteilsausgleiche
+		unter <a class="link" href="/nta/all">NTA-Stammdaten</a>; damit eine Änderung hier ankommt,
+		müssen die <a class="link" href="/exam/assembledExams">aufbereiteten Prüfungen</a> neu generiert werden.
+	</p>
 
 	{#if data.view === 'students'}
 		<div class="flex flex-wrap items-center gap-4">

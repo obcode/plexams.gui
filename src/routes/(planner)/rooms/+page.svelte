@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
 	import { refreshAll } from '$app/navigation';
@@ -114,6 +115,15 @@
 		<div class="flex-1"></div>
 		<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ Neuer Raum</button>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Alle Räume, die Plexams für Prüfungen verwenden kann, mit Plätzen und Eigenschaften (zum
+		Beispiel
+		<Term id="exahm" />, <Term id="seb" />, Labor, Steckdosen). Die Liste gilt für alle Semester.
+		Ein deaktivierter Raum wird bei der nächsten Raumplanung nicht mehr vergeben; bereits vergebene
+		Räume ändern sich dadurch nicht. Wie ein Raum angefragt werden muss (über <Term id="anny" />,
+		das
+		<Term id="gebaeudemanagement" /> oder gar nicht), steht ebenfalls hier.
+	</p>
 
 	<!-- Filter-Toolbar -->
 	<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">

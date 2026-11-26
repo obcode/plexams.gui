@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -228,6 +229,12 @@
 		</WriteButton>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Studiengang</button>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Die Studiengänge, deren Prüfungen und Anmeldungen Plexams kennt, mit ihrem Kürzel. Über das
+		Kürzel ordnet Plexams die <Term id="sammelliste">Sammellisten</Term> aus Primuss und die Nachteilsausgleiche
+		zu. Kommt ein neuer Studiengang hinzu, lege ihn hier mit Kürzel und Namen an; Studiengänge „ohne Name"
+		erscheinen in Listen und E-Mails nur mit ihrem Kürzel.
+	</p>
 
 	{#if seedMsg}
 		<div class="alert alert-success py-2 text-sm"><span>{seedMsg}</span></div>

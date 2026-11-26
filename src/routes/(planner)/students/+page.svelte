@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	let { data } = $props();
 	/** @param {string} program @param {number} primussAncode */
@@ -50,6 +51,12 @@
 			<span class="badge badge-primary badge-lg tabular-nums">{students.length}</span>
 		{/if}
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Suche nach Studierenden, die in diesem Semester zu Prüfungen angemeldet sind, um ihre
+		Anmeldungen,
+		<Term id="konflikt">Konflikte</Term> und Nachteilsausgleiche einzusehen. Die Angaben stammen aus den
+		importierten <Term id="sammelliste">Sammellisten</Term>.
+	</p>
 
 	<div class="flex flex-wrap items-center gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
 		<input

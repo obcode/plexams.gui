@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { page } from '$app/state';
 	import { refreshAll } from '$app/navigation';
@@ -789,7 +790,7 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{data.exams.length}</span>
 		<div class="flex-1"></div>
 		<span class="text-xs text-base-content/50">
-			🤖 verteilt alle <strong>nicht</strong>-fixierten Prüfungen neu; 🔒 fixierte bleiben.
+			„Automatisch verteilen“ setzt alle Prüfungen neu, die nicht mit 🔒 fixiert sind.
 		</span>
 		<button
 			class="btn btn-outline btn-sm"
@@ -845,17 +846,21 @@
 	<div class="alert alert-info py-2 text-sm">
 		<div class="flex w-full flex-col gap-1">
 			<span>
-				Diese Vorplanung liegt in der DB des <strong>betreffenden Semesters</strong> — plexams muss auf
-				dieses Semester gestartet sein.
+				Hier verteilst du die gemeldeten Rechnerprüfungen (<Term id="exahm" /> und <Term
+					id="seb"
+				/>) auf die in <Term id="anny" /> gebuchten Zeiten, lange bevor es die Prüfungen im ZPA gibt.
+				Die Vorplanung gehört zum Semester, das oben rechts ausgewählt ist: Achte darauf, dass dort das
+				Semester steht, für das du planst.
 			</span>
 			<span class="text-xs opacity-80">
-				Ablauf: Pre-Exams erfassen → <strong>Zuordnung generieren</strong> →
-				<strong>Validieren</strong> → fehlende Räume in Anny buchen → Anny-Buchungen importieren → erneut
-				validieren, bis alles ok.
+				So gehst du vor: Prüfungen anlegen → „🤖 Automatisch verteilen" → „✔ Prüfen" → fehlende
+				Räume in Anny buchen → „Anny-Buchungen importieren" → erneut prüfen, bis nichts mehr
+				gemeldet wird.
 			</span>
 			<span class="text-xs opacity-80">
-				Constraints (Raum-Einschränkung, gleicher Slot …) werden beim Verknüpfen mit der ZPA-Prüfung
-				automatisch übernommen.
+				Sobald die Prüfungen im ZPA stehen, ordnest du jeder vorgeplanten Prüfung ihren Ancode zu.
+				Termin und Vorgaben (Raum-Einschränkung, gleichzeitig mit …) gehen dabei auf die ZPA-Prüfung
+				über.
 			</span>
 		</div>
 	</div>

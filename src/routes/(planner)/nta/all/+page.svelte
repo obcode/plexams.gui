@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { fade } from 'svelte/transition';
 	import { refreshAll } from '$app/navigation';
@@ -90,6 +91,13 @@
 		<div class="flex-1"></div>
 		<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ NTA hinzufügen</button>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Alle bewilligten <Term id="nta">Nachteilsausgleiche</Term>, über alle Semester hinweg:
+		Zeitverlängerung und Anspruch auf einen eigenen Raum. Prüfe zu Beginn jedes Semesters, ob die
+		Bescheide noch gelten, und deaktiviere abgelaufene. Wichtig: Der Studiengang im
+		Nachteilsausgleich muss zum Studiengang der Anmeldung passen, sonst greift der Ausgleich nicht;
+		die Validierung meldet das.
+	</p>
 
 	<div class="flex flex-wrap items-center gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
 		<input
