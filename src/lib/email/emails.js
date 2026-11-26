@@ -20,7 +20,8 @@ export const previousSemesterEmails = [
 	{
 		key: 'sendEmailExaHM',
 		title: 'EXaHM / SEB',
-		description: 'Information zu den EXaHM/SEB-Prüfungen'
+		description:
+			'Fragt den Bedarf an EXaHM- und SEB-Prüfungen ab, mit Link auf das Portal, solange die Abfrage offen ist. Geht an die Adresse „Profs“ aus der Semester-Konfiguration.'
 	}
 ];
 
@@ -37,12 +38,14 @@ export const planningEmails = [
 	{
 		key: 'sendEmailDraft',
 		title: 'Planentwurf',
-		description: 'Entwurf des Prüfungsplans zur Kontrolle an die Prüfenden'
+		description:
+			'Kündigt den Entwurf des Prüfungsplans zur Kontrolle an. Geht an „Profs“, „LBAs“, „LBAs (letztes Sem.)“ und die zusätzlichen Prüfenden; die Fachschaft bekommt eine eigene E-Mail.'
 	},
 	{
 		key: 'sendEmailPublishedExams',
 		title: 'Veröffentlichte Termine',
-		description: 'Die endgültig veröffentlichten Prüfungstermine'
+		description:
+			'Kündigt die veröffentlichten Prüfungstermine an. Geht an „Profs“, „LBAs“, „LBAs (letztes Sem.)“, die Fachschaft und die zusätzlichen Prüfenden.'
 	}
 ];
 
@@ -51,17 +54,19 @@ export const roomEmails = [
 	{
 		key: 'sendEmailRoomsSecretariat',
 		title: 'Räume ans Sekretariat',
-		description: 'Die Raumplanung ans Sekretariat senden (vor der Veröffentlichung)'
+		description:
+			'Schickt dem Sekretariat, welche eigenen Räume wann für Prüfungen belegt sind (vor der Veröffentlichung); angefragte Räume des Gebäudemanagements sind nicht dabei.'
 	},
 	{
 		key: 'sendEmailPublishedRooms',
 		title: 'Veröffentlichte Räume',
-		description: 'Die endgültig veröffentlichte Raumplanung'
+		description: 'Schickt jeder Prüferin und jedem Prüfer die Räume der eigenen Prüfungen.'
 	},
 	{
 		key: 'sendEmailKdpExahm',
 		title: 'KDP / EXaHM',
-		description: 'CSV der EXaHM/SEB-Prüfungen ans KDP — Anhang serverseitig erzeugt'
+		description:
+			'Schickt dem KDP die Raumübersicht der EXaHM- und SEB-Prüfungen als CSV-Anhang (erzeugt Plexams selbst); die Prüfenden dieser Prüfungen stehen in Cc.'
 	}
 ];
 
@@ -70,18 +75,19 @@ export const invigilationEmails = [
 	{
 		key: 'sendEmailInvigilations',
 		title: 'Anforderungen für Aufsichten',
-		description: 'Aufforderung an die Aufsichten ihre Anforderungen einzutragen'
+		description:
+			'Fordert dazu auf, im ZPA die Aufsichts-Anforderungen (Sperrtage usw.) einzutragen. Geht an „Profs“.'
 	},
 	{
 		key: 'sendEmailInvigilationsMissing',
 		title: 'Fehlende Anforderungen für Aufsichten',
-		description: 'Erinnerung an noch nicht eingetragene / fehlende Anforderungen an die Aufsichten'
+		description: 'Erinnert jede Aufsichtsperson einzeln, die im ZPA noch nichts eingetragen hat.'
 	},
 	{
 		key: 'sendEmailPublishedInvigilations',
 		title: 'Veröffentlichte Aufsichten',
 		description:
-			'Je Aufsicht eine Mail mit ihrem Aufsichtskalender (PNG); fehlende erscheinen als WARN-Zeile. Die Kalender werden auf „Aufsichten mit Anforderungen“ erzeugt & hochgeladen.',
+			'Schickt jeder Aufsichtsperson ihren persönlichen Aufsichtsplan als Bild und Kalenderdatei. Wem das Bild fehlt, der wird im Verlauf als Warnung genannt; die Bilder erzeugst und lädst du unter „Aufsichten mit Anforderungen“ hoch.',
 		links: [
 			{ href: '/email/attachments', label: '→ Anhänge: Kalender' },
 			{ href: '/plan/invigilation/planning', label: '→ Aufsichten mit Anforderungen' }
@@ -90,12 +96,13 @@ export const invigilationEmails = [
 	{
 		key: 'sendEmailInvigilationsSecretariat',
 		title: 'Aufsichten ans Sekretariat',
-		description: 'Die veröffentlichte Aufsichtenplanung ans Sekretariat'
+		description: 'Teilt dem Sekretariat mit, dass der Aufsichtenplan veröffentlicht ist.'
 	},
 	{
 		key: 'sendEmailLbaRepeaters',
 		title: 'LBA-Wiederholungsprüfungen',
-		description: 'Info zu den Wiederholungsprüfungen der Lehrbeauftragten (an emails.lbaba)'
+		description:
+			'Schickt die Termine und Aufsichten der Wiederholungsprüfungen von Lehrbeauftragten an die Adresse „LBA-Beauftragte:r“.'
 	}
 ];
 
@@ -104,12 +111,14 @@ export const primussEmails = [
 	{
 		key: 'sendEmailPrimussDataAll',
 		title: 'Primuss-Daten (alle)',
-		description: 'Primuss-Prüfungsdaten an alle zuständigen Stellen. Einzelversand siehe unten.'
+		description:
+			'Schickt jeder Prüferin und jedem Prüfer die Anmeldedaten aus Primuss zu den eigenen Prüfungen; Prüfungen anderer Fakultäten werden übersprungen. Einzelversand siehe unten.'
 	},
 	{
 		key: 'sendEmailNTARoomAlone',
-		title: 'NTA Einzelraum (alle)',
-		description: 'Info zu allen NTAs mit eigenem Raum. Einzelversand siehe unten.',
+		title: 'NTA: eigener Raum (alle)',
+		description:
+			'Schreibt allen Studierenden mit Anspruch auf einen eigenen Raum; die Prüfenden ihrer Prüfungen stehen in Cc. Einzelversand siehe unten.',
 		extraArgs: { mtknr: { type: 'String!', value: 'all' } },
 		conditionKey: 'ntaRoomAloneSent'
 	}
@@ -119,8 +128,9 @@ export const primussEmails = [
 export const ntaEmails = [
 	{
 		key: 'sendEmailNTAPlanned',
-		title: 'NTA verplant',
-		description: 'Info an die Prüfenden, dass die NTAs eingeplant sind.'
+		title: 'NTA: Räume mitteilen',
+		description:
+			'Schreibt allen Studierenden mit Nachteilsausgleich, in welchem Raum sie welche Prüfung schreiben. Fehlt bei einer Person die E-Mail-Adresse, geht nichts raus.'
 	}
 ];
 
@@ -130,7 +140,7 @@ export const coverPageEmails = [
 		key: 'sendEmailCoverPages',
 		title: 'Deckblätter (alle)',
 		description:
-			'Deckblatt-PDFs an alle Prüfenden mit von mir geplanten Prüfungen. Hochladen (ZIP oder einzeln), Status-Abgleich und Einzelversand auf der Anhänge-Seite.',
+			'Schickt allen Prüfenden unserer Prüfungen ihre Deckblätter als PDF. Hochladen (ZIP oder einzeln), Abgleich und Einzelversand unter „E-Mail-Anhänge“.',
 		links: [
 			{ href: '/email/attachments', label: '→ Anhänge: Deckblätter (hochladen & einzeln senden)' }
 		]

@@ -36,8 +36,9 @@
 	<div>
 		<h1 class="text-2xl font-bold">Downloads &amp; Exporte</h1>
 		<p class="mt-1 text-sm text-base-content/60">
-			PDF-, CSV- und Kalender-Exporte direkt vom plexams-Server. Bei fehlenden Daten antwortet der
-			Server mit einer Klartext-Fehlermeldung.
+			Listen, Plan-Entwürfe, CSV-Exporte und Kalender zum Herunterladen, jeweils mit dem aktuellen
+			Stand. Fehlen dafür noch Daten (z. B. noch kein Terminplan), kommt statt der Datei eine
+			Meldung, was fehlt. Ein Klick lädt nur herunter und ändert nichts.
 		</p>
 	</div>
 

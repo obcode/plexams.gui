@@ -53,8 +53,9 @@
 			Jeder Versand ist standardmäßig ein <strong>Probelauf</strong> — die Mails gehen dann nicht an
 			die Empfänger, sondern werden als <span class="font-mono">.eml</span>-Anhänge gebündelt an die
 			Testadresse (dich als Planer) geschickt. Über „Wirklich senden …" wird nach einer Bestätigung
-			an alle Empfänger versendet. Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der
-			Server den Versand ab; das wird hier nur als Hinweis angezeigt.
+			an alle Empfänger versendet. Die E-Mails stehen in der Reihenfolge des Ablaufs; jede Karte
+			sagt, an wen sie geht. Was schon echt verschickt ist, verschwindet aus der Liste und steht
+			unten. Solange eine Validierung oder ein ZPA-Transfer läuft, lehnt der Server den Versand ab.
 		</p>
 	</div>
 
@@ -172,7 +173,7 @@
 				</label>
 				<EmailSender
 					emailKey="sendEmailNTARoomAlone"
-					title="NTA Einzelraum (eine Person)"
+					title="NTA: eigener Raum (eine Person)"
 					description="Info zum eigenen Raum für eine/n NTA-Studierende/n."
 					extraArgs={{ mtknr: { type: 'String!', value: roomAloneMtknr } }}
 					disabled={!roomAloneMtknr}

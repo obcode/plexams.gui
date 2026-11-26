@@ -80,6 +80,10 @@
 			+ Neues Todo
 		</WriteButton>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Deine eigene Aufgabenliste für dieses Semester, für alles, was die Checkliste auf der Startseite
+		nicht abdeckt. Offene und wiederkehrende Todos aus dem Vorsemester kannst du übernehmen.
+	</p>
 
 	{#if data.carryOverCandidates > 0}
 		<div class="alert alert-info py-2 text-sm">

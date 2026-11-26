@@ -51,14 +51,19 @@ export function icsDownloadUrl(program) {
 export const PDF_DOWNLOADS = [
 	{ kind: 'exams-to-plan', label: 'Prüfungen zum Planen', format: 'pdf', group: 'list' },
 	{ kind: 'same-module-name', label: 'Gleiche Modulnamen', format: 'pdf', group: 'list' },
-	{ kind: 'constraints', label: 'Constraints', format: 'pdf', group: 'list' },
+	{ kind: 'constraints', label: 'Vorgaben', format: 'pdf', group: 'list' },
 	{ kind: 'draft-muc.dai', label: 'Entwurf MUC.DAI', format: 'pdf', group: 'draft' },
 	{ kind: 'draft-fk08', label: 'Entwurf FK08', format: 'pdf', group: 'draft' },
 	{ kind: 'draft-fk10', label: 'Entwurf FK10', format: 'pdf', group: 'draft' },
 	{ kind: 'draft-exahm', label: 'Entwurf EXaHM', format: 'pdf', group: 'draft' },
-	{ kind: 'draft-fs', label: 'Entwurf FS', format: 'pdf', group: 'draft' },
+	{ kind: 'draft-fs', label: 'Entwurf Fachschaft', format: 'pdf', group: 'draft' },
 	{ kind: 'draft-lba-rep', label: 'Entwurf LBA-Wiederholung', format: 'pdf', group: 'draft' },
-	{ kind: 'draft-si', label: 'Entwurf SI', format: 'zip', group: 'draft' }
+	{
+		kind: 'draft-si',
+		label: 'Entwurf Special Interests (ZIP)',
+		format: 'zip',
+		group: 'draft'
+	}
 ];
 
 /**

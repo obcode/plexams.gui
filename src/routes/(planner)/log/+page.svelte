@@ -152,10 +152,16 @@
 		<h1 class="text-2xl font-semibold">Änderungsprotokoll</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{logs.length}</span>
 		<span class="text-sm text-base-content/50">neueste zuerst</span>
-		<div class="flex-1"></div>
+	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Wer wann was in Plexams geändert hat: jede Änderung, jedes Hochladen und jeder Lauf (Import,
+		Generieren, E-Mail-Versand). Hier liest du nach, wenn ein Stand überrascht; ändern lässt sich
+		hier nichts.
+	</p>
+	<div class="flex flex-wrap items-center gap-3">
 		<!-- Quelle als Tabs (serverseitig gefiltert) -->
 		<div class="tabs tabs-boxed tabs-sm">
-			{#each [['alle', 'alle'], ['mutation', 'Mutation'], ['upload', 'Upload'], ['subscription', 'Subscription'], ['cli', 'CLI']] as [val, label]}
+			{#each [['alle', 'alle'], ['mutation', 'Änderungen'], ['upload', 'Hochgeladenes'], ['subscription', 'Läufe'], ['cli', 'Kommandozeile (alt)']] as [val, label]}
 				<button
 					class="tab {typeFilter === val ? 'tab-active' : ''}"
 					onclick={() => setType(val)}
@@ -171,7 +177,7 @@
 	<div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-3">
 		<div class="flex flex-wrap items-end gap-3">
 			<label class="flex flex-col gap-1">
-				<span class="text-xs font-medium text-base-content/60">Operation</span>
+				<span class="text-xs font-medium text-base-content/60">Vorgang (technischer Name)</span>
 				<select class="select select-bordered select-sm w-56" bind:value={name} onchange={apply}>
 					<option value="">alle</option>
 					{#each names as n}

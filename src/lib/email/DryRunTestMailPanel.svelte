@@ -65,7 +65,9 @@
 <div class="flex flex-col gap-3 rounded-lg border border-base-300 bg-base-100 p-4">
 	<div class="flex flex-wrap items-center gap-2">
 		<span class="font-semibold">Probelauf-Empfänger</span>
-		<span class="text-sm text-base-content/50">nur für diese Session</span>
+		<span class="text-sm text-base-content/50">
+			gilt bis zum nächsten Neustart des Servers, für alle Planer
+		</span>
 	</div>
 
 	<!-- Warnung, wenn der Empfänger vom konfigurierten Default abweicht -->
@@ -84,7 +86,9 @@
 
 	<div class="flex flex-wrap items-end gap-3">
 		<label class="flex flex-col gap-1">
-			<span class="text-xs font-medium text-base-content/60">E-Mail (leer = Default)</span>
+			<span class="text-xs font-medium text-base-content/60">
+				E-Mail (leer = Testadresse aus der Semester-Konfiguration)
+			</span>
 			<input
 				type="email"
 				class="input input-bordered input-sm w-full sm:w-80"
@@ -107,7 +111,8 @@
 
 	{#if $dryRunTestMail}
 		<div class="text-xs text-base-content/50">
-			Probeläufe gehen aktuell an <span class="font-mono">{$dryRunTestMail.current}</span>. Default:
+			Probeläufe gehen aktuell an <span class="font-mono">{$dryRunTestMail.current}</span>. Ohne
+			Eintrag:
 			<span class="font-mono">{$dryRunTestMail.default}</span>.
 		</div>
 	{/if}

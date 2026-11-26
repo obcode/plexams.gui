@@ -730,7 +730,7 @@
 		</div>
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center gap-2">
-				<span class="text-sm font-medium">zusätzliche Prüfende (additionalExamer)</span>
+				<span class="text-sm font-medium">zusätzliche Prüfende</span>
 				<button class="btn btn-ghost btn-xs" onclick={addExaminer}>+ Adresse</button>
 			</div>
 			{#if form.emails.additionalExamer.length === 0}

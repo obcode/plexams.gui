@@ -62,8 +62,9 @@
 	<div class="min-w-0">
 		<div class="font-medium">Prüfungsplanungs-Info an Prüfende</div>
 		<div class="text-xs text-base-content/50">
-			Info zur Prüfungsplanung (Constraints/Wünsche &amp; vorbereitete Prüfungen) an die
-			ausgewählten Prüfenden. Empfänger ohne E-Mail werden serverseitig übersprungen.
+			Info zur Prüfungsplanung an die ausgewählten Prüfenden; sie fasst die früheren E-Mails zu
+			Vorgaben und Wünschen und zu den vorbereiteten Prüfungen zusammen. Wer keine E-Mail-Adresse
+			hat, wird übersprungen.
 		</div>
 	</div>
 

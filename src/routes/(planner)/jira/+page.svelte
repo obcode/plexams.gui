@@ -286,6 +286,11 @@
 			{checking ? 'prüfe …' : 'Verbindung prüfen'}
 		</button>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Die Issues im Jira-Projekt der Prüfungsplanung. Hier liest du offene Issues, kommentierst sie,
+		änderst ihren Status und hängst Dateien an, ohne Jira zu öffnen. Dafür braucht dein Zugang ein
+		persönliches Jira-Token, das du unter „Mein Account“ hinterlegst.
+	</p>
 	{#if connError}
 		<div class="alert alert-warning py-2 text-sm"><span>{connError}</span></div>
 	{/if}

@@ -106,6 +106,12 @@
 		<div class="flex-1"></div>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Special Interest</button>
 	</div>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Ein Special Interest ist eine benannte Liste von Prüfungen (Ancodes), zum Beispiel für eine
+		Gruppe, die nur ihre eigenen Prüfungen sehen soll. Für jede Liste erzeugt Plexams einen eigenen
+		Plan-Entwurf als PDF; alle zusammen lädst du unter „Downloads“ als „Entwurf Special Interests“
+		herunter. Verschickt wird dabei nichts.
+	</p>
 
 	{#if listError}
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
