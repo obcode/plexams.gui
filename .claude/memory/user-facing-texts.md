@@ -43,6 +43,20 @@ standing rule for every page touched from now on.
   `ALREADY_SENT`, `ALREADY_EXISTS`, finding code `NTA_ROOM_NOT_ALONE`). A new backend
   code needs a message here; `plannerErrors.test.js` lists the codes.
 
+- `plannerErrors.js` has a third mode `own` (NOT_FOUND, ALREADY_EXISTS, INVALID_INPUT): the
+  backend's German sentence stands alone, the generic text is the fallback.
+
+**Vocabulary fixed on 2026-11-26** (use it on every page): „… & speichern“ for writing runs,
+„Probelauf (speichert nichts)“, Startwert (Seed), Durchläufe, Strafpunkte, Regel (not
+Constraint), Termin/Startzeit (not Slot), fixieren/fixiert (glossary), „fester Termin aus der
+Vorplanung“ for a locked plan entry (there is no lock button), „Aufsichts-Vorgaben“,
+„Zeitfenster (nur dann verfügbar)“ for invigilator time windows (they are availability windows,
+not blocked times). Rule tables show `title ?? name` from the backend.
+
+**Before claiming what a button or mail does, read the code**: on 2026-11-26 three page texts
+said the opposite of the code (time windows, „NTA verplant“ recipients, blocking a pre-planned
+room).
+
 **Why:** the planner of 2026-WS works alone and had to ask about most pages and
 messages; seven places matched English backend text with regular expressions, so no
 message could be reworded safely.
