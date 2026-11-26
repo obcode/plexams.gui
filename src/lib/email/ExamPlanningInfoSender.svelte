@@ -66,6 +66,13 @@
 			Vorgaben und Wünschen und zu den vorbereiteten Prüfungen zusammen. Wer keine E-Mail-Adresse
 			hat, wird übersprungen.
 		</div>
+		{#if conditionsDone?.examPlanningInfoSent}
+			<div class="mt-1 text-xs text-base-content/60">
+				An alle verschickt. An einzelne Prüfende (z. B. später hinzugekommene) kannst du weiter
+				senden; ein erneuter Versand an alle geht erst, wenn du auf der Startseite das Häkchen
+				zurücknimmst.
+			</div>
+		{/if}
 	</div>
 
 	<!-- Empfänger-Auswahl -->

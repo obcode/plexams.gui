@@ -87,7 +87,7 @@ export const STEP_HELP = {
 	examPlanningInfoSent: {
 		what: 'Auf „E-Mails" die Prüfungsplanungs-Info an die Prüfenden verschicken.',
 		why: 'Die Prüfenden sehen, welche ihrer Prüfungen geplant werden, und können Besonderheiten melden (fester Termin, ausgeschlossene Tage, besondere Räume).',
-		note: 'Diese E-Mail geht nur einmal raus.'
+		note: 'An alle geht diese E-Mail nur einmal; erst dann ist der Schritt abgehakt. An einzelne Prüfende, etwa später hinzugekommene, kannst du sie jederzeit noch schicken.'
 	},
 	primussImported: {
 		what: 'Auf „Prüfungslisten aus Primuss" das ZIP mit den Sammellisten aller Studiengänge hochladen.',
