@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { plannerErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
@@ -233,7 +234,7 @@
 		<span class="text-sm text-base-content/60">Studiengänge</span>
 		<div class="flex-1"></div>
 		<label class="btn btn-outline btn-sm" class:btn-disabled={uploading || resetting}>
-			{uploading ? 'lädt hoch …' : 'Sammellisten-ZIP importieren'}
+			{uploading ? 'lädt hoch …' : 'Sammellisten-ZIP hochladen'}
 			<input
 				type="file"
 				accept=".zip,application/zip"
@@ -245,12 +246,21 @@
 		<WriteButton
 			class="btn btn-outline btn-error btn-sm"
 			disabled={uploading || resetting}
-			title="alle importierten Primuss-Sammellisten löschen (destruktiv)"
+			title="Löscht die importierten Anmeldungen aller Studiengänge. Danach muss das ZIP neu hochgeladen werden. Nur nötig, wenn ein falsches ZIP importiert wurde."
 			onclick={resetPrimussData}
 		>
 			{resetting ? 'setzt zurück …' : 'Sammellisten zurücksetzen'}
 		</WriteButton>
 	</div>
+
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Hier lädst du die Prüfungsanmeldungen aus <Term id="primuss" /> hoch: das ZIP mit den
+		<Term id="sammelliste">Sammellisten</Term> aller Studiengänge, das das Prüfungsamt nach Ende der Anmeldefrist
+		bereitstellt. Daraus entstehen Teilnehmerzahlen und <Term id="konflikt">Konflikte</Term>. Ein
+		weiteres ZIP ergänzt oder ersetzt nur die Studiengänge, die es enthält; du kannst also
+		nachliefern. Danach geht es mit der
+		<a class="link" href="/exam/connected">Zuordnung ZPA ↔ Primuss</a> weiter.
+	</p>
 
 	{#if blocked}
 		<div class="alert alert-warning py-2 text-sm">

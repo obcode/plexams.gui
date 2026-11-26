@@ -29,56 +29,57 @@ prüft, dass jedes Ziel als Route existiert.
 
 ## NavBar → Route → lib → api
 
-| NavBar-Menü           | Eintrag                         | Seite (`src/routes/…`)                                                                                                                      | lib (`src/lib/…`)             | api-Domäne                                     |
-| --------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ---------------------------------------------- |
-| **Vorbereitung**      | SEB/EXaHM-Vorplanung            | `preplan/`                                                                                                                                  | `exam/`, `slot/`              | `api/preplan/`                                 |
-|                       | ZPA-Prüfungen planen            | `exam/examsToPlan/`                                                                                                                         | `exam/`, `zpa/`               | `api/exam/`, `api/zpaexams/`                   |
-|                       | Zu planende Prüfende            | `exam/examersToPlan/`                                                                                                                       | `exam/`                       | `api/exam/`                                    |
-|                       | Anmeldungszuordnung             | `exam/connected/`                                                                                                                           | `exam/`                       | `api/exam/`, `api/primuss/`                    |
-|                       | Aufbereitete Prüfungen          | `exam/assembledExams/`                                                                                                                      | `assembledExams/`, `exam/`    | `api/exam/`                                    |
-| **Terminplanung**     | Terminplanung (Grid)            | `plan/exams/`                                                                                                                               | `slot/`, `exam/`              | `api/slot/`, `api/plan/`                       |
-|                       | EXaHM/SEB in T-Bau (Phase A)    | `plan/exams/roomsphase/`                                                                                                                    | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
-|                       | Terminplan generieren (Phase B) | `plan/exams/generate/`                                                                                                                      | `exam/`, `validation/`        | `api/exam/`, `api/semester/`                   |
-|                       | Prüfungsverteilung / Statistik  | `plan/exams/statistics/`                                                                                                                    | `statistics/`                 | —                                              |
-|                       | Validierung                     | `plan/exams/validate/`                                                                                                                      | `validation/`                 | —                                              |
-| **Raumplanung**       | Raumplanung                     | `plan/rooms/`                                                                                                                               | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
-|                       | Räume generieren                | `plan/rooms/generate/`                                                                                                                      | `room/`, `semester/`          | `api/room/`, `api/semester/`                   |
-|                       | Anny-Anforderungen (KDP)        | `plan/kdprooms/`                                                                                                                            | `room/`                       | `api/room/`                                    |
-|                       | Gebäudemanagement-Anforderungen | `plan/roomRequests/`                                                                                                                        | `room/`                       | `api/room/`                                    |
-|                       | Validierung                     | `plan/rooms/validate/`                                                                                                                      | `validation/`                 | —                                              |
-| **Aufsichtenplanung** | Anforderungen und Planung       | `plan/invigilation/planning/`                                                                                                               | `invigilator/`                | `api/invigilator/`, `api/plan/`                |
-|                       | Aufsichts-Constraints           | `plan/invigilation/constraints/`                                                                                                            | `invigilator/`                | `api/invigilator/`                             |
-|                       | Zeitplan (pro Tag)              | `plan/invigilation/` (`[day]`)                                                                                                              | `invigilator/`                | `api/plan/`                                    |
-| `api/access/`         | 6                               | Zugang zum Portal (ADMIN): Alias, Sperre, Token-Widerruf, Auflösung einer Kennung — alle in `READ_POST_PATHS`                               |
-| `api/inquiry/`        | 5                               | Abfragen an Prüfende (aktives Semester): einrichten, öffnen, schließen, Meldung sichten/ablehnen; `markActivitySeen` (in `READ_POST_PATHS`) |
-|                       | Einteilung                      | `plan/invigilation/generate/`                                                                                                               | `invigilator/`, `validation/` | `api/invigilator/`, `api/semester/`            |
-|                       | Validierung                     | `plan/invigilation/validate/`                                                                                                               | `validation/`                 | —                                              |
-| **E-Mails**           | E-Mails versenden               | `email/`                                                                                                                                    | `email/`                      | `api/email/`                                   |
-|                       | E-Mail-Vorlagen                 | `email/templates/`                                                                                                                          | `email/`                      | `api/email/`                                   |
-|                       | Anhänge (Deckblätter, Bilder)   | `email/attachments/`                                                                                                                        | `email/`                      | `api/email/`                                   |
-|                       | Special Interests               | `email/specialInterests/`                                                                                                                   | `email/`                      | `api/email/`                                   |
-| **Semesterdaten**     | ZPA-Import & Veröffentlichung   | `zpa/publish/`                                                                                                                              | `zpa/`                        | `api/zpaexams/`                                |
-|                       | Zusätzliche Prüfungen           | `zpa/additionalExams/`                                                                                                                      | `zpa/`, `exam/`               | `api/exam/`                                    |
-|                       | Dozierende & Aufsichten (ZPA)   | `zpa/teacher/`                                                                                                                              | `zpa/`, `invigilator/`        | `api/invigilator/`                             |
-|                       | MUC.DAI-Prüfungen               | `primuss/mucdai/`                                                                                                                           | `exam/`                       | `api/exam/`                                    |
-|                       | Primuss-Anmeldedaten            | `primuss/exams/`                                                                                                                            | `studentRegs/`                | `api/primuss/`                                 |
-|                       | Studierende                     | `students/`                                                                                                                                 | `studentRegs/`                | `api/primuss/`                                 |
-|                       | Prüfungen anderer FKs           | `exam/external/` ¹                                                                                                                          | `exam/`                       | `api/exam/`                                    |
-|                       | Anny-Buchungen                  | `rooms/annyBookings/` ¹                                                                                                                     | `room/`                       | `api/room/`                                    |
-|                       | NTA (Semester)                  | `nta/semester/`                                                                                                                             | `nta/`                        | `api/nta/`                                     |
-|                       | Downloads & Exporte             | `download/`                                                                                                                                 | `download/`                   | — (REST `/download/*`, kein GraphQL)           |
-|                       | Jira                            | `jira/`                                                                                                                                     | `jira/`                       | `api/jira/` (+ REST `/upload/jira-attachment`) |
-|                       | Todos (+ Detail `todos/[id]`)   | `todos/`                                                                                                                                    | `todo/`                       | `api/todo/`                                    |
-|                       | Mutations-Log                   | `log/`                                                                                                                                      | —                             | `api/log/`                                     |
-|                       | Semester-Konfiguration          | `config/`                                                                                                                                   | `config/`                     | `api/semester/`                                |
-|                       | Neues Semester anlegen          | `config/new/`                                                                                                                               | `config/`                     | `api/semester/`                                |
-| **Stammdaten**        | Studiengänge                    | `studyprograms/`                                                                                                                            | —                             | `api/studyprogram/`                            |
-|                       | Räume                           | `rooms/`                                                                                                                                    | `room/`                       | `api/room/`                                    |
-|                       | NTAs (Stammdaten)               | `nta/all/`                                                                                                                                  | `nta/`                        | `api/nta/`                                     |
-|                       | Permanente Nicht-Aufsichten     | `invigilators/`                                                                                                                             | `invigilator/`                | `api/invigilator/`                             |
-| _Pille_               | Validierung (global)            | `validate/`                                                                                                                                 | `validation/`                 | —                                              |
-| _Pille_               | ZPA-Status                      | `zpa/publish/`                                                                                                                              | `zpa/`                        | `api/zpaexams/`                                |
-| _Pille_               | Todos (offene, ab `sm`)         | `todos/`                                                                                                                                    | `todo/`                       | `api/todo/`                                    |
+| NavBar-Menü      | Eintrag                             | Seite (`src/routes/(planner)/…`) | lib (`src/lib/…`)             | api-Domäne                                     |
+| ---------------- | ----------------------------------- | -------------------------------- | ----------------------------- | ---------------------------------------------- |
+| **Semester**     | Semester-Konfiguration              | `config/`                        | `config/`                     | `api/semester/`                                |
+|                  | NTA im Semester                     | `nta/semester/`                  | `nta/`                        | `api/nta/`                                     |
+|                  | Studierende                         | `students/`                      | `studentRegs/`                | `api/primuss/`                                 |
+|                  | Dozierende & Aufsichten             | `zpa/teacher/`                   | `zpa/`, `invigilator/`        | `api/invigilator/`                             |
+|                  | Neues Semester anlegen              | `config/new/`                    | `config/`                     | `api/semester/`                                |
+|                  | Studiengänge                        | `studyprograms/`                 | —                             | `api/studyprogram/`                            |
+|                  | Räume                               | `rooms/`                         | `room/`                       | `api/room/`                                    |
+|                  | NTA-Stammdaten                      | `nta/all/`                       | `nta/`                        | `api/nta/`                                     |
+|                  | Dauerhaft keine Aufsicht            | `invigilators/`                  | `invigilator/`                | `api/invigilator/`                             |
+| **Vorbereitung** | Abfragen an Prüfende                | `inquiries/`                     | —                             | —                                              |
+|                  | Änderungen im Portal                | `inquiries/activity/`            | —                             | —                                              |
+|                  | Anny-Buchungen                      | `rooms/annyBookings/`            | `room/`                       | `api/room/`                                    |
+|                  | SEB/EXaHM-Vorplanung                | `preplan/`                       | `exam/`, `slot/`              | `api/preplan/`                                 |
+|                  | ZPA-Import & Veröffentlichung       | `zpa/publish/`                   | `zpa/`                        | `api/zpaexams/`                                |
+|                  | Prüfungen auswählen & Vorgaben      | `exam/examsToPlan/`              | `exam/`, `zpa/`               | `api/exam/`, `api/zpaexams/`                   |
+|                  | Prüfende mit zu planenden Prüfungen | `exam/examersToPlan/`            | `exam/`                       | `api/exam/`                                    |
+|                  | Zusätzliche Prüfungen               | `zpa/additionalExams/`           | `zpa/`, `exam/`               | `api/exam/`                                    |
+|                  | Prüfungen gemeinsamer Studiengänge  | `primuss/joint/`                 | `exam/`                       | `api/exam/`                                    |
+|                  | Prüfungslisten aus Primuss          | `primuss/exams/`                 | `studentRegs/`                | `api/primuss/`                                 |
+|                  | Zuordnung ZPA ↔ Primuss             | `exam/connected/`                | `exam/`                       | `api/exam/`, `api/primuss/`                    |
+|                  | Aufbereitete Prüfungen              | `exam/assembledExams/`           | `assembledExams/`, `exam/`    | `api/exam/`                                    |
+| **Termine**      | Prüfungen anderer FKs               | `exam/external/`                 | `exam/`                       | `api/exam/`                                    |
+|                  | EXaHM/SEB in T-Bau planen           | `plan/exams/roomsphase/`         | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
+|                  | Terminplan generieren               | `plan/exams/generate/`           | `exam/`, `validation/`        | `api/exam/`, `api/semester/`                   |
+|                  | Prüfungsplan                        | `plan/exams/`                    | `slot/`, `exam/`              | `api/slot/`, `api/plan/`                       |
+|                  | Prüfungsverteilung / Statistik      | `plan/exams/statistics/`         | `statistics/`                 | —                                              |
+|                  | Terminplanung validieren            | `plan/exams/validate/`           | `validation/`                 | —                                              |
+| **Räume**        | Raum-Anfragen (Gebäudemanagement)   | `plan/roomRequests/`             | `room/`                       | `api/room/`                                    |
+|                  | Räume generieren                    | `plan/rooms/generate/`           | `room/`, `semester/`          | `api/room/`, `api/semester/`                   |
+|                  | Raumplanung                         | `plan/rooms/`                    | `room/`, `slot/`              | `api/room/`, `api/plan/`                       |
+|                  | Anny-Anforderungen (KDP)            | `plan/kdprooms/`                 | `room/`                       | `api/room/`                                    |
+|                  | Räume validieren                    | `plan/rooms/validate/`           | `validation/`                 | —                                              |
+| **Aufsichten**   | Aufsichten mit Anforderungen        | `plan/invigilation/planning/`    | `invigilator/`                | `api/invigilator/`, `api/plan/`                |
+|                  | Aufsichts-Constraints               | `plan/invigilation/constraints/` | `invigilator/`                | `api/invigilator/`                             |
+|                  | Aufsichten einteilen                | `plan/invigilation/generate/`    | `invigilator/`, `validation/` | `api/invigilator/`, `api/semester/`            |
+|                  | Aufsichtsplan                       | `plan/invigilation/`             | `invigilator/`                | `api/plan/`                                    |
+|                  | Aufsichten validieren               | `plan/invigilation/validate/`    | `validation/`                 | —                                              |
+| **E-Mails**      | E-Mails versenden                   | `email/`                         | `email/`                      | `api/email/`                                   |
+|                  | E-Mail-Vorlagen                     | `email/templates/`               | `email/`                      | `api/email/`                                   |
+|                  | E-Mail-Anhänge                      | `email/attachments/`             | `email/`                      | `api/email/`                                   |
+|                  | Special Interests                   | `email/specialInterests/`        | `email/`                      | `api/email/`                                   |
+| **Werkzeuge**    | Hilfe                               | `hilfe/`                         | —                             | —                                              |
+|                  | Validierung (alle Bereiche)         | `validate/`                      | `validation/`                 | —                                              |
+|                  | Downloads & Exporte                 | `download/`                      | `download/`                   | — (REST `/download/*`, kein GraphQL)           |
+|                  | Todos                               | `todos/`                         | `todo/`                       | `api/todo/`                                    |
+|                  | Jira                                | `jira/`                          | `jira/`                       | `api/jira/` (+ REST `/upload/jira-attachment`) |
+|                  | Änderungsprotokoll                  | `log/`                           | —                             | `api/log/`                                     |
+
+Nicht im Menü: die Startseite `/` (Planungs-Checkliste), `plan/invigilation/[day]` (Tagesansicht der Aufsichten), die Detailseiten (`exam/assembledExams/[ancode]`, `todos/[id]`, `nta/[mtknr]`) und das Identitätsmenü (`account/`, `admin/*`).
 
 ¹ **2026-07-05 verschoben** aus `plan/`; alte URLs leiten per `308` weiter
 (`plan/external/+page.ts`, `plan/annyBookings/+page.ts`).
@@ -90,23 +91,25 @@ prüft, dass jedes Ziel als Route existiert.
 Alle Mutationen/Proxys sind nach Domäne gruppiert (spiegelt `src/lib/`). Neue
 Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 
-| Ordner              | Endpunkte | Inhalt                                                                                                                                |
-| ------------------- | --------: | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                           |
-| `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                                          |
-| `api/preplan/`      |        14 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung, Buchungsvorschlag)                                       |
-| `api/semester/`     |        10 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer (setzen/zurücksetzen), Generierungs-Config                              |
-| `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                      |
-| `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                           |
-| `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                             |
-| `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                            |
-| `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                                         |
-| `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                                         |
-| `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                                        |
-| `api/log/`          |         1 | Mutations-Log                                                                                                                         |
-| `api/todo/`         |        12 | Todos: Liste/Labels/Link-Vorschläge (Lesen), Anlegen/Ändern/Erledigen/Löschen, Kommentare, Links, Übernahme aus dem Vorsemester       |
-| `api/jira/`         |         7 | Jira: Verbindung/Issue-Detail/offene Issues/Transitions (Lesen), Issue anlegen/kommentieren/Status (Mutation); Anhang per REST-Upload |
-| `api/plan/`         |        11 | **Read-Lookups fürs Plan-Grid** (Slot/Raum/Aufsicht-Abfragen, interaktiv per `fetch`) — bewusst als eigene Gruppe belassen            |
+| Ordner              | Endpunkte | Inhalt                                                                                                                                      |
+| ------------------- | --------: | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api/exam/`         |        20 | Prüfungs-Constraints/Dauer, aufbereitete Prüfungen (Generieren/Reset), MUC.DAI-Verknüpfung, externe Termine                                 |
+| `api/room/`         |        19 | Räume (CRUD), Raum-Anforderungen, Slot-Blockaden, Anny, Raumphasen-Fixierung                                                                |
+| `api/preplan/`      |        14 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung, Buchungsvorschlag)                                             |
+| `api/semester/`     |        10 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer (setzen/zurücksetzen), Generierungs-Config                                    |
+| `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                            |
+| `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                                 |
+| `api/invigilator/`  |         5 | Aufsichts-Constraints, permanente Nicht-Aufsichten, Reset                                                                                   |
+| `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                                  |
+| `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                                               |
+| `api/studyprogram/` |         3 | Studiengänge (Upsert/Delete), Seed aus Config                                                                                               |
+| `api/zpaexams/`     |         2 | ZPA-Prüfung in Plan / aus Plan                                                                                                              |
+| `api/log/`          |         1 | Mutations-Log                                                                                                                               |
+| `api/todo/`         |        12 | Todos: Liste/Labels/Link-Vorschläge (Lesen), Anlegen/Ändern/Erledigen/Löschen, Kommentare, Links, Übernahme aus dem Vorsemester             |
+| `api/jira/`         |         7 | Jira: Verbindung/Issue-Detail/offene Issues/Transitions (Lesen), Issue anlegen/kommentieren/Status (Mutation); Anhang per REST-Upload       |
+| `api/plan/`         |        11 | **Read-Lookups fürs Plan-Grid** (Slot/Raum/Aufsicht-Abfragen, interaktiv per `fetch`) — bewusst als eigene Gruppe belassen                  |
+| `api/access/`       |         6 | Zugang zum Portal (ADMIN): Alias, Sperre, Token-Widerruf, Auflösung einer Kennung — alle in `READ_POST_PATHS`                               |
+| `api/inquiry/`      |         5 | Abfragen an Prüfende (aktives Semester): einrichten, öffnen, schließen, Meldung sichten/ablehnen; `markActivitySeen` (in `READ_POST_PATHS`) |
 
 **Hinweis:** Einige POST-Proxys sind in Wahrheit Lese-Abfragen und dürfen auch im
 geschützten (read-only) Semester laufen — die Allowlist steht in

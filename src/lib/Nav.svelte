@@ -247,45 +247,26 @@
 	const flatLinks = (items: MenuItem[]): MenuLink[] =>
 		items.flatMap((i) => (isLink(i) ? [i] : isGroup(i) ? flatLinks(i.items) : []));
 
+	// The menus follow the planning workflow from left to right and, inside a menu,
+	// from top to bottom. A label is the heading of the page it opens, so a planner
+	// finds the same name in both places. docs/ROUTES.md mirrors this structure.
 	const menus: Menu[] = [
 		{
-			label: 'Daten',
+			label: 'Semester',
 			items: [
+				{ section: 'Dieses Semester' },
+				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
+				{ href: '/nta/semester', label: '♿ NTA im Semester' },
+				{ href: '/students', label: '🎓 Studierende' },
+				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten' },
+				{ href: '/config/new', label: '➕ Neues Semester anlegen' },
 				{
-					group: 'Stammdaten',
+					group: 'Stammdaten (für alle Semester)',
 					items: [
 						{ href: '/studyprograms', label: '🎓 Studiengänge' },
 						{ href: '/rooms', label: '🚪 Räume' },
-						{ href: '/nta/all', label: '♿ NTAs' },
-						{ href: '/invigilators', label: '👀 Permanente Nicht-Aufsichten' }
-					]
-				},
-				{
-					group: 'Semesterdaten',
-					items: [
-						{ section: 'ZPA' },
-						{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
-						{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
-						{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten (ZPA)' },
-						{ section: 'Primuss' },
-						{ href: '/primuss/joint', label: '💻 Prüfungen gemeinsamer Studiengänge' },
-						{ href: '/primuss/exams', label: '🧾 Primuss-Anmeldedaten' },
-						{ href: '/students', label: '🎓 Studierende' },
-						{ section: 'Weitere' },
-						{
-							href: '/exam/external',
-							label: '🌐 Prüfungen anderer FKs (gemeinsame Studiengänge & nicht von mir)'
-						},
-						{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
-						{ href: '/nta/semester', label: '♿ NTA' },
-						{ href: '/download', label: '⬇️ Downloads & Exporte' },
-						{ href: '/hilfe', label: '❓ Hilfe: Ablauf & Glossar' },
-						{ href: '/todos', label: '☑️ Todos' },
-						{ href: '/jira', label: '🎫 Jira' },
-						{ href: '/log', label: '🧾 Mutations-Log' },
-						{ section: 'Konfiguration' },
-						{ href: '/config', label: '⚙️ Semester-Konfiguration' },
-						{ href: '/config/new', label: '➕ Neues Semester anlegen' }
+						{ href: '/nta/all', label: '♿ NTA-Stammdaten' },
+						{ href: '/invigilators', label: '👀 Dauerhaft keine Aufsicht' }
 					]
 				}
 			]
@@ -293,47 +274,52 @@
 		{
 			label: 'Vorbereitung',
 			items: [
-				{ section: 'Portal für Prüfende' },
+				{ section: 'Noch im Semester davor' },
 				{ href: '/inquiries', label: '📨 Abfragen an Prüfende' },
 				{ href: '/inquiries/activity', label: '🔔 Änderungen im Portal' },
-				{ section: 'SEB/EXaHM-Prüfungen' },
+				{ href: '/rooms/annyBookings', label: '📅 Anny-Buchungen' },
 				{ href: '/preplan', label: '🖥️ SEB/EXaHM-Vorplanung' },
-				{ section: 'ZPA-Prüfungen' },
-				{ href: '/exam/examsToPlan', label: '📝 ZPA-Prüfungen planen' },
-				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Zu planende Prüfende' },
+				{ section: 'Prüfungen aus dem ZPA' },
+				{ href: '/zpa/publish', label: '📥 ZPA-Import & Veröffentlichung' },
+				{ href: '/exam/examsToPlan', label: '📝 Prüfungen auswählen & Vorgaben' },
+				{ href: '/exam/examersToPlan', label: '🧑‍🏫 Prüfende mit zu planenden Prüfungen' },
+				{ href: '/zpa/additionalExams', label: '➕ Zusätzliche Prüfungen' },
 				{ section: 'Anmeldungen' },
-				{ href: '/exam/connected', label: '🔗 Anmeldungszuordnung (ZPA/Primuss)' },
+				{ href: '/primuss/joint', label: '💻 Prüfungen gemeinsamer Studiengänge' },
+				{ href: '/primuss/exams', label: '🧾 Prüfungslisten aus Primuss' },
+				{ href: '/exam/connected', label: '🔗 Zuordnung ZPA ↔ Primuss' },
 				{ href: '/exam/assembledExams', label: '📋 Aufbereitete Prüfungen' }
 			]
 		},
 		{
-			label: 'Terminplanung',
+			label: 'Termine',
 			items: [
-				{ href: '/plan/exams', label: '🗓️ Terminplanung' },
-				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau (Phase A)' },
-				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren (Phase B)' },
+				{ href: '/exam/external', label: '🌐 Prüfungen anderer FKs' },
+				{ href: '/plan/exams/roomsphase', label: '🏗️ EXaHM/SEB in T-Bau planen' },
+				{ href: '/plan/exams/generate', label: '✨ Terminplan generieren' },
+				{ href: '/plan/exams', label: '🗓️ Prüfungsplan' },
 				{ href: '/plan/exams/statistics', label: '📊 Prüfungsverteilung / Statistik' },
-				{ href: '/plan/exams/validate', label: '✅ Validierung' }
+				{ href: '/plan/exams/validate', label: '✅ Terminplanung validieren' }
 			]
 		},
 		{
-			label: 'Raumplanung',
+			label: 'Räume',
 			items: [
-				{ href: '/plan/rooms', label: '🏢 Raumplanung' },
+				{ href: '/plan/roomRequests', label: '🛠️ Raum-Anfragen (Gebäudemanagement)' },
 				{ href: '/plan/rooms/generate', label: '✨ Räume generieren' },
+				{ href: '/plan/rooms', label: '🏢 Raumplanung' },
 				{ href: '/plan/kdprooms', label: '💻 Anny-Anforderungen (KDP)' },
-				{ href: '/plan/roomRequests', label: '🛠️ Gebäudemanagement-Anforderungen' },
-				{ href: '/plan/rooms/validate', label: '✅ Validierung' }
+				{ href: '/plan/rooms/validate', label: '✅ Räume validieren' }
 			]
 		},
 		{
-			label: 'Aufsichtenplanung',
+			label: 'Aufsichten',
 			items: [
-				{ href: '/plan/invigilation/planning', label: '👀 Anforderungen und Planung' },
+				{ href: '/plan/invigilation/planning', label: '👀 Aufsichten mit Anforderungen' },
 				{ href: '/plan/invigilation/constraints', label: '📌 Aufsichts-Constraints' },
-				{ href: '/plan/invigilation', label: '⏰ Zeitplan' },
-				{ href: '/plan/invigilation/generate', label: '✨ Aufsichtenplan generieren' },
-				{ href: '/plan/invigilation/validate', label: '✅ Validierung' }
+				{ href: '/plan/invigilation/generate', label: '✨ Aufsichten einteilen' },
+				{ href: '/plan/invigilation', label: '⏰ Aufsichtsplan' },
+				{ href: '/plan/invigilation/validate', label: '✅ Aufsichten validieren' }
 			]
 		},
 		{
@@ -341,8 +327,19 @@
 			items: [
 				{ href: '/email', label: '📧 E-Mails versenden' },
 				{ href: '/email/templates', label: '📝 E-Mail-Vorlagen' },
-				{ href: '/email/attachments', label: '📎 Anhänge (Deckblätter, Bilder)' },
+				{ href: '/email/attachments', label: '📎 E-Mail-Anhänge' },
 				{ href: '/email/specialInterests', label: '⭐ Special Interests' }
+			]
+		},
+		{
+			label: 'Werkzeuge',
+			items: [
+				{ href: '/hilfe', label: '❓ Hilfe' },
+				{ href: '/validate', label: '✅ Validierung (alle Bereiche)' },
+				{ href: '/download', label: '⬇️ Downloads & Exporte' },
+				{ href: '/todos', label: '☑️ Todos' },
+				{ href: '/jira', label: '🎫 Jira' },
+				{ href: '/log', label: '🧾 Änderungsprotokoll' }
 			]
 		}
 	];
@@ -438,7 +435,7 @@
 					<div
 						tabindex="0"
 						role="button"
-						class="btn btn-ghost btn-sm gap-1 rounded-full font-medium hover:bg-base-200 {menu.label ===
+						class="btn btn-ghost btn-sm gap-1 whitespace-nowrap rounded-full px-2.5 font-medium hover:bg-base-200 {menu.label ===
 						activeMenu
 							? 'bg-primary/10 text-primary'
 							: 'text-base-content/70 hover:text-base-content'}"

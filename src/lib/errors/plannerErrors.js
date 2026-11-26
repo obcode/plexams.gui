@@ -75,7 +75,7 @@ export const UNREACHABLE_MESSAGE =
  */
 export function plannerErrorMessage(code, backendMessage) {
 	const detail = String(backendMessage ?? '')
-		.replace(/^error:\s*/i, '')
+		.replace(/^(error|Fehler):\s*/i, '')
 		.trim();
 	const known = code ? MESSAGES[code] : undefined;
 	if (!known) return detail || 'Unbekannter Fehler.';

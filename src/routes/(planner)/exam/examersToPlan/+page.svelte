@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Term from '#lib/help/Term.svelte';
 	let { data } = $props();
 	const examers = data.examers;
 
@@ -28,8 +29,15 @@
 	});
 </script>
 
-<div class="text-center m-2 text-4xl">
-	<span class="uppercase">Prüfende mit zu planenden Prüfungen</span>
+<div class="mx-2 mt-4 mb-3 flex flex-col gap-2">
+	<h1 class="text-2xl font-semibold">Prüfende mit zu planenden Prüfungen</h1>
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Alle Prüfenden, die in diesem Semester mindestens eine zu planende Prüfung haben, mit ihren
+		Prüfungen. Die Liste hilft beim Abgleich: Wer muss angeschrieben werden, und wer gehört nicht
+		zur eigenen Fakultät (<Term id="fk" />) oder ist <Term id="lba">Lehrbeauftragte:r</Term>? Ändern
+		lässt sich hier nichts; die Auswahl der Prüfungen geschieht unter
+		<a class="link" href="/exam/examsToPlan">Prüfungen auswählen &amp; Vorgaben</a>.
+	</p>
 </div>
 
 <div class="flex mb-4 items-center">
@@ -83,7 +91,7 @@
 					<td>
 						{#each examer.exams as exam}
 							<div class="mb-1">
-								<a href="/exam/examWithRegs/{exam.ancode}" class="font-bold">{exam.ancode}</a>:
+								<a href="/exam/assembledExams/{exam.ancode}" class="font-bold">{exam.ancode}</a>:
 								{exam.module}
 								{#if exam.groups && exam.groups.length > 0}
 									<span class="text-sm text-gray-500">({exam.groups.join(', ')})</span>

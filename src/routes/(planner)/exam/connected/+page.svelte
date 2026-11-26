@@ -1,4 +1,6 @@
 <script>
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 	import { levelOf, zpaPrograms, primussPrograms } from '#lib/exam/connected.js';
 	import ConnectedRow from '#lib/exam/ConnectedRow.svelte';
 
@@ -77,17 +79,42 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Zuordnung ZPA ↔ Primuss</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{counts.total}</span>
-		<span class="text-sm text-base-content/50">ZPA-Prüfungen</span>
-	</div>
+	<PageIntro
+		title="Zuordnung ZPA ↔ Primuss"
+		count={counts.total}
+		subtitle="zu planende ZPA-Prüfungen"
+		help="schritt-zpaPrimussConnected"
+	>
+		Die Prüfung kommt aus dem <Term id="zpa" />, die Anmeldungen kommen aus <Term id="primuss" />.
+		Plexams führt beide über den <Term id="ancode" /> zusammen und zeigt hier je Prüfung, welche Anmeldungen
+		es gefunden hat. Stimmt die Zuordnung nicht, stimmen später weder Teilnehmerzahlen noch
+		<Term id="konflikt">Konflikte</Term>.
+		{#snippet howto()}
+			<ol>
+				<li>
+					Schalte „nur Auffälligkeiten" ein oder klicke auf „Warnungen" und „Fehler", um nur die
+					Prüfungen zu sehen, bei denen etwas nicht passt.
+				</li>
+				<li>
+					Sieh dir jede an: Fehlen Anmeldungen eines Studiengangs, oder gehören gefundene
+					Anmeldungen zu einer anderen Prüfung? Das passiert vor allem bei gemeinsamen
+					Studiengängen, weil dieselbe Prüfung in Primuss einen anderen Ancode haben kann als im
+					ZPA.
+				</li>
+				<li>Korrigiere die Zuordnung direkt an der Prüfung.</li>
+				<li>
+					Wenn nichts Auffälliges mehr übrig ist oder du den Rest bewusst so lässt: auf der
+					<a href="/">Startseite</a> „ZPA- &amp; Primuss-Prüfungen verknüpft" abhaken. Weiter geht
+					es mit <a href="/exam/assembledExams">Aufbereitete Prüfungen</a>.
+				</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
 
 	{#if data.loadError}
 		<div class="alert alert-error">
 			<span>
-				Die Zuordnung konnte nicht geladen werden (Backend-Fehler):
-				<span class="font-mono text-xs">{data.loadError}</span>
+				Die Zuordnung konnte nicht geladen werden. {data.loadError}
 			</span>
 		</div>
 	{:else}

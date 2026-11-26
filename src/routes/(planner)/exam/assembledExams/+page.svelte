@@ -1,4 +1,6 @@
 <script>
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 	import { refreshAll } from '$app/navigation';
 	import AssembledExamsTable from '#lib/exam/AssembledExamsTable.svelte';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -83,11 +85,18 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufbereitete Prüfungen</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">{data.plannedExams.length}</span>
-		<span class="text-sm text-base-content/50">mit Anmeldungen</span>
-	</div>
+	<PageIntro
+		title="Aufbereitete Prüfungen"
+		count={data.plannedExams.length}
+		subtitle="mit Anmeldungen"
+		help="glossar-aufbereitete-pruefung"
+	>
+		Beim Aufbereiten führt Plexams je Prüfung alles zusammen, was bisher getrennt vorliegt: die
+		Daten aus dem <Term id="zpa" />, die Anmeldungen aus <Term id="primuss" />, die
+		<Term id="nta">Nachteilsausgleiche</Term> und die <Term id="vorgabe">Vorgaben</Term>.
+		Terminplanung, Raumplanung und Aufsichten arbeiten nur mit diesen aufbereiteten Prüfungen. Das
+		ist der letzte Schritt der Vorbereitung.
+	</PageIntro>
 
 	<!-- Generieren (Prüfungen + StudentRegs in einem Schritt) -->
 	<div class="flex flex-col gap-2 rounded-lg border border-base-300 bg-base-100 p-3">
@@ -102,21 +111,26 @@
 			<WriteButton
 				class="btn btn-outline btn-error btn-sm"
 				disabled={$preparing || $resettingAssembled}
-				title="gecachte aufbereitete Prüfungen löschen (destruktiv)"
+				title="Löscht alle aufbereiteten Prüfungen. Termine, Räume und Vorgaben bleiben erhalten; mit „Generieren“ lassen sie sich jederzeit neu erzeugen."
 				onclick={runReset}
 			>
 				{$resettingAssembled ? 'setzt zurück …' : 'Zurücksetzen'}
 			</WriteButton>
 			{#if !canGenerate}
 				<span class="text-sm text-warning">
-					Erst ZPA- &amp; Primuss-Prüfungen verknüpfen, Constraints einpflegen und die Haken auf der
-					Startseite setzen.
+					Generieren geht erst, wenn auf der <a class="link" href="/">Startseite</a> vier Schritte abgehakt
+					sind: Prüfungen aus ZPA importiert, Primuss-Anmeldedaten importiert, ZPA- &amp; Primuss-Prüfungen
+					verknüpft und die Vorgaben eingetragen.
 				</span>
 			{:else if stale}
-				<span class="text-sm text-warning">⚠ veraltet — bitte neu generieren.</span>
+				<span class="text-sm text-warning">
+					⚠ Seit dem letzten Generieren wurden Anmeldungen, Nachteilsausgleiche oder Vorgaben
+					geändert. Bitte neu generieren, sonst plant Plexams mit dem alten Stand.
+				</span>
 			{:else}
 				<span class="text-sm text-base-content/50">
-					Erzeugt aufbereitete Prüfungen &amp; StudentRegs in einem Schritt.
+					Erzeugt die aufbereiteten Prüfungen und je Studierender:m die Liste der Anmeldungen neu.
+					Termine und Räume bleiben dabei erhalten. Dauert wenige Sekunden.
 				</span>
 			{/if}
 		</div>

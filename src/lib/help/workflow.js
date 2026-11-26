@@ -81,7 +81,7 @@ export const STEP_HELP = {
 		why: 'In gemeinsamen Studiengängen (zum Beispiel MUC.DAI) schreiben Studierende auch Prüfungen anderer Fakultäten. Nur wenn Plexams sie kennt, kann es Überschneidungen vermeiden.'
 	},
 	zpaExamsSelected: {
-		what: 'Auf „ZPA-Prüfungen planen" für jede ZPA-Prüfung entscheiden, ob sie von uns geplant wird.',
+		what: 'Auf „Prüfungen auswählen & Vorgaben" für jede ZPA-Prüfung entscheiden, ob sie von uns geplant wird.',
 		why: 'Nicht alles im ZPA braucht einen Termin im Prüfungszeitraum: mündliche Prüfungen, Scheine oder Modularbeiten zum Beispiel nicht.'
 	},
 	examPlanningInfoSent: {
@@ -99,7 +99,7 @@ export const STEP_HELP = {
 		why: 'Die beiden Systeme verwenden nicht immer denselben Ancode, vor allem in gemeinsamen Studiengängen. Eine falsche Zuordnung heißt: falsche Teilnehmerzahl und falsche Konflikte.'
 	},
 	constraintsEntered: {
-		what: 'Auf „ZPA-Prüfungen planen" die gemeldeten Vorgaben je Prüfung eintragen: fester Termin, ausgeschlossene Tage, „gleichzeitig mit", Raumanforderungen.',
+		what: 'Auf „Prüfungen auswählen & Vorgaben" die gemeldeten Vorgaben je Prüfung eintragen: fester Termin, ausgeschlossene Tage, „gleichzeitig mit", Raumanforderungen.',
 		why: 'Generator und Validierung halten sich an diese Vorgaben. Was hier fehlt, wird beim Planen nicht berücksichtigt.'
 	},
 	assembledExams: {

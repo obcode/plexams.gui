@@ -1,4 +1,6 @@
 <script>
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 	import ValidationGroup from '#lib/validation/ValidationGroup.svelte';
 	import StreamAction from '#lib/zpa/StreamAction.svelte';
 	import SyncLog from '#lib/zpa/SyncLog.svelte';
@@ -24,22 +26,22 @@
 		{
 			field: 'importTeachersFromZPA',
 			title: 'Dozierende',
-			desc: 'Dozierende aus dem ZPA holen und cachen'
+			desc: 'Lädt alle Lehrenden mit Namen und E-Mail-Adresse. Nötig, bevor Prüfende angeschrieben oder Aufsichten geplant werden. Ersetzt die bisher geladene Liste.'
 		},
 		{
 			field: 'importExamsFromZPA',
 			title: 'Prüfungen',
-			desc: 'Prüfungen aus dem ZPA holen und cachen'
+			desc: 'Lädt die offizielle Prüfungsliste des Semesters. Ersetzt die bisher geladene Liste; deine Auswahl der zu planenden Prüfungen und die Vorgaben bleiben erhalten.'
 		},
 		{
 			field: 'importInvigilatorRequirementsFromZPA',
 			title: 'Aufsichts-Anforderungen',
-			desc: 'Aufsichts-Anforderungen aus dem ZPA holen und cachen'
+			desc: 'Lädt, was die Aufsichtführenden im ZPA eingetragen haben (Sperrtage und Wünsche). Erst sinnvoll, nachdem die Abfrage dazu verschickt wurde.'
 		},
 		{
 			field: 'importStudentsFromZPA',
 			title: 'Studierende',
-			desc: 'ZPA-Infos der Studierenden mit Anmeldungen holen'
+			desc: 'Lädt zu den angemeldeten Studierenden die Angaben aus dem ZPA, vor allem die E-Mail-Adressen. Vor dem Übertragen der Anmeldungen nötig.'
 		}
 	];
 
@@ -49,32 +51,55 @@
 		{
 			field: 'uploadExamsToZPA',
 			title: 'Prüfungen',
-			desc: 'ohne Räume und Aufsichten',
+			desc: 'Überträgt die Termine aller geplanten Prüfungen, ohne Räume und Aufsichten. Für den Stand nach der Terminplanung.',
 			hasDryRun: true
 		},
 		{
 			field: 'uploadExamsWithRoomsToZPA',
 			title: 'Prüfungen mit Räumen',
-			desc: 'inkl. geplanter Räume',
+			desc: 'Überträgt Termine und Räume. Für den Stand nach der Raumplanung.',
 			hasDryRun: true
 		},
 		{
 			field: 'uploadExamsWithInvigilatorsToZPA',
 			title: 'Prüfungen mit Räumen & Aufsichten',
-			desc: 'inkl. geplanter Räume und Aufsichten',
+			desc: 'Überträgt Termine, Räume und Aufsichten. Für den fertigen Plan.',
 			hasDryRun: true
 		},
 		{
 			field: 'uploadStudentRegsToZPA',
 			title: 'Anmeldungen',
-			desc: 'Studierenden-Anmeldungen ins ZPA übertragen',
+			desc: 'Überträgt, wer zu welcher Prüfung angemeldet ist. Danach sehen die Studierenden ihre Prüfungen im ZPA. Kein Probelauf.',
 			hasDryRun: false
 		}
 	];
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
-	<h1 class="text-2xl font-semibold">ZPA — Veröffentlichung</h1>
+	<PageIntro title="ZPA-Import &amp; Veröffentlichung" help="glossar-zpa">
+		Hier holst du Daten aus dem <Term id="zpa" /> nach Plexams und überträgst am Ende den Plan dorthin
+		zurück. Laden ändert nur die Kopie in Plexams, nie das ZPA. Übertragen ändert, was Lehrende und Studierende
+		im ZPA sehen. Unten steht, wann zuletzt was geladen oder übertragen wurde.
+		{#snippet howto()}
+			<ol>
+				<li>
+					Zu Beginn der Planung: „Dozierende" und „Prüfungen" laden. Danach geht es mit
+					<a href="/exam/examsToPlan">Prüfungen auswählen &amp; Vorgaben</a> weiter.
+				</li>
+				<li>
+					Wenn die Anmeldungen aufbereitet sind: „Studierende" laden, dann „Anmeldungen" übertragen.
+				</li>
+				<li>
+					Nach Terminplanung, Raumplanung und Aufsichtenplanung jeweils den passenden Stand
+					übertragen, immer zuerst als Probelauf.
+				</li>
+				<li>
+					Nach jedem Übertragen die ZPA-Validierung starten: Sie vergleicht, ob im ZPA dasselbe
+					steht wie in Plexams.
+				</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
 
 	<!-- Kompletter Datenabgleich (identisch zum nächtlichen Auto-Sync): zieht alle
 	     vier Quellen nacheinander, protokolliert die Diffs und verschickt die
@@ -84,13 +109,13 @@
 			<div class="flex flex-wrap items-baseline gap-2">
 				<h2 class="text-xl font-semibold">Datenabgleich</h2>
 				<span class="text-sm text-base-content/60">
-					wie der nächtliche Auto-Sync — überschreibt die Daten und mailt die Unterschiede
+					alles auf einmal laden, wie es Plexams jede Nacht selbst tut
 				</span>
 			</div>
 			<StreamAction
 				field="triggerScheduledSync"
 				title="ZPA + Anny jetzt abgleichen"
-				description="Zieht Prüfungen, Dozierende und Aufsichts-Anforderungen (ZPA) sowie die Buchungen (Anny) für das aktive Semester nacheinander, protokolliert die Unterschiede und verschickt die Änderungs-Mail. Kein Probelauf — kann etwas dauern."
+				description="Lädt nacheinander Prüfungen, Dozierende und Aufsichts-Anforderungen aus dem ZPA und die Raumbuchungen aus Anny. Ersetzt die bisher geladenen Daten und verschickt eine E-Mail mit den Unterschieden zum vorherigen Stand. Es gibt keinen Probelauf; der Vorgang dauert einen Moment."
 				accent="warning"
 				actionLabel="Jetzt abgleichen"
 				disabled={readOnly}
@@ -104,7 +129,10 @@
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline gap-2">
 			<h2 class="text-xl font-semibold">ZPA-Validierung</h2>
-			<span class="text-sm text-base-content/60">manuell starten — eigene Ampel in der Navbar</span>
+			<span class="text-sm text-base-content/60">
+				vergleicht Termine, Räume und Aufsichten im ZPA mit dem Plan in Plexams; startet nur auf
+				Klick und hat eine eigene Ampel oben in der Leiste
+			</span>
 		</div>
 		<ValidationGroup validators={zpaValidators} storeId="zpa" autostart={false} />
 	</div>
@@ -175,8 +203,10 @@
 	<!-- Sync-Verlauf (zeitgestempelte Historie aller Transfers) -->
 	<div class="flex flex-col gap-3">
 		<div class="flex flex-wrap items-baseline gap-2">
-			<h2 class="text-xl font-semibold">Sync-Verlauf</h2>
-			<span class="text-sm text-base-content/60">letzte Im-/Exporte mit Zeitstempel</span>
+			<h2 class="text-xl font-semibold">Verlauf</h2>
+			<span class="text-sm text-base-content/60">
+				wann zuletzt was geladen oder übertragen wurde
+			</span>
 			<button class="btn btn-ghost btn-xs" onclick={refreshLog}>↻ neu laden</button>
 		</div>
 		{#await data.syncLog}
@@ -187,7 +217,7 @@
 			<SyncLog {entries} />
 		{:catch}
 			<div class="alert alert-error py-2 text-sm">
-				<span>Sync-Verlauf konnte nicht geladen werden.</span>
+				<span>Der Verlauf konnte nicht geladen werden. Lade die Seite neu.</span>
 			</div>
 		{/await}
 	</div>

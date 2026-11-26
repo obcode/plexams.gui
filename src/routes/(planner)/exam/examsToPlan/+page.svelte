@@ -1,4 +1,6 @@
 <script>
+	import PageIntro from '#lib/help/PageIntro.svelte';
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -440,22 +442,48 @@
 </script>
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
-	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">ZPA-Prüfungen planen</h1>
-		<span class="badge badge-primary badge-lg tabular-nums">
-			{filtered.length} / {counts.total}
-		</span>
-	</div>
+	<PageIntro
+		title="Prüfungen auswählen &amp; Vorgaben"
+		count="{filtered.length} / {counts.total}"
+		help="phase0"
+	>
+		Hier steht jede Prüfung, die das <Term id="zpa" /> für dieses Semester führt. Du entscheidest je Prüfung,
+		ob sie im Prüfungszeitraum geplant wird („zu planen") oder nicht („nicht planen", zum Beispiel mündliche
+		Prüfungen oder Modularbeiten), und trägst ihre <Term id="vorgabe">Vorgaben</Term> ein. Was hier fehlt,
+		berücksichtigt die Planung später nicht.
+		{#snippet howto()}
+			<ol>
+				<li>
+					Gelb markierte Prüfungen sind noch unentschieden. Entscheide sie zuerst; schriftliche
+					Prüfungen sind nach dem Laden aus dem ZPA schon als „zu planen" vorgeschlagen.
+				</li>
+				<li>
+					Öffne bei jeder Prüfung mit einer Rückmeldung der Prüfenden die Vorgaben und trage ein,
+					was gemeldet wurde: fester Termin, ausgeschlossene Tage, gleichzeitig mit einer anderen
+					Prüfung, besondere Räume.
+				</li>
+				<li>
+					Prüfungen, die eine andere Fakultät terminiert, bekommen die Vorgabe „nicht von mir
+					geplant". Ihren Termin trägst du später unter
+					<a href="/exam/external">Prüfungen anderer FKs</a> ein.
+				</li>
+				<li>
+					Wenn alles entschieden und eingetragen ist: auf der <a href="/">Startseite</a> die Häkchen bei
+					„ZPA-Prüfungen für die Planung ausgewählt" und bei den Vorgaben setzen.
+				</li>
+			</ol>
+		{/snippet}
+	</PageIntro>
 
 	<details class="w-full sm:w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			🔄 Prüfungen aus dem ZPA ziehen
+			🔄 Prüfungsliste neu aus dem ZPA laden
 		</summary>
 		<div class="mt-2 sm:w-[28rem]">
 			<StreamAction
 				field="importExamsFromZPA"
 				title="Prüfungen"
-				description="Prüfungen aus dem ZPA holen und cachen — danach wird die Liste neu geladen."
+				description="Lädt die Prüfungsliste neu aus dem ZPA, zum Beispiel wenn dort eine Prüfung ergänzt oder korrigiert wurde. Deine Auswahl und die Vorgaben bleiben erhalten; neue Prüfungen erscheinen als unentschieden."
 				accent="info"
 				actionLabel="Laden"
 				ondone={() => refreshAll()}
@@ -465,11 +493,11 @@
 
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			📄 CSV Export / Import (Constraints, Auswahl, Dauer)
+			📄 Als CSV sichern oder aus CSV einlesen (Vorgaben, Auswahl, Dauer)
 		</summary>
 		<div class="mt-2 flex flex-col gap-3">
-			<DatasetCsvTransfer name="constraints" title="Constraints">
-				Alle Prüfungs-Constraints (inkl. „nicht von mir geplant" / notPlannedByMe).
+			<DatasetCsvTransfer name="constraints" title="Vorgaben">
+				Alle Vorgaben aller Prüfungen, einschließlich „nicht von mir geplant".
 			</DatasetCsvTransfer>
 			<DatasetCsvTransfer name="exams-to-plan" title="Prüfungsauswahl">
 				Welche Prüfungen zu planen sind bzw. nicht geplant werden.
@@ -485,7 +513,8 @@
 		<div class="alert alert-warning">
 			<span>
 				<strong>{counts.unknown}</strong> Prüfung{counts.unknown === 1 ? '' : 'en'} noch
-				<strong>nicht zugeordnet</strong> — bitte entscheiden: planen oder nicht planen.
+				<strong>nicht entschieden</strong>. Lege für jede fest, ob sie im Prüfungszeitraum geplant
+				wird („zu planen“) oder nicht („nicht planen“).
 			</span>
 			<button class="btn btn-sm" onclick={() => (filterStatus = 'unknown')}>anzeigen</button>
 		</div>
@@ -523,7 +552,7 @@
 					: ''}"
 				onclick={() => setStatusFilter('unknown')}
 			>
-				? {counts.unknown} nicht zugeordnet
+				? {counts.unknown} nicht entschieden
 			</button>
 			<button
 				class="badge badge-error gap-1 tabular-nums {durZero ? '' : 'badge-outline'}"

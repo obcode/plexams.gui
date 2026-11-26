@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -420,9 +421,18 @@
 		</label>
 	</div>
 
+	<p class="max-w-3xl text-sm text-base-content/70">
+		In <Term id="gemeinsame-studiengaenge">gemeinsamen Studiengängen</Term> schreiben Studierende auch
+		Prüfungen anderer Fakultäten. Diese Prüfungen kennt das <Term id="zpa" /> nicht; du importierst sie
+		hier aus den CSV-Dateien, die die anderen Fakultäten liefern. Anschließend verknüpfst du jede mit
+		den Anmeldungen aus <Term id="primuss" />, damit Plexams Überschneidungen mit unseren Prüfungen
+		erkennt. Die Termine dieser Prüfungen trägst du später unter
+		<a class="link" href="/exam/external">Prüfungen anderer FKs</a> ein.
+	</p>
+
 	<details class="w-fit">
 		<summary class="cursor-pointer text-sm text-base-content/60">
-			📄 CSV Export / Import (Verknüpfungen)
+			📄 Verknüpfungen als CSV sichern oder aus CSV einlesen
 		</summary>
 		<div class="mt-2">
 			<DatasetCsvTransfer name="joint-links" title="Verknüpfungen gemeinsamer Studiengänge">
@@ -435,9 +445,9 @@
 	{#if data.loadError}
 		<div class="alert alert-error flex-col items-start py-2 text-sm">
 			<span class="font-medium">
-				Prüfungen gemeinsamer Studiengänge konnten nicht geladen werden (Backend-Fehler).
+				Die Prüfungen gemeinsamer Studiengänge konnten nicht geladen werden.
 			</span>
-			<span class="font-mono text-xs break-words opacity-80">{data.loadError}</span>
+			<span class="break-words">{data.loadError}</span>
 		</div>
 	{/if}
 
@@ -447,7 +457,8 @@
 
 	{#if data.jointExams.length === 0}
 		<div class="text-sm text-base-content/50">
-			Noch keine Prüfungen gemeinsamer Studiengänge — oben eine CSV importieren.
+			Noch keine Prüfungen gemeinsamer Studiengänge. Importiere oben rechts mit „CSV importieren“
+			die Datei einer anderen Fakultät.
 		</div>
 	{:else}
 		<!-- Filter + Sortierung -->

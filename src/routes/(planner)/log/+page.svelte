@@ -149,7 +149,7 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Mutations-Audit-Log</h1>
+		<h1 class="text-2xl font-semibold">Änderungsprotokoll</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{logs.length}</span>
 		<span class="text-sm text-base-content/50">neueste zuerst</span>
 		<div class="flex-1"></div>

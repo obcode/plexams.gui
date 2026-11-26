@@ -23,7 +23,7 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-6">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Validierung</h1>
+		<h1 class="text-2xl font-semibold">Validierung (alle Bereiche)</h1>
 		{#if anyRunning}
 			<span class="badge badge-info gap-2">
 				<span class="loading loading-spinner loading-xs"></span> läuft …

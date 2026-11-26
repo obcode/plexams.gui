@@ -115,7 +115,7 @@
 
 <div class="mx-2 mt-4 flex flex-col gap-4">
 	<div class="flex flex-wrap items-center gap-3">
-		<h1 class="text-2xl font-semibold">Aufsichten — Permanente Nicht-Aufsichten</h1>
+		<h1 class="text-2xl font-semibold">Dauerhaft keine Aufsicht</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.permanent.length}</span>
 		<span class="text-sm text-base-content/50">
 			global, semesterübergreifend — z. B. pensioniert

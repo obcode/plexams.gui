@@ -1,4 +1,5 @@
 <script>
+	import Term from '#lib/help/Term.svelte';
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
 	import { refreshAll } from '$app/navigation';
 	import WriteButton from '#lib/WriteButton.svelte';
@@ -127,7 +128,12 @@
 
 	/** @param {any} ex */
 	async function del(ex) {
-		if (!confirm(`Zusätzliche Prüfung ${ex.ancode} löschen?`)) return;
+		if (
+			!confirm(
+				`Zusätzliche Prüfung ${ex.ancode} löschen? Sie wird beim nächsten Übertragen nicht mehr ins ZPA geschrieben.`
+			)
+		)
+			return;
 		listError = '';
 		try {
 			const res = await fetch('/api/exam/deleteAdditionalExam', {
@@ -151,10 +157,16 @@
 	<div class="flex flex-wrap items-center gap-3">
 		<h1 class="text-2xl font-semibold">Zusätzliche Prüfungen</h1>
 		<span class="badge badge-primary badge-lg tabular-nums">{data.exams.length}</span>
-		<span class="text-sm text-base-content/50">nur für die ZPA-Veröffentlichung</span>
+		<span class="text-sm text-base-content/50">erscheinen nur im ZPA, werden nicht geplant</span>
 		<div class="flex-1"></div>
 		<button class="btn btn-primary btn-sm" onclick={openAdd}>+ Prüfung</button>
 	</div>
+
+	<p class="max-w-3xl text-sm text-base-content/70">
+		Hier trägst du Prüfungen ein, die Plexams nicht plant, die beim Übertragen ins <Term id="zpa" /> aber
+		mit im Plan stehen sollen, mit Termin und Raum, wie du sie hier angibst. Sie nehmen an Terminplanung,
+		Raumplanung und Aufsichtenplanung nicht teil.
+	</p>
 
 	{#if listError}
 		<div class="alert alert-error py-2 text-sm"><span>{listError}</span></div>
@@ -167,7 +179,7 @@
 			<table class="table table-sm">
 				<thead>
 					<tr>
-						<th>AnCode</th>
+						<th>Ancode</th>
 						<th>Datum</th>
 						<th>Zeit</th>
 						<th>Räume / Aufsichten</th>
