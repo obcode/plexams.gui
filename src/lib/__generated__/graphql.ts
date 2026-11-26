@@ -1653,6 +1653,12 @@ export type Mutation = {
   /** Set the duration override (minutes) for an ancode. Applied only when the ZPA duration is 0. */
   setExamDuration: ExamDurationOverride;
   /**
+   * Lock or unlock the time of a planned exam. "Terminplan generieren" keeps a locked
+   * exam where it is; a manual move keeps the lock. Fails with NOT_FOUND when the exam
+   * has no time yet.
+   */
+  setExamLocked: PlanEntry;
+  /**
    * Place an exam at an absolute start time (the source of truth). Any time is accepted;
    * the GUI should warn — but still allow — when the time is not one of the semester's
    * standard start times (semesterConfig.starttimes).
@@ -2187,6 +2193,12 @@ export type MutationSetEmailTemplateArgs = {
 export type MutationSetExamDurationArgs = {
   ancode: Scalars['Int']['input'];
   duration: Scalars['Int']['input'];
+};
+
+
+export type MutationSetExamLockedArgs = {
+  ancode: Scalars['Int']['input'];
+  locked: Scalars['Boolean']['input'];
 };
 
 

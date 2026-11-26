@@ -1,5 +1,6 @@
 <script>
 	import { httpErrorMessage } from '#lib/errors/plannerErrors.js';
+	import WriteButton from '#lib/WriteButton.svelte';
 	import Slot from '#lib/slot/Slot.svelte';
 	import { normalizeFk, planningFk, displayAncode } from '#lib/exam/fk.ts';
 	import {
@@ -157,11 +158,42 @@
 	// eigenes `conflicts` laden) ihre Konflikt-Anzahl, ohne Extra-Query.
 	let conflictStuds = $state(/** @type {Record<number, number>} */ ({}));
 	let selectedExamerID = $state(-1);
+	// Hat die gewählte Prüfung einen Termin, und ist er fixiert? (aus der Karte)
+	let selectedPlanned = $state(false);
+	let selectedLocked = $state(false);
+	let lockBusy = $state(false);
+
+	async function toggleLock() {
+		if (lockBusy || selectedExam === -1) return;
+		lockBusy = true;
+		placeError = '';
+		try {
+			const res = await fetch('/api/exam/setExamLocked', {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ ancode: selectedExam, locked: !selectedLocked })
+			});
+			const d = await res.json().catch(() => ({}));
+			if (!res.ok || d?.error) {
+				placeError = d?.error || httpErrorMessage(res.status);
+				return;
+			}
+			selectedLocked = !!d?.setExamLocked?.locked;
+			await refreshAll();
+			placeNonce++;
+		} catch (e) {
+			placeError = e instanceof Error ? e.message : String(e);
+		} finally {
+			lockBusy = false;
+		}
+	}
 
 	async function handleSelect(/** @type {any} */ payload) {
 		initSlotsStatus('forbidden');
 		selectedExam = payload.ancode;
 		selectedExamerID = payload.mainExamerID;
+		selectedPlanned = !!payload.planned;
+		selectedLocked = !!payload.locked;
 		placeError = '';
 		try {
 			let allowedSlots = await fetchAllowedSlots(payload.ancode);
@@ -188,6 +220,8 @@
 		initSlotsStatus('unknown');
 		selectedExam = -1;
 		selectedExamerID = -1;
+		selectedPlanned = false;
+		selectedLocked = false;
 		conflictingAncodes = [];
 		conflictStuds = {};
 		resetPlaceInputs();
@@ -582,8 +616,9 @@
 			Der Terminplan zum Ansehen und Nachbessern von Hand. „Raster“ zeigt je Prüfungstag und
 			Startzeit eine Zelle, „Zeit“ die Prüfungen nach ihrer echten Dauer. Klickst du eine Prüfung
 			an, färben sich die Zellen: grün erlaubt, gelb ungünstig, rot verboten; dann „＋ hier“ in
-			einer Zelle oder unten eine freie Zeit wählen. Jede Änderung ist sofort gespeichert. Danach
-			„Terminplanung validieren“ laufen lassen.
+			einer Zelle oder unten eine freie Zeit wählen. Mit „🔒 Termin fixieren“ hältst du den Termin
+			einer gewählten Prüfung fest; „Terminplan generieren“ verschiebt sie dann nicht mehr. Jede
+			Änderung ist sofort gespeichert. Danach „Terminplanung validieren“ laufen lassen.
 			<a class="link link-hover whitespace-nowrap text-base-content/50" href="/hilfe#phase1">
 				Mehr dazu in der Hilfe →
 			</a>
@@ -608,6 +643,18 @@
 					>
 						{placeBusy ? '…' : 'setzen'}
 					</button>
+					{#if selectedPlanned}
+						<WriteButton
+							class="btn btn-outline btn-xs"
+							disabled={lockBusy}
+							onclick={toggleLock}
+							title={selectedLocked
+								? 'Gibt den Termin wieder frei: „Terminplan generieren“ darf die Prüfung dann verschieben.'
+								: '„Terminplan generieren“ lässt die Prüfung dann an ihrem Termin. Verschiebst du sie von Hand, bleibt sie fixiert.'}
+						>
+							{lockBusy ? '…' : selectedLocked ? '🔓 Fixierung aufheben' : '🔒 Termin fixieren'}
+						</WriteButton>
+					{/if}
 					<button class="btn btn-ghost btn-xs" onclick={handleUnselect}>Auswahl aufheben</button>
 				</div>
 				{#if nonStandard}
@@ -950,7 +997,7 @@
 																<!-- Status-Icons rechts, damit die Ancodes links bündig stehen -->
 																<span class="ml-auto flex items-center gap-0.5">
 																	{#if x.e.planEntry?.locked}<span
-																			title="fester Termin aus der Vorplanung"
+																			title="Termin fixiert (von Hand oder aus der Vorplanung): „Terminplan generieren“ verschiebt die Prüfung nicht"
 																		>
 																			🔒
 																		</span>{/if}

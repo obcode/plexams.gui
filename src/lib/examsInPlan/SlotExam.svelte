@@ -97,7 +97,9 @@
 		if (!selected) {
 			onselected?.({
 				ancode: code,
-				mainExamerID: exam.zpaExam.mainExamerID
+				mainExamerID: exam.zpaExam.mainExamerID,
+				planned: exam.planEntry?.starttime != null,
+				locked: !!exam.planEntry?.locked
 			});
 		} else {
 			onunselected?.({
@@ -162,7 +164,7 @@
 					<!-- Status-Icons rechts, damit die Ancodes links bündig ausgerichtet sind -->
 					<span class="ml-auto flex items-center gap-0.5">
 						{#if exam.planEntry != null && exam.planEntry.locked}<span
-								title="fester Termin aus der Vorplanung"
+								title="Termin fixiert (von Hand oder aus der Vorplanung): „Terminplan generieren“ verschiebt die Prüfung nicht"
 							>
 								🔒
 							</span>{/if}
@@ -196,7 +198,7 @@
 					{#if exam.planEntry?.locked || exam.planEntry?.phaseFixed || exam.zpaExam.isRepeaterExam}
 						<div class="flex items-center gap-0.5">
 							{#if exam.planEntry != null && exam.planEntry.locked}<span
-									title="fester Termin aus der Vorplanung"
+									title="Termin fixiert (von Hand oder aus der Vorplanung): „Terminplan generieren“ verschiebt die Prüfung nicht"
 								>
 									🔒
 								</span>{/if}

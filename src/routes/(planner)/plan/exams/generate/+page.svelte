@@ -517,7 +517,7 @@
 		if (resetBusy || examsBlocked) return;
 		if (
 			!confirm(
-				'Generierten Terminplan zurücksetzen? Alle generierten Termine werden gelöscht; nur Prüfungen mit festem Termin aus der Vorplanung, fixierte EXaHM/SEB-Prüfungen und die Prüfungen anderer FKs behalten ihren Termin. Das lässt sich nicht rückgängig machen.'
+				'Generierten Terminplan zurücksetzen? Alle generierten Termine werden gelöscht; nur Prüfungen mit im Prüfungsplan fixiertem Termin, fixierte EXaHM/SEB-Prüfungen und die Prüfungen anderer FKs behalten ihren Termin. Das lässt sich nicht rückgängig machen.'
 			)
 		)
 			return;
@@ -745,7 +745,7 @@
 		{/if}
 		<span class="text-xs text-base-content/50">
 			Der Probelauf speichert nichts. „Generieren &amp; speichern“ überschreibt die Termine aller
-			Prüfungen außer denen mit festem Termin aus der Vorplanung, den fixierten EXaHM/SEB-Prüfungen
+			Prüfungen außer denen mit im Prüfungsplan fixiertem Termin, den fixierten EXaHM/SEB-Prüfungen
 			und denen anderer FKs; was dabei keinen Termin findet, verliert seinen alten. Derselbe
 			Startwert ergibt bei unveränderten Daten und Bewertungen denselben Plan.
 		</span>
@@ -763,7 +763,7 @@
 				{resetBusy ? 'Setzt zurück…' : 'Generierten Terminplan zurücksetzen'}
 			</WriteButton>
 			<span class="text-xs text-base-content/50">
-				Löscht die generierten Termine. Prüfungen mit festem Termin aus der Vorplanung, fixierte
+				Löscht die generierten Termine. Prüfungen mit im Prüfungsplan fixiertem Termin, fixierte
 				EXaHM/SEB-Prüfungen und die Prüfungen anderer FKs bleiben. Sollen auch die EXaHM/SEB-Termine
 				weg, vorher unter „EXaHM/SEB in T-Bau planen“ die Fixierung aufheben.
 			</span>

@@ -126,8 +126,14 @@
 
 	async function save() {
 		editError = '';
-		// Validierung der Sperrfenster
+		// Validierung der Zeitfenster (je Tag eines: so speichert das Backend)
+		const seenDates = new Set();
 		for (const [i, w] of editWindows.entries()) {
+			if (w.date && seenDates.has(w.date)) {
+				editError = `Zeitfenster ${i + 1}: Für diesen Tag gibt es schon ein Zeitfenster. Je Tag ist nur eines möglich.`;
+				return;
+			}
+			seenDates.add(w.date);
 			if (!w.date) {
 				editError = `Zeitfenster ${i + 1}: Datum fehlt.`;
 				return;
@@ -375,9 +381,8 @@
 				</div>
 				<p class="text-xs text-base-content/50">
 					Achtung, kein Sperrfenster: An diesem Tag bekommt die Person <strong>nur</strong> Aufsichten,
-					die ganz in das Fenster passen (Beginn frühestens „von“, Ende spätestens „bis“). Mehrere Fenster
-					am selben Tag sind möglich, z. B. 08:00–11:00 und ab 14:00, um 11:00–14:00 freizuhalten. Mindestens
-					„von“ oder „bis“ angeben.
+					die ganz in das Fenster passen (Beginn frühestens „von“, Ende spätestens „bis“). Je Tag ist
+					ein Fenster möglich; mindestens „von“ oder „bis“ angeben.
 				</p>
 				{#if editWindows.length === 0}
 					<div class="text-xs text-base-content/50">keine</div>

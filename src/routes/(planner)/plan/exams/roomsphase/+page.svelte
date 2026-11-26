@@ -355,7 +355,7 @@
 		{/if}
 		<span class="max-w-xl text-xs text-base-content/50">
 			Der Probelauf speichert nichts. „Planen &amp; speichern“ überschreibt die Termine aller
-			EXaHM/SEB-Prüfungen außer denen mit festem Termin aus der Vorplanung; andere Prüfungen bleiben
+			EXaHM/SEB-Prüfungen außer denen mit im Prüfungsplan fixiertem Termin; andere Prüfungen bleiben
 			unberührt. Mehr Durchläufe dauern länger und finden oft eine bessere Verteilung; derselbe
 			Startwert ergibt bei unveränderten Daten dasselbe Ergebnis.
 		</span>
@@ -495,8 +495,8 @@
 		</div>
 		<span class="text-xs text-base-content/50">
 			Fixieren hält die Termine aller EXaHM/SEB-Prüfungen fest: „Terminplan generieren“ verschiebt
-			sie dann nicht mehr. „Fixierung aufheben“ gibt sie wieder frei; Prüfungen mit festem Termin
-			aus der Vorplanung bleiben fest.
+			sie dann nicht mehr. „Fixierung aufheben“ gibt sie wieder frei; Prüfungen, deren Termin im
+			Prüfungsplan fixiert ist (🔒), bleiben fixiert.
 		</span>
 		{#if fixInfo}
 			<div class="alert alert-success py-2 text-sm"><span>{fixInfo}</span></div>
