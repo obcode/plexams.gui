@@ -53,8 +53,18 @@
 	}
 </script>
 
-<Nav />
-<div class="px-3 pb-8 sm:px-4 lg:px-8">
-	{@render children?.()}
-	<Footer guiVersion={data?.guiVersion} buildTime={data?.buildTime} serverInfo={data?.serverInfo} />
+<!-- At least one window high, so the footer (with the versions) sits at the bottom
+     of the window even on a short page. -->
+<div class="flex min-h-screen flex-col">
+	<Nav />
+	<div class="flex flex-1 flex-col px-3 pb-4 sm:px-4 lg:px-8">
+		{@render children?.()}
+		<div class="mt-auto">
+			<Footer
+				guiVersion={data?.guiVersion}
+				buildTime={data?.buildTime}
+				serverInfo={data?.serverInfo}
+			/>
+		</div>
+	</div>
 </div>
