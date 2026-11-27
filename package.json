@@ -31,7 +31,7 @@
 		"@eslint/js": "^10.0.1",
 		"@graphql-codegen/cli": "^7.4.6",
 		"@graphql-codegen/typescript": "^6.1.2",
-		"@graphql-codegen/typescript-operations": "^6.2.0",
+		"@graphql-codegen/typescript-operations": "^7.0.2",
 		"@playwright/test": "1.65.1",
 		"@svelte-plugins/tooltips": "^3.0.3",
 		"@sveltejs/adapter-node": "^6.0.5",
