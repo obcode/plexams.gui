@@ -24,5 +24,5 @@
 - [Responsive baseline](responsive-baseline.md) — app is Tablet-first responsive (done 2026-07-08); conventions + how to verify 375px overflow with Playwright
 - [todos](todos.md) — /todos, landing box + per-phase counts, `<LinkedTodos>` box, client-side Markdown (marked+DOMPurify, jsdom test), `/api/todo/*` exempt from read-only guard (2026-09-24).
 - [Nav header width](nav-header-width.md) — header row has no slack at any breakpoint; what was moved/hidden on 2026-09-24 and how to measure before adding anything.
-- [schema.graphql hand-edit pending](schema-hand-edit-pending.md) — zpaCode description edited by hand 2026-11-26; re-sync with update-schema.graphql, then delete
+- [schema.graphql hand-edit pending](schema-hand-edit-pending.md) — schema.graphql hand-edited 2026-11-26/27 (StudyProgram descriptions only); re-sync with update-schema.graphql.
 - [User-facing texts](user-facing-texts.md) — writing rules for beginner-proof descriptions and messages; PageIntro/Term/glossary/workflow help blocks; error codes → German via plannerErrors.js, never match backend text

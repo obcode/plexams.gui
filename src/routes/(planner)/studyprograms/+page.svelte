@@ -48,17 +48,17 @@
 	let editError = $state('');
 
 	// Mirrors the backend rule (validateStudyProgram) as an early hint; the backend
-	// stays authoritative. New fk07 programs carry the degree like the Primuss file
-	// names (IF-B, DC-M); typographic dashes are never accepted.
-	const FK07_SHORTNAME = /^[A-Z]{2,4}-[BM]$/;
+	// stays authoritative. FK07 Kürzel are two letters, with the degree only where
+	// two programs share them (DC / DC-M); typographic dashes are never accepted.
+	const FK07_SHORTNAME = /^[A-Z]{2,4}(-[BM])?$/;
 	const TYPO_DASH = /[\u2010-\u2015\u2212]/;
 	const shortnameHint = $derived.by(() => {
 		const sn = (editing?.shortname ?? '').trim();
 		if (!sn) return '';
 		if (TYPO_DASH.test(sn))
 			return 'Typografischer Strich — bitte den normalen Bindestrich „-“ verwenden.';
-		if (isNew && editing?.category === 'fk07' && !editing?.retired && !FK07_SHORTNAME.test(sn))
-			return 'FK07-Kürzel brauchen die Form XX-B bzw. XX-M (z. B. IF-B, DC-M), wie in den Primuss-Dateinamen.';
+		if (editing?.category === 'fk07' && !editing?.retired && !FK07_SHORTNAME.test(sn))
+			return 'FK07-Kürzel: zwei bis vier Großbuchstaben, ggf. mit Abschluss (z. B. IF oder DC-M).';
 		return '';
 	});
 	let saving = $state(false);
@@ -354,7 +354,7 @@
 						class="input input-bordered input-sm w-32 font-mono"
 						bind:value={editing.shortname}
 						disabled={!isNew}
-						placeholder={editing.category === 'fk07' ? 'z. B. IF-B' : ''}
+						placeholder={editing.category === 'fk07' ? 'z. B. IF' : ''}
 					/>
 					{#if shortnameHint}
 						<span class="text-xs text-warning">{shortnameHint}</span>
@@ -379,16 +379,16 @@
 						type="text"
 						class="input input-bordered input-sm w-40 font-mono"
 						bind:value={editing.zpaCode}
-						placeholder={editing.category === 'fk07'
-							? 'leer = Kürzel ohne -B/-M'
-							: 'leer = wie Kürzel'}
+						placeholder="leer = wie Kürzel"
 					/>
 					<span class="text-xs text-base-content/40">
-						Das Kürzel trägt den Abschluss (z. B. <span class="font-mono">DC-B</span>,
-						<span class="font-mono">DC-M</span>) — genau so steht es in den Primuss-Dateinamen. Der
-						ZPA-Code ist das Kürzel ohne Abschluss, das ZPA verwendet (z. B.
-						<span class="font-mono">DC</span> für DC-B und DC-M). Leer lassen: bei FK07 wird er aus dem
-						Kürzel abgeleitet, sonst gilt das Kürzel.
+						Das Kürzel ist zweistellig (z. B. <span class="font-mono">IF</span>,
+						<span class="font-mono">DC</span>) und trägt den Abschluss nur, wo sich zwei
+						Studiengänge die Buchstaben teilen — so wie ZPA die Gruppen benennt:
+						<span class="font-mono">DC</span> (Bachelor, Gruppe DC5) und
+						<span class="font-mono">DC-M</span> (Master, Gruppe DC-M1). Die Primuss-Dateien tragen immer
+						den Abschluss im Namen und werden über Kürzel und Abschluss zugeordnet; trag den Abschluss
+						deshalb ein. Den ZPA-Code nur setzen, wenn ZPA ein anderes Kürzel verwendet.
 					</span>
 				</label>
 				<label class="flex flex-col gap-1">
