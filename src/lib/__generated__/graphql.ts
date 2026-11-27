@@ -1422,6 +1422,12 @@ export type Mutation = {
   addTodoLink: Todo;
   addZpaExamToPlan: Scalars['Boolean']['output'];
   /**
+   * Apply the selected rows of the uploaded NTA lists to the NTA master data: ADD
+   * creates an NTA, UPDATE replaces the editable fields of an existing one (as
+   * updateNTA). All or nothing.
+   */
+  applyNTAList: NtaListApplyResult;
+  /**
    * Generate room requests from the current plan and REPLACE all existing ones
    * (one-shot, no merge). Generated requests start active and not approved. Errors
    * if requests already exist unless force is true (force discards them, including
@@ -1558,6 +1564,8 @@ export type Mutation = {
   removeLoginAlias: Scalars['Boolean']['output'];
   /** Remove the current user's stored Jira PAT. */
   removeMyJiraToken: MyAccount;
+  /** Remove the uploaded NTA list of a faculty (the NTA master data stays as it is). */
+  removeNTAList: Scalars['Boolean']['output'];
   /** Remove an NTA room-alone waiver (key: mtknr/ancode). */
   removeNtaRoomAloneWaiver: Scalars['Boolean']['output'];
   /** Remove a permanent non-invigilator (key: teacherID). Returns false if there was none. */
@@ -1888,6 +1896,11 @@ export type MutationAddZpaExamToPlanArgs = {
 };
 
 
+export type MutationApplyNtaListArgs = {
+  items: Array<NtaListApplyItem>;
+};
+
+
 export type MutationApplyRoomRequestsPreviewArgs = {
   force: Scalars['Boolean']['input'];
 };
@@ -2083,6 +2096,11 @@ export type MutationRemoveJointLinkArgs = {
 export type MutationRemoveLoginAliasArgs = {
   email: Scalars['String']['input'];
   teacherID: Scalars['Int']['input'];
+};
+
+
+export type MutationRemoveNtaListArgs = {
+  fk: Scalars['String']['input'];
 };
 
 
@@ -2534,6 +2552,127 @@ export type NtaInput = {
   program: Scalars['String']['input'];
   until: Scalars['String']['input'];
 };
+
+export type NtaList = {
+  __typename?: 'NTAList';
+  /** Display name, e.g. FK 07 or FK 21 (MUC.DAI). */
+  faculty: Scalars['String']['output'];
+  filename: Scalars['String']['output'];
+  /** Faculty number with two digits, e.g. 07 or 21. */
+  fk: Scalars['String']['output'];
+  importedAt: Scalars['Time']['output'];
+  importedBy?: Maybe<Scalars['String']['output']>;
+  rows: Array<NtaListRow>;
+  /** Semester id of the list (e.g. 2026-WS); empty if unknown. */
+  semester: Scalars['String']['output'];
+  /** Whether the list belongs to the active semester. */
+  semesterMatches: Scalars['Boolean']['output'];
+  /** Export time of the list. */
+  stand?: Maybe<Scalars['Time']['output']>;
+  warnings: Array<Scalars['String']['output']>;
+};
+
+export enum NtaListApplyAction {
+  Add = 'ADD',
+  Update = 'UPDATE'
+}
+
+export type NtaListApplyItem = {
+  action: NtaListApplyAction;
+  nta: NtaInput;
+};
+
+export type NtaListApplyResult = {
+  __typename?: 'NTAListApplyResult';
+  added: Scalars['Int']['output'];
+  updated: Scalars['Int']['output'];
+};
+
+export type NtaListFieldChange = {
+  __typename?: 'NTAListFieldChange';
+  /** Field name of NTAInput. */
+  field: Scalars['String']['output'];
+  /** German label for the GUI. */
+  label: Scalars['String']['output'];
+  new: Scalars['String']['output'];
+  old: Scalars['String']['output'];
+  /** False for differences that do not change how the exam is planned (name, text). */
+  significant: Scalars['Boolean']['output'];
+};
+
+export type NtaListPreview = {
+  __typename?: 'NTAListPreview';
+  lists: Array<NtaList>;
+  /** Whether Primuss registrations exist for the semester; without them there is nothing to compare. */
+  primussRegsAvailable: Scalars['Boolean']['output'];
+};
+
+export type NtaListProposal = {
+  __typename?: 'NTAListProposal';
+  compensation: Scalars['String']['output'];
+  deltaDurationPercent: Scalars['Int']['output'];
+  email?: Maybe<Scalars['String']['output']>;
+  from: Scalars['String']['output'];
+  mtknr: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  needsHardware: Scalars['Boolean']['output'];
+  needsRoomAlone: Scalars['Boolean']['output'];
+  program: Scalars['String']['output'];
+  until: Scalars['String']['output'];
+};
+
+export type NtaListReg = {
+  __typename?: 'NTAListReg';
+  primussAncode: Scalars['Int']['output'];
+  /** Study program in the master data, if the code could be resolved. */
+  program: Scalars['String']['output'];
+  /** Program code as in the list or in Primuss, e.g. IF-B or IF. */
+  stg: Scalars['String']['output'];
+};
+
+export type NtaListRow = {
+  __typename?: 'NTAListRow';
+  /** Start of studies as semester id (e.g. 2025-WS), or the raw value if unknown. */
+  beginnStudium: Scalars['String']['output'];
+  /** Differences between the master data and the proposal (CHANGED). */
+  changes: Array<NtaListFieldChange>;
+  /** The free text of the list. */
+  compensation: Scalars['String']['output'];
+  /** The NTA in the master data, if there is one. */
+  existing?: Maybe<NtaListProposal>;
+  existingDeactivated: Scalars['Boolean']['output'];
+  /** When this student first appeared in a list of this faculty. */
+  firstSeen: Scalars['Time']['output'];
+  infos: Array<Scalars['String']['output']>;
+  line: Scalars['Int']['output'];
+  mtknr: Scalars['String']['output'];
+  /** Name, Vorname */
+  name: Scalars['String']['output'];
+  problems: Array<Scalars['String']['output']>;
+  /** What would be written to the master data; fits NTAInput. */
+  proposal: NtaListProposal;
+  regs: Array<NtaListReg>;
+  /** Registrations in the list that Primuss does not have (any more). */
+  regsOnlyInList: Array<NtaListReg>;
+  /** Registrations in Primuss that the list does not have (yet). */
+  regsOnlyInPrimuss: Array<NtaListReg>;
+  status: NtaListRowStatus;
+  /** Study program as in the list, e.g. IF-B. */
+  stg: Scalars['String']['output'];
+  /** The raw validity of the list: * or e.g. 226:127. */
+  validity: Scalars['String']['output'];
+};
+
+export enum NtaListRowStatus {
+  /** The master data differs from the list. */
+  Changed = 'CHANGED',
+  /** No NTA with this mtknr in the master data. */
+  New = 'NEW',
+  /** The row could not be read completely; check and complete it before applying. */
+  Problem = 'PROBLEM',
+  /** The master data matches the list. */
+  Unchanged = 'UNCHANGED'
+}
 
 export type NtaWithRegs = {
   __typename?: 'NTAWithRegs';
@@ -3276,6 +3415,13 @@ export type Query = {
    */
   newSemesterConfigDefaults: SemesterConfigInput;
   nta?: Maybe<NtaWithRegs>;
+  /**
+   * The NTA lists uploaded for the active semester (one per faculty, from the
+   * SharePoint folder of the exam board), each row matched against the NTA master
+   * data and against the Primuss registrations. Read-only: nothing is applied
+   * until applyNTAList.
+   */
+  ntaListPreview: NtaListPreview;
   /** All accepted NTA room-alone waivers of the semester. */
   ntaRoomAloneWaivers: Array<NtaRoomAloneWaiver>;
   ntas?: Maybe<Array<Nta>>;
@@ -4262,12 +4408,11 @@ export type StudyProgram = {
   name: Scalars['String']['output'];
   /** A retired fk07 program counts as an "old program" (no longer planned). */
   retired: Scalars['Boolean']['output'];
-  /** Kürzel, e.g. IF (unique key). May be degree-suffixed, e.g. DC-B / DC-M. */
+  /** Kürzel, e.g. IF (unique key). Carries the degree only where two programs share the letters, e.g. DC / DC-M. */
   shortname: Scalars['String']['output'];
   /**
-   * The (still 2-letter, possibly non-unique) code this program has in the external
-   * ZPA system, e.g. "DC" for both DC-B and DC-M. Left empty on an fk07 program, it is
-   * derived by stripping the degree suffix (DC-M -> DC); otherwise empty means shortname.
+   * The code of this program in ZPA, i.e. the prefix of its ZPA study groups (DC for
+   * DC5, DC-M for DC-M1). Empty means: the same as shortname.
    */
   zpaCode?: Maybe<Scalars['String']['output']>;
 };

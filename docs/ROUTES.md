@@ -33,6 +33,7 @@ prüft, dass jedes Ziel als Route existiert.
 | ---------------- | ----------------------------------- | -------------------------------- | ----------------------------- | ---------------------------------------------- |
 | **Semester**     | Semester-Konfiguration              | `config/`                        | `config/`                     | `api/semester/`                                |
 |                  | NTA im Semester                     | `nta/semester/`                  | `nta/`                        | `api/nta/`                                     |
+|                  | NTA-Liste einlesen                  | `nta/import/`                    | `nta/`                        | `api/nta/`                                     |
 |                  | Studierende                         | `students/`                      | `studentRegs/`                | `api/primuss/`                                 |
 |                  | Dozierende & Aufsichten             | `zpa/teacher/`                   | `zpa/`, `invigilator/`        | `api/invigilator/`                             |
 |                  | Neues Semester anlegen              | `config/new/`                    | `config/`                     | `api/semester/`                                |
@@ -98,7 +99,7 @@ Endpunkte in den passenden Ordner legen — flach unter `api/` **nichts** mehr.
 | `api/preplan/`      |        14 | SEB/EXaHM-Vorplanung (Anlegen, Ancode-Verknüpfung, Constraints, Generierung, Buchungsvorschlag)                                             |
 | `api/semester/`     |        10 | Semester wechseln & anlegen, Read-only-Schutz, Config, Planer (setzen/zurücksetzen), Generierungs-Config                                    |
 | `api/primuss/`      |        11 | Primuss-Ancodes, StudentRegs (inkl. Einzel-Add/Remove), Studierende, Konflikt-Entscheidungen, Sammellisten-Reset                            |
-| `api/nta/`          |         6 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver                                                                                                 |
+| `api/nta/`          |         8 | NTA anlegen/ändern/aktiv, Room-Alone-Waiver, NTA-Liste übernehmen/entfernen                                                                 |
 | `api/invigilator/`  |         5 | Aufsichts-Vorgaben, permanente Nicht-Aufsichten, Reset                                                                                      |
 | `api/slot/`         |         5 | Erlaubte/heikle Slots, Prüfungen im Slot, Terminplan-Reset                                                                                  |
 | `api/email/`        |         7 | Anhänge (Liste/Löschen), Special Interests, E-Mail-Vorlagen (Vorschau/Speichern/Zurücksetzen)                                               |

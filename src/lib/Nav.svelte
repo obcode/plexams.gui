@@ -269,6 +269,7 @@
 				{ section: 'Dieses Semester' },
 				{ href: '/config', label: '⚙️ Semester-Konfiguration' },
 				{ href: '/nta/semester', label: '♿ NTA im Semester' },
+				{ href: '/nta/import', label: '♿ NTA-Liste einlesen' },
 				{ href: '/students', label: '🎓 Studierende' },
 				{ href: '/zpa/teacher', label: '👥 Dozierende & Aufsichten' },
 				{ href: '/config/new', label: '➕ Neues Semester anlegen' },

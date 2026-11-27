@@ -6,17 +6,24 @@
 	// Gemeinsames Formular zum Anlegen und Bearbeiten eines NTA. Beim Bearbeiten
 	// ist die mtknr (Schlüssel) gesperrt. exams/deactivated/lastSemester sind
 	// nicht Teil des Inputs und werden serverseitig nicht überschrieben.
+	//
+	// With `onsubmit` the form saves nothing: it hands the edited NTAInput back
+	// (used to correct a proposal of the NTA list import before applying it).
 
 	let {
 		mode = 'add',
 		nta = null,
 		onsaved,
-		oncancel
+		oncancel,
+		onsubmit,
+		submitLabel
 	}: {
 		mode?: string;
 		nta?: any;
 		onsaved?: (data: any) => void;
 		oncancel?: () => void;
+		onsubmit?: (input: any) => void;
+		submitLabel?: string;
 	} = $props();
 
 	const empty = {
@@ -81,14 +88,18 @@
 			errorMsg = 'Bitte die markierten Eingaben prüfen.';
 			return;
 		}
-		saving = true;
-		errorMsg = null;
-		const url = mode === 'edit' ? '/api/nta/updateNTA' : '/api/nta/addNTA';
 		const input = {
 			...form,
 			deltaDurationPercent: Number(form.deltaDurationPercent),
 			from: fromISO(form.from)
 		};
+		if (onsubmit) {
+			onsubmit({ ...input, email: input.email.trim() === '' ? null : input.email.trim() });
+			return;
+		}
+		saving = true;
+		errorMsg = null;
+		const url = mode === 'edit' ? '/api/nta/updateNTA' : '/api/nta/addNTA';
 		let data;
 		try {
 			const res = await fetch(url, {
@@ -220,13 +231,19 @@
 		<button class="btn btn-ghost btn-sm" onclick={() => oncancel?.()} disabled={saving}>
 			Abbrechen
 		</button>
-		<WriteButton
-			class="btn btn-primary btn-sm gap-2"
-			onclick={submit}
-			disabled={saving || !formValid}
-		>
-			{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
-			{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
-		</WriteButton>
+		{#if onsubmit}
+			<button class="btn btn-primary btn-sm" onclick={submit} disabled={!formValid}>
+				{submitLabel ?? 'Übernehmen'}
+			</button>
+		{:else}
+			<WriteButton
+				class="btn btn-primary btn-sm gap-2"
+				onclick={submit}
+				disabled={saving || !formValid}
+			>
+				{#if saving}<span class="loading loading-spinner loading-xs"></span>{/if}
+				{mode === 'edit' ? 'Speichern' : 'Hinzufügen'}
+			</WriteButton>
+		{/if}
 	</div>
 </div>

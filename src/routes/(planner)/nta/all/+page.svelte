@@ -90,6 +90,7 @@
 		<span class="badge badge-primary badge-lg tabular-nums">{data.ntas.length}</span>
 		<span class="text-sm text-base-content/60">{filteredNTAs.length} ausgewählt</span>
 		<div class="flex-1"></div>
+		<a class="btn btn-outline btn-sm" href="/nta/import">NTA-Liste aus SharePoint einlesen</a>
 		<button class="btn btn-primary btn-sm gap-2" onclick={openAdd}>+ NTA hinzufügen</button>
 	</div>
 	<p class="max-w-3xl text-sm text-base-content/70">
