@@ -10,7 +10,15 @@
 
 	let { data } = $props();
 
-	let program = $state(data.primussExams.length > 0 ? data.primussExams[0].program : '');
+	const firstProgram = () => data.primussExams[0]?.program ?? '';
+	let program = $state(firstProgram());
+	// The chosen tab must exist: after the first import (or a reset) the list of
+	// programs changes under the page, and an empty choice showed "0 Prüfungen".
+	$effect(() => {
+		if (!data.primussExams.some((/** @type {any} */ p) => p.program === program)) {
+			program = firstProgram();
+		}
+	});
 
 	// --- Sammellisten-Import (ZIP per REST an POST /upload/primuss-zip) ---
 	// inkrementell/wiederholbar; nach dem Upload aktualisiert refreshAll die
